@@ -55,7 +55,7 @@ sudo yunohost app ssowatconf
 
 # Owncloud installation via curl
 echo "127.0.0.1 $domain #yunoowncloud" | sudo tee -a /etc/hosts
-curl -kL -X POST https://$domain$path/index.php --data "install=true&adminlogin=admin&adminpass=$admin_passwd&directory=/var/www/owncloud/data&dbtype=mysql&dbuser=$db_user&dbpass=$db_pwd&dbname=$db_user&dbhost=localhost"
+curl -kL -X POST https://$domain$path/index.php --data "install=true&adminlogin=admin&adminpass=$admin_passwd&directory=/var/www/owncloud/data&dbtype=mysql&dbuser=$db_user&dbpass=$db_pwd&dbname=$db_user&dbhost=localhost" > /dev/null 2>&1
 
 # Check if the Mysql database is initialized & running
 sleep 5
