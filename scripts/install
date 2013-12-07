@@ -68,7 +68,7 @@ curl -kL -X POST https://$domain$path/index.php --data "install=true&adminlogin=
 # Check if the Mysql database is initialized & running
 sleep 5
 mysql -u $db_user -p$db_pwd $db_user -e "select * from oc_appconfig;" > /dev/null 2>&1
-curl -kL -X POST https://$domain$path/index.php/settings/ajax/enableapp.php --data "appid=user_ldap" -u "admin:$admin_passwd"
+curl -kL -X POST https://$domain$path/index.php/settings/ajax/enableapp.php --data "appid=user_ldap" -u "admin:$admin_passwd" > /dev/null 2>&1
 result=$?
 loop_number=1
 while [ $result != 0 ] && [ $loop_number -lt 5 ];
