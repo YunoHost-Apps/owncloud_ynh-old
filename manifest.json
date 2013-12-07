@@ -1,0 +1,39 @@
+{
+    "name": "Owncloud",
+    "id": "owncloud",
+    "description": {
+        "en": "Sync & share your files, pictures, music, contacts, calendars, and much more !",
+        "fr": "Synchronisez et partagez vos fichiers, images, musiques, contacts, calendriers, et bien plus !"
+    },
+    "developer": {
+        "name": "kload",
+        "email": "kload@kload.fr",
+        "url": "http://owncloud.org",
+    },
+    "multi_instance": "true",
+    "arguments": {
+        "install" : [
+            {
+                "name": "domain",
+                "ask": {
+                    "en": "Choose a domain for Owncloud"
+                },
+                "example": "domain.org"
+            },
+            {
+                "name": "path",
+                "ask": {
+                    "en": "Choose a path for Owncloud"
+                },
+                "example": "/owncloud",
+                "default": "/owncloud"
+            },
+            {
+                "name": "admin_passwd",
+                "ask": {
+                    "en": "Choose a password for Owncloud administrator"
+                }
+            }
+        ]
+    }
+}
