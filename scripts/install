@@ -38,7 +38,7 @@ sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/nginx/conf.d/$domain.d/owncloud.con
 sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/php5/fpm/pool.d/owncloud.conf
 
 # Set permissions to owncloud directory and /home directories
-sudo chown -R owncloud: $final_path
+sudo chown -hR owncloud: $final_path
 for i in $(ls /home)
 do
     if [[ ! $i == yunohost.* ]];
