@@ -1,6 +1,3 @@
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'installed_version', '0.4.0');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'types', 'authentication');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'enabled', 'yes');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_uuid_attribute', 'auto');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_host', 'localhost');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_port', '389');
