@@ -22,7 +22,7 @@ sudo yunohost app initdb $db_user -p $db_pwd
 sudo yunohost app setting owncloud mysqlpwd -v $db_pwd
 
 # Create owncloud user
-useradd -d /var/www/owncloud owncloud
+sudo useradd -d /var/www/owncloud owncloud
 
 # Copy files to the right place
 final_path=/var/www/owncloud
