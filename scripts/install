@@ -56,7 +56,8 @@ done
 # Reload Nginx and regenerate SSOwat conf
 sudo service php5-fpm restart
 sudo service nginx reload
-sudo yunohost app setting owncloud skipped_uris -v "/"
+sudo yunohost app setting owncloud unprotected_uris -v "/"
+sudo yunohost app setting owncloud skipped_uris -v "/public.php"
 sudo yunohost app ssowatconf
 
 # Owncloud installation via curl
@@ -78,8 +79,6 @@ do
 	let loop_number++
 done
 
-sudo yunohost app setting owncloud skipped_uris -v "/public.php"
-sudo yunohost app ssowatconf
 mysql -u $db_user -p$db_pwd $db_user < ../conf/ldap_config.sql
 
 # Remove temporary entry in /etc/hosts
