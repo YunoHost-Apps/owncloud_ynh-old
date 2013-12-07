@@ -9,4 +9,4 @@ mysql -u root -p$root_pwd -e "DROP DATABASE $db_name ; DROP USER $db_user@localh
 sudo rm -rf /var/www/owncloud
 sudo rm -f /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo rm -f /etc/php5/fpm/pool.d/owncloud.conf
-sudo /usr/sbin/userdel owncloud > /dev/null 2>&1
+sudo userdel owncloud > /dev/null 2>&1
