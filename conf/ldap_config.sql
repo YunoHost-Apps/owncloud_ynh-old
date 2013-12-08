@@ -26,5 +26,5 @@ INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'l
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_override_main_server', '');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_attributes_for_user_search', '');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_attributes_for_group_search', '');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_expert_username_attr', '');
+INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_expert_username_attr', 'uid');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_expert_uuid_attr', '');
