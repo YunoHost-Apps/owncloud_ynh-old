@@ -56,8 +56,8 @@ do
     if [[ ! $i == yunohost.* ]];
     then
         sudo setfacl -m g:owncloud:rwx /home/$i
-        mkdir $data_path/$i
-        echo "{\"user\":{\"$i\":{\"/\$user/files/Home\":{\"class\":\"\\OC\\Files\\Storage\\Local\",\"options\":{\"datadir\":\"/home/$i\"}}}}}" > $data_path/$i/mount.json
+        sudo mkdir $data_path/$i
+        echo "{\"user\":{\"$i\":{\"/\$user/files/Home\":{\"class\":\"\\OC\\Files\\Storage\\Local\",\"options\":{\"datadir\":\"/home/$i\"}}}}}" | sudo tee $data_path/$i/mount.json
     fi
 done
 sudo chown -hR owncloud: $final_path
