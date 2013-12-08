@@ -4,7 +4,7 @@ INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'l
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_base', 'dc=yunohost,dc=org');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_base_users', 'dc=yunohost,dc=org');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_base_groups', 'dc=yunohost,dc=org');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_tls', '1');
+INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_tls', '0');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_display_name', 'cn');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_userlist_filter', 'objectClass=mailAccount');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_group_filter', 'objectClass=posixGroup');
