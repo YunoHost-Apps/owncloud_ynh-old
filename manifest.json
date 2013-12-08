@@ -29,10 +29,11 @@
                 "default": "/owncloud"
             },
             {
-                "name": "admin_passwd",
+                "name": "admin",
                 "ask": {
-                    "en": "Choose a password for Owncloud administrator"
-                }
+                    "en": "Choose the Owncloud administrator (must be an existing YunoHost user)",
+                },
+                "example": "homer"
             }
         ]
     }

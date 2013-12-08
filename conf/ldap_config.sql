@@ -12,11 +12,11 @@ INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'l
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_group_member_assoc_attribute', 'uniqueMember');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_login_filter', 'uid=%uid');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_quota_attr', 'mailQuota');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_quota_def', '500MB');
+INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_quota_def', '');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_email_attr', 'mail');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_cache_ttl', '600');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_configuration_active', '1');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'home_folder_naming_rule', 'attr:homeDirectory');
+INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'home_folder_naming_rule', '');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_backup_host', '');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_dn', '');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_agent_password', '');
