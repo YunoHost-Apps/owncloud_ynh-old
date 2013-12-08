@@ -35,6 +35,7 @@ $TRANSLATIONS = array(
 "Cancel upload" => "Prekini upload",
 "Nothing in here. Upload something!" => "Nema ničega u ovoj mapi. Pošalji nešto!",
 "Download" => "Preuzimanje",
+"Unshare" => "Makni djeljenje",
 "Delete" => "Obriši",
 "Upload too large" => "Prijenos je preobiman",
 "The files you are trying to upload exceed the maximum size for file uploads on this server." => "Datoteke koje pokušavate prenijeti prelaze maksimalnu veličinu za prijenos datoteka na ovom poslužitelju.",

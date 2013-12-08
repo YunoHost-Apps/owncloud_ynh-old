@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ownCloud\n"
 "Report-Msgid-Bugs-To: translations@owncloud.org\n"
-"POT-Creation-Date: 2013-12-07 22:26-0500\n"
-"PO-Revision-Date: 2013-12-08 03:26+0000\n"
+"POT-Creation-Date: 2013-11-29 14:08-0500\n"
+"PO-Revision-Date: 2013-11-29 19:08+0000\n"
 "Last-Translator: I Robot <owncloud-bot@tmit.eu>\n"
 "Language-Team: Albanian (http://www.transifex.com/projects/p/owncloud/language/sq/)\n"
 "MIME-Version: 1.0\n"
@@ -378,25 +378,29 @@ msgstr "Këtu nuk ka asgje. Ngarko dicka"
 msgid "Download"
 msgstr "Shkarko"
 
-#: templates/index.php:73 templates/index.php:74
+#: templates/index.php:75 templates/index.php:76
+msgid "Unshare"
+msgstr "Hiq ndarjen"
+
+#: templates/index.php:81 templates/index.php:82
 msgid "Delete"
 msgstr "Fshi"
 
-#: templates/index.php:86
+#: templates/index.php:95
 msgid "Upload too large"
 msgstr "Ngarkimi shumë i madh"
 
-#: templates/index.php:88
+#: templates/index.php:97
 msgid ""
 "The files you are trying to upload exceed the maximum size for file uploads "
 "on this server."
 msgstr "Skedarët që po mundoheni të ngarkoni e tejkalojnë madhësinë maksimale të lejuar nga serveri."
 
-#: templates/index.php:93
+#: templates/index.php:102
 msgid "Files are being scanned, please wait."
 msgstr "Skanerizimi i skedarit në proces. Ju lutem prisni."
 
-#: templates/index.php:96
+#: templates/index.php:105
 msgid "Current scanning"
 msgstr "Skanimi aktual"
 

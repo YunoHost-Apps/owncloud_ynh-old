@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ownCloud\n"
 "Report-Msgid-Bugs-To: translations@owncloud.org\n"
-"POT-Creation-Date: 2013-12-07 22:26-0500\n"
-"PO-Revision-Date: 2013-12-08 03:26+0000\n"
+"POT-Creation-Date: 2013-11-29 14:08-0500\n"
+"PO-Revision-Date: 2013-11-29 19:08+0000\n"
 "Last-Translator: I Robot <owncloud-bot@tmit.eu>\n"
 "Language-Team: Turkish (http://www.transifex.com/projects/p/owncloud/language/tr/)\n"
 "MIME-Version: 1.0\n"
@@ -77,7 +77,7 @@ msgstr "Yükleme dizini tanımlanamadı."
 
 #: ajax/upload.php:27
 msgid "Invalid Token"
-msgstr "Geçersiz Simge"
+msgstr "Geçeriz simge"
 
 #: ajax/upload.php:64
 msgid "No file was uploaded. Unknown error"
@@ -231,7 +231,7 @@ msgstr[1] "%n dosya yükleniyor"
 
 #: js/files.js:72
 msgid "'.' is an invalid file name."
-msgstr "'.' geçersiz bir dosya adı."
+msgstr "'.' geçersiz dosya adı."
 
 #: js/files.js:81
 msgid ""
@@ -294,7 +294,7 @@ msgstr "Değiştirilme"
 
 #: lib/app.php:60
 msgid "Invalid folder name. Usage of 'Shared' is reserved."
-msgstr "Geçersiz dizin adı. 'Shared' ismi ayrılmıştır."
+msgstr "Geçersiz dizin adı. Shared isminin kullanımı Owncloud tarafından rezerve edilmiştir."
 
 #: lib/app.php:101
 #, php-format
@@ -343,7 +343,7 @@ msgstr "Yeni"
 
 #: templates/index.php:8
 msgid "New text file"
-msgstr "Yeni metin dosyası"
+msgstr ""
 
 #: templates/index.php:8
 msgid "Text file"
@@ -351,7 +351,7 @@ msgstr "Metin dosyası"
 
 #: templates/index.php:10
 msgid "New folder"
-msgstr "Yeni klasör"
+msgstr ""
 
 #: templates/index.php:10
 msgid "Folder"
@@ -381,25 +381,29 @@ msgstr "Burada hiçbir şey yok. Bir şeyler yükleyin!"
 msgid "Download"
 msgstr "İndir"
 
-#: templates/index.php:73 templates/index.php:74
+#: templates/index.php:75 templates/index.php:76
+msgid "Unshare"
+msgstr "Paylaşılmayan"
+
+#: templates/index.php:81 templates/index.php:82
 msgid "Delete"
 msgstr "Sil"
 
-#: templates/index.php:86
+#: templates/index.php:95
 msgid "Upload too large"
 msgstr "Yükleme çok büyük"
 
-#: templates/index.php:88
+#: templates/index.php:97
 msgid ""
 "The files you are trying to upload exceed the maximum size for file uploads "
 "on this server."
 msgstr "Yüklemeye çalıştığınız dosyalar bu sunucudaki maksimum yükleme boyutunu aşıyor."
 
-#: templates/index.php:93
+#: templates/index.php:102
 msgid "Files are being scanned, please wait."
 msgstr "Dosyalar taranıyor, lütfen bekleyin."
 
-#: templates/index.php:96
+#: templates/index.php:105
 msgid "Current scanning"
 msgstr "Güncel tarama"
 

@@ -423,10 +423,7 @@ $(document).ready(function () {
 			}
 		});
 		input.blur(function () {
-			var input = $(this),
-				displayName = input.val();
-			input.closest('tr').attr('data-displayName', displayName);
-			input.replaceWith('<span>' + escapeHTML(displayName) + '</span>');
+			$(this).replaceWith(escapeHTML($(this).val()));
 			img.css('display', '');
 		});
 	});

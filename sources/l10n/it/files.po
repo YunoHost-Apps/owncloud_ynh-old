@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ownCloud\n"
 "Report-Msgid-Bugs-To: translations@owncloud.org\n"
-"POT-Creation-Date: 2013-12-07 22:26-0500\n"
-"PO-Revision-Date: 2013-12-08 03:26+0000\n"
+"POT-Creation-Date: 2013-11-29 14:08-0500\n"
+"PO-Revision-Date: 2013-11-29 19:08+0000\n"
 "Last-Translator: I Robot <owncloud-bot@tmit.eu>\n"
 "Language-Team: Italian (http://www.transifex.com/projects/p/owncloud/language/it/)\n"
 "MIME-Version: 1.0\n"
@@ -341,7 +341,7 @@ msgstr "Nuovo"
 
 #: templates/index.php:8
 msgid "New text file"
-msgstr "Nuovo file di testo"
+msgstr ""
 
 #: templates/index.php:8
 msgid "Text file"
@@ -349,7 +349,7 @@ msgstr "File di testo"
 
 #: templates/index.php:10
 msgid "New folder"
-msgstr "Nuova cartella"
+msgstr ""
 
 #: templates/index.php:10
 msgid "Folder"
@@ -379,25 +379,29 @@ msgstr "Non c'è niente qui. Carica qualcosa!"
 msgid "Download"
 msgstr "Scarica"
 
-#: templates/index.php:73 templates/index.php:74
+#: templates/index.php:75 templates/index.php:76
+msgid "Unshare"
+msgstr "Rimuovi condivisione"
+
+#: templates/index.php:81 templates/index.php:82
 msgid "Delete"
 msgstr "Elimina"
 
-#: templates/index.php:86
+#: templates/index.php:95
 msgid "Upload too large"
 msgstr "Caricamento troppo grande"
 
-#: templates/index.php:88
+#: templates/index.php:97
 msgid ""
 "The files you are trying to upload exceed the maximum size for file uploads "
 "on this server."
 msgstr "I file che stai provando a caricare superano la dimensione massima consentita su questo server."
 
-#: templates/index.php:93
+#: templates/index.php:102
 msgid "Files are being scanned, please wait."
 msgstr "Scansione dei file in corso, attendi"
 
-#: templates/index.php:96
+#: templates/index.php:105
 msgid "Current scanning"
 msgstr "Scansione corrente"
 

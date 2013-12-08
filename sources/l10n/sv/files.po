@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ownCloud\n"
 "Report-Msgid-Bugs-To: translations@owncloud.org\n"
-"POT-Creation-Date: 2013-12-07 22:26-0500\n"
-"PO-Revision-Date: 2013-12-08 03:26+0000\n"
+"POT-Creation-Date: 2013-11-29 14:08-0500\n"
+"PO-Revision-Date: 2013-11-29 19:08+0000\n"
 "Last-Translator: I Robot <owncloud-bot@tmit.eu>\n"
 "Language-Team: Swedish (http://www.transifex.com/projects/p/owncloud/language/sv/)\n"
 "MIME-Version: 1.0\n"
@@ -355,7 +355,7 @@ msgstr "Textfil"
 
 #: templates/index.php:10
 msgid "New folder"
-msgstr "Ny mapp"
+msgstr ""
 
 #: templates/index.php:10
 msgid "Folder"
@@ -385,25 +385,29 @@ msgstr "Ingenting här. Ladda upp något!"
 msgid "Download"
 msgstr "Ladda ner"
 
-#: templates/index.php:73 templates/index.php:74
+#: templates/index.php:75 templates/index.php:76
+msgid "Unshare"
+msgstr "Sluta dela"
+
+#: templates/index.php:81 templates/index.php:82
 msgid "Delete"
 msgstr "Radera"
 
-#: templates/index.php:86
+#: templates/index.php:95
 msgid "Upload too large"
 msgstr "För stor uppladdning"
 
-#: templates/index.php:88
+#: templates/index.php:97
 msgid ""
 "The files you are trying to upload exceed the maximum size for file uploads "
 "on this server."
 msgstr "Filerna du försöker ladda upp överstiger den maximala storleken för filöverföringar på servern."
 
-#: templates/index.php:93
+#: templates/index.php:102
 msgid "Files are being scanned, please wait."
 msgstr "Filer skannas, var god vänta"
 
-#: templates/index.php:96
+#: templates/index.php:105
 msgid "Current scanning"
 msgstr "Aktuell skanning"
 

@@ -35,6 +35,7 @@ $TRANSLATIONS = array(
 "Cancel upload" => " Anulla l'amontcargar",
 "Nothing in here. Upload something!" => "Pas res dedins. Amontcarga qualquaren",
 "Download" => "Avalcarga",
+"Unshare" => "Pas partejador",
 "Delete" => "Escafa",
 "Upload too large" => "Amontcargament tròp gròs",
 "The files you are trying to upload exceed the maximum size for file uploads on this server." => "Los fichièrs que sias a amontcargar son tròp pesucs per la talha maxi pel servidor.",

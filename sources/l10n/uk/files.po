@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ownCloud\n"
 "Report-Msgid-Bugs-To: translations@owncloud.org\n"
-"POT-Creation-Date: 2013-12-07 22:26-0500\n"
-"PO-Revision-Date: 2013-12-08 03:26+0000\n"
+"POT-Creation-Date: 2013-11-29 14:08-0500\n"
+"PO-Revision-Date: 2013-11-29 19:08+0000\n"
 "Last-Translator: I Robot <owncloud-bot@tmit.eu>\n"
 "Language-Team: Ukrainian (http://www.transifex.com/projects/p/owncloud/language/uk/)\n"
 "MIME-Version: 1.0\n"
@@ -351,7 +351,7 @@ msgstr "Текстовий файл"
 
 #: templates/index.php:10
 msgid "New folder"
-msgstr "Нова тека"
+msgstr ""
 
 #: templates/index.php:10
 msgid "Folder"
@@ -381,25 +381,29 @@ msgstr "Тут нічого немає. Відвантажте що-небудь
 msgid "Download"
 msgstr "Завантажити"
 
-#: templates/index.php:73 templates/index.php:74
+#: templates/index.php:75 templates/index.php:76
+msgid "Unshare"
+msgstr "Закрити доступ"
+
+#: templates/index.php:81 templates/index.php:82
 msgid "Delete"
 msgstr "Видалити"
 
-#: templates/index.php:86
+#: templates/index.php:95
 msgid "Upload too large"
 msgstr "Файл занадто великий"
 
-#: templates/index.php:88
+#: templates/index.php:97
 msgid ""
 "The files you are trying to upload exceed the maximum size for file uploads "
 "on this server."
 msgstr "Файли,що ви намагаєтесь відвантажити перевищують максимальний дозволений розмір файлів на цьому сервері."
 
-#: templates/index.php:93
+#: templates/index.php:102
 msgid "Files are being scanned, please wait."
 msgstr "Файли скануються, зачекайте, будь-ласка."
 
-#: templates/index.php:96
+#: templates/index.php:105
 msgid "Current scanning"
 msgstr "Поточне сканування"
 

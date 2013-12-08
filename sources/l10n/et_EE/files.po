@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ownCloud\n"
 "Report-Msgid-Bugs-To: translations@owncloud.org\n"
-"POT-Creation-Date: 2013-12-07 22:26-0500\n"
-"PO-Revision-Date: 2013-12-08 03:26+0000\n"
+"POT-Creation-Date: 2013-11-29 14:08-0500\n"
+"PO-Revision-Date: 2013-11-29 19:08+0000\n"
 "Last-Translator: I Robot <owncloud-bot@tmit.eu>\n"
 "Language-Team: Estonian (Estonia) (http://www.transifex.com/projects/p/owncloud/language/et_EE/)\n"
 "MIME-Version: 1.0\n"
@@ -341,7 +341,7 @@ msgstr "Uus"
 
 #: templates/index.php:8
 msgid "New text file"
-msgstr "Uus tekstifail"
+msgstr ""
 
 #: templates/index.php:8
 msgid "Text file"
@@ -349,7 +349,7 @@ msgstr "Tekstifail"
 
 #: templates/index.php:10
 msgid "New folder"
-msgstr "Uus kaust"
+msgstr ""
 
 #: templates/index.php:10
 msgid "Folder"
@@ -379,25 +379,29 @@ msgstr "Siin pole midagi. Lae midagi üles!"
 msgid "Download"
 msgstr "Lae alla"
 
-#: templates/index.php:73 templates/index.php:74
+#: templates/index.php:75 templates/index.php:76
+msgid "Unshare"
+msgstr "Lõpeta jagamine"
+
+#: templates/index.php:81 templates/index.php:82
 msgid "Delete"
 msgstr "Kustuta"
 
-#: templates/index.php:86
+#: templates/index.php:95
 msgid "Upload too large"
 msgstr "Üleslaadimine on liiga suur"
 
-#: templates/index.php:88
+#: templates/index.php:97
 msgid ""
 "The files you are trying to upload exceed the maximum size for file uploads "
 "on this server."
 msgstr "Failid, mida sa proovid üles laadida, ületab serveri poolt üleslaetavatele failidele määratud maksimaalse suuruse."
 
-#: templates/index.php:93
+#: templates/index.php:102
 msgid "Files are being scanned, please wait."
 msgstr "Faile skannitakse, palun oota."
 
-#: templates/index.php:96
+#: templates/index.php:105
 msgid "Current scanning"
 msgstr "Praegune skannimine"
 

@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ownCloud\n"
 "Report-Msgid-Bugs-To: translations@owncloud.org\n"
-"POT-Creation-Date: 2013-12-07 22:26-0500\n"
-"PO-Revision-Date: 2013-12-08 03:26+0000\n"
+"POT-Creation-Date: 2013-11-29 14:08-0500\n"
+"PO-Revision-Date: 2013-11-29 19:08+0000\n"
 "Last-Translator: I Robot <owncloud-bot@tmit.eu>\n"
 "Language-Team: Dutch (http://www.transifex.com/projects/p/owncloud/language/nl/)\n"
 "MIME-Version: 1.0\n"
@@ -203,7 +203,7 @@ msgstr "ongedaan maken"
 
 #: js/filelist.js:591
 msgid "Error deleting file."
-msgstr "Fout bij verwijderen bestand."
+msgstr ""
 
 #: js/filelist.js:609 js/filelist.js:683 js/files.js:631
 msgid "%n folder"
@@ -341,7 +341,7 @@ msgstr "Nieuw"
 
 #: templates/index.php:8
 msgid "New text file"
-msgstr "Nieuw tekstbestand"
+msgstr ""
 
 #: templates/index.php:8
 msgid "Text file"
@@ -349,7 +349,7 @@ msgstr "Tekstbestand"
 
 #: templates/index.php:10
 msgid "New folder"
-msgstr "Nieuwe map"
+msgstr ""
 
 #: templates/index.php:10
 msgid "Folder"
@@ -379,25 +379,29 @@ msgstr "Er bevindt zich hier niets. Upload een bestand!"
 msgid "Download"
 msgstr "Downloaden"
 
-#: templates/index.php:73 templates/index.php:74
+#: templates/index.php:75 templates/index.php:76
+msgid "Unshare"
+msgstr "Stop met delen"
+
+#: templates/index.php:81 templates/index.php:82
 msgid "Delete"
 msgstr "Verwijder"
 
-#: templates/index.php:86
+#: templates/index.php:95
 msgid "Upload too large"
 msgstr "Upload is te groot"
 
-#: templates/index.php:88
+#: templates/index.php:97
 msgid ""
 "The files you are trying to upload exceed the maximum size for file uploads "
 "on this server."
 msgstr "De bestanden die u probeert te uploaden zijn groter dan de maximaal toegestane  bestandsgrootte voor deze server."
 
-#: templates/index.php:93
+#: templates/index.php:102
 msgid "Files are being scanned, please wait."
 msgstr "Bestanden worden gescand, even wachten."
 
-#: templates/index.php:96
+#: templates/index.php:105
 msgid "Current scanning"
 msgstr "Er wordt gescand"
 

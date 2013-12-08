@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ownCloud\n"
 "Report-Msgid-Bugs-To: translations@owncloud.org\n"
-"POT-Creation-Date: 2013-12-07 22:26-0500\n"
-"PO-Revision-Date: 2013-12-08 03:26+0000\n"
+"POT-Creation-Date: 2013-11-29 14:08-0500\n"
+"PO-Revision-Date: 2013-11-29 19:08+0000\n"
 "Last-Translator: I Robot <owncloud-bot@tmit.eu>\n"
 "Language-Team: Finnish (Finland) (http://www.transifex.com/projects/p/owncloud/language/fi_FI/)\n"
 "MIME-Version: 1.0\n"
@@ -94,7 +94,7 @@ msgstr "Lähetetyn tiedoston koko ylittää php.ini-tiedoston upload_max_filesiz
 msgid ""
 "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in "
 "the HTML form"
-msgstr "Lähetettävän tiedoston enimmäiskoko ylittää HTML-lomakkeessa määritellyn MAX_FILE_SIZE-säännön"
+msgstr "Ladattavan tiedoston maksimikoko ylittää MAX_FILE_SIZE dirketiivin, joka on määritelty HTML-lomakkeessa"
 
 #: ajax/upload.php:75
 msgid "The uploaded file was only partially uploaded"
@@ -262,7 +262,7 @@ msgstr ""
 msgid ""
 "Encryption was disabled but your files are still encrypted. Please go to "
 "your personal settings to decrypt your files."
-msgstr "Salaus poistettiin käytöstä, mutta tiedostosi ovat edelleen salattuina. Siirry henkilökohtaisiin asetuksiin avataksesi tiedostojesi salauksen."
+msgstr "Salaus poistettiin käytöstä, mutta tiedostosi ovat edelleen salattu. Siirry henkilökohtaisiin asetuksiisi avataksesi tiedostojesi salauksen."
 
 #: js/files.js:349
 msgid ""
@@ -297,7 +297,7 @@ msgstr "Virheellinen kansion nimi. 'Shared':n käyttö on varattu."
 #: lib/app.php:101
 #, php-format
 msgid "%s could not be renamed"
-msgstr "kohteen %s nimeäminen uudelleen epäonnistui"
+msgstr "%s ei pysty uudelleen nimeämään"
 
 #: lib/helper.php:11 templates/index.php:16
 msgid "Upload"
@@ -341,7 +341,7 @@ msgstr "Uusi"
 
 #: templates/index.php:8
 msgid "New text file"
-msgstr "Uusi tekstitiedosto"
+msgstr ""
 
 #: templates/index.php:8
 msgid "Text file"
@@ -349,7 +349,7 @@ msgstr "Tekstitiedosto"
 
 #: templates/index.php:10
 msgid "New folder"
-msgstr "Uusi kansio"
+msgstr ""
 
 #: templates/index.php:10
 msgid "Folder"
@@ -379,25 +379,29 @@ msgstr "Täällä ei ole mitään. Lähetä tänne jotakin!"
 msgid "Download"
 msgstr "Lataa"
 
-#: templates/index.php:73 templates/index.php:74
+#: templates/index.php:75 templates/index.php:76
+msgid "Unshare"
+msgstr "Peru jakaminen"
+
+#: templates/index.php:81 templates/index.php:82
 msgid "Delete"
 msgstr "Poista"
 
-#: templates/index.php:86
+#: templates/index.php:95
 msgid "Upload too large"
 msgstr "Lähetettävä tiedosto on liian suuri"
 
-#: templates/index.php:88
+#: templates/index.php:97
 msgid ""
 "The files you are trying to upload exceed the maximum size for file uploads "
 "on this server."
 msgstr "Lähetettäväksi valitsemasi tiedostot ylittävät palvelimen salliman tiedostokoon rajan."
 
-#: templates/index.php:93
+#: templates/index.php:102
 msgid "Files are being scanned, please wait."
 msgstr "Tiedostoja tarkistetaan, odota hetki."
 
-#: templates/index.php:96
+#: templates/index.php:105
 msgid "Current scanning"
 msgstr "Tämänhetkinen tutkinta"
 

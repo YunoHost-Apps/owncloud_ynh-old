@@ -460,7 +460,8 @@ class OC_Installer{
 		);
 
 		// is the code checker enabled?
-		if(OC_Config::getValue('appcodechecker', true)) {
+		if(OC_Config::getValue('appcodechecker', false)) {
+
 			// check if grep is installed
 			$grep = exec('which grep');
 			if($grep=='') {

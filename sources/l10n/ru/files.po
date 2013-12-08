@@ -16,8 +16,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ownCloud\n"
 "Report-Msgid-Bugs-To: translations@owncloud.org\n"
-"POT-Creation-Date: 2013-12-07 22:26-0500\n"
-"PO-Revision-Date: 2013-12-08 03:26+0000\n"
+"POT-Creation-Date: 2013-11-29 14:08-0500\n"
+"PO-Revision-Date: 2013-11-29 19:08+0000\n"
 "Last-Translator: I Robot <owncloud-bot@tmit.eu>\n"
 "Language-Team: Russian (http://www.transifex.com/projects/p/owncloud/language/ru/)\n"
 "MIME-Version: 1.0\n"
@@ -210,7 +210,7 @@ msgstr "отмена"
 
 #: js/filelist.js:591
 msgid "Error deleting file."
-msgstr "Ошибка при удалении файла."
+msgstr ""
 
 #: js/filelist.js:609 js/filelist.js:683 js/files.js:631
 msgid "%n folder"
@@ -351,7 +351,7 @@ msgstr "Новый"
 
 #: templates/index.php:8
 msgid "New text file"
-msgstr "Новый текстовый файл"
+msgstr ""
 
 #: templates/index.php:8
 msgid "Text file"
@@ -359,7 +359,7 @@ msgstr "Текстовый файл"
 
 #: templates/index.php:10
 msgid "New folder"
-msgstr "Новая папка"
+msgstr ""
 
 #: templates/index.php:10
 msgid "Folder"
@@ -389,25 +389,29 @@ msgstr "Здесь ничего нет. Загрузите что-нибудь!"
 msgid "Download"
 msgstr "Скачать"
 
-#: templates/index.php:73 templates/index.php:74
+#: templates/index.php:75 templates/index.php:76
+msgid "Unshare"
+msgstr "Закрыть общий доступ"
+
+#: templates/index.php:81 templates/index.php:82
 msgid "Delete"
 msgstr "Удалить"
 
-#: templates/index.php:86
+#: templates/index.php:95
 msgid "Upload too large"
 msgstr "Файл слишком велик"
 
-#: templates/index.php:88
+#: templates/index.php:97
 msgid ""
 "The files you are trying to upload exceed the maximum size for file uploads "
 "on this server."
 msgstr "Файлы, которые вы пытаетесь загрузить, превышают лимит для файлов на этом сервере."
 
-#: templates/index.php:93
+#: templates/index.php:102
 msgid "Files are being scanned, please wait."
 msgstr "Подождите, файлы сканируются."
 
-#: templates/index.php:96
+#: templates/index.php:105
 msgid "Current scanning"
 msgstr "Текущее сканирование"
 
