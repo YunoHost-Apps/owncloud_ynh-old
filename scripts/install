@@ -82,8 +82,8 @@ do
 done
 
 mysql -u $db_user -p$db_pwd $db_user < ../conf/ldap_config.sql
-sudo yunohost app setting owncloud skipped_uris -v "/public.php"
-sudo yunohost app setting owncloud unprotected_uris -v "/remote.php"
+sudo yunohost app setting owncloud skipped_uris -v "/public.php,/core,/index.php/core,/apps/files,/index.php/apps/files"
+sudo yunohost app setting owncloud unprotected_uris -v "/remote.php,/cron.php"
 sudo yunohost app ssowatconf
 
 # Remove temporary entry in /etc/hosts
