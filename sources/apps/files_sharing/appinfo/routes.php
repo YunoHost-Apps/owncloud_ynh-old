@@ -1,5 +1,12 @@
 <?php
+$this->create('core_ajax_public_preview', '/publicpreview.png')->action(
+function() {
+	require_once __DIR__ . '/../ajax/publicpreview.php';
+});
+
 // OCS API
+
+//TODO: SET: mail notification, waiting for PR #4689 to be accepted
 
 OC_API::register('get',
 		'/apps/files_sharing/api/v1/shares',

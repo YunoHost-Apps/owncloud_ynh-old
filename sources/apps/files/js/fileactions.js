@@ -134,14 +134,11 @@ var FileActions = {
 				img = img(file);
 			}
 			if (typeof trashBinApp !== 'undefined' && trashBinApp) {
-				var html = '<a href="#" original-title="' + t('files', 'Delete permanently') + '" class="action delete" />';
+				var html = '<a href="#" original-title="' + t('files', 'Delete permanently') + '" class="action delete delete-icon" />';
 			} else {
-				var html = '<a href="#" original-title="' + t('files', 'Delete') + '" class="action delete" />';
+				var html = '<a href="#" class="action delete delete-icon" />';
 			}
 			var element = $(html);
-			if (img) {
-				element.append($('<img class ="svg" src="' + img + '"/>'));
-			}
 			element.data('action', actions['Delete']);
 			element.on('click', {a: null, elem: parent, actionFunc: actions['Delete']}, actionHandler);
 			parent.parent().children().last().append(element);
@@ -190,20 +187,7 @@ $(document).ready(function () {
 FileActions.register('all', 'Delete', OC.PERMISSION_DELETE, function () {
 	return OC.imagePath('core', 'actions/delete');
 }, function (filename) {
-	if (Files.cancelUpload(filename)) {
-		if (filename.substr) {
-			filename = [filename];
-		}
-		$.each(filename, function (index, file) {
-			var filename = $('tr').filterAttr('data-file', file);
-			filename.hide();
-			filename.find('input[type="checkbox"]').removeAttr('checked');
-			filename.removeClass('selected');
-		});
-		procesSelection();
-	} else {
-		FileList.do_delete(filename);
-	}
+	FileList.do_delete(filename);
 	$('.tipsy').remove();
 });
 
@@ -214,9 +198,12 @@ FileActions.register('all', 'Rename', OC.PERMISSION_UPDATE, function () {
 	FileList.rename(filename);
 });
 
-
 FileActions.register('dir', 'Open', OC.PERMISSION_READ, '', function (filename) {
-	window.location = OC.linkTo('files', 'index.php') + '?dir=' + encodeURIComponent($('#dir').val()).replace(/%2F/g, '/') + '/' + encodeURIComponent(filename);
+	var dir = $('#dir').val() || '/';
+	if (dir !== '/') {
+		dir = dir + '/';
+	}
+	FileList.changeDirectory(dir + filename);
 });
 
 FileActions.setDefault('dir', 'Open');

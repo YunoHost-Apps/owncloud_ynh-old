@@ -1,9 +1,8 @@
-<?php $TRANSLATIONS = array(
+<?php
+$TRANSLATIONS = array(
 "Password" => "Пароль",
-"Submit" => "Передать",
-"%s shared the folder %s with you" => "%s имеет общий с Вами доступ к папке %s ",
-"%s shared the file %s with you" => "%s имеет общий с Вами доступ к файлу %s ",
 "Download" => "Загрузка",
-"No preview available for" => "Предварительный просмотр недоступен",
-"web services under your control" => "веб-сервисы под Вашим контролем"
+"Upload" => "Загрузка",
+"Cancel upload" => "Отмена загрузки"
 );
+$PLURAL_FORMS = "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);";

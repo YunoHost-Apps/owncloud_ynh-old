@@ -30,9 +30,6 @@ use OC\Files\Filesystem;
  */
 class Hooks {
 
-	// TODO: use passphrase for encrypting private key that is separate to
-	// the login password
-
 	/**
 	 * @brief Startup encryption backend upon user login
 	 * @note This method should never be called for users using client side encryption
@@ -43,25 +40,28 @@ class Hooks {
 			return true;
 		}
 
+
 		$l = new \OC_L10N('files_encryption');
 
 		$view = new \OC_FilesystemView('/');
+
+		// ensure filesystem is loaded
+		if(!\OC\Files\Filesystem::$loaded) {
+			\OC_Util::setupFS($params['uid']);
+		}
+
 		$privateKey = \OCA\Encryption\Keymanager::getPrivateKey($view, $params['uid']);
 
 		// if no private key exists, check server configuration
 		if(!$privateKey) {
-			if(!Helper::checkRequirements() || !Helper::checkConfiguration() ) {
+			//check if all requirements are met
+			if(!Helper::checkRequirements() || !Helper::checkConfiguration()) {
 				$error_msg = $l->t("Missing requirements.");
 				$hint = $l->t('Please make sure that PHP 5.3.3 or newer is installed and that OpenSSL together with the PHP extension is enabled and configured properly. For now, the encryption app has been disabled.');
 				\OC_App::disable('files_encryption');
 				\OCP\Util::writeLog('Encryption library', $error_msg . ' ' . $hint, \OCP\Util::ERROR);
 				\OCP\Template::printErrorPage($error_msg, $hint);
 			}
-		}
-
-		// ensure filesystem is loaded
-		if(!\OC\Files\Filesystem::$loaded) {
-			\OC_Util::setupFS($params['uid']);
 		}
 
 		$util = new Util($view, $params['uid']);
@@ -71,18 +71,7 @@ class Hooks {
 			return false;
 		}
 
-		$encryptedKey = Keymanager::getPrivateKey($view, $params['uid']);
-
-		$privateKey = Crypt::decryptPrivateKey($encryptedKey, $params['password']);
-
-		if ($privateKey === false) {
-			\OCP\Util::writeLog('Encryption library', 'Private key for user "' . $params['uid']
-													  . '" is not valid! Maybe the user password was changed from outside if so please change it back to gain access', \OCP\Util::ERROR);
-		}
-
-		$session = new \OCA\Encryption\Session($view);
-
-		$session->setPrivateKey($privateKey);
+		$session = $util->initEncryption($params);
 
 		// Check if first-run file migration has already been performed
 		$ready = false;
@@ -190,9 +179,9 @@ class Hooks {
 		// the necessary keys)
 		if (Crypt::mode() === 'server') {
 
-			if ($params['uid'] === \OCP\User::getUser()) {
+			$view = new \OC_FilesystemView('/');
 
-				$view = new \OC_FilesystemView('/');
+			if ($params['uid'] === \OCP\User::getUser()) {
 
 				$session = new \OCA\Encryption\Session($view);
 
@@ -213,36 +202,41 @@ class Hooks {
 			} else { // admin changed the password for a different user, create new keys and reencrypt file keys
 
 				$user = $params['uid'];
-				$recoveryPassword = $params['recoveryPassword'];
-				$newUserPassword = $params['password'];
+				$util = new Util($view, $user);
+				$recoveryPassword = isset($params['recoveryPassword']) ? $params['recoveryPassword'] : null;
 
-				$view = new \OC_FilesystemView('/');
+				if (($util->recoveryEnabledForUser() && $recoveryPassword)
+						|| !$util->userKeysExists()) {
 
-				// make sure that the users home is mounted
-				\OC\Files\Filesystem::initMountPoints($user);
+					$recoveryPassword = $params['recoveryPassword'];
+					$newUserPassword = $params['password'];
 
-				$keypair = Crypt::createKeypair();
+					// make sure that the users home is mounted
+					\OC\Files\Filesystem::initMountPoints($user);
 
-				// Disable encryption proxy to prevent recursive calls
-				$proxyStatus = \OC_FileProxy::$enabled;
-				\OC_FileProxy::$enabled = false;
+					$keypair = Crypt::createKeypair();
 
-				// Save public key
-				$view->file_put_contents('/public-keys/' . $user . '.public.key', $keypair['publicKey']);
+					// Disable encryption proxy to prevent recursive calls
+					$proxyStatus = \OC_FileProxy::$enabled;
+					\OC_FileProxy::$enabled = false;
 
-				// Encrypt private key empty passphrase
-				$encryptedPrivateKey = Crypt::symmetricEncryptFileContent($keypair['privateKey'], $newUserPassword);
+					// Save public key
+					$view->file_put_contents('/public-keys/' . $user . '.public.key', $keypair['publicKey']);
 
-				// Save private key
-				$view->file_put_contents(
-					'/' . $user . '/files_encryption/' . $user . '.private.key', $encryptedPrivateKey);
+					// Encrypt private key empty passphrase
+					$encryptedPrivateKey = Crypt::symmetricEncryptFileContent($keypair['privateKey'], $newUserPassword);
 
-				if ($recoveryPassword) { // if recovery key is set we can re-encrypt the key files
-					$util = new Util($view, $user);
-					$util->recoverUsersFiles($recoveryPassword);
+					// Save private key
+					$view->file_put_contents(
+							'/' . $user . '/files_encryption/' . $user . '.private.key', $encryptedPrivateKey);
+
+					if ($recoveryPassword) { // if recovery key is set we can re-encrypt the key files
+						$util = new Util($view, $user);
+						$util->recoverUsersFiles($recoveryPassword);
+					}
+
+					\OC_FileProxy::$enabled = $proxyStatus;
 				}
-
-				\OC_FileProxy::$enabled = $proxyStatus;
 			}
 		}
 	}
@@ -291,10 +285,6 @@ class Hooks {
 	 */
 	public static function postShared($params) {
 
-		if (\OCP\App::isEnabled('files_encryption') === false) {
-			return true;
-		}
-
 		// NOTE: $params has keys:
 		// [itemType] => file
 		// itemSource -> int, filecache file ID
@@ -314,6 +304,10 @@ class Hooks {
 		// [run] => whether emitting script should continue to run
 		// TODO: Should other kinds of item be encrypted too?
 
+		if (\OCP\App::isEnabled('files_encryption') === false) {
+			return true;
+		}
+
 		if ($params['itemType'] === 'file' || $params['itemType'] === 'folder') {
 
 			$view = new \OC_FilesystemView('/');
@@ -329,8 +323,8 @@ class Hooks {
 				// get the parent from current share
 				$parent = $util->getShareParent($params['parent']);
 
-				// if parent is file the it is an 1:1 share
-				if ($parent['item_type'] === 'file') {
+				// if parent has the same type than the child it is a 1:1 share
+				if ($parent['item_type'] === $params['itemType']) {
 
 					// prefix path with Shared
 					$path = '/Shared' . $parent['file_target'];
@@ -401,16 +395,16 @@ class Hooks {
 	 */
 	public static function postUnshare($params) {
 
-		if (\OCP\App::isEnabled('files_encryption') === false) {
-			return true;
-		}
-
 		// NOTE: $params has keys:
 		// [itemType] => file
 		// [itemSource] => 13
 		// [shareType] => 0
 		// [shareWith] => test1
 		// [itemParent] =>
+
+		if (\OCP\App::isEnabled('files_encryption') === false) {
+			return true;
+		}
 
 		if ($params['itemType'] === 'file' || $params['itemType'] === 'folder') {
 
@@ -585,16 +579,29 @@ class Hooks {
 	}
 
 	/**
-	 * set migration status back to '0' so that all new files get encrypted
+	 * set migration status and the init status back to '0' so that all new files get encrypted
 	 * if the app gets enabled again
 	 * @param array $params contains the app ID
 	 */
 	public static function preDisable($params) {
-		if (\OCP\App::isEnabled('files_encryption')) {
-			if ($params['app'] === 'files_encryption') {
-				$query = \OC_DB::prepare('UPDATE `*PREFIX*encryption` SET `migration_status`=0');
-				$query->execute();
-			}
+		if ($params['app'] === 'files_encryption') {
+
+			$setMigrationStatus = \OC_DB::prepare('UPDATE `*PREFIX*encryption` SET `migration_status`=0');
+			$setMigrationStatus->execute();
+
+			$session = new \OCA\Encryption\Session(new \OC\Files\View('/'));
+			$session->setInitialized(\OCA\Encryption\Session::NOT_INITIALIZED);
+		}
+	}
+
+	/**
+	 * set the init status to 'NOT_INITIALIZED' (0) if the app gets enabled
+	 * @param array $params contains the app ID
+	 */
+	public static function postEnable($params) {
+		if ($params['app'] === 'files_encryption') {
+			$session = new \OCA\Encryption\Session(new \OC\Files\View('/'));
+			$session->setInitialized(\OCA\Encryption\Session::NOT_INITIALIZED);
 		}
 	}
 

@@ -98,7 +98,7 @@ class smb {
 			'^(.*): ERRSRV - ERRbadpw' => 'error',
 			'^Error returning browse list: (.*)$' => 'error',
 			'^tree connect failed: (.*)$' => 'error',
-			'^(Connection to .* failed)$' => 'error',
+			'^(Connection to .* failed)(.*)$' => 'error-connect',
 			'^NT_STATUS_(.*) ' => 'error',
 			'^NT_STATUS_(.*)\$' => 'error',
 			'ERRDOS - ERRbadpath \((.*).\)' => 'error',
@@ -181,12 +181,12 @@ class smb {
 						return false;
 					}elseif(substr($regs[0],0,31)=='NT_STATUS_OBJECT_PATH_NOT_FOUND'){
 						return false;
-					}elseif(substr($regs[0],0,31)=='NT_STATUS_OBJECT_NAME_NOT_FOUND'){
-						return false;
 					}elseif(substr($regs[0],0,29)=='NT_STATUS_FILE_IS_A_DIRECTORY'){
 						return false;
 					}
 					trigger_error($regs[0].' params('.$params.')', E_USER_ERROR);
+				case 'error-connect':
+					return false;
 			}
 			if ($i) switch ($i[1]) {
 				case 'file':
@@ -216,7 +216,7 @@ class smb {
 		if ($s = smb::getstatcache($url)) {
 			return $s;
 		}
-		list ($stat, $pu) = array (array (), smb::parse_url ($url));
+		list ($stat, $pu) = array (false, smb::parse_url ($url));
 		switch ($pu['type']) {
 			case 'host':
 				if ($o = smb::look ($pu))
@@ -305,8 +305,7 @@ class smb {
 			trigger_error('rename(): error in URL', E_USER_ERROR);
 		}
 		smb::clearstatcache ($url_from);
-		$result = smb::execute ('rename "'.$from['path'].'" "'.$to['path'].'"', $to);
-		return $result !== false;
+		return smb::execute ('rename "'.$from['path'].'" "'.$to['path'].'"', $to);
 	}
 
 	function mkdir ($url, $mode, $options) {
@@ -431,10 +430,7 @@ class smb_stream_wrapper extends smb {
 			case 'rb':
 			case 'a':
 			case 'a+':  $this->tmpfile = tempnam('/tmp', 'smb.down.');
-				$result = smb::execute ('get "'.$pu['path'].'" "'.$this->tmpfile.'"', $pu);
-				if($result === false){
-					return $result;
-				}
+				smb::execute ('get "'.$pu['path'].'" "'.$this->tmpfile.'"', $pu);
 				break;
 			case 'w':
 			case 'w+':

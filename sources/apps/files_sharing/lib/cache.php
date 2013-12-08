@@ -45,9 +45,9 @@ class Shared_Cache extends Cache {
 		$source = \OC_Share_Backend_File::getSource($target);
 		if (isset($source['path']) && isset($source['fileOwner'])) {
 			\OC\Files\Filesystem::initMountPoints($source['fileOwner']);
-			$mount = \OC\Files\Mount::findByNumericId($source['storage']);
-			if ($mount) {
-				$fullPath = $mount->getMountPoint().$source['path'];
+			$mount = \OC\Files\Filesystem::getMountByNumericId($source['storage']);
+			if (is_array($mount)) {
+				$fullPath = $mount[key($mount)]->getMountPoint().$source['path'];
 				list($storage, $internalPath) = \OC\Files\Filesystem::resolvePath($fullPath);
 				if ($storage) {
 					$this->files[$target] = $internalPath;
@@ -59,6 +59,14 @@ class Shared_Cache extends Cache {
 			}
 		}
 		return false;
+	}
+
+	public function getNumericStorageId() {
+		if (isset($this->numericId)) {
+			return $this->numericId;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -91,9 +99,13 @@ class Shared_Cache extends Cache {
 			$data['fileid'] = (int)$data['fileid'];
 			$data['size'] = (int)$data['size'];
 			$data['mtime'] = (int)$data['mtime'];
+			$data['storage_mtime'] = (int)$data['storage_mtime'];
 			$data['encrypted'] = (bool)$data['encrypted'];
 			$data['mimetype'] = $this->getMimetype($data['mimetype']);
 			$data['mimepart'] = $this->getMimetype($data['mimepart']);
+			if ($data['storage_mtime'] === 0) {
+				$data['storage_mtime'] = $data['mtime'];
+			}
 			return $data;
 		}
 		return false;
@@ -225,10 +237,7 @@ class Shared_Cache extends Cache {
 		// normalize pattern
 		$value = $this->normalize($pattern);
 
-		// we have one ? in our where clause
-		$chunksize = self::MAX_SQL_CHUNK_SIZE - 1; 
-
-		return $this->searchWithWhere($where, $value, $chunksize);
+		return $this->searchWithWhere($where, $value);
 
 	}
 
@@ -247,20 +256,18 @@ class Shared_Cache extends Cache {
 		}
 
 		$value = $this->getMimetypeId($mimetype);
-		
-		// we have one ? in our where clause
-		$chunksize = self::MAX_SQL_CHUNK_SIZE - 1; 
-		
-		return $this->searchWithWhere($where, $value, $chunksize);
+
+		return $this->searchWithWhere($where, $value);
 
 	}
 	
 	/**
 	 * The maximum number of placeholders that can be used in an SQL query.
-	 * Value MUST be < 1000.
-	 * Also see ORA-01795 maximum number of expressions in a list is 1000
+	 * Value MUST be <= 1000 for oracle:
+	 * see ORA-01795 maximum number of expressions in a list is 1000
+	 * FIXME we should get this from doctrine as other DBs allow a lot more placeholders
 	 */
-	const MAX_SQL_CHUNK_SIZE = 999;
+	const MAX_SQL_CHUNK_SIZE = 1000;
 	
 	/**
 	 * search for files with a custom where clause and value
@@ -275,18 +282,18 @@ class Shared_Cache extends Cache {
 		$ids = $this->getAll();
 
 		$files = array();
-
-		// divide into 1k chunks
+		
+		// divide into chunks
 		$chunks = array_chunk($ids, $chunksize);
-
+		
 		foreach ($chunks as $chunk) {
 			$placeholders = join(',', array_fill(0, count($chunk), '?'));
 			$sql = 'SELECT `fileid`, `storage`, `path`, `parent`, `name`, `mimetype`, `mimepart`, `size`, `mtime`,
 					`encrypted`, `unencrypted_size`, `etag`
 					FROM `*PREFIX*filecache` WHERE ' . $sqlwhere . ' `fileid` IN (' . $placeholders . ')';
-
-			$stmt = \OC_DB::prepare($sql);
 			
+			$stmt = \OC_DB::prepare($sql);
+
 			$result = $stmt->execute(array_merge(array($wherevalue), $chunk));
 
 			while ($row = $result->fetchRow()) {
@@ -334,6 +341,19 @@ class Shared_Cache extends Cache {
 		}
 
 		return $ids;
+	}
+
+	/**
+	 * find a folder in the cache which has not been fully scanned
+	 *
+	 * If multiply incomplete folders are in the cache, the one with the highest id will be returned,
+	 * use the one with the highest id gives the best result with the background scanner, since that is most
+	 * likely the folder where we stopped scanning previously
+	 *
+	 * @return string|bool the path of the folder or false when no folder matched
+	 */
+	public function getIncomplete() {
+		return false;
 	}
 
 }
