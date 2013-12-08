@@ -31,7 +31,7 @@
             {
                 "name": "admin",
                 "ask": {
-                    "en": "Choose the Owncloud administrator (must be an existing YunoHost user)",
+                    "en": "Choose the Owncloud administrator (must be an existing YunoHost user)"
                 },
                 "example": "homer"
             }
