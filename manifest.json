@@ -34,12 +34,6 @@
                     "en": "Choose the Owncloud administrator (must be an existing YunoHost user)"
                 },
                 "example": "homer"
-            },
-            {
-                "name": "password",
-                "ask": {
-                    "en": "Owncloud administrator password (for this existing YunoHost user)"
-                }
             }
         ]
     }
