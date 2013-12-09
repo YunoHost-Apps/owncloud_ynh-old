@@ -49,6 +49,7 @@ sudo cp -a ../sources/* $final_path
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo cp ../conf/php-fpm.conf /etc/php5/fpm/pool.d/owncloud.conf
 sudo cp ../conf/php-fpm.ini /etc/php5/fpm/conf.d/20-owncloud.ini
+sudo cp ../conf/mount.json $data_path
 
 # Change variables in Owncloud configuration
 sudo sed -i "s@PATHTOCHANGE@$path@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
@@ -63,7 +64,6 @@ do
     then
         sudo setfacl -m g:owncloud:rwx /home/$i
         sudo mkdir $data_path/$i
-        echo "{\"user\":{\"$i\":{\"/\$user/files/Local\":{\"class\":\"\\OC\\Files\\Storage\\Local\",\"options\":{\"datadir\":\"/home/$i\"}}}}}" | sudo tee $data_path/$i/mount.json
     fi
 done
 sudo chown -hR owncloud: $final_path
