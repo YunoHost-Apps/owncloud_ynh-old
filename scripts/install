@@ -12,11 +12,6 @@ if [[ ! $? -eq 0 ]]; then
     exit 1
 fi
 
-if [[ $password == "" ]]; then
-    echo "Wrong password"
-    exit 1
-fi
-
 # Check domain/path availability
 sudo yunohost app checkurl $domain$path -a owncloud
 if [[ ! $? -eq 0 ]]; then
