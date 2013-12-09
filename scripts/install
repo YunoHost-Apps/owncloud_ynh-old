@@ -100,7 +100,7 @@ done
 mysql -u $db_user -p$db_pwd $db_user < ../conf/ldap_config.sql
 
 # Make an LDAP user as admin
-mysql -u $db_user -p$db_pwd $db_user -e "INSERT INTO `oc_group_user` VALUES ('admin','$user');"
+mysql -u $db_user -p$db_pwd $db_user -e "INSERT INTO oc_group_user VALUES ('admin','$user');"
 
 # Unprotect URIs
 sudo yunohost app setting owncloud skipped_uris -v "/public.php,/core,/apps/files,/index.php/apps/files"
