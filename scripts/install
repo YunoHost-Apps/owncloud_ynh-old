@@ -25,7 +25,7 @@ if [[ ! $? -eq 0 ]]; then
 fi
 
 # Install dependencies
-sudo apt-get install acl smbclient
+sudo apt-get install acl smbclient -y -qq
 
 # Generate random password
 db_pwd=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{24\}\).*/\1/p')
