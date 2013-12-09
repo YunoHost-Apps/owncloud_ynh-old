@@ -63,7 +63,7 @@ do
     then
         sudo setfacl -m g:owncloud:rwx /home/$i
         sudo mkdir $data_path/$i
-        echo "{\"user\":{\"$i\":{\"/\$user/files/Home\":{\"class\":\"\\OC\\Files\\Storage\\Local\",\"options\":{\"datadir\":\"/home/$i\"}}}}}" | sudo tee $data_path/$i/mount.json
+        echo "{\"user\":{\"$i\":{\"/\$user/files/Local\":{\"class\":\"\\OC\\Files\\Storage\\Local\",\"options\":{\"datadir\":\"/home/$i\"}}}}}" | sudo tee $data_path/$i/mount.json
     fi
 done
 sudo chown -hR owncloud: $final_path
