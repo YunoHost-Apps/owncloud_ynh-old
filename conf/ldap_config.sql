@@ -1,30 +1,31 @@
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_uuid_attribute', 'auto');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_host', 'localhost');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_port', '389');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_base', 'dc=yunohost,dc=org');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_base_users', 'dc=yunohost,dc=org');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_base_groups', 'dc=yunohost,dc=org');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_tls', '0');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_display_name', 'cn');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_userlist_filter', 'objectClass=mailAccount');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_group_filter', 'objectClass=posixGroup');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_group_display_name', 'cn');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_group_member_assoc_attribute', 'uniqueMember');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_login_filter', '(&(|(objectclass=mailAccount))(uid=%uid))');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_quota_attr', 'mailQuota');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_quota_def', '');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_email_attr', 'mail');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_cache_ttl', '600');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_configuration_active', '1');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'home_folder_naming_rule', '');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_backup_host', '');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_dn', '');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_agent_password', '');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_backup_port', '');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_nocase', '');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_turn_off_cert_check', '');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_override_main_server', '');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_attributes_for_user_search', '');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_attributes_for_group_search', '');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_expert_username_attr', 'uid');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_expert_uuid_attr', '');
+INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES
+('user_ldap', 'ldap_uuid_attribute', 'auto'),
+('user_ldap', 'ldap_host', 'localhost'),
+('user_ldap', 'ldap_port', '389'),
+('user_ldap', 'ldap_base', 'dc=yunohost,dc=org'),
+('user_ldap', 'ldap_base_users', 'dc=yunohost,dc=org'),
+('user_ldap', 'ldap_base_groups', 'dc=yunohost,dc=org'),
+('user_ldap', 'ldap_tls', '0'),
+('user_ldap', 'ldap_display_name', 'cn'),
+('user_ldap', 'ldap_userlist_filter', 'objectClass=mailAccount'),
+('user_ldap', 'ldap_group_filter', 'objectClass=posixGroup'),
+('user_ldap', 'ldap_group_display_name', 'cn'),
+('user_ldap', 'ldap_group_member_assoc_attribute', 'uniqueMember'),
+('user_ldap', 'ldap_login_filter', '(&(|(objectclass=mailAccount))(uid=%uid))'),
+('user_ldap', 'ldap_quota_attr', 'mailQuota'),
+('user_ldap', 'ldap_quota_def', ''),
+('user_ldap', 'ldap_email_attr', 'mail'),
+('user_ldap', 'ldap_cache_ttl', '600'),
+('user_ldap', 'ldap_configuration_active', '1'),
+('user_ldap', 'home_folder_naming_rule', ''),
+('user_ldap', 'ldap_backup_host', ''),
+('user_ldap', 'ldap_dn', ''),
+('user_ldap', 'ldap_agent_password', ''),
+('user_ldap', 'ldap_backup_port', ''),
+('user_ldap', 'ldap_nocase', ''),
+('user_ldap', 'ldap_turn_off_cert_check', ''),
+('user_ldap', 'ldap_override_main_server', ''),
+('user_ldap', 'ldap_attributes_for_user_search', ''),
+('user_ldap', 'ldap_attributes_for_group_search', ''),
+('user_ldap', 'ldap_expert_username_attr', 'uid'),
+('user_ldap', 'ldap_expert_uuid_attr', '');
