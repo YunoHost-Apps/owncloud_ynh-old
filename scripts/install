@@ -4,11 +4,17 @@
 domain=$1
 path=$2
 user=$3
+password=$4
 
 # Check user parameter
 ls /home | grep $user
 if [[ ! $? -eq 0 ]]; then
     echo "Wrong user"
+    exit 1
+fi
+
+if [[ $password == "" ]]; then
+    echo "Wrong password"
     exit 1
 fi
 
@@ -72,12 +78,12 @@ sudo yunohost app ssowatconf
 # Owncloud installation via curl
 echo "127.0.0.1 $domain #yunoowncloud" | sudo tee -a /etc/hosts
 sleep 1
-curl -kL -X POST https://$domain$path/index.php --data "install=true&adminlogin=$user&adminpass=$db_pwd&directory=/home/yunohost.app/owncloud/data&dbtype=mysql&dbuser=$db_user&dbpass=$db_pwd&dbname=$db_user&dbhost=localhost" > /dev/null 2>&1
+curl -kL -X POST https://$domain$path/index.php --data "install=true&adminlogin=$user&adminpass=$password&directory=/home/yunohost.app/owncloud/data&dbtype=mysql&dbuser=$db_user&dbpass=$db_pwd&dbname=$db_user&dbhost=localhost" > /dev/null 2>&1
 
 # Enable plugins
 sleep 5
-curl -kL -X POST https://$domain$path/index.php/settings/ajax/enableapp.php --data "appid=files_external" -u "$user:$db_pwd" > /dev/null 2>&1
-curl -kL -X POST https://$domain$path/index.php/settings/ajax/enableapp.php --data "appid=user_ldap" -u "$user:$db_pwd" > /dev/null 2>&1
+curl -kL -X POST https://$domain$path/index.php/settings/ajax/enableapp.php --data "appid=files_external" -u "$user:$password" > /dev/null 2>&1
+curl -kL -X POST https://$domain$path/index.php/settings/ajax/enableapp.php --data "appid=user_ldap" -u "$user:$password" > /dev/null 2>&1
 
 # Check if the Mysql database is initialized & running
 mysql -u $db_user -p$db_pwd $db_user -e "select * from oc_appconfig;" > /dev/null 2>&1
