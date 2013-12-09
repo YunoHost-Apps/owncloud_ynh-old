@@ -10,7 +10,7 @@ INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'l
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_group_filter', 'objectClass=posixGroup');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_group_display_name', 'cn');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_group_member_assoc_attribute', 'uniqueMember');
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_login_filter', 'uid=%uid');
+INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_login_filter', '(&(|(objectclass=mailAccount))(uid=%uid))');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_quota_attr', 'mailQuota');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_quota_def', '');
 INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES ('user_ldap', 'ldap_email_attr', 'mail');
