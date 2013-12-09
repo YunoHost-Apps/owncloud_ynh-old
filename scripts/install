@@ -53,7 +53,7 @@ sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/php5/fpm/pool.d/owncloud.conf
 sudo sed -i "s@NAMETOCHANGE@owncloud@g" ../hooks/post_user_create
 
 # Add hooks
-sudo yunohost hook add post_user_create ../hooks/post_user_create "50-owncloud"
+sudo yunohost hook add post_user_create ../hooks/post_user_create --name "50-owncloud"
 
 # Set permissions to owncloud directories and /home directories + add Home external storage
 for i in $(ls /home)
