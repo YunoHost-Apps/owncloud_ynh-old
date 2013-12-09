@@ -8,6 +8,7 @@ domain=$(sudo yunohost app setting owncloud domain)
 mysql -u root -p$root_pwd -e "DROP DATABASE $db_name ; DROP USER $db_user@localhost ;"
 sudo rm -rf /var/www/owncloud
 sudo rm -rf /home/yunohost.app/owncloud
+sudo rm -f /usr/share/yunohost/hooks/post_user_create/50-owncloud
 sudo rm -f /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo rm -f /etc/php5/fpm/pool.d/owncloud.conf
 sudo service php5-fpm restart

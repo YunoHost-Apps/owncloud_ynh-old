@@ -56,6 +56,10 @@ sudo sed -i "s@PATHTOCHANGE@$path@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo sed -i "s@ALIASTOCHANGE@$final_path/@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/php5/fpm/pool.d/owncloud.conf
+sudo sed -i "s@NAMETOCHANGE@owncloud@g" ../hooks/post_user_create
+
+# Add hooks
+sudo yunohost hook add post_user_create ../hooks/post_user_create "50-owncloud"
 
 # Set permissions to owncloud directories and /home directories + add Home external storage
 for i in $(ls /home)
