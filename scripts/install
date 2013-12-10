@@ -11,6 +11,7 @@ if [[ ! $? -eq 0 ]]; then
     echo "Wrong user"
     exit 1
 fi
+sudo yunohost app setting owncloud admin_user -v $user
 
 # Check domain/path availability
 sudo yunohost app checkurl $domain$path -a owncloud

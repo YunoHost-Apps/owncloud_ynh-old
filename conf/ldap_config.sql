@@ -1,4 +1,4 @@
-INSERT INTO oc_appconfig (appid, configkey, configvalue) VALUES
+REPLACE INTO oc_appconfig (appid, configkey, configvalue) VALUES
 ('user_ldap', 'ldap_uuid_attribute', 'auto'),
 ('user_ldap', 'ldap_host', 'localhost'),
 ('user_ldap', 'ldap_port', '389'),

@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# Retrieve arguments
+domain=$(sudo yunohost app setting owncloud domain)
+path=$(sudo yunohost app setting owncloud path)
+#user=$(sudo yunohost app setting owncloud admin_user)
+db_pwd=$(sudo yunohost app setting owncloud mysqlpwd)
+
+# Install dependencies
+#sudo apt-get install acl smbclient -y -qq
+
+# Use 'owncloud' as database name and user
+db_user=owncloud
+
+# Copy files to the right place
+final_path=/var/www/owncloud
+data_path=/home/yunohost.app/owncloud/data
+sudo mkdir -p $final_path
+sudo mkdir -p $data_path
+sudo cp -a ../sources/* $final_path
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/owncloud.conf
+sudo cp ../conf/php-fpm.conf /etc/php5/fpm/pool.d/owncloud.conf
+sudo cp ../conf/php-fpm.ini /etc/php5/fpm/conf.d/20-owncloud.ini
+sudo cp ../conf/mount.json $data_path
+
+# Change variables in Owncloud configuration
+sudo sed -i "s@PATHTOCHANGE@$path@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
+sudo sed -i "s@ALIASTOCHANGE@$final_path/@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
+sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
+sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/php5/fpm/pool.d/owncloud.conf
+
+# Change permission on owncloud directories
+sudo chown -hR owncloud: $final_path
+sudo chown -hR owncloud: $data_path
+
+# Reload Nginx and regenerate SSOwat conf
+sudo service php5-fpm restart
+sudo service nginx reload
+sudo yunohost app setting owncloud skipped_uris -v "/"
+sudo yunohost app ssowatconf
+
+# Optionnal DB upgrade here
+
+# Configure LDAP plugin
+mysql -u $db_user -p$db_pwd $db_user < ../conf/ldap_config.sql
+
+# Unprotect URIs
+sudo yunohost app setting owncloud skipped_uris -v "/public.php,/core,/apps/files,/index.php/apps/files"
+sudo yunohost app setting owncloud unprotected_uris -v "/remote.php,/cron.php,/status.php"
+sudo yunohost app ssowatconf
