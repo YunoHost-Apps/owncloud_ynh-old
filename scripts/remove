@@ -10,6 +10,13 @@ sudo rm -rf /var/www/owncloud
 sudo rm -rf /home/yunohost.app/owncloud
 sudo rm -f /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo rm -f /etc/php5/fpm/pool.d/owncloud.conf
+for i in $(ls /home)
+do
+    if [[ ! $i == yunohost.* ]];
+    then
+        sudo setfacl -x g:owncloud:rwx > /dev/null 2>&1
+    fi
+done
 sudo service php5-fpm restart
 sudo userdel owncloud > /dev/null 2>&1
 sudo service nginx reload
