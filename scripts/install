@@ -61,6 +61,7 @@ do
         sudo mkdir $data_path/$i
     fi
 done
+sudo chmod 755 /home/yunohost.app
 sudo chown -hR owncloud: $final_path
 sudo chown -hR owncloud: $data_path
 
