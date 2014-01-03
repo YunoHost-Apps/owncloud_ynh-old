@@ -47,6 +47,7 @@ sudo cp ../conf/php-fpm.ini /etc/php5/fpm/conf.d/20-owncloud.ini
 sudo cp ../conf/mount.json $data_path
 sudo chown -hR owncloud:www-data $final_path
 sudo chown -hR owncloud:www-data $data_path
+sudo chmod 755 /home/yunohost.app
 sudo chmod -R 775 $final_path
 sudo chmod -R 775 $data_path
 
@@ -65,9 +66,6 @@ do
         sudo mkdir $data_path/$i
     fi
 done
-sudo chmod 755 /home/yunohost.app
-sudo chown -hR owncloud: $final_path
-sudo chown -hR owncloud: $data_path
 
 # Reload Nginx and regenerate SSOwat conf
 sudo service php5-fpm restart
