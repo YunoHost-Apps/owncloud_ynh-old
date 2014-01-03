@@ -48,8 +48,8 @@ sudo cp ../conf/mount.json $data_path
 sudo chown -hR owncloud:www-data $final_path
 sudo chown -hR owncloud:www-data $data_path
 sudo chmod 755 /home/yunohost.app
-sudo chmod -R 775 $final_path
-sudo chmod -R 775 $data_path
+sudo chmod -R 770 $final_path
+sudo chmod -R 770 $data_path
 
 # Change variables in Owncloud configuration
 sudo sed -i "s@PATHTOCHANGE@$path@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
