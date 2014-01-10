@@ -50,6 +50,9 @@ mysql -u $db_user -p$db_pwd $db_user < ../conf/ldap_config.sql
 
 sudo chown -hR owncloud:owncloud $final_path
 sudo chown -hR owncloud:owncloud $data_path
+sudo chmod 755 /home/yunohost.app
+sudo chmod -R 770 $data_path
+sudo chmod -R 775 $final_path
 
 # Unprotect URIs
 sudo yunohost app setting owncloud skipped_uris -v "/public.php,/core,/apps/files,/index.php/apps/files"
