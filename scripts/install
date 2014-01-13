@@ -47,6 +47,7 @@ sudo cp ../conf/php-fpm.ini /etc/php5/fpm/conf.d/20-owncloud.ini
 sudo cp ../conf/mount.json $data_path
 sudo chown -hR owncloud:www-data $final_path
 sudo chown -hR owncloud:www-data $data_path
+sudo chown owncloud:www-data /home/yunohost.app/owncloud
 sudo chmod 755 /home/yunohost.app
 sudo chmod -R 775 $final_path
 sudo chmod -R 770 $data_path
