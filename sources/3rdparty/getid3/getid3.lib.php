@@ -521,7 +521,9 @@ class getid3_lib
 	public static function XML2array($XMLstring) {
 		if (function_exists('simplexml_load_string')) {
 			if (function_exists('get_object_vars')) {
+				$loadEntities = libxml_disable_entity_loader(true);
 				$XMLobject = simplexml_load_string($XMLstring);
+				libxml_disable_entity_loader($loadEntities);
 				return self::SimpleXMLelement2array($XMLobject);
 			}
 		}

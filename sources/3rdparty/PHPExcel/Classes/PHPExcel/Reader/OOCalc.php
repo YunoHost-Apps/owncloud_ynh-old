@@ -88,7 +88,9 @@ class PHPExcel_Reader_OOCalc extends PHPExcel_Reader_Abstract implements PHPExce
 			if ($stat && ($stat['size'] <= 255)) {
 				$mimeType = $zip->getFromName($stat['name']);
 			} elseif($stat = $zip->statName('META-INF/manifest.xml')) {
+				$loadEntities = libxml_disable_entity_loader(true);
 		        $xml = simplexml_load_string($zip->getFromName('META-INF/manifest.xml'));
+				libxml_disable_entity_loader($loadEntities);
 		        $namespacesContent = $xml->getNamespaces(true);
 				if (isset($namespacesContent['manifest'])) {
 			        $manifest = $xml->children($namespacesContent['manifest']);
@@ -337,7 +339,9 @@ class PHPExcel_Reader_OOCalc extends PHPExcel_Reader_Abstract implements PHPExce
 		}
 
 //		echo '<h1>Meta Information</h1>';
+		$loadEntities = libxml_disable_entity_loader(true);
 		$xml = simplexml_load_string($zip->getFromName("meta.xml"));
+		libxml_disable_entity_loader($loadEntities);
 		$namespacesMeta = $xml->getNamespaces(true);
 //		echo '<pre>';
 //		print_r($namespacesMeta);
@@ -421,7 +425,9 @@ class PHPExcel_Reader_OOCalc extends PHPExcel_Reader_Abstract implements PHPExce
 
 
 //		echo '<h1>Workbook Content</h1>';
+		$loadEntities = libxml_disable_entity_loader(true);
 		$xml = simplexml_load_string($zip->getFromName("content.xml"));
+		libxml_disable_entity_loader($loadEntities);
 		$namespacesContent = $xml->getNamespaces(true);
 //		echo '<pre>';
 //		print_r($namespacesContent);

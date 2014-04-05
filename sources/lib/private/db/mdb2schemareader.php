@@ -41,7 +41,9 @@ class MDB2SchemaReader {
 	 */
 	public function loadSchemaFromFile($file) {
 		$schema = new \Doctrine\DBAL\Schema\Schema();
+		$loadEntities = libxml_disable_entity_loader(false);
 		$xml = simplexml_load_file($file);
+		libxml_disable_entity_loader($loadEntities);
 		foreach ($xml->children() as $child) {
 			/**
 			 * @var \SimpleXMLElement $child
@@ -176,12 +178,21 @@ class MDB2SchemaReader {
 					$options['default'] = $default;
 					break;
 				case 'comments':
-					$comment = (string)$child;
-					$options['comment'] = $comment;
+					//FIXME for now we ignore comments https://github.com/doctrine/dbal/pull/407
+					//$comment = (string)$child;
+					//$options['comment'] = $comment;
 					break;
 				case 'primary':
 					$primary = $this->asBool($child);
 					$options['primary'] = $primary;
+					break;
+				case 'precision':
+					$precision = (string)$child;
+					$options['precision'] = $precision;
+					break;
+				case 'scale':
+					$scale = (string)$child;
+					$options['scale'] = $scale;
 					break;
 				default:
 					throw new \DomainException('Unknown element: ' . $child->getName());

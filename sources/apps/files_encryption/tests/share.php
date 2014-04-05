@@ -127,6 +127,7 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 		\OC_User::deleteUser(\Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER4);
 	}
 
+
 	/**
 	 * @medium
 	 * @param bool $withTeardown
@@ -194,8 +195,9 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 				. $this->filename . '.' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2 . '.shareKey'));
 
 			// cleanup
-			$this->view->unlink(
-				'/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files/' . $this->filename);
+			$this->view->chroot('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files/');
+			$this->view->unlink($this->filename);
+			$this->view->chroot('/');
 
 			// check if share key not exists
 			$this->assertFalse($this->view->file_exists(
@@ -265,8 +267,9 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 				. $this->filename . '.' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2 . '.shareKey'));
 
 			// cleanup
-			$this->view->unlink(
-				'/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files/' . $this->filename);
+			$this->view->chroot('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files/');
+			$this->view->unlink($this->filename);
+			$this->view->chroot('/');
 
 			// check if share key not exists
 			$this->assertFalse($this->view->file_exists(
@@ -352,7 +355,9 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 				. $this->filename . '.' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2 . '.shareKey'));
 
 			// cleanup
-			$this->view->unlink('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files' . $this->folder1);
+			$this->view->chroot('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files');
+			$this->view->unlink($this->folder1);
+			$this->view->chroot('/');
 
 			// check if share key not exists
 			$this->assertFalse($this->view->file_exists(
@@ -482,9 +487,9 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 				. $this->filename . '.' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2 . '.shareKey'));
 
 			// cleanup
-			$this->view->unlink(
-				'/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files' . $this->folder1 . $this->subfolder
-				. $this->subsubfolder . '/' . $this->filename);
+			$this->view->chroot('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files');
+			$this->view->unlink($this->folder1 . $this->subfolder . $this->subsubfolder . '/' . $this->filename);
+			$this->view->chroot('/');
 
 			// check if share key not exists
 			$this->assertFalse($this->view->file_exists(
@@ -493,6 +498,7 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 				. $this->filename . '.' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '.shareKey'));
 		}
 	}
+
 
 	function testPublicShareFile() {
 		// login as admin
@@ -559,7 +565,9 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 			. $this->filename . '.' . $publicShareKeyId . '.shareKey'));
 
 		// cleanup
-		$this->view->unlink('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files/' . $this->filename);
+		$this->view->chroot('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files/');
+		$this->view->unlink($this->filename);
+		$this->view->chroot('/');
 
 		// check if share key not exists
 		$this->assertFalse($this->view->file_exists(
@@ -636,7 +644,9 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 			. $this->filename . '.' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER4 . '.shareKey'));
 
 		// cleanup
-		$this->view->unlink('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files/' . $this->filename);
+		$this->view->chroot('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files/');
+		$this->view->unlink($this->filename);
+		$this->view->chroot('/');
 
 		// check if share key not exists
 		$this->assertFalse($this->view->file_exists(
@@ -649,9 +659,7 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 	 * @large
 	 */
 	function testRecoveryFile() {
-		$this->markTestIncomplete(
-				'No idea what\'s wrong here, this works perfectly in real-world. removeRecoveryKeys(\'/\') L709 removes correctly the keys, but for some reasons afterwards also the top-level folder "share-keys" is gone...'
-				);
+
 		// login as admin
 		\Test_Encryption_Util::loginHelper(\Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1);
 
@@ -733,8 +741,10 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 			. $this->filename . '.' . $recoveryKeyId . '.shareKey'));
 
 		// cleanup
-		$this->view->unlink('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files/' . $this->filename);
-		$this->view->unlink('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files/' . $this->folder1);
+		$this->view->chroot('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files/');
+		$this->view->unlink($this->filename);
+		$this->view->unlink($this->folder1);
+		$this->view->chroot('/');
 
 		// check if share key for recovery not exists
 		$this->assertFalse($this->view->file_exists(
@@ -754,13 +764,13 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 	 * @large
 	 */
 	function testRecoveryForUser() {
-		$this->markTestIncomplete(
-				'This test drives Jenkins crazy - "Cannot modify header information - headers already sent" - line 811'
-		);
+
 		// login as admin
 		\Test_Encryption_Util::loginHelper(\Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1);
 
-		\OCA\Encryption\Helper::adminEnableRecovery(null, 'test123');
+		$result = \OCA\Encryption\Helper::adminEnableRecovery(null, 'test123');
+		$this->assertTrue($result);
+
 		$recoveryKeyId = OC_Appconfig::getValue('files_encryption', 'recoveryKeyId');
 
 		// login as user2
@@ -770,6 +780,9 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 
 		// enable recovery for admin
 		$this->assertTrue($util->setRecoveryForUser(1));
+
+		// add recovery keys for existing files (e.g. the auto-generated welcome.txt)
+		$util->addRecoveryKeys();
 
 		// create folder structure
 		$this->view->mkdir('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2 . '/files' . $this->folder1);
@@ -809,6 +822,10 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 
 		// change password
 		\OC_User::setPassword(\Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2, 'test', 'test123');
+		$params = array('uid' => \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2,
+			'password' => 'test',
+			'recoveryPassword' => 'test123');
+		\OCA\Encryption\Hooks::setPassphrase($params);
 
 		// login as user2
 		\Test_Encryption_Util::loginHelper(\Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2, false, 'test');
@@ -823,8 +840,10 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals($this->dataShort, $retrievedCryptedFile2);
 
 		// cleanup
-		$this->view->unlink('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2 . '/files' . $this->folder1);
-		$this->view->unlink('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2 . '/files' . $this->filename);
+		$this->view->chroot('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2 . '/files/');
+		$this->view->unlink($this->folder1);
+		$this->view->unlink($this->filename);
+		$this->view->chroot('/');
 
 		// check if share key for user and recovery exists
 		$this->assertFalse($this->view->file_exists(
@@ -842,11 +861,21 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 			. $this->subfolder . $this->subsubfolder . '/'
 			. $this->filename . '.' . $recoveryKeyId . '.shareKey'));
 
-		// enable recovery for admin
+
+		// disable recovery for admin
 		$this->assertTrue($util->setRecoveryForUser(0));
 
 		\OCA\Encryption\Helper::adminDisableRecovery('test123');
+
 		$this->assertEquals(0, \OC_Appconfig::getValue('files_encryption', 'recoveryAdminEnabled'));
+
+		//clean up, reset passwords
+		\OC_User::setPassword(\Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2, \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2, 'test123');
+		$params = array('uid' => \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2,
+			'password' => \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2,
+			'recoveryPassword' => 'test123');
+		\OCA\Encryption\Hooks::setPassphrase($params);
+
 	}
 
 	/**
@@ -889,8 +918,8 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 		} catch (Exception $e) {
 			$this->assertEquals(0, strpos($e->getMessage(), "Following users are not set up for encryption"));
 		}
-		
-		
+
+
 		// login as admin
 		\Test_Encryption_Util::loginHelper(\Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1);
 
@@ -925,7 +954,70 @@ class Test_Encryption_Share extends \PHPUnit_Framework_TestCase {
 			. $this->filename . '.' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER3 . '.shareKey'));
 
 		// cleanup
-		$this->view->unlink('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files/' . $this->filename);
+		$this->view->chroot('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files/');
+		$this->view->unlink($this->filename);
+		$this->view->chroot('/');
+	}
+
+
+	/**
+	 * @brief test moving a shared file out of the Shared folder
+	 */
+	function testRename() {
+
+		// login as admin
+		\Test_Encryption_Util::loginHelper(\Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1);
+
+		// save file with content
+		$cryptedFile = file_put_contents('crypt:///' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files/' . $this->filename, $this->dataShort);
+
+		// test that data was successfully written
+		$this->assertTrue(is_int($cryptedFile));
+
+		// get the file info from previous created file
+		$fileInfo = $this->view->getFileInfo(
+			'/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files/' . $this->filename);
+
+		// check if we have a valid file info
+		$this->assertTrue(is_array($fileInfo));
+
+		// share the file
+		\OCP\Share::shareItem('file', $fileInfo['fileid'], \OCP\Share::SHARE_TYPE_USER, \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2, OCP\PERMISSION_ALL);
+
+		// check if share key for user2exists
+		$this->assertTrue($this->view->file_exists(
+			'/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files_encryption/share-keys/'
+			. $this->filename . '.' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2 . '.shareKey'));
+
+
+		// login as user2
+		\Test_Encryption_Util::loginHelper(\Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2);
+
+		$this->assertTrue($this->view->file_exists('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2 . '/files/Shared/' . $this->filename));
+
+		// get file contents
+		$retrievedCryptedFile = $this->view->file_get_contents(
+			'/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2 . '/files/Shared/' . $this->filename);
+
+		// check if data is the same as we previously written
+		$this->assertEquals($this->dataShort, $retrievedCryptedFile);
+
+		// move the file out of the shared folder
+		$this->view->rename('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2 . '/files/Shared/' . $this->filename,
+				'/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2 . '/files/' . $this->filename);
+
+		// check if we can read the moved file
+		$retrievedRenamedFile = $this->view->file_get_contents(
+			'/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2 . '/files/' . $this->filename);
+
+		// check if data is the same as we previously written
+		$this->assertEquals($this->dataShort, $retrievedRenamedFile);
+
+		// the owners file should be deleted
+		$this->assertFalse($this->view->file_exists('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER1 . '/files/' . $this->filename));
+
+		// cleanup
+		$this->view->unlink('/' . \Test_Encryption_Share::TEST_ENCRYPTION_SHARE_USER2 . '/files/' . $this->filename);
 	}
 
 }

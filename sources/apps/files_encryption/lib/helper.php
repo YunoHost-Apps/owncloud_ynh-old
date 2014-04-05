@@ -59,7 +59,10 @@ class Helper {
 	 */
 	public static function registerFilesystemHooks() {
 
+		\OCP\Util::connectHook('OC_Filesystem', 'rename', 'OCA\Encryption\Hooks', 'preRename');
 		\OCP\Util::connectHook('OC_Filesystem', 'post_rename', 'OCA\Encryption\Hooks', 'postRename');
+		\OCP\Util::connectHook('OC_Filesystem', 'post_delete', 'OCA\Encryption\Hooks', 'postDelete');
+		\OCP\Util::connectHook('OC_Filesystem', 'delete', 'OCA\Encryption\Hooks', 'preDelete');
 	}
 
 	/**
@@ -274,7 +277,7 @@ class Helper {
 		$split = explode('/', $trimmed);
 
 		// it is not a file relative to data/user/files
-		if (count($split) < 2 || $split[1] !== 'files') {
+		if (count($split) < 2 || ($split[1] !== 'files' && $split[1] !== 'cache')) {
 			return false;
 		}
 

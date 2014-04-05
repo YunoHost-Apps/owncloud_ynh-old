@@ -44,8 +44,10 @@ class Test_Encryption_Proxy extends \PHPUnit_Framework_TestCase {
 	/**
 	 * @var \OC_FilesystemView
 	 */
-	public $view;
+	public $view;     // view in /data/user/files
+	public $rootView; // view on /data/user
 	public $data;
+	public $filename;
 
 	public static function setUpBeforeClass() {
 		// reset backend
@@ -74,9 +76,12 @@ class Test_Encryption_Proxy extends \PHPUnit_Framework_TestCase {
 
 		// init filesystem view
 		$this->view = new \OC_FilesystemView('/'. \Test_Encryption_Proxy::TEST_ENCRYPTION_PROXY_USER1 . '/files');
+		$this->rootView = new \OC_FilesystemView('/'. \Test_Encryption_Proxy::TEST_ENCRYPTION_PROXY_USER1 );
 
 		// init short data
 		$this->data = 'hats';
+		$this->filename = 'enc_proxy_tests-' . uniqid() . '.txt';
+
 	}
 
 	public static function tearDownAfterClass() {
@@ -90,20 +95,20 @@ class Test_Encryption_Proxy extends \PHPUnit_Framework_TestCase {
 	 */
 	function testPostFileSize() {
 
-		// generate filename
-		$filename = 'tmp-' . time() . '.txt';
-
-		$this->view->file_put_contents($filename, $this->data);
+		$this->view->file_put_contents($this->filename, $this->data);
 
 		\OC_FileProxy::$enabled = false;
 
-		$unencryptedSize = $this->view->filesize($filename);
+		$unencryptedSize = $this->view->filesize($this->filename);
 
 		\OC_FileProxy::$enabled = true;
 
-		$encryptedSize = $this->view->filesize($filename);
+		$encryptedSize = $this->view->filesize($this->filename);
 
 		$this->assertTrue($encryptedSize !== $unencryptedSize);
+
+		// cleanup
+		$this->view->unlink($this->filename);
 
 	}
 

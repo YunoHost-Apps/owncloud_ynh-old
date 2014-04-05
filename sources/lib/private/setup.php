@@ -65,6 +65,7 @@ class OC_Setup {
 		OC_Config::setValue('passwordsalt', $salt);
 
 		//write the config file
+		OC_Config::setValue('trusted_domains', array(OC_Request::serverHost())); 
 		OC_Config::setValue('datadirectory', $datadir);
 		OC_Config::setValue('dbtype', $dbtype);
 		OC_Config::setValue('version', implode('.', OC_Util::getVersion()));
@@ -159,6 +160,9 @@ class OC_Setup {
 		$content.= "</IfModule>\n";
 		$content.= "AddDefaultCharset utf-8\n";
 		$content.= "Options -Indexes\n";
+		$content.= "<IfModule pagespeed_module>\n";
+		$content.= "ModPagespeed Off\n";
+		$content.= "</IfModule>\n";
 		@file_put_contents(OC::$SERVERROOT.'/.htaccess', $content); //supress errors in case we don't have permissions for it
 
 		self::protectDataDirectory();

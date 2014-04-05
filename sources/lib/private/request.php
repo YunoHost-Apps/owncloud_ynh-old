@@ -7,6 +7,11 @@
  */
 
 class OC_Request {
+
+	const USER_AGENT_IE = '/MSIE/';
+	// Android Chrome user agent: https://developers.google.com/chrome/mobile/docs/user-agent
+	const USER_AGENT_ANDROID_MOBILE_CHROME = '#Android.*Chrome/[.0-9]*#';
+
 	/**
 	 * @brief Check overwrite condition
 	 * @param string $type
@@ -16,6 +21,16 @@ class OC_Request {
 		$regex = '/' . OC_Config::getValue('overwritecondaddr', '')  . '/';
 		return $regex === '//' or preg_match($regex, $_SERVER['REMOTE_ADDR']) === 1
 			or ($type !== 'protocol' and OC_Config::getValue('forcessl', false));
+	}
+
+	/**
+	 * @brief Checks whether a domain is considered as trusted. This is used to prevent Host Header Poisoning.
+	 * @param string $host
+	 * @return bool
+	 */
+	public static function isTrustedDomain($domain) {
+		$trustedList = \OC_Config::getValue('trusted_domains', array(''));
+		return in_array($domain, $trustedList);
 	}
 
 	/**
@@ -37,21 +52,27 @@ class OC_Request {
 				$host = trim(array_pop(explode(",", $_SERVER['HTTP_X_FORWARDED_HOST'])));
 			}
 			else{
-				$host=$_SERVER['HTTP_X_FORWARDED_HOST'];
+				$host = $_SERVER['HTTP_X_FORWARDED_HOST'];
 			}
-		}
-		else{
+		} else {
 			if (isset($_SERVER['HTTP_HOST'])) {
-				return $_SERVER['HTTP_HOST'];
+				$host = $_SERVER['HTTP_HOST'];
 			}
-			if (isset($_SERVER['SERVER_NAME'])) {
-				return $_SERVER['SERVER_NAME'];
+			else if (isset($_SERVER['SERVER_NAME'])) {
+				$host = $_SERVER['SERVER_NAME'];
 			}
-			return 'localhost';
 		}
-		return $host;
-	}
 
+		// Verify that the host is a trusted domain if the trusted domains
+		// are defined
+		// If no trusted domain is provided the first trusted domain is returned
+		if(self::isTrustedDomain($host) || \OC_Config::getValue('trusted_domains', "") === "") {
+			return $host;
+		} else {
+			$trustedList = \OC_Config::getValue('trusted_domains', array(''));
+			return $trustedList[0];
+		}
+	}
 
 	/**
 	* @brief Returns the server protocol
@@ -65,14 +86,14 @@ class OC_Request {
 		}
 		if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
 			$proto = strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']);
-		}else{
-			if(isset($_SERVER['HTTPS']) and !empty($_SERVER['HTTPS']) and ($_SERVER['HTTPS']!='off')) {
-				$proto = 'https';
-			}else{
-				$proto = 'http';
-			}
+			// Verify that the protocol is always HTTP or HTTPS
+			// default to http if an invalid value is provided
+			return $proto === 'https' ? 'https' : 'http';
 		}
-		return $proto;
+		if (isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+			return 'https';
+		}
+		return 'http';
 	}
 
 	/**
@@ -209,5 +230,23 @@ class OC_Request {
 		} else {
 			return false;
 		}
+	}
+
+	/**
+	 * Checks whether the user agent matches a given regex
+	 * @param string|array $agent agent name or array of agent names
+	 * @return boolean true if at least one of the given agent matches,
+	 * false otherwise
+	 */
+	static public function isUserAgent($agent) {
+		if (!is_array($agent)) {
+			$agent = array($agent);
+		}
+		foreach ($agent as $regex) {
+			if (preg_match($regex, $_SERVER['HTTP_USER_AGENT'])) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

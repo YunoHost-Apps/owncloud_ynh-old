@@ -1,6 +1,17 @@
-<?php 
-$OC_Version = array(6,0,0,13);
-$OC_VersionString = '6.0';
-$OC_Edition = '';
-$OC_Channel = 'stable';
-$OC_Build = '2013-12-10T10:56:53+00:00';
+<?php
+
+// We only can count up. The 4. digit is only for the internal patchlevel to trigger DB upgrades between betas, final and RCs. This is _not_ the public version number. Reset minor/patchlevel when updating major/minor version number.
+$OC_Version=array(6, 0, 2, 2);
+
+// The human readable string
+$OC_VersionString='6.0.2';
+
+// The ownCloud edition
+$OC_Edition='';
+
+// The ownCloud channel
+$OC_Channel='git';
+
+// The build number
+$OC_Build='';
+
