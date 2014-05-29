@@ -6,7 +6,7 @@ path=$2
 user=$3
 
 # Check user parameter
-ls /home | grep $user
+sudo yunohost user list --json | grep -q '"id": "$user"'
 if [[ ! $? -eq 0 ]]; then
     echo "Wrong user"
     exit 1
@@ -61,7 +61,8 @@ sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/php5/fpm/pool.d/owncloud.conf
 # Set permissions to owncloud directories and /home directories + add Home external storage
 for i in $(ls /home)
 do
-    if [[ ! $i == yunohost.* ]];
+    sudo yunohost user list --json | grep -q '"id": "$i"'
+    if [[ $? -eq 0 ]];
     then
         sudo setfacl -m g:owncloud:rwx /home/$i
         sudo mkdir $data_path/$i
