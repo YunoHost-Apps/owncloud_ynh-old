@@ -174,19 +174,12 @@ class Manager extends PublicEmitter {
 			$backendUsers = $backend->getUsers($pattern, $limit, $offset);
 			if (is_array($backendUsers)) {
 				foreach ($backendUsers as $uid) {
-					$users[] = $this->getUserObject($uid, $backend);
-					if (!is_null($limit)) {
-						$limit--;
-					}
-					if (!is_null($offset) and $offset > 0) {
-						$offset--;
-					}
-
+					$users[$uid] = $this->getUserObject($uid, $backend);
 				}
 			}
 		}
 
-		usort($users, function ($a, $b) {
+		uasort($users, function ($a, $b) {
 			/**
 			 * @var \OC\User\User $a
 			 * @var \OC\User\User $b
@@ -211,13 +204,6 @@ class Manager extends PublicEmitter {
 			if (is_array($backendUsers)) {
 				foreach ($backendUsers as $uid => $displayName) {
 					$users[] = $this->getUserObject($uid, $backend);
-					if (!is_null($limit)) {
-						$limit--;
-					}
-					if (!is_null($offset) and $offset > 0) {
-						$offset--;
-					}
-
 				}
 			}
 		}

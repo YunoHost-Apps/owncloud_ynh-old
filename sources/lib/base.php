@@ -206,6 +206,34 @@ class OC {
 		}
 	}
 
+	/*
+	* This function adds some security related headers to all requests served via base.php
+	* The implementation of this function has to happen here to ensure that all third-party 
+	* components (e.g. SabreDAV) also benefit from this headers.
+	*/
+	public static function addSecurityHeaders() {
+		header('X-XSS-Protection: 1; mode=block'); // Enforce browser based XSS filters
+		header('X-Content-Type-Options: nosniff'); // Disable sniffing the content type for IE
+
+		// iFrame Restriction Policy
+		$xFramePolicy = OC_Config::getValue('xframe_restriction', true);
+		if($xFramePolicy) {
+			header('X-Frame-Options: Sameorigin'); // Disallow iFraming from other domains
+		}
+
+		// Content Security Policy
+		// If you change the standard policy, please also change it in config.sample.php
+		$policy = OC_Config::getValue('custom_csp_policy',
+			'default-src \'self\'; '
+			.'script-src \'self\' \'unsafe-eval\'; '
+			.'style-src \'self\' \'unsafe-inline\'; '
+			.'frame-src *; '
+			.'img-src *; '
+			.'font-src \'self\' data:; '
+			.'media-src *');
+		header('Content-Security-Policy:'.$policy);
+	}
+
 	public static function checkSSL() {
 		// redirect to https site if configured
 		if (OC_Config::getValue("forcessl", false)) {
@@ -516,6 +544,7 @@ class OC {
 		self::checkConfig();
 		self::checkInstalled();
 		self::checkSSL();
+		self::addSecurityHeaders();
 
 		$errors = OC_Util::checkServer();
 		if (count($errors) > 0) {
@@ -525,6 +554,7 @@ class OC {
 					echo $error['hint'] . "\n\n";
 				}
 			} else {
+				OC_Response::setStatus(OC_Response::STATUS_SERVICE_UNAVAILABLE);
 				OC_Template::printGuestPage('', 'error', array('errors' => $errors));
 			}
 			exit;
@@ -678,6 +708,22 @@ class OC {
 		if (!OC_Config::getValue('installed', false)) {
 			require_once 'core/setup.php';
 			exit();
+		}
+
+		$host = OC_Request::insecureServerHost();
+		// if the host passed in headers isn't trusted
+		if (!OC::$CLI
+			// overwritehost is always trusted
+			&& OC_Request::getOverwriteHost() === null
+			&& !OC_Request::isTrustedDomain($host)) {
+
+			header('HTTP/1.1 400 Bad Request');
+			header('Status: 400 Bad Request');
+			OC_Template::printErrorPage(
+				'You are accessing the server from an untrusted domain.',
+				'Please contact your administrator. If you are an administrator of this instance, configure the "trusted_domain" setting in config/config.php. An example configuration is provided in config/config.sample.php.'
+			);
+			return;
 		}
 
 		$request = OC_Request::getPathInfo();
