@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Sending Mail Notifications &mdash; ownCloud Administrators Manual 6.0 documentation</title>
+    <title>Mail Configuration &mdash; ownCloud Administrators Manual 7.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '6.0',
+        VERSION:     '7.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,10 +27,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Administrators Manual 6.0 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Administrators Manual 7.0 documentation" href="../index.html" />
     <link rel="up" title="Configuration" href="index.html" />
-    <link rel="next" title="Enable Maintenance Mode" href="configuration_maintenance.html" />
-    <link rel="prev" title="Configure Logging" href="configuration_logging.html" />
+    <link rel="next" title="Preview Configuration" href="configuration_preview.html" />
+    <link rel="prev" title="Logging Configuration" href="configuration_logging.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -113,46 +113,45 @@
 										<li><a href="../contents.html">Overview</a></li>
 									</ul>
                   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 6.0 Admin Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Configuration</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="configuration_apps.html">Managing Apps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_apps.html">Apps Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="configuration_users.html">User Management</a></li>
-<li class="toctree-l2"><a class="reference internal" href="auth_ldap.html">LDAP Authentication</a></li>
-<li class="toctree-l2"><a class="reference internal" href="background_jobs.html">Background Jobs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_3rdparty.html">Find Third-Party Libraries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_automation.html">Automatic Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_custom_clients.html">Customizing Client Download Links</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_database.html">MySQL/Postgres/SQLite Support</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_encryption.html">Using Server-Side Encryption</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_knowledgebase.html">Disable Knowledge Base</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_language.html">Setting the Default Language</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_logging.html">Configure Logging</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Sending Mail Notifications</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="auth_ldap.html">User Authentication with LDAP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server_to_server_managing.html">Managing Server-to-Server Sharing Access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="background_jobs.html">Defining Background Jobs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_assets.html">Asset Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_3rdparty.html">Using Third Party Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_automation.html">Defining Automatic Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_custom_clients.html">Custom Client Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_database.html">Database Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_encryption.html">Use Server-Side Encryption</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_knowledgebase.html">Knowledge Base Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_language.html">Language Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_logging.html">Logging Configuration</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Mail Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#parameters">Parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#send-a-test-email">Send a Test Email</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#trouble-shooting">Trouble shooting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-email-templates">Using Email Templates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#enabling-debug-mode">Enabling Debug Mode</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_maintenance.html">Enable Maintenance Mode</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_preview.html">Enabling File Previews</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_preview.html">Preview Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="configuration_reverseproxy.html">Reverse Proxy Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html">Dealing with Big File Uploads</a></li>
-<li class="toctree-l2"><a class="reference internal" href="custom_mount_config_gui.html">Custom Mount Configuration Web-GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html">Uploading big files &gt; 512MB (as set by default)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html#enabling-uploading-big-files">Enabling uploading big files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_mount_config_gui.html">Custom Mount Configuration (GUI)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_mount_config.html">Custom Mount Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_user_backend.html">Custom User Backend Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xsendfile.html">Serving static files via web server</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../apps/index.html">Apps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cron/index.html">Driving Events with Cron</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quota/index.html">Quota Calculation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sharing_api/index.html">Sharing API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../config/index.html">The Configuration File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues</a></li>
 </ul>
 
@@ -166,11 +165,11 @@
 				<div class="span9">
 					<div class="page-content">
 						
-  <div class="section" id="sending-mail-notifications">
-<h1>Sending Mail Notifications<a class="headerlink" href="#sending-mail-notifications" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="mail-configuration">
+<h1>Mail Configuration<a class="headerlink" href="#mail-configuration" title="Permalink to this headline">¶</a></h1>
 <p>ownCloud does not contain a full email program but contains some parameters to
 allow to send e.g. password reset email to the users. This function relies on
-the <a class="reference external" href="http://sourceforge.net/projects/phpmailer/">PHPMailer library</a>. To
+the <a class="reference external" href="https://github.com/PHPMailer/PHPMailer">PHPMailer library</a>. To
 take advantage of this function it needs to be configured properly.</p>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
@@ -184,7 +183,7 @@ you are using and the way how you want to send email. You can choose between
 <div class="section" id="smtp">
 <h3>SMTP<a class="headerlink" href="#smtp" title="Permalink to this headline">¶</a></h3>
 <p>If you want to send email using a local or remote SMTP server it is necessary
-to enter the name or ip address of the server, optionally followed by a colon
+to enter the name or IP address of the server, optionally followed by a colon
 separated port number, e.g. <strong>:425</strong>. If this value is not given the default
 port 25/tcp will be used unless you will change that by modifying the
 <strong>mail_smtpport</strong> parameter. Multiple server can be entered separated by
@@ -327,37 +326,59 @@ be able to send email out of the box.</p>
 </div>
 <div class="section" id="send-a-test-email">
 <h2>Send a Test Email<a class="headerlink" href="#send-a-test-email" title="Permalink to this headline">¶</a></h2>
-<p>The only way to test your email configuration is, to force a login failure,
-because a function to send a test email has not be implemented yet.</p>
-<p>First make sure that you are using a full qualified domain and not an ip address in the ownCloud URL, like:</p>
-<div class="highlight-python"><pre>http://my-owncloud-server.domain.dom/owncloud/</pre>
+<p>To test your email configuration, save your email address in your personal
+settings and then use the <strong>Send email</strong> button in <em>Email Server</em> section
+of the Admin settings page.</p>
 </div>
-<p>The password reset function fetches the domain name from that URL to build the
-email sender address, e.g.:</p>
-<div class="highlight-python"><pre>john@domain.dom</pre>
+<div class="section" id="using-email-templates">
+<h2>Using Email Templates<a class="headerlink" href="#using-email-templates" title="Permalink to this headline">¶</a></h2>
+<p>As an added convenience to administrators, ownCloud provides several Email templates that you can use for sending messages to users.</p>
+<p>#.. figure:: ../images/remote_shares.png</p>
+<p>Found on the Admin page, you can choose from the following templates:</p>
+<ul class="simple">
+<li>Sharing email (http) &#8211; You can use this template to send emails to users about sharing links.</li>
+<li>Sharing email &#8211; You can use this template to send emails to users about sharing files.</li>
+<li>Lost password mail &#8211; When managing users, you can use this template to send emails to users about lost password recovery.</li>
+<li>Activity notification mail &#8211; You can use this template to send emails to users detailing their ownCloud activity.</li>
+</ul>
+<p>In addition to providing the Email templates, this feature enables you to apply any preconfigured themes to the email.</p>
+<p>To modify an email template to users:</p>
+<ol class="arabic">
+<li><p class="first">Access the Admin page.</p>
+</li>
+<li><p class="first">Scroll to the Mail templates section.</p>
+</li>
+<li><p class="first">Select a template from the drop-down menu.</p>
+</li>
+<li><p class="first">Make any desired modifications to the template.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You can edit the templates directly in the template text box or you can copy and paste them to a text editor for modification and then copy and paste them back to the template text box for use when you are done.</p>
 </div>
-<p>Next you need to enter your login and an <em>invalid</em> password. As soon as you
-press the login button the login mask reappears and a <strong>I’ve forgotten my password</strong> link will be shown above the login
-field. Click on that link, re-enter your login and press the <strong>Reset password</strong> button - that&#8217;s all.</p>
+</li>
+<li><p class="first">Click <tt class="docutils literal"><span class="pre">Save</span></tt> to the file modifications.</p>
+<p>Once complete, the files are sent to users who choose to receive notifications through email.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">ownCloud populates the variables with usernames and filenames prior to sending the email.</p>
 </div>
-<div class="section" id="trouble-shooting">
-<h2>Trouble shooting<a class="headerlink" href="#trouble-shooting" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="my-web-domain-is-different-from-my-mail-domain">
-<h3>My web domain is different from my mail domain?<a class="headerlink" href="#my-web-domain-is-different-from-my-mail-domain" title="Permalink to this headline">¶</a></h3>
-<p>The default domain name used for the sender address is the hostname where your ownCloud installation is served.
-If you have a different mail domain name you can override this behavior by setting the following configuration parameter:</p>
+</li>
+</ol>
+</div>
+<div class="section" id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h2>
+<p><strong>Question</strong>: Why is my web domain different from my mail domain?</p>
+<p><strong>Answer</strong>: The default domain name used for the sender address is the hostname where your ownCloud installation is served.  If you have a different mail domain name you can override this behavior by setting the following configuration parameter:</p>
 <div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
 
   <span class="s2">&quot;mail_domain&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;example.com&quot;</span><span class="p">,</span>
 </pre></div>
 </div>
-<p>Now every mail send by ownCloud e.g. password reset email, will have the domain part of the sender address look like:</p>
+<p>This setting results in every email sent by ownCloud (for example, the password reset email) having the domain part of the sender address appear as follows:</p>
 <div class="highlight-python"><pre>no-reply@example.com</pre>
 </div>
-</div>
-<div class="section" id="how-can-i-find-out-if-a-smtp-server-is-reachable">
-<h3>How can I find out if a SMTP server is reachable?<a class="headerlink" href="#how-can-i-find-out-if-a-smtp-server-is-reachable" title="Permalink to this headline">¶</a></h3>
-<p>Use the ping command to check the server availability:</p>
+<p><strong>Question</strong>: How can I find out if a SMTP server is reachable?</p>
+<p><strong>Answer</strong>: Use the ping command to check the server availability:</p>
 <div class="highlight-python"><pre>ping smtp.server.dom</pre>
 </div>
 <div class="highlight-python"><pre>PING smtp.server.dom (ip-address) 56(84) bytes of data.
@@ -365,12 +386,9 @@ If you have a different mail domain name you can override this behavior by setti
 64 bytes from your-server.local.lan (192.168.1.10): icmp_req=2 ttl=64 time=0.055 ms
 64 bytes from your-server.local.lan (192.168.1.10): icmp_req=3 ttl=64 time=0.062 ms</pre>
 </div>
-</div>
-<div class="section" id="how-can-i-find-out-if-the-smtp-server-is-listening-on-a-specific-tcp-port">
-<h3>How can I find out if the SMTP server is listening on a specific tcp port?<a class="headerlink" href="#how-can-i-find-out-if-the-smtp-server-is-listening-on-a-specific-tcp-port" title="Permalink to this headline">¶</a></h3>
-<p>A SMTP server is usually listening on port <strong>25/tcp</strong> (smtp) and/or in
-rare circumstances is also listening on the outdated port <strong>465/tcp</strong> (smtps).
-You can use the telnet command to check if a port is available:</p>
+<p><strong>Question</strong>: How can I find out if the SMTP server is listening on a specific TCP port?</p>
+<p><strong>Answer</strong>: SMTP servers usually listen on port <strong>25/tcp</strong> (smtp).  In
+rare circumstances the SMTP server also listens on the outdated port <strong>465/tcp</strong> (smtps). You can use the <tt class="docutils literal"><span class="pre">telnet</span></tt> command to determining if a port is available:</p>
 <div class="highlight-python"><pre>telnet smtp.domain.dom 25</pre>
 </div>
 <div class="highlight-python"><pre>Trying 192.168.1.10...
@@ -378,17 +396,14 @@ Connected to smtp.domain.dom.
 Escape character is '^]'.
 220 smtp.domain.dom ESMTP Exim 4.80.1 Tue, 22 Jan 2013 22:28:14 +0100</pre>
 </div>
+<p><strong>Question</strong>: How can I determine if the SMTP server supports the outdated SMTPS protocol?</p>
+<p><strong>Answer</strong>: A good indication that the SMTP server supports the SMTPS protocol is that it is listening on port <strong>465/tcp</strong>. See the previous answer to use the <tt class="docutils literal"><span class="pre">telnet</span></tt> command for checking the port availability.</p>
+<p><strong>Question</strong>: How can I determine if the SMTP server supports the TLS protocol?</p>
+<p><strong>Answer</strong>: SMTP servers usually announce the availability of STARTTLS immediately after a connection has been established. You can easily check this using the <tt class="docutils literal"><span class="pre">telnet</span></tt> command.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You must enter the marked lines to obtain the information displayed.</p>
 </div>
-<div class="section" id="how-can-i-find-out-if-a-smtp-server-supports-the-outdated-smtps-protocol">
-<h3>How can I find out if a SMTP server supports the outdated SMTPS protocol?<a class="headerlink" href="#how-can-i-find-out-if-a-smtp-server-supports-the-outdated-smtps-protocol" title="Permalink to this headline">¶</a></h3>
-<p>A good indication that a SMTP server supports the SMTPS protocol is that it
-is listening on port <strong>465/tcp</strong>. How this can be checked has been described
-previously.</p>
-</div>
-<div class="section" id="how-can-i-find-out-if-a-smtp-server-supports-the-tls-protocol">
-<h3>How can I find out if a SMTP server supports the TLS protocol?<a class="headerlink" href="#how-can-i-find-out-if-a-smtp-server-supports-the-tls-protocol" title="Permalink to this headline">¶</a></h3>
-<p>A SMTP server usually announces the availability of STARTTLS right after a
-connection has been established. This can easily been checked with the telnet command. You need to enter the marked lines to get the information displayed:</p>
 <div class="highlight-python"><pre>telnet smtp.domain.dom 25</pre>
 </div>
 <div class="highlight-python"><pre>Trying 192.168.1.10...
@@ -407,13 +422,12 @@ QUIT                                                                   # &lt;&lt
 221 smtp.domain.dom closing connection
 Connection closed by foreign host.</pre>
 </div>
+<p><strong>Question</strong>: How can I determine which authentication types or methods the SMTP server supports?</p>
+<p><strong>Answer</strong>: SMTP servers usually announce the available authentication types or methods immediately following the establishment of a connection. You can easily check this using the telnet command.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You must enter the marked lines to obtrain the information displayed.</p>
 </div>
-<div class="section" id="how-can-i-find-out-which-authentication-types-methods-a-smtp-server-supports">
-<h3>How can I find out which authentication types/methods a SMTP server supports?<a class="headerlink" href="#how-can-i-find-out-which-authentication-types-methods-a-smtp-server-supports" title="Permalink to this headline">¶</a></h3>
-<p>A SMTP server usually announces the available authentication types/methods
-right after a connection has been established. This can easily been checked
-with the telnet command. You need to enter the marked lines to get the
-information displayed:</p>
 <div class="highlight-python"><pre>telnet smtp.domain.dom 25</pre>
 </div>
 <div class="highlight-python"><pre>Trying 192.168.1.10...
@@ -433,18 +447,19 @@ QUIT                                                                   # &lt;&lt
 Connection closed by foreign host.</pre>
 </div>
 </div>
-<div class="section" id="enable-debug-mode">
-<h3>Enable Debug Mode<a class="headerlink" href="#enable-debug-mode" title="Permalink to this headline">¶</a></h3>
-<p>If you are still not able to send email it might be useful to activate
-further debug messages by setting the following parameter. Right after
-you have pressed the <strong>Reset password</strong> button, as described before, a
-lot of <strong>SMTP -&gt; get_lines(): ...</strong> messages will be written on the
-screen.</p>
-<div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
-
-  <span class="s2">&quot;mail_smtpdebug&quot;</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">;</span>
-</pre></div>
+<div class="section" id="enabling-debug-mode">
+<h2>Enabling Debug Mode<a class="headerlink" href="#enabling-debug-mode" title="Permalink to this headline">¶</a></h2>
+<p>If you are unable to send email, it might be useful to activate further debug messages by enabling the mail_smtpdebug parameter:</p>
+<div class="highlight-python"><pre>.. code-block:: php</pre>
 </div>
+<blockquote>
+<div><p>&lt;?php</p>
+<blockquote>
+<div>&#8220;mail_smtpdebug&#8221; =&gt; true;</div></blockquote>
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Immediately after pressing the <strong>Send email</strong> button, as described before, several <strong>SMTP -&gt; get_lines(): ...</strong> messages appear on the screen.  This is expected behavior and can be ignored.</p>
 </div>
 </div>
 </div>

@@ -1,6 +1,9 @@
 <?php
 /**
- * Copyright (c) 2012 Bart Visscher <bartv@thisnet.nl>
+ * @author Bart Visscher
+ * @copyright 2012 Bart Visscher <bartv@thisnet.nl>
+ * @copyright 2013-2014 Thomas Tanghus (thomas@tanghus.net)
+ *
  * This file is licensed under the Affero General Public License version 3 or
  * later.
  * See the COPYING-README file.
@@ -98,7 +101,8 @@ class Addressbook implements \OCP\Share_Backend_Collection {
 
 		if ($format === self::FORMAT_ADDRESSBOOKS) {
 			foreach ($items as $item) {
-				//\OCP\Util::writeLog('contacts', __METHOD__.' item owner: ' . print_r($item['uid_owner'], true) , \OCP\Util::DEBUG);
+				//\OCP\Util::writeLog('contacts', __METHOD__.' item_source: ' . $item['item_source'] . ' include: '
+				//	. (int)$include, \OCP\Util::DEBUG);
 				$addressBook = $backend->getAddressBook($item['item_source'], array('shared_by' => $item['uid_owner']));
 				if ($addressBook) {
 					$addressBook['displayname'] = $addressBook['displayname'] . ' (' . $addressBook['owner'] . ')';

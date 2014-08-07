@@ -1,15 +1,22 @@
 <?php
+/**
+ * @author Thomas Tanghus
+ * @copyright 2013-2014 Thomas Tanghus (thomas@tanghus.net)
+ *
+ * This file is licensed under the Affero General Public License version 3 or
+ * later.
+ * See the COPYING-README file.
+ */
 
 namespace OCA\Contacts;
 
 class SearchProvider extends \OC_Search_Provider{
-	function search($query) {
+	public function search($query) {
 		$unescape = function($value) {
 			return strtr($value, array('\,' => ',', '\;' => ';'));
 		};
 
-		$app = new App();
-		$searchresults = array(	);
+		$searchresults = array();
 		$results = \OCP\Contacts::search($query, array('N', 'FN', 'EMAIL', 'NICKNAME', 'ORG'));
 		$l = new \OC_l10n('contacts');
 		foreach($results as $result) {

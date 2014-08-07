@@ -7,31 +7,7 @@
  * See the COPYING-README file.
  */
 
-OC.msg={
-	startSaving:function(selector){
-		$(selector)
-			.html( t('settings', 'Saving...') )
-			.removeClass('success')
-			.removeClass('error')
-			.stop(true, true)
-			.show();
-	},
-	finishedSaving:function(selector, data){
-		if( data.status === "success" ){
-			 $(selector).html( data.data.message )
-				.addClass('success')
-				.stop(true, true)
-				.delay(3000)
-				.fadeOut(900);
-		}else{
-			$(selector).html( data.data.message ).addClass('error');
-		}
-	}
-};
-
 $(document).ready(function(){
-	// Trigger ajax on recoveryAdmin status change
-	var enabledStatus = $('#adminEnableRecovery').val();
 
 	$('input:password[name="encryptionRecoveryPassword"]').keyup(function(event) {
 		var recoveryPassword = $( '#encryptionRecoveryPassword' ).val();

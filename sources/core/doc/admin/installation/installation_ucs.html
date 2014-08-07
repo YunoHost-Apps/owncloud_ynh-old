@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Univention Corporate Server &mdash; ownCloud Administrators Manual 6.0 documentation</title>
+    <title>Univention Corporate Server &mdash; ownCloud Administrators Manual 7.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '6.0',
+        VERSION:     '7.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Administrators Manual 6.0 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Administrators Manual 7.0 documentation" href="../index.html" />
     <link rel="up" title="Installation" href="index.html" />
     <link rel="next" title="Manual Installation" href="installation_source.html" />
     <link rel="prev" title="Windows 7 and Windows Server 2008" href="installation_windows.html" />
@@ -113,7 +113,7 @@
 										<li><a href="../contents.html">Overview</a></li>
 									</ul>
                   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 6.0 Admin Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Installation</a><ul class="current">
@@ -124,22 +124,17 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="">Univention Corporate Server</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#pre-configuration">Pre configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#installation">Installation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#post-configuration-optional">Post configuration (optional)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#postconfiguration-optional">Postconfiguration (optional)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#using-owncloud">Using ownCloud</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="installation_source.html">Manual Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation_others.html">PageKite Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation_others.html#open-wrt">Open Wrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation_others.html">Other Installation Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation_wizard.html">Installation Wizard</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration/index.html">Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../apps/index.html">Apps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cron/index.html">Driving Events with Cron</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quota/index.html">Quota Calculation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sharing_api/index.html">Sharing API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../config/index.html">The Configuration File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues</a></li>
 </ul>
 
@@ -293,12 +288,12 @@ assign your required value.</p>
 </tr>
 <tr class="row-even"><td>owncloud/join/users/update</td>
 <td>yes</td>
-<td>Whether ownCloud LDAP schema should be applied to existing users</td>
+<td>Wether ownCloud LDAP schema should be applied to existing users</td>
 <td>2012.0.1</td>
 </tr>
 <tr class="row-odd"><td>owncloud/group/enableDomainUsers</td>
 <td>1</td>
-<td>Whether the group “Domain Users” shall be enabled for ownCloud on install</td>
+<td>Wether the group “Domain Users” shall be enabled for ownCloud on install</td>
 <td>2012.4.0.4</td>
 </tr>
 <tr class="row-even"><td>owncloud/join/users/filter</td>
@@ -344,8 +339,8 @@ optional) via command line:</p>
 </div>
 <p>ownCloud will be configured to fully work with LDAP.</p>
 </div>
-<div class="section" id="re-installation">
-<h3>Re-installation<a class="headerlink" href="#re-installation" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="reinstallation">
+<h3>Reinstallation<a class="headerlink" href="#reinstallation" title="Permalink to this headline">¶</a></h3>
 <p>When ownCloud was installed before and uninstalled via AppCenter or via command
 line using apt-get remove, ownCloud can be simply installed again. The old
 configuration will be used again.</p>
@@ -360,8 +355,8 @@ MySQL database &#8220;ownCloud&#8221; using the command line:</p>
 <strong>/var/lib/owncloud</strong> although this is not mandatory.</p>
 </div>
 </div>
-<div class="section" id="post-configuration-optional">
-<h2>Post configuration (optional)<a class="headerlink" href="#post-configuration-optional" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="postconfiguration-optional">
+<h2>Postconfiguration (optional)<a class="headerlink" href="#postconfiguration-optional" title="Permalink to this headline">¶</a></h2>
 <p>There is only one local admin user “owncloudadmin”, you can find his password in
 <cite>/etc/owncloudadmin.secret</cite>. Use this account, if you want to change basic
 ownCloud settings.</p>

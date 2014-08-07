@@ -16,13 +16,14 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
  *  
- * You should have received a copy of the GNU Lesser General Public 
+ * You should have received a copy of the GNU Affero General Public
  * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
  * 
  */
 
 OCP\App::register(array('order' => 70, 'id' => 'documents', 'name' => 'Documents'));
 //OCP\App::registerAdmin('documents', 'settings');
+\OCP\App::registerAdmin('documents', 'admin');
 OCP\App::registerPersonal('documents', 'personal');
 
 OCP\App::addNavigationEntry(array(
@@ -42,9 +43,44 @@ OC::$CLASSPATH['OCA\Documents\Download_Range'] = 'documents/lib/download/range.p
 OC::$CLASSPATH['OCA\Documents\Db_Session'] = 'documents/lib/db/session.php';
 OC::$CLASSPATH['OCA\Documents\Db_Member'] = 'documents/lib/db/member.php';
 OC::$CLASSPATH['OCA\Documents\Db_Op'] = 'documents/lib/db/op.php';
+OC::$CLASSPATH['OCA\Documents\Filter_Office'] = 'documents/lib/filter/office.php';
 
 //Script for registering file actions
 OCP\Util::addScript('documents', 'viewer/viewer');
+
+$docFilter = new OCA\Documents\Filter_Office(
+			array(
+				'read' => 
+					array (
+						'target' => 'application/vnd.oasis.opendocument.text',
+						'format' => 'odt:writer8',
+						'extension' => 'odt'
+					),
+				'write' => 
+					array (
+						'target' => 'application/msword',
+						'format' => 'doc',
+						'extension' => 'doc'
+					)
+			)
+);
+
+$docxFilter = new OCA\Documents\Filter_Office(
+		array (
+				'read' => 
+					array (
+						'target' => 'application/vnd.oasis.opendocument.text',
+						'format' => 'odt:writer8',
+						'extension' => 'odt'
+					),
+				'write' => 
+					array (
+						'target' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+						'format' => 'docx',
+						'extension' => 'docx'
+					)
+			)
+);
 
 //Listen to delete file signal
 OCP\Util::connectHook('OC_Filesystem', 'delete', "OCA\Documents\Storage", "onDelete");

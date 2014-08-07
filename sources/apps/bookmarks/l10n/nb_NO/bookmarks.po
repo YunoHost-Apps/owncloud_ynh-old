@@ -4,17 +4,19 @@
 # 
 # Translators:
 # Arvid Nornes <arvid.nornes@gmail.com>, 2012
+# Bjørn Roger Thomassen <brthomassen@gmail.com>, 2013
 # Hans Nesse <>, 2013
-# hdalgrav <hdalgrav@gmail.com>, 2012
+# Håvard Dalgrav <hdalgrav@gmail.com>, 2012
+# vidaren <news@vidartysse.net>, 2014
 # troll <oyvind.hojem@gmail.com>, 2013
 # runesudden <runesudden@gmail.com>, 2012
 msgid ""
 msgstr ""
 "Project-Id-Version: ownCloud\n"
 "Report-Msgid-Bugs-To: translations@owncloud.org\n"
-"POT-Creation-Date: 2013-12-02 18:22-0500\n"
-"PO-Revision-Date: 2013-12-02 20:41+0000\n"
-"Last-Translator: I Robot <owncloud-bot@tmit.eu>\n"
+"POT-Creation-Date: 2014-06-18 02:10-0400\n"
+"PO-Revision-Date: 2014-06-17 23:11+0000\n"
+"Last-Translator: vidaren <news@vidartysse.net>\n"
 "Language-Team: Norwegian Bokmål (Norway) (http://www.transifex.com/projects/p/owncloud/language/nb_NO/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -110,11 +112,11 @@ msgstr "Avbryt"
 msgid ""
 "Drag this to your browser bookmarks and click it, when you want to bookmark "
 "a webpage quickly:"
-msgstr "Dra denne til din nettlesers bokmerker, og klikk den når du ønsker å hurtig legge til en nettside som bokmerke:"
+msgstr "Dra denne til bokmerkene i nettleseren din og klikk på den når du ønsker å raskt legge til en nettside som bokmerke:"
 
 #: templates/list.php:15
 msgid "Add to ownCloud"
-msgstr ""
+msgstr "Legg til i ownCloud"
 
 #: templates/list.php:22
 msgid "Address"
@@ -142,7 +144,7 @@ msgstr "Du kan også prøve å importere en bokmerke-fil"
 
 #: templates/settings.php:11
 msgid "Bookmarklet"
-msgstr "Bokmerket"
+msgstr "Bokmerke-applet"
 
 #: templates/settings.php:23
 msgid "Export & Import"

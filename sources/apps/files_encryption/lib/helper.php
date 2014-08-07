@@ -24,7 +24,7 @@
 namespace OCA\Encryption;
 
 /**
- * @brief Class to manage registration of hooks an various helper methods
+ * Class to manage registration of hooks an various helper methods
  * @package OCA\Encryption
  */
 class Helper {
@@ -32,7 +32,7 @@ class Helper {
 	private static $tmpFileMapping; // Map tmp files to files in data/user/files
 
 	/**
-	 * @brief register share related hooks
+	 * register share related hooks
 	 *
 	 */
 	public static function registerShareHooks() {
@@ -43,7 +43,7 @@ class Helper {
 	}
 
 	/**
-	 * @brief register user related hooks
+	 * register user related hooks
 	 *
 	 */
 	public static function registerUserHooks() {
@@ -56,19 +56,23 @@ class Helper {
 	}
 
 	/**
-	 * @brief register filesystem related hooks
+	 * register filesystem related hooks
 	 *
 	 */
 	public static function registerFilesystemHooks() {
 
 		\OCP\Util::connectHook('OC_Filesystem', 'rename', 'OCA\Encryption\Hooks', 'preRename');
-		\OCP\Util::connectHook('OC_Filesystem', 'post_rename', 'OCA\Encryption\Hooks', 'postRename');
+		\OCP\Util::connectHook('OC_Filesystem', 'post_rename', 'OCA\Encryption\Hooks', 'postRenameOrCopy');
+		\OCP\Util::connectHook('OC_Filesystem', 'copy', 'OCA\Encryption\Hooks', 'preCopy');
+		\OCP\Util::connectHook('OC_Filesystem', 'post_copy', 'OCA\Encryption\Hooks', 'postRenameOrCopy');
 		\OCP\Util::connectHook('OC_Filesystem', 'post_delete', 'OCA\Encryption\Hooks', 'postDelete');
 		\OCP\Util::connectHook('OC_Filesystem', 'delete', 'OCA\Encryption\Hooks', 'preDelete');
+		\OCP\Util::connectHook('OC_Filesystem', 'post_umount', 'OCA\Encryption\Hooks', 'postUmount');
+		\OCP\Util::connectHook('OC_Filesystem', 'umount', 'OCA\Encryption\Hooks', 'preUmount');
 	}
 
 	/**
-	 * @brief register app management related hooks
+	 * register app management related hooks
 	 *
 	 */
 	public static function registerAppHooks() {
@@ -78,7 +82,7 @@ class Helper {
 	}
 
 	/**
-	 * @brief setup user for files_encryption
+	 * setup user for files_encryption
 	 *
 	 * @param Util $util
 	 * @param string $password
@@ -100,10 +104,10 @@ class Helper {
 	}
 
 	/**
-	 * @brief enable recovery
+	 * enable recovery
 	 *
-	 * @param $recoveryKeyId
-	 * @param $recoveryPassword
+	 * @param string $recoveryKeyId
+	 * @param string $recoveryPassword
 	 * @internal param \OCA\Encryption\Util $util
 	 * @internal param string $password
 	 * @return bool
@@ -111,10 +115,11 @@ class Helper {
 	public static function adminEnableRecovery($recoveryKeyId, $recoveryPassword) {
 
 		$view = new \OC\Files\View('/');
+		$appConfig = \OC::$server->getAppConfig();
 
 		if ($recoveryKeyId === null) {
 			$recoveryKeyId = 'recovery_' . substr(md5(time()), 0, 8);
-			\OC_Appconfig::setValue('files_encryption', 'recoveryKeyId', $recoveryKeyId);
+			$appConfig->setValue('files_encryption', 'recoveryKeyId', $recoveryKeyId);
 		}
 
 		if (!$view->is_dir('/owncloud_private_key')) {
@@ -147,15 +152,15 @@ class Helper {
 			\OC_FileProxy::$enabled = true;
 
 			// Set recoveryAdmin as enabled
-			\OC_Appconfig::setValue('files_encryption', 'recoveryAdminEnabled', 1);
+			$appConfig->setValue('files_encryption', 'recoveryAdminEnabled', 1);
 
 			$return = true;
 
 		} else { // get recovery key and check the password
-			$util = new \OCA\Encryption\Util(new \OC_FilesystemView('/'), \OCP\User::getUser());
+			$util = new \OCA\Encryption\Util(new \OC\Files\View('/'), \OCP\User::getUser());
 			$return = $util->checkRecoveryPassword($recoveryPassword);
 			if ($return) {
-				\OC_Appconfig::setValue('files_encryption', 'recoveryAdminEnabled', 1);
+				$appConfig->setValue('files_encryption', 'recoveryAdminEnabled', 1);
 			}
 		}
 
@@ -163,7 +168,7 @@ class Helper {
 	}
 
 	/**
-	 * @brief Check if a path is a .part file
+	 * Check if a path is a .part file
 	 * @param string $path Path that may identify a .part file
 	 * @return bool
 	 */
@@ -180,7 +185,7 @@ class Helper {
 
 
 	/**
-	 * @brief Remove .path extension from a file path
+	 * Remove .path extension from a file path
 	 * @param string $path Path that may identify a .part file
 	 * @return string File path without .part extension
 	 * @note this is needed for reusing keys
@@ -207,18 +212,18 @@ class Helper {
 	}
 
 	/**
-	 * @brief disable recovery
+	 * disable recovery
 	 *
-	 * @param $recoveryPassword
+	 * @param string $recoveryPassword
 	 * @return bool
 	 */
 	public static function adminDisableRecovery($recoveryPassword) {
-		$util = new Util(new \OC_FilesystemView('/'), \OCP\User::getUser());
+		$util = new Util(new \OC\Files\View('/'), \OCP\User::getUser());
 		$return = $util->checkRecoveryPassword($recoveryPassword);
 
 		if ($return) {
 			// Set recoveryAdmin as disabled
-			\OC_Appconfig::setValue('files_encryption', 'recoveryAdminEnabled', 0);
+			\OC::$server->getAppConfig()->setValue('files_encryption', 'recoveryAdminEnabled', 0);
 		}
 
 		return $return;
@@ -226,7 +231,7 @@ class Helper {
 
 
 	/**
-	 * @brief checks if access is public/anonymous user
+	 * checks if access is public/anonymous user
 	 * @return bool
 	 */
 	public static function isPublicAccess() {
@@ -238,7 +243,7 @@ class Helper {
 	}
 
 	/**
-	 * @brief Format a path to be relative to the /user/files/ directory
+	 * Format a path to be relative to the /user/files/ directory
 	 * @param string $path the absolute path
 	 * @return string e.g. turns '/admin/files/test.txt' into 'test.txt'
 	 */
@@ -258,7 +263,7 @@ class Helper {
 	}
 
 	/**
-	 * @brief try to get the user from the path if no user is logged in
+	 * try to get the user from the path if no user is logged in
 	 * @param string $path
 	 * @return mixed user or false if we couldn't determine a user
 	 */
@@ -293,7 +298,7 @@ class Helper {
 	}
 
 	/**
-	 * @brief get path to the corresponding file in data/user/files if path points
+	 * get path to the corresponding file in data/user/files if path points
 	 *        to a version or to a file in cache
 	 * @param string $path path to a version or a file in the trash
 	 * @return string path to corresponding file relative to data/user/files
@@ -326,12 +331,12 @@ class Helper {
 	}
 
 	/**
-	 * @brief create directory recursively
+	 * create directory recursively
 	 * @param string $path
 	 * @param \OC\Files\View $view
 	 */
 	public static function mkdirr($path, $view) {
-		$dirname = \OC_Filesystem::normalizePath(dirname($path));
+		$dirname = \OC\Files\Filesystem::normalizePath(dirname($path));
 		$dirParts = explode('/', $dirname);
 		$dir = "";
 		foreach ($dirParts as $part) {
@@ -343,7 +348,8 @@ class Helper {
 	}
 
 	/**
-	 * @brief redirect to a error page
+	 * redirect to a error page
+	 * @param Session $session
 	 */
 	public static function redirectToErrorPage($session, $errorCode = null) {
 
@@ -365,9 +371,14 @@ class Helper {
 		$post = 0;
 		if(count($_POST) > 0) {
 			$post = 1;
-			}
-			header('Location: ' . $location . '?p=' . $post . '&errorCode=' . $errorCode);
-			exit();
+		}
+
+		if(defined('PHPUNIT_RUN') and PHPUNIT_RUN) {
+			throw new \Exception("Encryption error: $errorCode");
+		}
+
+		header('Location: ' . $location . '?p=' . $post . '&errorCode=' . $errorCode);
+		exit();
 	}
 
 	/**
@@ -421,16 +432,32 @@ class Helper {
 	}
 
 	/**
-	 * @brief glob uses different pattern than regular expressions, escape glob pattern only
-	 * @param unescaped path
-	 * @return escaped path
+	 * find all share keys for a given file
+	 * @param string $path to the file
+	 * @param \OC\Files\View $view view, relative to data/
+	 * @return array list of files, path relative to data/
 	 */
-	public static function escapeGlobPattern($path) {
-		return preg_replace('/(\*|\?|\[)/', '[$1]', $path);
+	public static function findShareKeys($path, $view) {
+		$result = array();
+		$pathinfo = pathinfo($path);
+		$dirContent = $view->opendir($pathinfo['dirname']);
+
+		if (is_resource($dirContent)) {
+			while (($file = readdir($dirContent)) !== false) {
+				if (!\OC\Files\Filesystem::isIgnoredDir($file)) {
+					if (preg_match("/" . $pathinfo['filename'] . ".(.*).shareKey/", $file)) {
+						$result[] = $pathinfo['dirname'] . '/' . $file;
+					}
+				}
+			}
+			closedir($dirContent);
+		}
+
+		return $result;
 	}
 
 	/**
-	 * @brief remember from which file the tmp file (getLocalFile() call) was created
+	 * remember from which file the tmp file (getLocalFile() call) was created
 	 * @param string $tmpFile path of tmp file
 	 * @param string $originalFile path of the original file relative to data/
 	 */
@@ -439,9 +466,9 @@ class Helper {
 	}
 
 	/**
-	 * @brief get the path of the original file
+	 * get the path of the original file
 	 * @param string $tmpFile path of the tmp file
-	 * @return mixed path of the original file or false
+	 * @return string|false path of the original file or false
 	 */
 	public static function getPathFromTmpFile($tmpFile) {
 		if (isset(self::$tmpFileMapping[$tmpFile])) {

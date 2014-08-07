@@ -8,8 +8,6 @@
 
 namespace OC\Files\Cache;
 
-use OCP\Util;
-
 /**
  * listen to filesystem hooks and change the cache accordingly
  */
@@ -19,7 +17,7 @@ class Updater {
 	 * resolve a path to a storage and internal path
 	 *
 	 * @param string $path the relative path
-	 * @return array consisting of the storage and the internal path
+	 * @return array an array consisting of the storage and the internal path
 	 */
 	static public function resolvePath($path) {
 		$view = \OC\Files\Filesystem::getView();
@@ -40,8 +38,8 @@ class Updater {
 		if ($storage) {
 			$cache = $storage->getCache($internalPath);
 			$scanner = $storage->getScanner($internalPath);
-			$scanner->scan($internalPath, Scanner::SCAN_SHALLOW);
-			$cache->correctFolderSize($internalPath);
+			$data = $scanner->scan($internalPath, Scanner::SCAN_SHALLOW);
+			$cache->correctFolderSize($internalPath, $data);
 			self::correctFolder($path, $storage->filemtime($internalPath));
 			self::correctParentStorageMtime($storage, $internalPath);
 		}
@@ -85,6 +83,10 @@ class Updater {
 		 * @var string $internalTo
 		 */
 		list($storageFrom, $internalFrom) = self::resolvePath($from);
+		// if it's a moved mountpoint we dont need to do anything
+		if ($internalFrom === '') {
+			return;
+		}
 		list($storageTo, $internalTo) = self::resolvePath($to);
 		if ($storageFrom && $storageTo) {
 			if ($storageFrom === $storageTo) {
@@ -110,9 +112,9 @@ class Updater {
 	}
 
 	/**
-	 * @brief get file owner and path
+	 * get file owner and path
 	 * @param string $filename
-	 * @return array with the oweners uid and the owners path
+	 * @return string[] with the oweners uid and the owners path
 	 */
 	private static function getUidAndFilename($filename) {
 
@@ -121,6 +123,9 @@ class Updater {
 
 		if ($uid != \OCP\User::getUser()) {
 			$info = \OC\Files\Filesystem::getFileInfo($filename);
+			if (!$info) {
+				return array($uid, '/files/' . $filename);
+			}
 			$ownerView = new \OC\Files\View('/' . $uid . '/files');
 			$filename = $ownerView->getPath($info['fileid']);
 		}
@@ -152,7 +157,7 @@ class Updater {
 				$cache->update($id, array('mtime' => $time, 'etag' => $storage->getETag($internalPath)));
 				if ($realPath !== '') {
 					$realPath = dirname($realPath);
-					if($realPath === DIRECTORY_SEPARATOR ) {
+					if ($realPath === DIRECTORY_SEPARATOR) {
 						$realPath = "";
 					}
 					// check storage for parent in case we change the storage in this step

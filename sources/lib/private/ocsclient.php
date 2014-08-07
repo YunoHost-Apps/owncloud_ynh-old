@@ -29,15 +29,15 @@
 class OC_OCSClient{
 
 	/**
-	 * @brief Get the url of the OCS AppStore server.
-	 * @returns string of the AppStore server
+	 * Get the url of the OCS AppStore server.
+	 * @return string of the AppStore server
 	 *
 	 * This function returns the url of the OCS AppStore server. It´s possible
 	 * to set it in the config file or it will fallback to the default
 	 */
 	private static function getAppStoreURL() {
 		if(OC_Util::getEditionString()===''){
-			$default='http://api.apps.owncloud.com/v1';
+			$default='https://api.owncloud.com/v1';
 		}else{
 			$default='';
 		}
@@ -47,9 +47,10 @@ class OC_OCSClient{
 
 
 	/**
-	 * @brief Get the content of an OCS url call.
-	 * @returns string of the response
+	 * Get the content of an OCS url call.
+	 * @return string of the response
 	 * This function calls an OCS server and returns the response. It also sets a sane timeout
+	* @param string $url
 	*/
 	private static function getOCSresponse($url) {
 		$data = \OC_Util::getUrlContent($url);
@@ -57,8 +58,8 @@ class OC_OCSClient{
 	}
 
 	/**
-	 * @brief Get all the categories from the OCS server
-	 * @returns array with category ids
+	 * Get all the categories from the OCS server
+	 * @return array an array of category ids
 	 * @note returns NULL if config value appstoreenabled is set to false
 	 * This function returns a list of all the application categories on the OCS server
 	 */
@@ -90,10 +91,13 @@ class OC_OCSClient{
 	}
 
 	/**
-	 * @brief Get all the applications from the OCS server
-	 * @returns array with application data
+	 * Get all the applications from the OCS server
+	 * @return array an array of application data
 	 *
 	 * This function returns a list of all the applications on the OCS server
+	 * @param array|string $categories
+	 * @param int $page
+	 * @param string $filter
 	 */
 	public static function getApplications($categories, $page, $filter) {
 		if(OC_Config::getValue('appstoreenabled', true)==false) {
@@ -144,8 +148,9 @@ class OC_OCSClient{
 
 
 	/**
-	 * @brief Get an the applications from the OCS server
-	 * @returns array with application data
+	 * Get an the applications from the OCS server
+	 * @param string $id
+	 * @return array an array of application data
 	 *
 	 * This function returns an  applications from the OCS server
 	 */
@@ -186,11 +191,13 @@ class OC_OCSClient{
 	}
 
 	/**
-		* @brief Get the download url for an application from the OCS server
-		* @returns array with application data
-		*
-		* This function returns an download url for an applications from the OCS server
-		*/
+	 * Get the download url for an application from the OCS server
+	 * @return array an array of application data
+	 *
+	 * This function returns an download url for an applications from the OCS server
+	 * @param string $id
+	 * @param integer $item
+	 */
 	public static function getApplicationDownload($id, $item) {
 		if(OC_Config::getValue('appstoreenabled', true)==false) {
 			return null;

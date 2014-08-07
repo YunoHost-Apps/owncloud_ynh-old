@@ -25,12 +25,15 @@ require_once __DIR__ . '/base.php';
 class Test_Files_Sharing_Cache extends Test_Files_Sharing_Base {
 
 	/**
-	 * @var OC_FilesystemView
+	 * @var OC\Files\View
 	 */
 	public $user2View;
 
 	function setUp() {
 		parent::setUp();
+
+		\OC_User::setDisplayName(self::TEST_FILES_SHARING_API_USER1, 'User One');
+		\OC_User::setDisplayName(self::TEST_FILES_SHARING_API_USER2, 'User Two');
 
 		self::loginHelper(self::TEST_FILES_SHARING_API_USER1);
 
@@ -68,7 +71,7 @@ class Test_Files_Sharing_Cache extends Test_Files_Sharing_Base {
 
 		// retrieve the shared storage
 		$secondView = new \OC\Files\View('/' . self::TEST_FILES_SHARING_API_USER2);
-		list($this->sharedStorage, $internalPath) = $secondView->resolvePath('files/Shared/shareddir');
+		list($this->sharedStorage, $internalPath) = $secondView->resolvePath('files/shareddir');
 		$this->sharedCache = $this->sharedStorage->getCache();
 	}
 
@@ -99,45 +102,49 @@ class Test_Files_Sharing_Cache extends Test_Files_Sharing_Base {
 		$results = $this->sharedStorage->getCache()->searchByMime('text');
 		$check = array(
 				array(
-					'name' => 'shared single file.txt',
-					'path' => 'shared single file.txt'
-				),
-				array(
 					'name' => 'bar.txt',
-					'path' => 'shareddir/bar.txt'
+					'path' => 'bar.txt'
 				),
 				array(
 					'name' => 'another too.txt',
-					'path' => 'shareddir/subdir/another too.txt'
+					'path' => 'subdir/another too.txt'
 				),
 				array(
 					'name' => 'another.txt',
-					'path' => 'shareddir/subdir/another.txt'
+					'path' => 'subdir/another.txt'
 				),
 			);
 		$this->verifyFiles($check, $results);
-
-		$results2 = $this->sharedStorage->getCache()->searchByMime('text/plain');
 
 		$this->verifyFiles($check, $results);
 	}
 
 	function testGetFolderContentsInRoot() {
-		$results = $this->user2View->getDirectoryContent('/Shared/');
+		$results = $this->user2View->getDirectoryContent('/');
 
+		// we should get the shared items "shareddir" and "shared single file.txt"
+		// additional root will always contain the example file "welcome.txt",
+		//  so this will be part of the result
 		$this->verifyFiles(
 			array(
 				array(
+					'name' => 'welcome.txt',
+					'path' => 'files/welcome.txt',
+					'mimetype' => 'text/plain',
+				),
+				array(
 					'name' => 'shareddir',
-					'path' => '/shareddir',
+					'path' => 'files/shareddir',
 					'mimetype' => 'httpd/unix-directory',
-					'usersPath' => 'files/Shared/shareddir'
+					'uid_owner' => self::TEST_FILES_SHARING_API_USER1,
+					'displayname_owner' => 'User One',
 				),
 				array(
 					'name' => 'shared single file.txt',
-					'path' => '/shared single file.txt',
+					'path' => 'files/shared single file.txt',
 					'mimetype' => 'text/plain',
-					'usersPath' => 'files/Shared/shared single file.txt'
+					'uid_owner' => self::TEST_FILES_SHARING_API_USER1,
+					'displayname_owner' => 'User One',
 				),
 			),
 			$results
@@ -145,27 +152,30 @@ class Test_Files_Sharing_Cache extends Test_Files_Sharing_Base {
 	}
 
 	function testGetFolderContentsInSubdir() {
-		$results = $this->user2View->getDirectoryContent('/Shared/shareddir');
+		$results = $this->user2View->getDirectoryContent('/shareddir');
 
 		$this->verifyFiles(
 			array(
 				array(
 					'name' => 'bar.txt',
-					'path' => 'files/container/shareddir/bar.txt',
+					'path' => 'bar.txt',
 					'mimetype' => 'text/plain',
-					'usersPath' => 'files/Shared/shareddir/bar.txt'
+					'uid_owner' => self::TEST_FILES_SHARING_API_USER1,
+					'displayname_owner' => 'User One',
 				),
 				array(
 					'name' => 'emptydir',
-					'path' => 'files/container/shareddir/emptydir',
+					'path' => 'emptydir',
 					'mimetype' => 'httpd/unix-directory',
-					'usersPath' => 'files/Shared/shareddir/emptydir'
+					'uid_owner' => self::TEST_FILES_SHARING_API_USER1,
+					'displayname_owner' => 'User One',
 				),
 				array(
 					'name' => 'subdir',
-					'path' => 'files/container/shareddir/subdir',
+					'path' => 'subdir',
 					'mimetype' => 'httpd/unix-directory',
-					'usersPath' => 'files/Shared/shareddir/subdir'
+					'uid_owner' => self::TEST_FILES_SHARING_API_USER1,
+					'displayname_owner' => 'User One',
 				),
 			),
 			$results
@@ -182,27 +192,30 @@ class Test_Files_Sharing_Cache extends Test_Files_Sharing_Base {
 		self::loginHelper(self::TEST_FILES_SHARING_API_USER3);
 
 		$thirdView = new \OC\Files\View('/' . self::TEST_FILES_SHARING_API_USER3 . '/files');
-		$results = $thirdView->getDirectoryContent('/Shared/subdir');
+		$results = $thirdView->getDirectoryContent('/subdir');
 
 		$this->verifyFiles(
 			array(
 				array(
 					'name' => 'another too.txt',
-					'path' => 'files/container/shareddir/subdir/another too.txt',
+					'path' => 'another too.txt',
 					'mimetype' => 'text/plain',
-					'usersPath' => 'files/Shared/subdir/another too.txt'
+					'uid_owner' => self::TEST_FILES_SHARING_API_USER1,
+					'displayname_owner' => 'User One',
 				),
 				array(
 					'name' => 'another.txt',
-					'path' => 'files/container/shareddir/subdir/another.txt',
+					'path' => 'another.txt',
 					'mimetype' => 'text/plain',
-					'usersPath' => 'files/Shared/subdir/another.txt'
+					'uid_owner' => self::TEST_FILES_SHARING_API_USER1,
+					'displayname_owner' => 'User One',
 				),
 				array(
 					'name' => 'not a text file.xml',
-					'path' => 'files/container/shareddir/subdir/not a text file.xml',
+					'path' => 'not a text file.xml',
 					'mimetype' => 'application/xml',
-					'usersPath' => 'files/Shared/subdir/not a text file.xml'
+					'uid_owner' => self::TEST_FILES_SHARING_API_USER1,
+					'displayname_owner' => 'User One',
 				),
 			),
 			$results
@@ -236,7 +249,7 @@ class Test_Files_Sharing_Cache extends Test_Files_Sharing_Base {
 	}
 
 	/**
-	 * @brief verify if each value from the result matches the expected result
+	 * verify if each value from the result matches the expected result
 	 * @param array $example array with the expected results
 	 * @param array $result array with the results
 	 */
@@ -250,18 +263,18 @@ class Test_Files_Sharing_Cache extends Test_Files_Sharing_Base {
 		self::loginHelper(self::TEST_FILES_SHARING_API_USER1);
 		\OC\Files\Filesystem::file_put_contents('test.txt', 'foo');
 		$info = \OC\Files\Filesystem::getFileInfo('test.txt');
-		\OCP\Share::shareItem('file', $info['fileid'], \OCP\Share::SHARE_TYPE_USER, self::TEST_FILES_SHARING_API_USER2, \OCP\PERMISSION_ALL);
+		\OCP\Share::shareItem('file', $info->getId(), \OCP\Share::SHARE_TYPE_USER, self::TEST_FILES_SHARING_API_USER2, \OCP\PERMISSION_ALL);
 		\OC_Util::tearDownFS();
 
 		self::loginHelper(self::TEST_FILES_SHARING_API_USER2);
-		$this->assertTrue(\OC\Files\Filesystem::file_exists('/Shared/test.txt'));
-		list($sharedStorage) = \OC\Files\Filesystem::resolvePath('/' . self::TEST_FILES_SHARING_API_USER2 . '/files/Shared/test.txt');
+		$this->assertTrue(\OC\Files\Filesystem::file_exists('/test.txt'));
+		list($sharedStorage) = \OC\Files\Filesystem::resolvePath('/' . self::TEST_FILES_SHARING_API_USER2 . '/files/test.txt');
 		/**
 		 * @var \OC\Files\Storage\Shared $sharedStorage
 		 */
 
 		$sharedCache = $sharedStorage->getCache();
-		$this->assertEquals('test.txt', $sharedCache->getPathById($info['fileid']));
+		$this->assertEquals('', $sharedCache->getPathById($info->getId()));
 	}
 
 	public function testGetPathByIdShareSubFolder() {
@@ -271,18 +284,18 @@ class Test_Files_Sharing_Cache extends Test_Files_Sharing_Base {
 		\OC\Files\Filesystem::touch('foo/bar/test.txt', 'bar');
 		$folderInfo = \OC\Files\Filesystem::getFileInfo('foo');
 		$fileInfo = \OC\Files\Filesystem::getFileInfo('foo/bar/test.txt');
-		\OCP\Share::shareItem('folder', $folderInfo['fileid'], \OCP\Share::SHARE_TYPE_USER, self::TEST_FILES_SHARING_API_USER2, \OCP\PERMISSION_ALL);
+		\OCP\Share::shareItem('folder', $folderInfo->getId(), \OCP\Share::SHARE_TYPE_USER, self::TEST_FILES_SHARING_API_USER2, \OCP\PERMISSION_ALL);
 		\OC_Util::tearDownFS();
 
 		self::loginHelper(self::TEST_FILES_SHARING_API_USER2);
-		$this->assertTrue(\OC\Files\Filesystem::file_exists('/Shared/foo'));
-		list($sharedStorage) = \OC\Files\Filesystem::resolvePath('/' . self::TEST_FILES_SHARING_API_USER2 . '/files/Shared/foo');
+		$this->assertTrue(\OC\Files\Filesystem::file_exists('/foo'));
+		list($sharedStorage) = \OC\Files\Filesystem::resolvePath('/' . self::TEST_FILES_SHARING_API_USER2 . '/files/foo');
 		/**
 		 * @var \OC\Files\Storage\Shared $sharedStorage
 		 */
 
 		$sharedCache = $sharedStorage->getCache();
-		$this->assertEquals('foo', $sharedCache->getPathById($folderInfo['fileid']));
-		$this->assertEquals('foo/bar/test.txt', $sharedCache->getPathById($fileInfo['fileid']));
+		$this->assertEquals('', $sharedCache->getPathById($folderInfo->getId()));
+		$this->assertEquals('bar/test.txt', $sharedCache->getPathById($fileInfo->getId()));
 	}
 }

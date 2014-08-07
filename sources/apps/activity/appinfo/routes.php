@@ -16,12 +16,15 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
+ * You should have received a copy of the GNU Affero General Public
  * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
-
-// register an ocs api call
-OCP\API::register('get', '/cloud/activity', array('OCA\Activity\OCS', 'getActivities'), 'activity', OC_API::ADMIN_AUTH);
-
+// Register an OCS API call
+OC_API::register(
+	'get',
+	'/cloud/activity',
+	array('OCA\Activity\Api', 'get'),
+	'activity'
+);

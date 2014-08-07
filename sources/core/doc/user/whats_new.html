@@ -1,0 +1,159 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>New in ownCloud 7 &mdash; ownCloud User Manual 7.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/style.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/style.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/bootstrap.js"></script>
+    <link rel="top" title="ownCloud User Manual 7.0 documentation" href="index.html" />
+    <link rel="next" title="The ownCloud Web Interface" href="webinterface.html" />
+    <link rel="prev" title="ownCloud 7.0 User Documentation" href="index.html" />
+<script type="text/javascript">
+(function () {
+  /**
+   * Patch TOC list.
+   *
+   * Will mutate the underlying span to have a correct ul for nav.
+   *
+   * @param $span: Span containing nested UL's to mutate.
+   * @param minLevel: Starting level for nested lists. (1: global, 2: local).
+   */
+  var patchToc = function ($ul, minLevel) {
+    var findA;
+
+    // Find all a "internal" tags, traversing recursively.
+    findA = function ($elem, level) {
+      var level = level || 0,
+        $items = $elem.find("> li > a.internal, > ul, > li > ul");
+
+      // Iterate everything in order.
+      $items.each(function (index, item) {
+        var $item = $(item),
+          tag = item.tagName.toLowerCase(),
+          pad = 15 + ((level - minLevel) * 10);
+
+        if (tag === 'a' && level >= minLevel) {
+          // Add to existing padding.
+          $item.css('padding-left', pad + "px");
+          console.log(level, $item, 'padding-left', pad + "px");
+        } else if (tag === 'ul') {
+          // Recurse.
+          findA($item, level + 1);
+        }
+      });
+    };
+
+    console.log("HERE");
+    findA($ul);
+  };
+
+  $(document).ready(function () {
+    // Add styling, structure to TOC's.
+    $(".dropdown-menu").each(function () {
+      $(this).find("ul").each(function (index, item){
+        var $item = $(item);
+        $item.addClass('unstyled');
+      });
+      $(this).find("li").each(function () {
+        $(this).parent().append(this);
+      });
+    });
+
+    // Patch in level.
+    patchToc($("ul.globaltoc"), 2);
+    patchToc($("ul.localtoc"), 2);
+
+    // Enable dropdown.
+    $('.dropdown-toggle').dropdown();
+  });
+}());
+</script>
+
+  </head>
+  <body>
+  
+
+<div class="container">
+  <div class="content">
+    <div class="page-header">
+      <h1><a href="contents.html">ownCloud User Manual</a></h1>
+
+    </div>
+    
+			<div class="row">
+				<div class="span3">
+					<div class="sidebar">
+						<div class="well">
+							<div class="menu-support-container">
+								<ul id="menu-support" class="menu">
+									<ul>
+										<li><a href="contents.html">Overview</a></li>
+									</ul>
+                  <ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">ownCloud 7.0 User Documentation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">New in ownCloud 7</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#changes-to-the-shared-folder">Changes to the &#8220;Shared&#8221; folder</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="webinterface.html">The ownCloud Web Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="files/index.html">Files &amp; Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pim/index.html">Contacts &amp; Calendar</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bookmarks.html">Using the Bookmarks App</a></li>
+<li class="toctree-l1"><a class="reference internal" href="documents.html">Documents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">User Account Migration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="userpreferences.html">Changing Preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_storage/google_drive.html">Configuring External Storage</a></li>
+</ul>
+
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+        
+
+				<div class="span9">
+					<div class="page-content">
+						
+  <div class="section" id="new-in-owncloud-7">
+<h1>New in ownCloud 7<a class="headerlink" href="#new-in-owncloud-7" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="changes-to-the-shared-folder">
+<h2>Changes to the &#8220;Shared&#8221; folder<a class="headerlink" href="#changes-to-the-shared-folder" title="Permalink to this headline">¶</a></h2>
+<p>For all existing ownCloud users: the “Shared” folder has been removed from the ownCloud server. As a result, newly shared files and folders no longer appear in a folder called “Shared”, they appear in the root user’s folder. For example, if Bob shares a folder called “sales” with Earl in ownCloud 6, Earl will see  the “Shared” folder appear, and then the folder “sales” appears within “Shared”. Now, in ownCloud 7, the same sharing activity would create a folder called “sales” in Earl’s root directory. Overlay icons will show Earl that this is a shared folder, and the folder can be moved wherever he wants – including into a folder he creates and calls “Shared”. However, the “Shared” directory is no longer required, and will no longer appear by default when a file or folder is shared.</p>
+<p>If users currently have an earlier version of ownCloud and have shared files and folders via the “Shared” directory, the files and folders will continue to reside in the “Shared” directory after an ownCloud 7 upgrade. However, any files or folders shared after the upgrade will appear in the user’s root directory. These files and folders can be dragged anywhere in the ownCloud file tree (except into another folder that has been shared with this user). For example, the files and folders could be dragged into a “Shared” folder, where they will continue to sync normally. Or they can be dragged into a folder called “Given to me by Bob”. In addition, to make navigating these files easier, the ownCloud 7 web interface now provides a “Shared with Me” filter that automatically shows on the left hand side of the files view in a web browser. Clicking on this filter will display only those paths where files and folders shared with this user reside. This change in behavior provides ownCloud users with far greater flexibility, enabling them to arrange and organize files and folders however they want, even if those folders or files are shared with them.</p>
+</div>
+</div>
+
+
+					</div>
+				</div>
+			</div>
+    
+  </div>
+</div>
+  </body>
+</html>

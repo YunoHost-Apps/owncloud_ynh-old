@@ -147,5 +147,30 @@ class Helper {
 		$dB = str_pad(dechex(round($dB)), 2, "0", STR_PAD_LEFT);
 		return $dR.$dG.$dB;
 	}
+	
+	public static function findOpenOffice(){
+		$cmd = '';
+		if (is_string(\OC_Config::getValue('preview_libreoffice_path', null))){
+			$cmd = \OC_Config::getValue('preview_libreoffice_path', null);
+		}
+
+		$whichLibreOffice = shell_exec('which libreoffice');
+		if ($cmd === '' && !empty($whichLibreOffice)){
+			$cmd = 'libreoffice';
+		}
+
+		$whichOpenOffice = shell_exec('which openoffice');
+		if ($cmd === '' && !empty($whichOpenOffice)){
+			$cmd = 'openoffice';
+		}
+		
+		if (empty($cmd)){
+			Helper::warnLog('Pure configuration issue. Missing open office binary that is mandatory for conversion.');
+			Helper::debugLog('If openoffice or libreoffice is already installed please specify the path to it using preview_libreoffice_path config. Refer to admin manual for details.');
+			throw new \RuntimeException('Missing open office binary that is mandatory for conversion.');
+		}
+		
+		return $cmd;
+	}
 
 }

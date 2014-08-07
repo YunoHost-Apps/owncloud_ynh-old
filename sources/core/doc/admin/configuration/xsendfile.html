@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Serving static files via web server &mdash; ownCloud Administrators Manual 6.0 documentation</title>
+    <title>Serving static files via web server &mdash; ownCloud Administrators Manual 7.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '6.0',
+        VERSION:     '7.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,9 +27,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Administrators Manual 6.0 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Administrators Manual 7.0 documentation" href="../index.html" />
     <link rel="up" title="Configuration" href="index.html" />
-    <link rel="next" title="Apps" href="../apps/index.html" />
+    <link rel="next" title="Maintenance" href="../maintenance/index.html" />
     <link rel="prev" title="Custom User Backend Configuration" href="custom_user_backend.html" />
 <script type="text/javascript">
 (function () {
@@ -113,29 +113,31 @@
 										<li><a href="../contents.html">Overview</a></li>
 									</ul>
                   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 6.0 Admin Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Configuration</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="configuration_apps.html">Managing Apps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_apps.html">Apps Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="configuration_users.html">User Management</a></li>
-<li class="toctree-l2"><a class="reference internal" href="auth_ldap.html">LDAP Authentication</a></li>
-<li class="toctree-l2"><a class="reference internal" href="background_jobs.html">Background Jobs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_3rdparty.html">Find Third-Party Libraries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_automation.html">Automatic Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_custom_clients.html">Customizing Client Download Links</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_database.html">MySQL/Postgres/SQLite Support</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_encryption.html">Using Server-Side Encryption</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_knowledgebase.html">Disable Knowledge Base</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_language.html">Setting the Default Language</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_logging.html">Configure Logging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_mail.html">Sending Mail Notifications</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_maintenance.html">Enable Maintenance Mode</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_preview.html">Enabling File Previews</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auth_ldap.html">User Authentication with LDAP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server_to_server_managing.html">Managing Server-to-Server Sharing Access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="background_jobs.html">Defining Background Jobs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_assets.html">Asset Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_3rdparty.html">Using Third Party Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_automation.html">Defining Automatic Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_custom_clients.html">Custom Client Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_database.html">Database Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_encryption.html">Use Server-Side Encryption</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_knowledgebase.html">Knowledge Base Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_language.html">Language Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_logging.html">Logging Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_mail.html">Mail Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_preview.html">Preview Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="configuration_reverseproxy.html">Reverse Proxy Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html">Dealing with Big File Uploads</a></li>
-<li class="toctree-l2"><a class="reference internal" href="custom_mount_config_gui.html">Custom Mount Configuration Web-GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html">Uploading big files &gt; 512MB (as set by default)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html#enabling-uploading-big-files">Enabling uploading big files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_mount_config_gui.html">Custom Mount Configuration (GUI)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_mount_config.html">Custom Mount Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_user_backend.html">Custom User Backend Configuration</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Serving static files via web server</a><ul>
@@ -147,12 +149,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../apps/index.html">Apps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cron/index.html">Driving Events with Cron</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quota/index.html">Quota Calculation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sharing_api/index.html">Sharing API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../config/index.html">The Configuration File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues</a></li>
 </ul>
 
@@ -173,8 +170,8 @@ This should generally improve performance (web servers are optimized for this) a
 file serving (i.e. pause and resume downloads).</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">This feature can currently only be activated for local files, i.e. files inside the <strong>data/</strong> directory
-and local mounts. Controlled file serving <strong>does not work for generated zip files</strong>. This is due to how temporary files are created.</p>
+<p class="last">This feature can currently only be activated for local files, i.e. files inside the <strong>data/</strong> directory and local mounts.  It also does not work with the Encryption App enabled.
+Controlled file serving <strong>does not work for generated zip files</strong>. This is due to zip files being generated and streamed back directly to the client.</p>
 </div>
 <div class="section" id="apache2-x-sendfile">
 <h2>Apache2 (X-Sendfile)<a class="headerlink" href="#apache2-x-sendfile" title="Permalink to this headline">¶</a></h2>
@@ -202,15 +199,14 @@ For versions below 0.10 (Debian squeeze ships with 0.9)</p>
     ...
     SetEnv MOD_X_SENDFILE_ENABLED 1
     XSendFile On
-    XSendFilePath /tmp/oc-noclean
     XSendFilePath /home/valerio
 &lt;/Directory&gt;</pre>
 </div>
 <ul class="simple">
 <li><strong>SetEnv MOD_X_SENDFILE_ENABLED</strong>: tells ownCloud scripts that they should add the X-Sendfile header when serving files</li>
 <li><strong>XSendFile</strong>: enables web server handling of X-Sendfile headers (and therefore file serving) for the specified Directory</li>
-<li><strong>XSendFileAllowAbove (&lt;0.10)</strong>: enables file serving through web server on path outside the specified Directory. This is needed for PHP temporary directory where zip files are created and for configured local mounts which may reside outside data directory</li>
-<li><strong>XSendFilePath (&gt;=0.10)</strong>: a white list of paths that the web server is allowed to serve outside of the specified Directory. At least PHP temporary directory concatenated with <em>oc-noclean</em> must be configured. Temporary zip files will be created inside this directory when using mod_xsendfile. Other paths which correspond to local mounts should be configured here as well. For a more in-dept documentation of this directive refer to mod_xsendfile website linked above</li>
+<li><strong>XSendFileAllowAbove (&lt;0.10)</strong>: enables file serving through web server on path outside the specified Directory. This is needed for configured local mounts which may reside outside data directory</li>
+<li><strong>XSendFilePath (&gt;=0.10)</strong>: a white list of paths that the web server is allowed to serve outside of the specified Directory. Other paths which correspond to local mounts should be configured here as well. For a more in-depth documentation of this directive refer to mod_xsendfile website linked above</li>
 </ul>
 </div>
 </div>
@@ -251,27 +247,41 @@ The header used by Nginx is X-Accel-Redirect.</p>
 <div class="section" id="id4">
 <h3>Configuration<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <p>Configuration is similar to Apache:</p>
-<div class="highlight-python"><pre>location ~ \.php$ {
+<div class="highlight-python"><pre>location ~ \.php(?:$|/) {
     ...
     fastcgi_param MOD_X_ACCEL_REDIRECT_ENABLED on;
 }
 
-location ~ ^/home/valerio/(owncloud/)?data {
+location ^~ /data {
     internal;
-    root /;
-}
+    # Set 'alias' if not using the default 'datadirectory'
+    #alias /path/to/non-default/datadirectory;
 
-location ~ ^/tmp/oc-noclean/.+$ {
-    internal;
-    root /;
+#    LOCAL-MOUNT-NAME should match "Folder name" and 'alias' value should match "Configuration"
+#    A 'Local' External Storage Mountpoint available to a single user
+#    location /data/USER/files/LOCAL-FS-MOUNT-NAME {
+#        alias /path/to/local-mountpoint;
+#    }
+
+#    A 'Local' External Storage Mountpoint available to mulitple users
+#    location ~ ^/data/(?:USER1|USER2)/files/LOCAL-FS-MOUNT-NAME/(.+)$ {
+#        alias /path/to/local-mountpoint/$1;
+#    }
+
+#    A 'Local' External Storage Mountpoint available to all users
+#    location ~ ^/data/[^/]+/files/LOCAL-FS-MOUNT-NAME/(.+)$ {
+#        alias /path/to/local-mountpoint/$1;
+#    }
+
 }</pre>
 </div>
 <ul class="simple">
-<li><strong>fastcgi_param MOD_X_ACCEL_REDIRECT_ENABLED:</strong> tells ownCloud scripts that they should add the X-Accel-Redirect header when serving files</li>
-<li><strong>internal location:</strong> each directory that contains local user data should correspond to an internal location. In the example uses the following directories:<ul>
-<li><strong>/home/valerio/owncloud/data</strong>: ownCloud data directory</li>
-<li><strong>/home/valerio/data</strong>: a local mount</li>
-<li><strong>/tmp/oc-noclean</strong>: PHP temporary directory concatenated with <em>oc-noclean</em>. Temporary zip files will be created inside this directory when using X-Accel-Redirect</li>
+<li><strong>fastcgi_param MOD_X_ACCEL_REDIRECT_ENABLED</strong> ~ Tells ownCloud scripts that they should add the X-Accel-Redirect header when serving files.</li>
+<li><strong>/data</strong> ~ The ownCloud data directory.  Any &#8216;Local&#8217; External Storage Mounts must also have nested locations here.<ul>
+<li>set alias if you are using a non-default data directory</li>
+<li><strong>/data/USER/files/LOCAL-MOUNT-NAME</strong> ~ a local external storage mount available to a single user</li>
+<li><strong>~ ^/data/(?:USER1|USER2)/files/LOCAL-MOUNT-NAME/(.+)$</strong> ~ a local external storage mount available to multiple users</li>
+<li><strong>~ ^/data/[^/]+/files/LOCAL-MOUNT-NAME/(.+)$</strong> ~ a local external storage mount available to all users</li>
 </ul>
 </li>
 </ul>

@@ -16,6 +16,9 @@ class OC_FileChunking {
 		return $matches;
 	}
 
+	/**
+	 * @param string[] $info
+	 */
 	public function __construct($info) {
 		$this->info = $info;
 	}
@@ -37,8 +40,8 @@ class OC_FileChunking {
 	/**
 	 * Stores the given $data under the given $key - the number of stored bytes is returned
 	 *
-	 * @param $index
-	 * @param $data
+	 * @param string $index
+	 * @param resource $data
 	 * @return int
 	 */
 	public function store($index, $data) {
@@ -67,7 +70,7 @@ class OC_FileChunking {
 	 *
 	 * @param string $f target path
 	 *
-	 * @return assembled file size
+	 * @return integer assembled file size
 	 *
 	 * @throws \OC\InsufficientStorageException when file could not be fully
 	 * assembled due to lack of free space
@@ -88,7 +91,7 @@ class OC_FileChunking {
 
 	/**
 	 * Returns the size of the chunks already present
-	 * @return size in bytes
+	 * @return integer size in bytes
 	 */
 	public function getCurrentSize() {
 		$cache = $this->getCache();
@@ -113,7 +116,7 @@ class OC_FileChunking {
 
 	/**
 	 * Removes one specific chunk
-	 * @param $index
+	 * @param string $index
 	 */
 	public function remove($index) {
 		$cache = $this->getCache();
@@ -156,7 +159,7 @@ class OC_FileChunking {
 	 *
 	 * @param string $path target path
 	 *
-	 * @return assembled file size or false if file could not be created
+	 * @return boolean assembled file size or false if file could not be created
 	 *
 	 * @throws \OC\InsufficientStorageException when file could not be fully
 	 * assembled due to lack of free space
@@ -213,5 +216,6 @@ class OC_FileChunking {
 				return false;
 			}
 		}
+		return false;
 	}
 }

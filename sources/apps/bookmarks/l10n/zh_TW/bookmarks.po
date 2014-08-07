@@ -3,17 +3,18 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Hydriz <admin@alphacorp.tk>, 2013
-# dw4dev <dw4dev@gmail.com>, 2012
-# pellaeon <nfsmwlin@gmail.com>, 2013
+# Hydriz Scholz <admin@alphacorp.tk>, 2013
+# Davidson Wang <dw4dev@gmail.com>, 2012
+# Pellaeon Lin <nfsmwlin@gmail.com>, 2013
+# tifa_choi <tifa_choi@tungtex.com>, 2014
 # ywang <ywang1007@gmail.com>, 2012
 msgid ""
 msgstr ""
 "Project-Id-Version: ownCloud\n"
 "Report-Msgid-Bugs-To: translations@owncloud.org\n"
-"POT-Creation-Date: 2013-12-02 18:22-0500\n"
-"PO-Revision-Date: 2013-12-02 20:41+0000\n"
-"Last-Translator: I Robot <owncloud-bot@tmit.eu>\n"
+"POT-Creation-Date: 2014-06-19 02:10-0400\n"
+"PO-Revision-Date: 2014-06-18 06:10+0000\n"
+"Last-Translator: tifa_choi <tifa_choi@tungtex.com>\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.com/projects/p/owncloud/language/zh_TW/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -113,7 +114,7 @@ msgstr "把這個拖曳至瀏覽器的書籤列，下次您想要將某個頁面
 
 #: templates/list.php:15
 msgid "Add to ownCloud"
-msgstr ""
+msgstr "新增至ownCloud"
 
 #: templates/list.php:22
 msgid "Address"

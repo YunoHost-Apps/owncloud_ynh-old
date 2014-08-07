@@ -33,7 +33,7 @@ use OCA\Encryption;
 
 /**
  * Class Test_Encryption_Stream
- * @brief this class provide basic stream tests
+ * this class provide basic stream tests
  */
 class Test_Encryption_Stream extends \PHPUnit_Framework_TestCase {
 
@@ -42,7 +42,7 @@ class Test_Encryption_Stream extends \PHPUnit_Framework_TestCase {
 	public $userId;
 	public $pass;
 	/**
-	 * @var \OC_FilesystemView
+	 * @var \OC\Files\View
 	 */
 	public $view;
 	public $dataShort;
@@ -71,7 +71,7 @@ class Test_Encryption_Stream extends \PHPUnit_Framework_TestCase {
 		$this->pass = \Test_Encryption_Stream::TEST_ENCRYPTION_STREAM_USER1;
 
 		// init filesystem view
-		$this->view = new \OC_FilesystemView('/');
+		$this->view = new \OC\Files\View('/');
 
 		// init short data
 		$this->dataShort = 'hats';
@@ -136,6 +136,8 @@ class Test_Encryption_Stream extends \PHPUnit_Framework_TestCase {
 		// set stream options
 		$this->assertTrue(stream_set_blocking($handle, 1));
 
+		fclose($handle);
+
 		// tear down
 		$view->unlink($filename);
 	}
@@ -158,6 +160,8 @@ class Test_Encryption_Stream extends \PHPUnit_Framework_TestCase {
 		// set stream options
 		$this->assertFalse(stream_set_timeout($handle, 1));
 
+		fclose($handle);
+
 		// tear down
 		$view->unlink($filename);
 	}
@@ -177,19 +181,21 @@ class Test_Encryption_Stream extends \PHPUnit_Framework_TestCase {
 		// set stream options
 		$this->assertEquals(0, stream_set_write_buffer($handle, 1024));
 
+		fclose($handle);
+
 		// tear down
 		$view->unlink($filename);
 	}
 
 	/**
 	 * @medium
-	 * @brief test if stream wrapper can read files outside from the data folder
+	 * test if stream wrapper can read files outside from the data folder
 	 */
 	function testStreamFromLocalFile() {
 
-		$filename = '/' . $this->userId . '/files/' . 'tmp-' . time().'.txt';
+		$filename = '/' . $this->userId . '/files/' . 'tmp-' . uniqid().'.txt';
 
-		$tmpFilename = "/tmp/" . time() . ".txt";
+		$tmpFilename = "/tmp/" . uniqid() . ".txt";
 
 		// write an encrypted file
 		$cryptedFile = $this->view->file_put_contents($filename, $this->dataShort);

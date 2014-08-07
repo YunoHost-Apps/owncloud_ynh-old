@@ -39,7 +39,7 @@ abstract class Test_Files_Sharing_Base extends \PHPUnit_Framework_TestCase {
 	public $filename;
 	public $data;
 	/**
-	 * @var OC_FilesystemView
+	 * @var OC\Files\View
 	 */
 	public $view;
 	public $folder;
@@ -68,7 +68,7 @@ abstract class Test_Files_Sharing_Base extends \PHPUnit_Framework_TestCase {
 		self::loginHelper(self::TEST_FILES_SHARING_API_USER1);
 
 		$this->data = 'foobar';
-		$this->view = new \OC_FilesystemView('/' . self::TEST_FILES_SHARING_API_USER1 . '/files');
+		$this->view = new \OC\Files\View('/' . self::TEST_FILES_SHARING_API_USER1 . '/files');
 		// remember files_encryption state
 		$this->stateFilesEncryption = \OC_App::isEnabled('files_encryption');
 
@@ -97,31 +97,31 @@ abstract class Test_Files_Sharing_Base extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @param $user
+	 * @param string $user
 	 * @param bool $create
 	 * @param bool $password
 	 */
 	protected static function loginHelper($user, $create = false, $password = false) {
-		if ($create) {
-			\OC_User::createUser($user, $user);
-		}
 
 		if ($password === false) {
 			$password = $user;
 		}
 
+		if ($create) {
+			\OC_User::createUser($user, $password);
+			\OC_Group::createGroup('group');
+			\OC_Group::addToGroup($user, 'group');
+		}
+
 		\OC_Util::tearDownFS();
 		\OC_User::setUserId('');
 		\OC\Files\Filesystem::tearDown();
-		\OC_Util::setupFS($user);
 		\OC_User::setUserId($user);
-
-		$params['uid'] = $user;
-		$params['password'] = $password;
+		\OC_Util::setupFS($user);
 	}
 
 	/**
-	 * @brief get some information from a given share
+	 * get some information from a given share
 	 * @param int $shareID
 	 * @return array with: item_source, share_type, share_with, item_type, permissions
 	 */

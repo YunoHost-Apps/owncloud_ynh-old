@@ -7,23 +7,24 @@
  */
 
 /**
- * Prints an XSS escaped string
- * @param string $string the string which will be escaped and printed
+ * Prints a sanitized string
+ * @param string|array $string the string which will be escaped and printed
  */
 function p($string) {
 	print(OC_Util::sanitizeHTML($string));
 }
 
 /**
- * Prints an unescaped string
- * @param string $string the string which will be printed as it is
+ * Prints an unsanitized string - usage of this function may result into XSS.
+ * Consider using p() instead.
+ * @param string|array $string the string which will be printed as it is
  */
 function print_unescaped($string) {
 	print($string);
 }
 
 /**
- * @brief make OC_Helper::linkTo available as a simple function
+ * make OC_Helper::linkTo available as a simple function
  * @param string $app app
  * @param string $file file
  * @param array $args array with param=>value, will be appended to the returned url
@@ -44,7 +45,7 @@ function link_to_docs($key) {
 }
 
 /**
- * @brief make OC_Helper::imagePath available as a simple function
+ * make OC_Helper::imagePath available as a simple function
  * @param string $app app
  * @param string $image image
  * @return string link to the image
@@ -56,7 +57,7 @@ function image_path( $app, $image ) {
 }
 
 /**
- * @brief make OC_Helper::mimetypeIcon available as a simple function
+ * make OC_Helper::mimetypeIcon available as a simple function
  * @param string $mimetype mimetype
  * @return string link to the image
  *
@@ -67,10 +68,10 @@ function mimetype_icon( $mimetype ) {
 }
 
 /**
- * @brief make preview_icon available as a simple function
+ * make preview_icon available as a simple function
  * Returns the path to the preview of the image.
- * @param $path path of file
- * @returns link to the preview
+ * @param string $path path of file
+ * @return link to the preview
  *
  * For further information have a look at OC_Helper::previewIcon
  */
@@ -78,12 +79,15 @@ function preview_icon( $path ) {
 	return OC_Helper::previewIcon( $path );
 }
 
+/**
+ * @param string $path
+ */
 function publicPreview_icon ( $path, $token ) {
 	return OC_Helper::publicPreviewIcon( $path, $token );
 }
 
 /**
- * @brief make OC_Helper::humanFileSize available as a simple function
+ * make OC_Helper::humanFileSize available as a simple function
  * @param int $bytes size in bytes
  * @return string size as string
  *
@@ -94,7 +98,7 @@ function human_file_size( $bytes ) {
 }
 
 /**
- * @brief Strips the timestamp of its time value
+ * Strips the timestamp of its time value
  * @param int $timestamp UNIX timestamp to strip
  * @return $timestamp without time value
  */
@@ -105,12 +109,12 @@ function strip_time($timestamp){
 }
 
 /**
- * @brief Formats timestamp relatively to the current time using
+ * Formats timestamp relatively to the current time using
  * a human-friendly format like "x minutes ago" or "yesterday"
  * @param int $timestamp timestamp to format
  * @param int $fromTime timestamp to compare from, defaults to current time
  * @param bool $dateOnly whether to strip time information
- * @return formatted timestamp
+ * @return OC_L10N_String timestamp
  */
 function relative_modified_date($timestamp, $fromTime = null, $dateOnly = false) {
 	$l=OC_L10N::get('lib');

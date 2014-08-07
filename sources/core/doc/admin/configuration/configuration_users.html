@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>User Management &mdash; ownCloud Administrators Manual 6.0 documentation</title>
+    <title>User Management &mdash; ownCloud Administrators Manual 7.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '6.0',
+        VERSION:     '7.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,10 +27,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Administrators Manual 6.0 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Administrators Manual 7.0 documentation" href="../index.html" />
     <link rel="up" title="Configuration" href="index.html" />
-    <link rel="next" title="LDAP Authentication" href="auth_ldap.html" />
-    <link rel="prev" title="Managing Apps" href="configuration_apps.html" />
+    <link rel="next" title="User Authentication with LDAP" href="auth_ldap.html" />
+    <link rel="prev" title="Apps Configuration" href="configuration_apps.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -113,44 +113,41 @@
 										<li><a href="../contents.html">Overview</a></li>
 									</ul>
                   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 6.0 Admin Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Configuration</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="configuration_apps.html">Managing Apps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_apps.html">Apps Configuration</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">User Management</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#users">Users</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#user-groups">User Groups</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="auth_ldap.html">LDAP Authentication</a></li>
-<li class="toctree-l2"><a class="reference internal" href="background_jobs.html">Background Jobs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_3rdparty.html">Find Third-Party Libraries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_automation.html">Automatic Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_custom_clients.html">Customizing Client Download Links</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_database.html">MySQL/Postgres/SQLite Support</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_encryption.html">Using Server-Side Encryption</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_knowledgebase.html">Disable Knowledge Base</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_language.html">Setting the Default Language</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_logging.html">Configure Logging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_mail.html">Sending Mail Notifications</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_maintenance.html">Enable Maintenance Mode</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_preview.html">Enabling File Previews</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auth_ldap.html">User Authentication with LDAP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server_to_server_managing.html">Managing Server-to-Server Sharing Access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="background_jobs.html">Defining Background Jobs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_assets.html">Asset Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_3rdparty.html">Using Third Party Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_automation.html">Defining Automatic Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_custom_clients.html">Custom Client Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_database.html">Database Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_encryption.html">Use Server-Side Encryption</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_knowledgebase.html">Knowledge Base Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_language.html">Language Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_logging.html">Logging Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_mail.html">Mail Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_preview.html">Preview Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="configuration_reverseproxy.html">Reverse Proxy Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html">Dealing with Big File Uploads</a></li>
-<li class="toctree-l2"><a class="reference internal" href="custom_mount_config_gui.html">Custom Mount Configuration Web-GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html">Uploading big files &gt; 512MB (as set by default)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html#enabling-uploading-big-files">Enabling uploading big files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_mount_config_gui.html">Custom Mount Configuration (GUI)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_mount_config.html">Custom Mount Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_user_backend.html">Custom User Backend Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xsendfile.html">Serving static files via web server</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../apps/index.html">Apps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cron/index.html">Driving Events with Cron</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quota/index.html">Quota Calculation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sharing_api/index.html">Sharing API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../config/index.html">The Configuration File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues</a></li>
 </ul>
 
@@ -171,8 +168,8 @@ user management page, click your username on the web interface and select <em>Us
 A page similar to the image below will be shown:</p>
 <div class="figure">
 <img alt="../_images/oc_admin_user_manage.png" src="../_images/oc_admin_user_manage.png" />
+<p class="caption">Users management page</p>
 </div>
-<p>Users management page</p>
 <p>A fictive use case will help you understand the concept of users, user groups
 and group admins.</p>
 <p>Think of a small, 25-member staff company, named &#8220;Cloud Lovers&#8221;, that is lead
@@ -205,7 +202,7 @@ user is not member of any user group.</dd>
 <dt><em>Group Admin</em></dt>
 <dd>This is a list of security groups the user has administration privileges for.
 By default the user is not registered as group admin for any user group.</dd>
-<dt><em>Storage</em></dt>
+<dt><em>Quota</em></dt>
 <dd>This is the maximum disk space that may be used by the user. If the user
 reaches this limit he/she is not able to upload or sync further data. The
 storage quota is specified in the format <em>Number Unit</em> (e.g. 100 B (byte),
@@ -304,7 +301,7 @@ have access to the share.</p>
 <div class="section" id="limit-a-user-s-storage">
 <h3>Limit a user&#8217;s storage<a class="headerlink" href="#limit-a-user-s-storage" title="Permalink to this headline">¶</a></h3>
 <p>To limit a user&#8217;s storage quota:</p>
-<p>Find the user and select an item from the <strong>Storage</strong> drop-down list.</p>
+<p>Find the user and select an item from the <strong>Quota</strong> drop-down list.</p>
 <blockquote>
 <div><ul class="simple">
 <li>If you select <em>Default</em>, the default storage limit, specified in the
@@ -315,8 +312,8 @@ space is consumed.</li>
 quota of your choice and hit the <strong>Enter</strong> key of your keyboard.</li>
 </ul>
 </div></blockquote>
-<p>If you edit the value of the <strong>Default Storage</strong> field in the action bar, all
-users with storage <em>Default</em> are affected by this change, i.e. changing the
+<p>If you edit the value of the <strong>Default Quota</strong> field by clicking on the <strong>gear</strong> icon,
+all users with storage <em>Default</em> are affected by this change, i.e. changing the
 default storage from <em>Unlimited</em> to <em>1 GB</em> will cause all users with <em>Default</em>
 storage being limited to 1 GB storage each.</p>
 </div>
@@ -350,8 +347,7 @@ notification bar at the top of the page.</p>
 <h3>Create Group<a class="headerlink" href="#create-group" title="Permalink to this headline">¶</a></h3>
 <p>To create a user group:</p>
 <ol class="arabic simple">
-<li>Open the <strong>Groups</strong> drop-down list in the action bar.</li>
-<li>Click <strong>add group</strong>.</li>
+<li>Click on <strong>Add Group</strong> button on the left side of the user management page.</li>
 <li>Enter the name of the new group and then hit the <strong>Enter</strong> key of your
 keyboard.</li>
 </ol>
@@ -360,11 +356,12 @@ group drop-down list.</p>
 </div>
 <div class="section" id="edit-delete-group">
 <h3>Edit/Delete Group<a class="headerlink" href="#edit-delete-group" title="Permalink to this headline">¶</a></h3>
-<p>Currently, groups cannot be edited (e.g. renamed) or removed. This feature
-will be available in a future version of ownCloud.</p>
+<p>Currently, groups cannot be renamed. This feature will be available in a future version
+of ownCloud. To delete a group, unassign all users of out of it and click on the
+trash icon next to the group name on the left pane.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If you have direct access to the database, you can manually delete the group
+<p class="last">If you have direct access to the database, you can manually rename the group
 from database tables oc_groups and oc_group_user.</p>
 </div>
 </div>

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Manual Installation &mdash; ownCloud Administrators Manual 6.0 documentation</title>
+    <title>Manual Installation &mdash; ownCloud Administrators Manual 7.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '6.0',
+        VERSION:     '7.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,9 +27,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Administrators Manual 6.0 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Administrators Manual 7.0 documentation" href="../index.html" />
     <link rel="up" title="Installation" href="index.html" />
-    <link rel="next" title="PageKite Configuration" href="installation_others.html" />
+    <link rel="next" title="Other Installation Methods" href="installation_others.html" />
     <link rel="prev" title="Univention Corporate Server" href="installation_ucs.html" />
 <script type="text/javascript">
 (function () {
@@ -113,7 +113,7 @@
 										<li><a href="../contents.html">Overview</a></li>
 									</ul>
                   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 6.0 Admin Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Installation</a><ul class="current">
@@ -124,24 +124,17 @@
 <li class="toctree-l2"><a class="reference internal" href="installation_ucs.html">Univention Corporate Server</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Manual Installation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#download-extract-and-copy-owncloud-to-your-web-server">Download, extract and copy ownCloud to Your Web Server</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#set-the-directory-permissions">Set the Directory Permissions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#web-server-configuration">Web Server Configuration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#follow-the-install-wizard">Follow the Install Wizard</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#note">Note</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#install-wizard">Install Wizard</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="installation_others.html">PageKite Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation_others.html#open-wrt">Open Wrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation_others.html">Other Installation Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation_wizard.html">Installation Wizard</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration/index.html">Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../apps/index.html">Apps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cron/index.html">Driving Events with Cron</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quota/index.html">Quota Calculation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sharing_api/index.html">Sharing API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../config/index.html">The Configuration File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues</a></li>
 </ul>
 
@@ -157,15 +150,12 @@
 						
   <div class="section" id="manual-installation">
 <h1>Manual Installation<a class="headerlink" href="#manual-installation" title="Permalink to this headline">¶</a></h1>
-<p>If you do not want to use packages, here is how you setup ownCloud on
-from scratch using a classic <abbr title="Linux, Apache, MySQL, PHP">LAMP</abbr> setup.</p>
+<p>If you do not want to use packages, here is how you setup ownCloud from
+scratch using a classic <abbr title="Linux, Apache, MySQL, PHP">LAMP</abbr> setup:</p>
 <p>This document provides a complete walk-through for installing ownCloud
 on Ubuntu 12.04 LTS Server with Apache and MySQL.
 It also provides guidelines for installing it on other distributions,
-webservers and database systems.</p>
-<p>Although this document tries to describe all aspects of setting up ownCloud,
-a basic understanding of the Linux operating system and of server administration
-is required.</p>
+web servers and database systems.</p>
 <div class="section" id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <div class="admonition note">
@@ -177,7 +167,7 @@ hoster (e.g. for installing required modules).</p>
 </div>
 <p>To run ownCloud, your web server must have the following installed:</p>
 <ul class="simple">
-<li>PHP (&gt;= 5.3.3 minimum, 5.4 or higher recommended)</li>
+<li>php5 (&gt;= 5.3.8, minimum recommended 5.4)</li>
 <li>PHP module ctype</li>
 <li>PHP module dom</li>
 <li>PHP module GD</li>
@@ -191,7 +181,7 @@ hoster (e.g. for installing required modules).</p>
 </ul>
 <p>Database connectors (pick at least one):</p>
 <ul class="simple">
-<li>PHP module sqlite (requires sqlite &gt;= 3.0; simple configuration, but inferior performance)</li>
+<li>PHP module sqlite (&gt;= 3, usually not recommendable for performance reasons)</li>
 <li>PHP module mysql</li>
 <li>PHP module pgsql (requires PostgreSQL &gt;= 9.0)</li>
 </ul>
@@ -215,6 +205,7 @@ package):</p>
 <p>Recommended for specific apps (<em>optional</em>):</p>
 <ul class="simple">
 <li>PHP module exif (for image rotation in pictures app)</li>
+<li>PHP module gmp (for SFTP storage)</li>
 </ul>
 <p>For enhanced performance (<em>optional</em> / select only one of the following):</p>
 <ul class="simple">
@@ -247,8 +238,8 @@ mod_webdav) to access your ownCloud data via WebDAV. ownCloud has a built-in
 WebDAV server of its own.</p>
 </li>
 </ul>
-<div class="section" id="installation-of-packages-on-ubuntu-12-04-4-lts-server">
-<h3>Installation of packages on Ubuntu 12.04.4 LTS Server<a class="headerlink" href="#installation-of-packages-on-ubuntu-12-04-4-lts-server" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="example-installation-on-ubuntu-12-04-4-lts-server">
+<h3>Example installation on Ubuntu 12.04.4 LTS Server<a class="headerlink" href="#example-installation-on-ubuntu-12-04-4-lts-server" title="Permalink to this headline">¶</a></h3>
 <p>On a machine running a pristine Ubuntu 12.04.4 LTS server, you would install the
 required and recommended modules for a typical ownCloud installation, using
 Apache and MySQL by issuing the following commands in a terminal:</p>
@@ -268,10 +259,6 @@ You might have to press a different key if you have a different system language)
 Be sure to remember the password you enter there for later use (you will need it
 during ownCloud database setup).</li>
 </ul>
-</div>
-</div>
-<div class="section" id="download-extract-and-copy-owncloud-to-your-web-server">
-<h2>Download, extract and copy ownCloud to Your Web Server<a class="headerlink" href="#download-extract-and-copy-owncloud-to-your-web-server" title="Permalink to this headline">¶</a></h2>
 <p>First, download the archive of the latest ownCloud version:</p>
 <ul>
 <li><p class="first">Navigate to the <a class="reference external" href="http://owncloud.org/install">ownCloud Installation Page</a></p>
@@ -283,39 +270,41 @@ during ownCloud database setup).</li>
 <li><p class="first">This will start the download of a file named owncloud-x.y.z.tar.bz2 (where
 x.y.z is the version number of the current latest version).</p>
 </li>
-<li><p class="first">Save this file on the machine you want to install ownCloud on.
-If that&#8217;s a different machine than the one you are currently working on, use
+<li><p class="first">Save this file on the machine you want to install ownCloud on.</p>
+</li>
+<li><p class="first">If that&#8217;s a different machine than the one you are currently working on, use
 e.g. FTP to transfer the downloaded archive file there.</p>
 </li>
 <li><p class="first">Extract the archive contents. Open a terminal and run:</p>
 <div class="highlight-python"><pre>cd path/to/downloaded/archive
 tar -xjf owncloud-x.y.z.tar.bz2</pre>
 </div>
-<p>where <tt class="docutils literal"><span class="pre">path/to/downloaded/archive</span></tt> is to be replaced by the path where you
+<p>where <tt class="code docutils literal"><span class="pre">path/to/downloaded/archive</span></tt> is to be replaced by the path where you
 put the downloaded archive, and x.y.z of course has to be replaced by the actual
 version number as in the file you have downloaded.</p>
 </li>
 <li><p class="first">Copy the ownCloud files to their final destination in the document root of your
-webserver (you can skip this step if you already downloaded and extracted the
+web server (you can skip this step if you already downloaded and extracted the
 files there):</p>
 <div class="highlight-python"><pre>sudo cp -r owncloud /path/to/your/webservers/document-root</pre>
 </div>
 <p>where <tt class="docutils literal"><span class="pre">/path/to/your/webservers/document-root</span></tt>, needs to be replaced by the
-actual path where the document root of your webserver is configured to be.</p>
+actual path where the document root of your web server is configured to be.</p>
 <ul>
-<li><p class="first">If you don&#8217;t know where your webserver&#8217;s document root is located, consult
+<li><p class="first">If you don&#8217;t know where your web server&#8217;s document root is located, consult
 its documentation. For Apache on Ubuntu 12.04 LTS for example, this would
 usually be <tt class="docutils literal"><span class="pre">/var/www</span></tt>. So the concrete command to run would be:</p>
 <div class="highlight-python"><pre>sudo cp -r owncloud /var/www</pre>
 </div>
 </li>
 <li><p class="first">The above assumes you want to install ownCloud into a subdirectory &#8220;owncloud&#8221;
-on your webserver. For installing it anywhere else, you&#8217;ll have to adapt the
-above command (and also the commands in the following section) accordingly.</p>
+on your web server. For installing it anywhere else, you&#8217;ll have to adapt the
+above command accordingly.</p>
 </li>
 </ul>
 </li>
 </ul>
+</div>
 </div>
 <div class="section" id="set-the-directory-permissions">
 <h2>Set the Directory Permissions<a class="headerlink" href="#set-the-directory-permissions" title="Permalink to this headline">¶</a></h2>
@@ -332,8 +321,6 @@ The simple act of mounting the drive will set proper permissions for ownCloud to
 write to the directory. Changing ownership as above could result in some issues
 if the NFS mount is lost.</p>
 </div>
-<p>The following command will change the ownership of the whole ownCloud folder to
-that user.</p>
 <ul>
 <li><p class="first">The generic command to run is:</p>
 <div class="highlight-python"><pre>sudo chown -R &lt;php-user&gt;:&lt;php-user&gt; /path/to/your/webservers/document-root/owncloud</pre>
@@ -348,20 +335,13 @@ scripts is called <tt class="docutils literal"><span class="pre">www-data</span>
 <div class="highlight-python"><pre>sudo chown -R www-data:www-data /var/www/owncloud</pre>
 </div>
 </li>
-<li><p class="first">For all Debian-based distributions (like Ubuntu, Debian or Linux Mint) and Gentoo,
-use <tt class="docutils literal"><span class="pre">www-data</span></tt> user</p>
-</li>
-<li><p class="first">On ArchLinux, use <tt class="docutils literal"><span class="pre">http</span></tt> user.</p>
-</li>
-<li><p class="first">On Fedora, use <tt class="docutils literal"><span class="pre">apache</span></tt> user.</p>
-</li>
-<li><p class="first">When you had extracted ownCloud as user <tt class="docutils literal"><span class="pre">root</span></tt>, you should adjust file and directory
-permission to avoid world writeable files and folder:</p>
-<div class="highlight-python"><pre>find /path/to/your/webservers/document-root/owncloud -type d -exec chmod 750 {} \;
-find /path/to/your/webservers/document-root/owncloud -type f -exec chmod 640 {} \;</pre>
+<li><p class="first">For Arch Linux should run (as root):</p>
+<div class="highlight-python"><pre>chown -R http:http /path/to/your/owncloud</pre>
 </div>
-<p>Running this in combination with the above <tt class="docutils literal"><span class="pre">chown</span></tt> command will give a secure
-set-up.</p>
+</li>
+<li><p class="first">Fedora users should run (as root):</p>
+<div class="highlight-python"><pre>chown -R apache:apache /path/to/your/owncloud</pre>
+</div>
 </li>
 </ul>
 </div>
@@ -531,8 +511,8 @@ want to reach your ownCloud under.</p>
 </ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">By default, the certificates&#8217; CommonName will get set to the host
-name at the time when the ssl-cert package was installed.</p>
+<p class="last">By default, the certificates&#8217; CommonName will get set to the host name at the time
+when the ssl-cert package was installed.</p>
 </div>
 <ul>
 <li><p class="first">Finally, restart Apache.</p>
@@ -552,17 +532,10 @@ name at the time when the ssl-cert package was installed.</p>
 </div>
 <div class="section" id="nginx-configuration">
 <h3>Nginx Configuration<a class="headerlink" href="#nginx-configuration" title="Permalink to this headline">¶</a></h3>
-<ul>
-<li><p class="first">You need to insert the following code into <strong>your nginx config file.</strong></p>
-</li>
-<li><p class="first">Adjust <strong>server_name</strong>, <strong>root</strong>, <strong>ssl_certificate</strong> and <strong>ssl_certificate_key</strong> to suit your needs.</p>
-</li>
-<li><dl class="first docutils">
-<dt>Make sure your SSL certificates are readable by the server (see the</dt>
-<dd><p class="first last"><a class="reference external" href="http://wiki.nginx.org/HttpSslModule">Nginx HTTP SSL Module documentation</a>).</p>
-</dd>
-</dl>
-</li>
+<ul class="simple">
+<li>You need to insert the following code into <strong>your nginx config file.</strong></li>
+<li>Adjust <strong>server_name</strong>, <strong>root</strong>, <strong>ssl_certificate</strong> and <strong>ssl_certificate_key</strong> to suit your needs.</li>
+<li>Make sure your SSL certificates are readable by the server (see <a class="reference external" href="http://wiki.nginx.org/HttpSslModule">Nginx HTTP SSL Module documentation</a>).</li>
 </ul>
 <div class="highlight-python"><pre>upstream php-handler {
         server 127.0.0.1:9000;
@@ -602,7 +575,7 @@ server {
             access_log off;
         }
 
-        location ~ ^/(data|config|\.ht|db_structure\.xml|README) {
+        location ~ ^/(?:\.htaccess|data|config|db_structure\.xml|README) {
                 deny all;
         }
 
@@ -619,18 +592,17 @@ server {
                 try_files $uri $uri/ index.php;
         }
 
-        location ~ ^(.+?\.php)(/.*)?$ {
-                try_files $1 =404;
-
+        location ~ \.php(?:$|/) {
+                fastcgi_split_path_info ^(.+\.php)(/.+)$;
                 include fastcgi_params;
-                fastcgi_param SCRIPT_FILENAME $document_root$1;
-                fastcgi_param PATH_INFO $2;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                fastcgi_param PATH_INFO $fastcgi_path_info;
                 fastcgi_param HTTPS on;
                 fastcgi_pass php-handler;
         }
 
         # Optional: set long EXPIRES header on static assets
-        location ~* ^.+\.(jpg|jpeg|gif|bmp|ico|png|css|js|swf)$ {
+        location ~* \.(?:jpg|jpeg|gif|bmp|ico|png|css|js|swf)$ {
                 expires 30d;
                 # Optional: Don't log access to assets
                 access_log off;
@@ -638,11 +610,16 @@ server {
 
 }</pre>
 </div>
-<p>To enable SSL support:
--  Remove the server block containing the redirect
--  Change <strong>listen 443 ssl</strong> to <strong>listen 80;</strong>
--  Remove <strong>ssl_certificate</strong> and <strong>ssl_certificate_key</strong>.
--  Remove <strong>fastcgi_params HTTPS on;</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You can use ownCloud without SSL/TLS support, but we strongly encourage you not to do that:</p>
+</div>
+<ul class="simple">
+<li>Remove the server block containing the redirect</li>
+<li>Change <strong>listen 443 ssl</strong> to <strong>listen 80;</strong></li>
+<li>Remove <strong>ssl_certificate</strong> and <strong>ssl_certificate_key</strong>.</li>
+<li>Remove <strong>fastcgi_params HTTPS on;</strong></li>
+</ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If you want to effectively increase maximum upload size you will also
@@ -712,7 +689,7 @@ like this</p>
 &lt;/server&gt;</pre>
 </div>
 <p>The Apache <tt class="file docutils literal"><span class="pre">.htaccess</span></tt> that comes with ownCloud is configured to
-redirect requests to nonexistent pages. To emulate that behaviour, you
+redirect requests to non-existent pages. To emulate that behaviour, you
 need a custom error handler for yaws. See this
 <a class="reference external" href="https://gist.github.com/2200407">github gist for further instructions</a> on how to create and compile that error
 handler.</p>
@@ -733,91 +710,22 @@ WebDAV from MacOS will also need to add <tt class="docutils literal"><span class
 <p>See <a class="reference internal" href="installation_windows.html"><em>Windows 7 and Windows Server 2008</em></a> for further instructions.</p>
 </div>
 </div>
-<div class="section" id="follow-the-install-wizard">
-<h2>Follow the Install Wizard<a class="headerlink" href="#follow-the-install-wizard" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="install-wizard">
+<h2>Install Wizard<a class="headerlink" href="#install-wizard" title="Permalink to this headline">¶</a></h2>
+<p>The last thing to do is to click through the installation wizard.</p>
+<p>Here are some guidelines for the values to enter there if following the
+Ubuntu-Apache-MySQL walk-through:</p>
 <ul class="simple">
-<li>Open your web browser</li>
-<li>Navigate to your ownCloud instance.<ul>
-<li>If you are installing ownCloud on the same machine as you are accessing the
-install wizard from, the url will be <a class="reference external" href="https://localhost/owncloud">https://localhost/owncloud</a></li>
-<li>If you are installing ownCloud on a different machine, you&#8217;ll have to access
-it by its hostname or IP address, e.g. <a class="reference external" href="https://example.com/owncloud">https://example.com/owncloud</a></li>
-<li>If you are using a self-signed certificate, you will be presented with a
-security warning about the issuer of the certificate not being trusted which
-you can ignore.</li>
-</ul>
-</li>
-<li>You will be presented with the setup screen</li>
-<li>Enter username and password for the administrative user account</li>
-<li>Expand Advanced options to choose a data folder and the database system</li>
-<li>If you are not using Apache as the web server, please set the data directory
-to a location outside of the document root.</li>
-<li>If following the Ubuntu-Apache-MySQL walk-through:<ul>
-<li>choose MySQL as Database backend (you might not be presented with any other
+<li>Make sure to click the &#8220;Advanced&#8221; Button to see the database settings</li>
+<li>Choose MySQL as Database backend (you might not be presented with any other
 choice if you haven&#8217;t installed any other database systems).</li>
 <li>As Database host, enter <tt class="docutils literal"><span class="pre">localhost</span></tt>.</li>
 <li>As Database user enter <tt class="docutils literal"><span class="pre">root</span></tt>.</li>
-<li>As Database password, enter the password you entered during installation of
-the MySQL server package.</li>
-<li>As Database name, enter an arbitrary name as you see fit<ul>
-<li>Beware that there are restrictions as to what characters a database name
-may or may not contain, see the
-<a class="reference external" href="http://dev.mysql.com/doc/refman/5.5/en/identifiers.html">MySQL Schema Object Names documentation</a> for details);</li>
-<li>Make sure to choose a name under which no database exists yet</li>
+<li>As Database password, enter the password you entered during installation of the
+MySQL server package.</li>
+<li>As Database name, enter an arbitrary name as you see fit</li>
 </ul>
-</li>
-<li>ownCloud will use the provided credentials and create its own user with
-permissions only on its own database.</li>
-</ul>
-</li>
-<li>In general, you have the following choices regarding the database:<ul>
-<li>For basic installs we recommend SQLite as it is easy to setup (ownCloud will do
-it for you). The performance when using sqlite is however inferior to the two
-other options.</li>
-<li>For larger installs you should use MySQL or PostgreSQL.</li>
-<li>Note that you will only be able to choose among the php database connectors
-which are actually installed on the system (see package requirements above).</li>
-<li>Further, it is not easily possible to migrate to another database system
-once you have set up your ownCloud to use a specific one. So make sure to
-carefully consider which database system to use.</li>
-<li>When using MySQL or PostgreSQL you have two options  regarding the database
-name and user account you specify:<ul>
-<li>You can specify either an admin/root user, and the name of a database
-which does not yet exist. This lets ownCloud create its own database; it
-will also create a database user account with restricted rights (with the
-same username as you specified for the administrative user, plus an
-<tt class="docutils literal"><span class="pre">oc_</span></tt> prefix) and will use that for all subsequent database access.</li>
-<li>You can enter the name of an existing database and the username/password
-of a user with restricted permissions<ul>
-<li>You can create such a user yourself e.g. via phpmyadmin.</li>
-<li>This user shouldn&#8217;t have permission to create a database.</li>
-<li>It should have full permissions on the (existing) database with the
-name you specify.</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>Press &#8220;Finish Setup&#8221;</li>
-<li>ownCloud will set up your cloud according to the given settings</li>
-<li>When its finished, it will log you in as administrative user and present the
-&#8220;Welcome to ownCloud&#8221; screen.</li>
-</ul>
-</div>
-<div class="section" id="note">
-<h2>Note<a class="headerlink" href="#note" title="Permalink to this headline">¶</a></h2>
-<p>When the initial ownCloud configuration is performed, ownCloud will take the URL used to access it and insert that
-the config.php file under the ‘trusted_domains’ header.</p>
-<p>Users will only be able to log into ownCloud when the addressed URL is as stated in the ‘trusted_domans’  header
-in the config.php file.</p>
-<p>In the event that a load balancer is in place, as long as it sends the correct X-Forwarded-Host header, there will
-be no issues.</p>
-<p>It should be noted that the loopback address, 127.0.0.1, is white labeled and therefore users on the ownCloud
-server who access ownCloud with the loopback will successfully login.
-In the event that an improper URL is used, the following error will appear:</p>
-<img alt="../_images/untrusted-domain.png" src="../_images/untrusted-domain.png" />
-<p>For configuration examples, refer to the config.php document.</p>
+<p>Continue by following the <a class="reference internal" href="installation_wizard.html"><em>Installation Wizard</em></a>.</p>
 </div>
 </div>
 

@@ -1608,7 +1608,10 @@ var SecondaryToolbar = {
     this.close();
   },
 
-  // openFileClick removed because it is unused
+  openFileClick: function secondaryToolbarOpenFileClick(evt) {
+    document.getElementById('fileInput').click();
+    this.close();
+  },
 
   printClick: function secondaryToolbarPrintClick(evt) {
     window.print();
@@ -4960,7 +4963,19 @@ function webViewerLoad(evt) {
   var params = PDFView.parseQueryString(document.location.search.substring(1));
   var file = 'file' in params ? params.file : DEFAULT_URL;
 
-  // fileInput element removed because it is unused
+  var fileInput = document.createElement('input');
+  fileInput.id = 'fileInput';
+  fileInput.className = 'fileInput';
+  fileInput.setAttribute('type', 'file');
+  fileInput.oncontextmenu = noContextMenuHandler;
+  document.body.appendChild(fileInput);
+
+  if (!window.File || !window.FileReader || !window.FileList || !window.Blob) {
+    document.getElementById('openFile').setAttribute('hidden', 'true');
+    document.getElementById('secondaryOpenFile').setAttribute('hidden', 'true');
+  } else {
+    document.getElementById('fileInput').value = null;
+  }
 
   // Special debugging flags in the hash section of the URL.
   var hash = document.location.hash.substring(1);
@@ -5127,9 +5142,13 @@ function webViewerLoad(evt) {
     SecondaryToolbar.downloadClick.bind(SecondaryToolbar));
 
 
-  if (file) {
-	// owncould customization to load file from files app
-	PDFView.open(OC.linkTo('files', 'ajax/download.php')+"?files="+encodeURIComponent(window.file)+"&dir="+encodeURIComponent(window.dir), 1.0);
+  // owncould customization to load file
+  if (file && dir !== '') {
+  	// Logged in       
+  	PDFView.open(OC.linkTo('files', 'ajax/download.php')+"?files="+window.file+"&dir="+window.dir, 1.0);
+  } else {
+  	// Public view
+  	PDFView.open(OC.linkTo('', 'public.php')+'?service=files'+"&t="+window.file+"&download", 1.0);
   }
 
 }

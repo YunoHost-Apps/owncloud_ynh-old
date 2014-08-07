@@ -3,8 +3,7 @@
 <a id="closeWizard" class="close">
 	<img class="svg" src="<?php print_unescaped(OCP\Util::imagePath('core', 'actions/close.svg')); ?>">
 </a>
-
-<h1><?php p($l->t('Welcome to'));?> <?php p($theme->getTitle()); ?></h1>
+<h1><?php p($l->t('Welcome to %s', array($theme->getTitle()))); ?></h1>
 <?php if (OC_Util::getEditionString() === ''): ?>
 <p><?php p($l->t('Your personal web services. All your files, contacts, calendar and more, in one place.'));?></p>
 <?php else: ?>
@@ -24,7 +23,7 @@
 </a>
 
 <?php if (OC_Util::getEditionString() === ''): ?>
-<h2><?php p($l->t('Connect your desktop apps to'));?> <?php p($theme->getName()); ?></h2>
+<h2><?php p($l->t('Connect your desktop apps to %s', array($theme->getName()))); ?></h2>
 <a target="_blank" class="button" href="<?php p(link_to_docs('user-sync-calendars')) ?>">
 	<img class="appsmall appsmall-calendar svg" src="<?php print_unescaped(OCP\Util::imagePath('core', 'places/calendar-dark.svg')); ?>" /> <?php p($l->t('Connect your Calendar'));?>
 </a>
@@ -47,7 +46,13 @@
 <p class="footnote">
 <?php if (OC_Util::getEditionString() === ''): ?>
 <?php print_unescaped($l->t('There’s more information in the <a target="_blank" href="%s">documentation</a> and on our <a target="_blank" href="http://owncloud.org">website</a>.', array(link_to_docs('user_manual')))); ?><br>
-<?php print_unescaped($l->t('If you like ownCloud, <a href="mailto:?subject=ownCloud&body=ownCloud is a great open software to sync and share your files. You can freely get it from http://owncloud.org">recommend it to your friends</a>!')); ?>
+<?php print_unescaped($l->t('If you like ownCloud,
+	<a href="mailto:?subject=ownCloud
+		&body=ownCloud is a great open software to sync and share your files. 
+		You can freely get it from http://owncloud.org">
+		recommend it to your friends</a>
+	and <a href="http://owncloud.org/promote"
+		target="_blank">spread the word</a>!')); ?>
 <?php else: ?>
 © 2014 <a href="https://owncloud.com" target="_blank">ownCloud Inc.</a>
 <?php endif; ?>

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Find Third-Party Libraries &mdash; ownCloud Administrators Manual 6.0 documentation</title>
+    <title>Using Third Party Components &mdash; ownCloud Administrators Manual 7.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '6.0',
+        VERSION:     '7.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,10 +27,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Administrators Manual 6.0 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Administrators Manual 7.0 documentation" href="../index.html" />
     <link rel="up" title="Configuration" href="index.html" />
-    <link rel="next" title="Automatic Configuration" href="configuration_automation.html" />
-    <link rel="prev" title="Background Jobs" href="background_jobs.html" />
+    <link rel="next" title="Defining Automatic Configuration" href="configuration_automation.html" />
+    <link rel="prev" title="Asset Management" href="configuration_assets.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -113,43 +113,40 @@
 										<li><a href="../contents.html">Overview</a></li>
 									</ul>
                   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 6.0 Admin Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Configuration</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="configuration_apps.html">Managing Apps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_apps.html">Apps Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="configuration_users.html">User Management</a></li>
-<li class="toctree-l2"><a class="reference internal" href="auth_ldap.html">LDAP Authentication</a></li>
-<li class="toctree-l2"><a class="reference internal" href="background_jobs.html">Background Jobs</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Find Third-Party Libraries</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auth_ldap.html">User Authentication with LDAP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server_to_server_managing.html">Managing Server-to-Server Sharing Access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="background_jobs.html">Defining Background Jobs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_assets.html">Asset Management</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Using Third Party Components</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#managing-third-party-parameters">Managing Third Party Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_automation.html">Automatic Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_custom_clients.html">Customizing Client Download Links</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_database.html">MySQL/Postgres/SQLite Support</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_encryption.html">Using Server-Side Encryption</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_knowledgebase.html">Disable Knowledge Base</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_language.html">Setting the Default Language</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_logging.html">Configure Logging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_mail.html">Sending Mail Notifications</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_maintenance.html">Enable Maintenance Mode</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_preview.html">Enabling File Previews</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_automation.html">Defining Automatic Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_custom_clients.html">Custom Client Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_database.html">Database Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_encryption.html">Use Server-Side Encryption</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_knowledgebase.html">Knowledge Base Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_language.html">Language Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_logging.html">Logging Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_mail.html">Mail Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_preview.html">Preview Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="configuration_reverseproxy.html">Reverse Proxy Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html">Dealing with Big File Uploads</a></li>
-<li class="toctree-l2"><a class="reference internal" href="custom_mount_config_gui.html">Custom Mount Configuration Web-GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html">Uploading big files &gt; 512MB (as set by default)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html#enabling-uploading-big-files">Enabling uploading big files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_mount_config_gui.html">Custom Mount Configuration (GUI)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_mount_config.html">Custom Mount Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_user_backend.html">Custom User Backend Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xsendfile.html">Serving static files via web server</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../apps/index.html">Apps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cron/index.html">Driving Events with Cron</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quota/index.html">Quota Calculation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sharing_api/index.html">Sharing API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../config/index.html">The Configuration File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues</a></li>
 </ul>
 
@@ -163,16 +160,17 @@
 				<div class="span9">
 					<div class="page-content">
 						
-  <div class="section" id="find-third-party-libraries">
-<h1>Find Third-Party Libraries<a class="headerlink" href="#find-third-party-libraries" title="Permalink to this headline">¶</a></h1>
-<p>ownCloud resorts to some 3rd-party PHP components to provide its functionality.
-These components are part of the software package and are usually shipped in
-the <strong>/3rdparty</strong> folder.</p>
-<div class="section" id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
-<p>If you want to change the default location of the 3rd-party folder you can use the <strong>3rdpartyroot</strong> parameter to define
-the absolute file system path to the folder. The <strong>3rdpartyurl</strong> parameter is used to define the http web path to that
-folder, starting at the ownCloud web root.</p>
+  <div class="section" id="using-third-party-components">
+<h1>Using Third Party Components<a class="headerlink" href="#using-third-party-components" title="Permalink to this headline">¶</a></h1>
+<p>ownCloud uses some third party PHP components to provide some of its functionality. These components are part of the software package and are contained in the <strong>/3rdparty</strong> folder.</p>
+<div class="section" id="managing-third-party-parameters">
+<h2>Managing Third Party Parameters<a class="headerlink" href="#managing-third-party-parameters" title="Permalink to this headline">¶</a></h2>
+<p>When using third party components, keep the following parameters in mind:</p>
+<ul class="simple">
+<li><strong>3rdpartyroot</strong> &#8211; Specifies the location of the 3rd-party folder. To change the default location of this folder, you can use this parameter to define the absolute file system path to the folder location.</li>
+<li><strong>3rdpartyurl</strong> &#8211; Specifies the http web path to the 3rdpartyroot folder, starting at the ownCloud web root.</li>
+</ul>
+<p>An example of what these parameters might look like is as follows:</p>
 <div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
 
 <span class="s2">&quot;3rdpartyroot&quot;</span> <span class="o">=&gt;</span> <span class="nx">OC</span><span class="o">::</span><span class="nv">$SERVERROOT</span><span class="o">.</span><span class="s2">&quot;/3rdparty&quot;</span><span class="p">,</span>

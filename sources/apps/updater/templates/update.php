@@ -11,8 +11,8 @@
  */
 
 ?>
-<?php $data=OC_Updater::check(); ?>
-<?php $isNewVersionAvailable = isset($data['version']) && strlen($data['version']) ?>
+<?php $data = OC_Updater::check(); ?>
+<?php $isNewVersionAvailable = isset($data['version'])  && $data['version'] != '' && $data['version'] !== Array() ?>
 <div id="updater-content" ng-app="updater" ng-init="navigation='backup'">
 	<ul ng-model="navigation">
 		<li ng-click="navigation='backup'" ng-class="{current : navigation=='backup'}"><?php p($l->t('Backup Management')) ?></li>
@@ -43,6 +43,9 @@
 		<button ng-click="update()" ng-show="<?php p($isNewVersionAvailable) ?>" id="updater-start">
 			<?php p($l->t('Update')) ?>
 		</button>
+		<p ng-show="<?php p(!$isNewVersionAvailable) ?>">
+			<?php p($l->t('Up to date. Checked on %s', array('checkedAt' => $_['checkedAt']))) ?>
+		</p>
 		<div id="upd-progress" style="display:none;"><div></div></div>
 	</fieldset>
 </div>

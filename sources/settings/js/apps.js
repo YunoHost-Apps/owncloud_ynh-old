@@ -8,7 +8,7 @@
 OC.Settings = OC.Settings || {};
 OC.Settings.Apps = OC.Settings.Apps || {
 	loadApp:function(app) {
-		var page = $('#rightcontent');
+		var page = $('#app-content');
 		page.find('p.license').show();
 		page.find('span.name').text(app.name);
 		page.find('small.externalapp').text(app.internallabel);
@@ -45,15 +45,30 @@ OC.Settings.Apps = OC.Settings.Apps || {
 				page.find('span.userDocumentation').html("<a id='userDocumentation' href='" + app.documentation.user + "'>" + t('settings', 'User Documentation') + "</a>");
 				page.find('p.documentation').show();
 			}
+			else {
+				page.find('span.userDocumentation').empty();
+				userDocumentation = false;
+			}
 			if (typeof(app.documentation.admin) !== 'undefined') {
 				adminDocumentation = true;
 				page.find('span.adminDocumentation').html("<a id='adminDocumentation' href='" + app.documentation.admin + "'>" + t('settings', 'Admin Documentation') + "</a>");
 				page.find('p.documentation').show();
 			}
+			else {
+				page.find('span.adminDocumentation').empty();
+				adminDocumentation = false;
+			}
 
 			if(userDocumentation && adminDocumentation) {
-				page.find('span.userDocumentation').after(', ');
+				page.find('span.comma').remove();
+				page.find('span.userDocumentation').after('<span class="comma">, </span>');
 			}
+			else {
+				page.find('span.comma').remove();
+			}
+		}
+		else {
+			page.find('p.documentation').hide();
 		}
 
 		if (typeof(app.website) !== 'undefined') {
@@ -69,6 +84,14 @@ OC.Settings.Apps = OC.Settings.Apps || {
 			page.find('input.update').hide();
 		}
 
+		if (app.removable !== false && app.active === false) {
+			page.find('a.uninstall').show();
+			page.find('a.uninstall').data('appid', app.id);
+			page.find('a.uninstall').attr('value', t('settings', 'Uninstall App'));
+		} else {
+			page.find('a.uninstall').hide();
+		}
+
 		page.find('input.enable').show();
 		page.find('input.enable').val((app.active) ? t('settings', 'Disable') : t('settings', 'Enable'));
 		page.find('input.enable').data('appid', app.id);
@@ -82,18 +105,47 @@ OC.Settings.Apps = OC.Settings.Apps || {
 			page.find('p.appslink').hide();
 			page.find('span.score').hide();
 		}
-		if (typeof($('#leftcontent li[data-id="'+app.id+'"]').data('errormsg')) !== "undefined") {
+		if (typeof($('#app-navigation ul li[data-id="'+app.id+'"]').data('errormsg')) !== "undefined") {
 			page.find(".warning").show();
-			page.find(".warning").text($('#leftcontent li[data-id="'+app.id+'"]').data('errormsg'));
+			page.find(".warning").text($('#app-navigation ul li[data-id="'+app.id+'"]').data('errormsg'));
 		} else {
 			page.find(".warning").hide();
 		}
+
+		page.find("div.multiselect").parent().remove();
+		if(OC.Settings.Apps.isType(app, 'filesystem') || OC.Settings.Apps.isType(app, 'prelogin') ||
+			OC.Settings.Apps.isType(app, 'authentication') || OC.Settings.Apps.isType(app, 'logging')) {
+			page.find("#groups_enable").hide();
+			page.find("label[for='groups_enable']").hide();
+			page.find("#groups_enable").attr('checked', null);
+		} else {
+			$('#group_select > option').each(function (i, el) {
+				if (app.groups.length === 0 || app.groups.indexOf(el.value) >= 0) {
+					$(el).attr('selected', 'selected');
+				} else {
+					$(el).attr('selected', null);
+				}
+			});
+			if (app.active) {
+				if (app.groups.length) {
+					$('#group_select').multiSelect();
+					page.find("#groups_enable").attr('checked','checked');
+				} else {
+					page.find("#groups_enable").attr('checked', null);
+				}
+				page.find("#groups_enable").show();
+				page.find("label[for='groups_enable']").show();
+			} else {
+				page.find("#groups_enable").hide();
+				page.find("label[for='groups_enable']").hide();
+			}
+		}
 	},
-	enableApp:function(appid, active, element) {
-		console.log('enableApp:', appid, active, element);
-		var appitem=$('#leftcontent li[data-id="'+appid+'"]');
+	enableApp:function(appid, active, element, groups) {
+		groups = groups || [];
+		var appitem=$('#app-navigation ul li[data-id="'+appid+'"]');
 		element.val(t('settings','Please wait....'));
-		if(active) {
+		if(active && !groups.length) {
 			$.post(OC.filePath('settings','ajax','disableapp.php'),{appid:appid},function(result) {
 				if(!result || result.status !== 'success') {
 					if (result.data && result.data.message) {
@@ -108,14 +160,19 @@ OC.Settings.Apps = OC.Settings.Apps || {
 				}
 				else {
 					appitem.data('active',false);
+					appitem.data('groups', '');
 					element.data('active',false);
 					OC.Settings.Apps.removeNavigation(appid);
 					appitem.removeClass('active');
 					element.val(t('settings','Enable'));
+					element.parent().find("#groups_enable").hide();
+					element.parent().find("label[for='groups_enable']").hide();
+					var app = OC.get('appData_' + appid);
+					app.active = false;
 				}
 			},'json');
 		} else {
-			$.post(OC.filePath('settings','ajax','enableapp.php'),{appid:appid},function(result) {
+			$.post(OC.filePath('settings','ajax','enableapp.php'),{appid: appid, groups: groups},function(result) {
 				if(!result || result.status !== 'success') {
 					if (result.data && result.data.message) {
 						OC.Settings.Apps.showErrorMessage(result.data.message);
@@ -132,6 +189,21 @@ OC.Settings.Apps = OC.Settings.Apps || {
 					element.data('active',true);
 					appitem.addClass('active');
 					element.val(t('settings','Disable'));
+					var app = OC.get('appData_' + appid);
+					app.active = true;
+					if (OC.Settings.Apps.isType(app, 'filesystem') || OC.Settings.Apps.isType(app, 'prelogin') ||
+						OC.Settings.Apps.isType(app, 'authentication') || OC.Settings.Apps.isType(app, 'logging')) {
+						element.parent().find("#groups_enable").hide();
+						element.parent().find("label[for='groups_enable']").hide();
+					} else {
+						element.parent().find("#groups_enable").show();
+						element.parent().find("label[for='groups_enable']").show();
+						if (groups) {
+							appitem.data('groups', JSON.stringify(groups));
+						} else {
+							appitem.data('groups', '');
+						}
+					}
 				}
 			},'json')
 			.fail(function() {
@@ -145,7 +217,6 @@ OC.Settings.Apps = OC.Settings.Apps || {
 		}
 	},
 	updateApp:function(appid, element) {
-		console.log('updateApp:', appid, element);
 		element.val(t('settings','Updating....'));
 		$.post(OC.filePath('settings','ajax','updateapp.php'),{appid:appid},function(result) {
 			if(!result || result.status !== 'success') {
@@ -158,9 +229,21 @@ OC.Settings.Apps = OC.Settings.Apps || {
 			}
 		},'json');
 	},
+	uninstallApp:function(appid, element) {
+		element.val(t('settings','Uninstalling ....'));
+		$.post(OC.filePath('settings','ajax','uninstallapp.php'),{appid:appid},function(result) {
+			if(!result || result.status !== 'success') {
+				OC.Settings.Apps.showErrorMessage(t('settings','Error while uninstalling app'),t('settings','Error'));
+				element.val(t('settings','Uninstall'));
+			} else {
+				OC.Settings.Apps.removeNavigation(appid);
+				appitem.removeClass('active');
+			}
+		},'json');
+	},
 
 	insertApp:function(appdata) {
-		var applist = $('#leftcontent li');
+		var applist = $('#app-navigation ul li');
 		var app =
 				$('<li data-id="' + appdata.id + '" data-type="external" data-installed="0">'
 				+ '<a class="app externalapp" href="' + OC.filePath('settings', 'apps', 'index.php') + '&appid=' + appdata.id+'">'
@@ -184,7 +267,7 @@ OC.Settings.Apps = OC.Settings.Apps || {
 			if(response.status === 'success'){
 				var navIds=response.nav_ids;
 				for(var i=0; i< navIds.length; i++){
-					$('#apps .wrapper').children('li[data-id="'+navIds[i]+'"]').remove();
+					$('#apps ul').children('li[data-id="'+navIds[i]+'"]').remove();
 				}
 			}
 		});
@@ -195,7 +278,7 @@ OC.Settings.Apps = OC.Settings.Apps || {
 				var navEntries=response.nav_entries;
 				for(var i=0; i< navEntries.length; i++){
 					var entry = navEntries[i];
-					var container = $('#apps .wrapper');
+					var container = $('#apps ul');
 
 					if(container.children('li[data-id="'+entry.id+'"]').length === 0){
 						var li=$('<li></li>');
@@ -207,12 +290,26 @@ OC.Settings.Apps = OC.Settings.Apps || {
 						a.prepend(filename);
 						a.prepend(img);
 						li.append(a);
-						// append the new app as last item in the list (.push is from sticky footer)
-						$('#apps .wrapper .push').before(li);
-						// scroll the app navigation down so the newly added app is seen
-						$('#navigation').animate({ scrollTop: $('#navigation').height() }, 'slow');
-						// draw attention to the newly added app entry by flashing it twice
-						container.children('li[data-id="'+entry.id+'"]').animate({opacity:.3}).animate({opacity:1}).animate({opacity:.3}).animate({opacity:1});
+
+						// append the new app as last item in the list
+						// which is the "add apps" entry with the id
+						// #apps-management
+						$('#apps-management').before(li);
+
+						// scroll the app navigation down
+						// so the newly added app is seen
+						$('#navigation').animate({
+							scrollTop: $('#navigation').height()
+						}, 'slow');
+
+						// draw attention to the newly added app entry
+						// by flashing it twice
+						$('#header .menutoggle')
+							.animate({opacity: 0.5})
+							.animate({opacity: 1})
+							.animate({opacity: 0.5})
+							.animate({opacity: 1})
+							.animate({opacity: 0.75});
 
 						if (!SVGSupport() && entry.icon.match(/\.svg$/i)) {
 							$(img).addClass('svg');
@@ -226,32 +323,40 @@ OC.Settings.Apps = OC.Settings.Apps || {
 	showErrorMessage: function(message) {
 		$('.appinfo .warning').show();
 		$('.appinfo .warning').text(message);
+	},
+	isType: function(app, type){
+		return app.types && app.types.indexOf(type) !== -1;
 	}
 };
 
 $(document).ready(function(){
-	$('#leftcontent li').each(function(index,li){
+	$('#app-navigation ul li').each(function(index,li){
 		var app = OC.get('appData_'+$(li).data('id'));
+		if (app) {
+			app.groups= $(li).data('groups') || [];
+		}
 		$(li).data('app',app);
 		$(this).find('span.hidden').remove();
 	});
-	$('#leftcontent li').keydown(function(event) {
+	$('#app-navigation ul li').keydown(function(event) {
 		if (event.which === 13 || event.which === 32) {
 			$(event.target).click();
 		}
 		return false;
 	});
 
-	$(document).on('click', '#leftcontent', function(event){
+	$(document).on('click', '#app-navigation', function(event){
 		var tgt = $(event.target);
 		if (tgt.is('li') || tgt.is('a')) {
 			var item = tgt.is('li') ? $(tgt) : $(tgt).parent();
 			var app = item.data('app');
 			OC.Settings.Apps.loadApp(app);
+			$('#app-navigation .selected').removeClass('selected');
+			item.addClass('selected');
 		}
 		return false;
 	});
-	$('#rightcontent input.enable').click(function(){
+	$('#app-content input.enable').click(function(){
 		var element = $(this);
 		var appid=$(this).data('appid');
 		var active=$(this).data('active');
@@ -259,20 +364,53 @@ $(document).ready(function(){
 			OC.Settings.Apps.enableApp(appid, active, element);
 		}
 	});
-	$('#rightcontent input.update').click(function(){
+	$('#app-content input.update').click(function(){
 		var element = $(this);
 		var appid=$(this).data('appid');
 		if(appid) {
 			OC.Settings.Apps.updateApp(appid, element);
 		}
 	});
+	$('#app-content a.uninstall').click(function(){
+		var element = $(this);
+		var appid=$(this).data('appid');
+		if(appid) {
+			OC.Settings.Apps.uninstallApp(appid, element);
+		}
+	});
+
+	$('#group_select').change(function() {
+		var element = $('#app-content input.enable');
+		var groups = $(this).val();
+		var appid = element.data('appid');
+		if (appid) {
+			OC.Settings.Apps.enableApp(appid, false, element, groups);
+			var li = $('[data-id="'+appid+'"]');
+			var app = OC.get('appData_' + $(li).data('id'));
+			app.groups = groups;
+			li.data('groups', groups);
+			li.attr('data-groups', JSON.stringify(groups));
+		}
+	});
 
 	if(appid) {
-		var item = $('#leftcontent li[data-id="'+appid+'"]');
+		var item = $('#app-navigation ul li[data-id="'+appid+'"]');
 		if(item) {
 			item.trigger('click');
 			item.addClass('active');
-			$('#leftcontent').animate({scrollTop: $(item).offset().top-70}, 'slow','swing');
+			$('#app-navigation').animate({scrollTop: item.offset().top-70}, 'slow','swing');
 		}
 	}
+
+	$("#groups_enable").change(function() {
+		if (this.checked) {
+			$("div.multiselect").parent().remove();
+			$('#group_select').multiSelect();
+		} else {
+			$('#group_select').hide().val(null);
+			$("div.multiselect").parent().remove();
+		}
+
+		$('#group_select').change();
+	});
 });

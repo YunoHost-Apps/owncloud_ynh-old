@@ -3,15 +3,16 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Baptiste <baptiste+transifex@darthenay.fr>, 2013
+# Baptiste Darthenay <baptiste+transifex@darthenay.fr>, 2013
+# Mariano <mstreet@kde.org.ar>, 2014
 # Mariano <mstreet@kde.org.ar>, 2012
 msgid ""
 msgstr ""
 "Project-Id-Version: ownCloud\n"
 "Report-Msgid-Bugs-To: translations@owncloud.org\n"
-"POT-Creation-Date: 2013-12-02 18:22-0500\n"
-"PO-Revision-Date: 2013-12-02 20:40+0000\n"
-"Last-Translator: I Robot <owncloud-bot@tmit.eu>\n"
+"POT-Creation-Date: 2014-06-19 02:10-0400\n"
+"PO-Revision-Date: 2014-06-18 06:10+0000\n"
+"Last-Translator: Mariano <mstreet@kde.org.ar>\n"
 "Language-Team: Esperanto (http://www.transifex.com/projects/p/owncloud/language/eo/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -111,7 +112,7 @@ msgstr "Ŝovu tion ĉi al la legosignoj de via TTT-legilo kaj klaku ĝin, se vi 
 
 #: templates/list.php:15
 msgid "Add to ownCloud"
-msgstr ""
+msgstr "Aldoni al ownCloud"
 
 #: templates/list.php:22
 msgid "Address"
