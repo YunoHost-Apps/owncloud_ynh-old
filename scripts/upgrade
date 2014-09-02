@@ -40,7 +40,7 @@ sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/php5/fpm/pool.d/owncloud.conf
 # Reload Nginx and regenerate SSOwat conf
 sudo service php5-fpm restart
 sudo service nginx reload
-sudo yunohost app setting owncloud skipped_uris -v "/"
+sudo yunohost app setting owncloud unprotected_uris -v "/"
 sudo yunohost app ssowatconf
 
 # Optionnal DB upgrade here
@@ -55,6 +55,4 @@ sudo chmod -R 770 $data_path
 sudo chmod -R 775 $final_path
 
 # Unprotect URIs
-sudo yunohost app setting owncloud skipped_uris -v "/public.php,/core,/apps/files,/index.php/apps/files,/index.php/apps/,/index.php/core,/apps,/3rdparty,/search"
-sudo yunohost app setting owncloud unprotected_uris -v "/remote.php,/cron.php,/status.php"
 sudo yunohost app ssowatconf
