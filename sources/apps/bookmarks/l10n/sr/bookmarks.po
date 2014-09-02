@@ -3,15 +3,16 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Kostic <marko@evizo.com>, 2012
+# Марко М.  Костић <marko@evizo.com>, 2012
+# Sid <transifex@sidowo.pl>, 2014
 # Rancher <djordje.vasiljevich@gmail.com>, 2013
 msgid ""
 msgstr ""
 "Project-Id-Version: ownCloud\n"
 "Report-Msgid-Bugs-To: translations@owncloud.org\n"
-"POT-Creation-Date: 2013-12-02 18:22-0500\n"
-"PO-Revision-Date: 2013-12-02 20:40+0000\n"
-"Last-Translator: I Robot <owncloud-bot@tmit.eu>\n"
+"POT-Creation-Date: 2014-06-19 02:10-0400\n"
+"PO-Revision-Date: 2014-06-18 06:10+0000\n"
+"Last-Translator: Sid <transifex@sidowo.pl>\n"
 "Language-Team: Serbian (http://www.transifex.com/projects/p/owncloud/language/sr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -53,7 +54,7 @@ msgstr "Упозорење"
 
 #: js/settings.js:18
 msgid "Import error"
-msgstr ""
+msgstr "Грешка импортовања"
 
 #: js/settings.js:29
 msgid "Import completed successfully."
@@ -111,7 +112,7 @@ msgstr "Превуците ово у прегледач и кликните ак
 
 #: templates/list.php:15
 msgid "Add to ownCloud"
-msgstr ""
+msgstr "Додај до ownCloud-у"
 
 #: templates/list.php:22
 msgid "Address"

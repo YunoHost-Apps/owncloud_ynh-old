@@ -8,7 +8,9 @@ Configuration
    configuration_apps
    configuration_users
    auth_ldap
+   server_to_server_managing
    background_jobs
+   configuration_assets
    configuration_3rdparty
    configuration_automation
    configuration_custom_clients
@@ -18,7 +20,6 @@ Configuration
    configuration_language
    configuration_logging
    configuration_mail
-   configuration_maintenance
    configuration_preview
    configuration_reverseproxy
    configuring_big_file_upload

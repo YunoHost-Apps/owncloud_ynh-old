@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>LDAP Authentication &mdash; ownCloud Administrators Manual 6.0 documentation</title>
+    <title>User Authentication with LDAP &mdash; ownCloud Administrators Manual 7.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '6.0',
+        VERSION:     '7.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,9 +27,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Administrators Manual 6.0 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Administrators Manual 7.0 documentation" href="../index.html" />
     <link rel="up" title="Configuration" href="index.html" />
-    <link rel="next" title="Background Jobs" href="background_jobs.html" />
+    <link rel="next" title="Managing Server-to-Server Sharing Access" href="server_to_server_managing.html" />
     <link rel="prev" title="User Management" href="configuration_users.html" />
 <script type="text/javascript">
 (function () {
@@ -113,14 +113,14 @@
 										<li><a href="../contents.html">Overview</a></li>
 									</ul>
                   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 6.0 Admin Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Configuration</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="configuration_apps.html">Managing Apps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_apps.html">Apps Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="configuration_users.html">User Management</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">LDAP Authentication</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="">User Authentication with LDAP</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#configuration">Configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#advanced-settings">Advanced Settings</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#expert-settings">Expert Settings</a></li>
@@ -137,32 +137,29 @@
 <li class="toctree-l3"><a class="reference internal" href="#handling-with-backup-server">Handling with Backup Server</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="background_jobs.html">Background Jobs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_3rdparty.html">Find Third-Party Libraries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_automation.html">Automatic Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_custom_clients.html">Customizing Client Download Links</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_database.html">MySQL/Postgres/SQLite Support</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_encryption.html">Using Server-Side Encryption</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_knowledgebase.html">Disable Knowledge Base</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_language.html">Setting the Default Language</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_logging.html">Configure Logging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_mail.html">Sending Mail Notifications</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_maintenance.html">Enable Maintenance Mode</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_preview.html">Enabling File Previews</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server_to_server_managing.html">Managing Server-to-Server Sharing Access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="background_jobs.html">Defining Background Jobs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_assets.html">Asset Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_3rdparty.html">Using Third Party Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_automation.html">Defining Automatic Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_custom_clients.html">Custom Client Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_database.html">Database Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_encryption.html">Use Server-Side Encryption</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_knowledgebase.html">Knowledge Base Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_language.html">Language Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_logging.html">Logging Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_mail.html">Mail Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_preview.html">Preview Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="configuration_reverseproxy.html">Reverse Proxy Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html">Dealing with Big File Uploads</a></li>
-<li class="toctree-l2"><a class="reference internal" href="custom_mount_config_gui.html">Custom Mount Configuration Web-GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html">Uploading big files &gt; 512MB (as set by default)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html#enabling-uploading-big-files">Enabling uploading big files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_mount_config_gui.html">Custom Mount Configuration (GUI)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_mount_config.html">Custom Mount Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_user_backend.html">Custom User Backend Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xsendfile.html">Serving static files via web server</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../apps/index.html">Apps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cron/index.html">Driving Events with Cron</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quota/index.html">Quota Calculation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sharing_api/index.html">Sharing API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../config/index.html">The Configuration File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues</a></li>
 </ul>
 
@@ -176,9 +173,9 @@
 				<div class="span9">
 					<div class="page-content">
 						
-  <div class="section" id="ldap-authentication">
-<h1>LDAP Authentication<a class="headerlink" href="#ldap-authentication" title="Permalink to this headline">¶</a></h1>
-<p>ownCloud ships an LDAP backend, which allows full use of ownCloud for users
+  <div class="section" id="user-authentication-with-ldap">
+<h1>User Authentication with LDAP<a class="headerlink" href="#user-authentication-with-ldap" title="Permalink to this headline">¶</a></h1>
+<p>ownCloud ships an LDAP backend, which allows full use of ownCloud for user
 logging in with LDAP credentials including:</p>
 <ul class="simple">
 <li>LDAP group support</li>
@@ -192,19 +189,20 @@ group backend</strong>, click on <strong>Enable</strong>) the configuration can 
 Settings→Admin. Read on for a detailed description of the configuration fields.</p>
 <div class="section" id="configuration">
 <h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
-<p>The LDAP backend configuration follows a wizard-like approach, split into four tabs. A
+<p>The LDAP backend follows a wizard-like approach, split into four tabs. A
 correctly completed first tab (&#8220;Server&#8221;) is mandatory to access the other tabs.
-The settings in the other tabs are detected automatically, but should be reviewed by the
-admin. An indicator will show whether the configuration is incomplete, incorrect or OK.</p>
+Also, the other tabs need to be reviewed by the admin, however the necessary
+settings are detected automatically. An indicator will show whether the
+configuration is incomplete, incorrect or OK.</p>
 <p>The settings are changed automatically, as soon as a input element loses the
 focus, i.e. the cursor is taken away by clicking somewhere else or pressing the
-Tab key.</p>
+tabulator key.</p>
 <p>The other tabs can be navigated by clicking the tabs or by using the <em>Continue</em>
 and <em>Back</em> buttons. They are located on the lower right, next to the status
 indicator.</p>
 <div class="section" id="server">
 <h3>Server<a class="headerlink" href="#server" title="Permalink to this headline">¶</a></h3>
-<p>The Server tab contains the basic information on the LDAP server. They make sure
+<p>The server tab contains the basic information on the LDAP server. They make sure
 that ownCloud will be able to connect to LDAP and be able to read data from
 there. The admin at least needs to provide a hostname. If anonymous access is
 not possible he will need to provide an account DN and a password, too. ownCloud
@@ -232,8 +230,8 @@ to the port field subsequently.</p>
 </dd>
 <dt>Port:</dt>
 <dd><p class="first">The port on which to connect to the LDAP server. The field is disabled in the
-beginning of a new configuration. The port will be detected automatically,
-if the LDAP server is running on a standard port. After ownCloud attempted to
+beginning of a new configuration. If the LDAP server is running on a standard port,
+the port will be detected automatically. After ownCloud attempted to
 determine the port, the field will be enabled for user input. A successfully
 found port will be inserted by ownCloud, of course.</p>
 <p>Example:</p>
@@ -266,7 +264,7 @@ to the provided User DN or the provided Host.</p>
 </div>
 <div class="section" id="user-filter">
 <h3>User Filter<a class="headerlink" href="#user-filter" title="Permalink to this headline">¶</a></h3>
-<p>The settings in the User Filter tab determine which LDAP users will appear and
+<p>The settings in the user filter tab determine which LDAP users will appear and
 are allowed to log in into ownCloud. It is also possible to enter a raw LDAP
 filter.</p>
 <div class="figure">
@@ -301,7 +299,7 @@ allowed to access ownCloud. The number will update after any change you do.</dd>
 </div>
 <div class="section" id="login-filter">
 <h3>Login Filter<a class="headerlink" href="#login-filter" title="Permalink to this headline">¶</a></h3>
-<p>The settings in the Login Filter tab determine which user detail will be
+<p>The settings in the login filter tab determine which user detail will be
 compared to the login value entered by the user. It is possible to allow
 multiple user details. It is also possible to enter a raw LDAP filter.</p>
 <p>The user limitation as set up in the previous tab is in effect, unless you
@@ -337,7 +335,7 @@ upon login. When you enter the filter manually.</p>
 </div>
 <div class="section" id="group-filter">
 <h3>Group Filter<a class="headerlink" href="#group-filter" title="Permalink to this headline">¶</a></h3>
-<p>The settings in the Group Filter tab determine which groups will be available
+<p>The settings in the group filter tab determine which groups will be available
 in ownCloud. It does not have any restrictions on logins, this has been dealt
 with in the prior tabs.  It is also possible to enter a raw LDAP
 filter.</p>
@@ -374,7 +372,7 @@ available in  ownCloud. The number will update after any change you do.</dd>
 </div>
 <div class="section" id="advanced-settings">
 <h2>Advanced Settings<a class="headerlink" href="#advanced-settings" title="Permalink to this headline">¶</a></h2>
-<p>In the LDAP Advanced Settings section you can define options, that are less
+<p>In the LDAP Advanced settings section you can define options, that are less
 common to set. They are not needed for a working connection. It can also have a
 positive effect on the performance to specify distinguished bases for user and
 group searches.</p>
@@ -400,7 +398,7 @@ the wizard and the configuration is OK and a test connection successful.</p>
 <dt>Backup (Replica) Host:</dt>
 <dd><p class="first">A backup server can be defined here. ownCloud tries to connect to the backup
 server automatically, when the main host (as specified in basic settings)
-cannot be reached. It is important that the backup server is a replica of the
+cannot be reached. It is import that the backup server is a replica of the
 main server, because the object UUIDs must match.</p>
 <p>Example:</p>
 <ul class="last simple">
@@ -417,21 +415,21 @@ but a host, then the main port (as specified above) will be used.</p>
 </dd>
 <dt>Disable Main Server:</dt>
 <dd>You can manually override the main server and make ownCloud only connect to
-the backup server. This may be handy for planned downtimes.</dd>
+the backup server. It may be handy for planned downtimes.</dd>
 <dt>Case insensitive LDAP server (Windows):</dt>
-<dd>Whether the LDAP server is running on a Windows host. Usually, it is not
+<dd>Whether the LDAP server is running on a Windows Host. Usually, it is not
 necessary to check it, however.</dd>
 <dt>Turn off SSL certificate validation:</dt>
-<dd>Turns off check of valid SSL certificates. Use it – if needed –
+<dd>Turns of check of valid SSL certificates. Use it – if needed –
 for testing, only!</dd>
 <dt>Cache Time-To-Live:</dt>
 <dd><p class="first">A cache is introduced to avoid unnecessary LDAP traffic,
-for example lookups check whether the users exist on every page request or
+for example lookups check whether the users exists on every page request or
 WebDAV interaction. It is also supposed to speed up the Admin → User page or
 list of users to share with, once it is populated. Saving the configuration
 empties the cache (changes are not necessary). The time is given in seconds.</p>
 <p>Note that almost every PHP request would require to build up a new connection
-to the LDAP server. If you require most up-to-dateness it is recommended not
+to the LDAP server. If you require a most up-to-dateness it is recommended not
 to totally switch off the cache, but define a minimum life time of 15s.</p>
 <p>Examples:</p>
 <ul class="last simple">
@@ -527,7 +525,7 @@ taken into account, unless you specify it as well.</p>
 <dt>Group Member association:</dt>
 <dd><p class="first">The attribute that is used to indicate group memberships, i.e. the attribute
 used by LDAP groups to refer to their users.</p>
-<p>ownCloud detects the value automatically. You should only change it if you
+<p>ownCloud detects the value automatically, you should only change it, if you
 have a very valid reason and know what you are doing.</p>
 <ul class="last simple">
 <li>Example: <em>uniquemember</em></li>
@@ -617,7 +615,7 @@ username will be created based on the UUID, if not specified otherwise above.</p
 make sure that the attribute of your choice can be fetched for both users and
 groups and it is unique. Leave it empty for default behaviour. Changes will
 have effect only on newly mapped (added) LDAP users and groups. It also will
-have effect when a user&#8217;s or group&#8217;s DN changes and an old UUID was cached: it
+have effect when a user&#8217;s or group&#8217;s DN changes and an old UUID was cached: It
 will result in a new user. Because of this, the setting should be applied
 before putting ownCloud in production use and cleaning the bindings
 (see below).</p>
@@ -635,7 +633,7 @@ not used for identification. If the DN changes, the change will be detected by
 ownCloud by checking the UUID value.</p>
 <p>The same is valid for groups.</p>
 <p>The internal ownCloud name is used all over in ownCloud. Clearing the Mappings
-will have leftovers everywhere. Never clear the mappings
+will have leftovers everywhere. Do never clear the mappings
 in a production environment. Only clear mappings in a testing or experimental
 stage.</p>
 <p class="last"><strong>Clearing the Mappings is not configuration sensitive, it affects all LDAP
@@ -645,8 +643,8 @@ configurations!</strong></p>
 </div>
 <div class="section" id="testing-the-configuration">
 <h2>Testing the configuration<a class="headerlink" href="#testing-the-configuration" title="Permalink to this headline">¶</a></h2>
-<p>The <strong>Test Configuration</strong> button on the bottom
-of the LDAP settings section will always check the values as currently
+<p>In this version we introduced the <strong>Test Configuration</strong> button on the bottom
+of the LDAP settings section. It will always check the values as currently
 given in the input fields. You do not need to save before testing. By clicking
 on the button, ownCloud will try to bind to the ownCloud server with the
 settings currently given in the input fields. The response will look like this:</p>
@@ -686,7 +684,7 @@ later, a possibly set profile picture will be overridden with the LDAP one. If a
 photo stored in the <em>jpegPhoto</em> and/or <em>thumbnailPhoto</em> attribute is deleted
 later, the last profile picture in ownCloud will still be used.</p>
 <p>The photo taken from LDAP will be adjusted to the requirements of the ownCloud
-avatar automatically, i.e. it will be transformed into a square. If the photo
+avatar automatically. I.e. it will be transformed into a square. If the photo
 needs to be cut, it will be done equally from both affected sides. The original
 photo stored in LDAP will stay the same, of course.</p>
 </div>
@@ -735,7 +733,7 @@ in the <em>Connection Settings</em>, so the new configuration is not used on Sav
 <h2>Groups<a class="headerlink" href="#groups" title="Permalink to this headline">¶</a></h2>
 <p>At the moment, only secondary groups are read. That means that only the groups
 are retrieved, which are returned by the attribute auto-detected (or manually
-chosen) in Group-Member association. Primary groups are not taken into
+chosen) in Group-Member association. Primary groups are not being taken into
 account.</p>
 </div>
 <div class="section" id="user-and-group-mapping">
@@ -757,7 +755,7 @@ want to rename a group, be very careful. Do not rename the user&#8217;s internal
 </div>
 <div class="section" id="caching">
 <h2>Caching<a class="headerlink" href="#caching" title="Permalink to this headline">¶</a></h2>
-<p>For performance reasons a cache has been introduced to ownCloud. The cache stores
+<p>For performance reasons a cache has been introduced to ownCloud. He we store
 all users and groups, group memberships or internal userExists-requests. Since
 ownCloud is written in PHP and each and every page request (also done by Ajax)
 loads ownCloud and would execute one or more LDAP queries again, you do want to
@@ -768,10 +766,10 @@ for PHP.</p>
 </div>
 <div class="section" id="handling-with-backup-server">
 <h2>Handling with Backup Server<a class="headerlink" href="#handling-with-backup-server" title="Permalink to this headline">¶</a></h2>
-<p>When ownCloud is not able to contact the main server, it will be treated as
+<p>When ownCloud is not able to contact the main server, he will be treated as
 offline and no connection attempts will be done for the time specified in
 <strong>Cache Time-To-Live</strong>. If a backup server is configured, it will be connected
-instead. For planned downtime, check <strong>Disable Main Server</strong> for
+instead. If you plan a maintained downtime, check <strong>Disable Main Server</strong> for
 the time being to avoid unnecessary connection attempts every now and then.</p>
 </div>
 </div>

@@ -1,17 +1,13 @@
 Manual Installation
 -------------------
 
-If you do not want to use packages, here is how you setup ownCloud on
-from scratch using a classic :abbr:`LAMP (Linux, Apache, MySQL, PHP)` setup.
+If you do not want to use packages, here is how you setup ownCloud from
+scratch using a classic :abbr:`LAMP (Linux, Apache, MySQL, PHP)` setup:
 
-This document provides a complete walk-through for installing ownCloud 
+This document provides a complete walk-through for installing ownCloud
 on Ubuntu 12.04 LTS Server with Apache and MySQL.
 It also provides guidelines for installing it on other distributions,
-webservers and database systems.
-
-Although this document tries to describe all aspects of setting up ownCloud,
-a basic understanding of the Linux operating system and of server administration
-is required.
+web servers and database systems.
 
 Prerequisites
 ~~~~~~~~~~~~~
@@ -23,7 +19,7 @@ Prerequisites
 
 To run ownCloud, your web server must have the following installed:
 
-* PHP (>= 5.3.3 minimum, 5.4 or higher recommended)
+* php5 (>= 5.3.8, minimum recommended 5.4)
 * PHP module ctype
 * PHP module dom
 * PHP module GD
@@ -37,7 +33,7 @@ To run ownCloud, your web server must have the following installed:
 
 Database connectors (pick at least one):
 
-* PHP module sqlite (requires sqlite >= 3.0; simple configuration, but inferior performance)
+* PHP module sqlite (>= 3, usually not recommendable for performance reasons)
 * PHP module mysql
 * PHP module pgsql (requires PostgreSQL >= 9.0)
 
@@ -61,6 +57,7 @@ package):
 Recommended for specific apps (*optional*):
 
 * PHP module exif (for image rotation in pictures app)
+* PHP module gmp (for SFTP storage)
 
 For enhanced performance (*optional* / select only one of the following):
 
@@ -91,10 +88,9 @@ For preview generation (*optional*):
 * You don’t need any WebDAV support module for your web server (i.e. Apache’s
   mod_webdav) to access your ownCloud data via WebDAV. ownCloud has a built-in
   WebDAV server of its own.
-  
-Installation of packages on Ubuntu 12.04.4 LTS Server
-*****************************************************
 
+Example installation on Ubuntu 12.04.4 LTS Server
+*************************************************
 On a machine running a pristine Ubuntu 12.04.4 LTS server, you would install the
 required and recommended modules for a typical ownCloud installation, using
 Apache and MySQL by issuing the following commands in a terminal::
@@ -117,9 +113,6 @@ Apache and MySQL by issuing the following commands in a terminal::
   Be sure to remember the password you enter there for later use (you will need it
   during ownCloud database setup).
 
-Download, extract and copy ownCloud to Your Web Server
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 First, download the archive of the latest ownCloud version:
 
 * Navigate to the `ownCloud Installation Page`_
@@ -128,40 +121,40 @@ First, download the archive of the latest ownCloud version:
 * This will start the download of a file named owncloud-x.y.z.tar.bz2 (where
   x.y.z is the version number of the current latest version).
 * Save this file on the machine you want to install ownCloud on.
-  If that's a different machine than the one you are currently working on, use
+* If that's a different machine than the one you are currently working on, use
   e.g. FTP to transfer the downloaded archive file there.
 * Extract the archive contents. Open a terminal and run::
 
 	cd path/to/downloaded/archive
 	tar -xjf owncloud-x.y.z.tar.bz2
 
-  where ``path/to/downloaded/archive`` is to be replaced by the path where you
+  where :code:`path/to/downloaded/archive` is to be replaced by the path where you
   put the downloaded archive, and x.y.z of course has to be replaced by the actual
   version number as in the file you have downloaded.
-  
+
 * Copy the ownCloud files to their final destination in the document root of your
-  webserver (you can skip this step if you already downloaded and extracted the
+  web server (you can skip this step if you already downloaded and extracted the
   files there)::
 
 	sudo cp -r owncloud /path/to/your/webservers/document-root
 
   where ``/path/to/your/webservers/document-root``, needs to be replaced by the
-  actual path where the document root of your webserver is configured to be.
+  actual path where the document root of your web server is configured to be.
 
-  * If you don't know where your webserver's document root is located, consult
+  * If you don't know where your web server's document root is located, consult
     its documentation. For Apache on Ubuntu 12.04 LTS for example, this would
     usually be ``/var/www``. So the concrete command to run would be::
 
 	sudo cp -r owncloud /var/www
 
   * The above assumes you want to install ownCloud into a subdirectory "owncloud"
-    on your webserver. For installing it anywhere else, you'll have to adapt the
-    above command (and also the commands in the following section) accordingly.
+    on your web server. For installing it anywhere else, you'll have to adapt the
+    above command accordingly.
 
 Set the Directory Permissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The user running your web server must own at least the config/, data/ and apps/ 
+The user running your web server must own at least the config/, data/ and apps/
 directories in your ownCloud installation folder so that you can configure ownCloud,
 create/modify and delete your data files through ownCloud and install apps through
 the web interface. If you are planning on also using the automatic updater app for
@@ -173,12 +166,9 @@ the user running php on your system.
           write to the directory. Changing ownership as above could result in some issues
           if the NFS mount is lost.
 
-The following command will change the ownership of the whole ownCloud folder to
-that user.
-
 * The generic command to run is::
 
-	sudo chown -R <php-user>:<php-user> /path/to/your/webservers/document-root/owncloud
+    sudo chown -R <php-user>:<php-user> /path/to/your/webservers/document-root/owncloud
 
   where ``<php-user>`` is to be replaced by the user running php scripts, and
   ``/path/to/your/webservers/document-root/owncloud`` by the folder where the
@@ -190,18 +180,15 @@ that user.
 
 	sudo chown -R www-data:www-data /var/www/owncloud
 
-* For all Debian-based distributions (like Ubuntu, Debian or Linux Mint) and Gentoo,
-  use ``www-data`` user
-* On ArchLinux, use ``http`` user.
-* On Fedora, use ``apache`` user.
-* When you had extracted ownCloud as user ``root``, you should adjust file and directory
-  permission to avoid world writeable files and folder::
+* For Arch Linux should run (as root):
+  ::
 
-	find /path/to/your/webservers/document-root/owncloud -type d -exec chmod 750 {} \;
-	find /path/to/your/webservers/document-root/owncloud -type f -exec chmod 640 {} \;
+	chown -R http:http /path/to/your/owncloud
 
-  Running this in combination with the above ``chown`` command will give a secure
-  set-up.
+* Fedora users should run (as root):
+  ::
+
+	chown -R apache:apache /path/to/your/owncloud
 
 Web Server Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -266,6 +253,7 @@ Example config for Apache 2.2:
         Order allow,deny
         allow from all
     </Directory>
+
 
 Example config for Apache 2.4:
 
@@ -377,8 +365,8 @@ Example config for Apache 2.4:
   your ownCloud to be reachable via the internet, then set both these to the domain you
   want to reach your ownCloud under.
 
-.. note:: By default, the certificates' CommonName will get set to the host
-          name at the time when the ssl-cert package was installed.
+.. note:: By default, the certificates' CommonName will get set to the host name at the time
+          when the ssl-cert package was installed.
 
 * Finally, restart Apache.
 
@@ -393,15 +381,14 @@ Example config for Apache 2.4:
 Nginx Configuration
 *******************
 
-- You need to insert the following code into **your nginx config file.**
-- Adjust **server_name**, **root**, **ssl_certificate** and **ssl_certificate_key** to suit your needs.
-- Make sure your SSL certificates are readable by the server (see the
-   `Nginx HTTP SSL Module documentation`_).
+-  You need to insert the following code into **your nginx config file.**
+-  Adjust **server_name**, **root**, **ssl_certificate** and **ssl_certificate_key** to suit your needs.
+-  Make sure your SSL certificates are readable by the server (see `Nginx HTTP SSL Module documentation`_).
 
 .. code-block:: python
 
     upstream php-handler {
-            server 127.0.0.1:9000; 
+            server 127.0.0.1:9000;
             #server unix:/var/run/php5-fpm.sock;
     }
 
@@ -438,7 +425,7 @@ Nginx Configuration
                 access_log off;
             }
 
-            location ~ ^/(data|config|\.ht|db_structure\.xml|README) {
+            location ~ ^/(?:\.htaccess|data|config|db_structure\.xml|README) {
                     deny all;
             }
 
@@ -455,18 +442,17 @@ Nginx Configuration
                     try_files $uri $uri/ index.php;
             }
 
-            location ~ ^(.+?\.php)(/.*)?$ {
-                    try_files $1 =404;
-
+            location ~ \.php(?:$|/) {
+                    fastcgi_split_path_info ^(.+\.php)(/.+)$;
                     include fastcgi_params;
-                    fastcgi_param SCRIPT_FILENAME $document_root$1;
-                    fastcgi_param PATH_INFO $2;
+                    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                    fastcgi_param PATH_INFO $fastcgi_path_info;
                     fastcgi_param HTTPS on;
                     fastcgi_pass php-handler;
             }
 
             # Optional: set long EXPIRES header on static assets
-            location ~* ^.+\.(jpg|jpeg|gif|bmp|ico|png|css|js|swf)$ {
+            location ~* \.(?:jpg|jpeg|gif|bmp|ico|png|css|js|swf)$ {
                     expires 30d;
                     # Optional: Don't log access to assets
                     access_log off;
@@ -474,7 +460,8 @@ Nginx Configuration
 
     }
 
-To enable SSL support:
+.. note:: You can use ownCloud without SSL/TLS support, but we strongly encourage you not to do that:
+
 -  Remove the server block containing the redirect
 -  Change **listen 443 ssl** to **listen 80;**
 -  Remove **ssl_certificate** and **ssl_certificate_key**.
@@ -509,7 +496,7 @@ Disable directory listing::
 	$HTTP["url"] =~ "^/owncloud($|/)" {
 		dir-listing.activate = "disable"
 	}
-       
+
 **Note for Lighttpd users on Debian stable (wheezy):**
 
 Recent versions of ownCloud make use of the **HTTP PATCH** feature, which was added to Lighttpd at version 1.4.32 while Debian stable only ships 1.4.31. The patch is simple, however, and easy to integrate if you're willing to build your own package.
@@ -520,7 +507,7 @@ Make sure you have the build tools you need::
 
     apt-get build-dep lighttpd
     apt-get install quilt patch devscripts
-    
+
 Patch the package source::
 
     apt-get source lighttpd
@@ -561,7 +548,7 @@ like this
     </server>
 
 The Apache :file:`.htaccess` that comes with ownCloud is configured to
-redirect requests to nonexistent pages. To emulate that behaviour, you
+redirect requests to non-existent pages. To emulate that behaviour, you
 need a custom error handler for yaws. See this
 `github gist for further instructions`_ on how to create and compile that error
 handler.
@@ -579,105 +566,35 @@ Disable access to data folder::
         Match ^/data DenyAccess
     }
 
+
+
 Microsoft Internet Information Server (IIS)
 *******************************************
 
 See :doc:`installation_windows` for further instructions.
 
+Install Wizard
+~~~~~~~~~~~~~~
 
-Follow the Install Wizard
-~~~~~~~~~~~~~~~~~~~~~~~~~
-* Open your web browser
-* Navigate to your ownCloud instance.
+The last thing to do is to click through the installation wizard.
 
-  * If you are installing ownCloud on the same machine as you are accessing the
-    install wizard from, the url will be https://localhost/owncloud
-  * If you are installing ownCloud on a different machine, you'll have to access
-    it by its hostname or IP address, e.g. https://example.com/owncloud
-  * If you are using a self-signed certificate, you will be presented with a
-    security warning about the issuer of the certificate not being trusted which
-    you can ignore.
+Here are some guidelines for the values to enter there if following the
+Ubuntu-Apache-MySQL walk-through:
 
-* You will be presented with the setup screen
-* Enter username and password for the administrative user account
-* Expand Advanced options to choose a data folder and the database system
+* Make sure to click the "Advanced" Button to see the database settings
 
-* If you are not using Apache as the web server, please set the data directory
-  to a location outside of the document root.
+* Choose MySQL as Database backend (you might not be presented with any other
+  choice if you haven't installed any other database systems).
+* As Database host, enter ``localhost``.
+* As Database user enter ``root``.
+* As Database password, enter the password you entered during installation of the
+  MySQL server package.
+* As Database name, enter an arbitrary name as you see fit
 
-* If following the Ubuntu-Apache-MySQL walk-through:
-
-  * choose MySQL as Database backend (you might not be presented with any other
-    choice if you haven't installed any other database systems).
-  * As Database host, enter ``localhost``.
-  * As Database user enter ``root``.
-  * As Database password, enter the password you entered during installation of
-    the MySQL server package.
-  * As Database name, enter an arbitrary name as you see fit
-
-    * Beware that there are restrictions as to what characters a database name
-      may or may not contain, see the
-      `MySQL Schema Object Names documentation`_ for details);
-    * Make sure to choose a name under which no database exists yet
-  * ownCloud will use the provided credentials and create its own user with
-    permissions only on its own database.
-
-* In general, you have the following choices regarding the database:
-
-  * For basic installs we recommend SQLite as it is easy to setup (ownCloud will do
-    it for you). The performance when using sqlite is however inferior to the two
-    other options.
-  * For larger installs you should use MySQL or PostgreSQL.
-  * Note that you will only be able to choose among the php database connectors
-    which are actually installed on the system (see package requirements above).
-  * Further, it is not easily possible to migrate to another database system
-    once you have set up your ownCloud to use a specific one. So make sure to
-    carefully consider which database system to use.
-  * When using MySQL or PostgreSQL you have two options  regarding the database
-    name and user account you specify:
-
-    * You can specify either an admin/root user, and the name of a database
-      which does not yet exist. This lets ownCloud create its own database; it
-      will also create a database user account with restricted rights (with the
-      same username as you specified for the administrative user, plus an
-      ``oc_`` prefix) and will use that for all subsequent database access.
-    * You can enter the name of an existing database and the username/password
-      of a user with restricted permissions
-
-      * You can create such a user yourself e.g. via phpmyadmin.
-      * This user shouldn't have permission to create a database.
-      * It should have full permissions on the (existing) database with the
-        name you specify.
-
-* Press "Finish Setup"
-* ownCloud will set up your cloud according to the given settings
-* When its finished, it will log you in as administrative user and present the
-  "Welcome to ownCloud" screen.
-
-Note
-~~~~
-When the initial ownCloud configuration is performed, ownCloud will take the URL used to access it and insert that 
-the config.php file under the ‘trusted_domains’ header.  
-
-Users will only be able to log into ownCloud when the addressed URL is as stated in the ‘trusted_domans’  header 
-in the config.php file.  
-
-In the event that a load balancer is in place, as long as it sends the correct X-Forwarded-Host header, there will
-be no issues.  
-
-It should be noted that the loopback address, 127.0.0.1, is white labeled and therefore users on the ownCloud 
-server who access ownCloud with the loopback will successfully login.
-In the event that an improper URL is used, the following error will appear:
-
-.. image:: images/untrusted-domain.png
-
-For configuration examples, refer to the config.php document.
-
-
+Continue by following the :doc:`installation_wizard`.
 
 .. _PHP PPA: https://launchpad.net/~ondrej/+archive/php5
 .. _ownCloud Installation Page: http://owncloud.org/install
 .. _options for free SSL certificates: https://www.sslshopper.com/article-free-ssl-certificates-from-a-free-certificate-authority.html
 .. _github gist for further instructions: https://gist.github.com/2200407
 .. _Nginx HTTP SSL Module documentation: http://wiki.nginx.org/HttpSslModule
-.. _MySQL Schema Object Names documentation: http://dev.mysql.com/doc/refman/5.5/en/identifiers.html

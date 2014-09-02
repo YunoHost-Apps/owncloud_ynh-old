@@ -19,11 +19,13 @@ function setSyntaxMode(ext) {
 	filetype["haxe"] = "hx";
 	filetype["htm"] = "html";
 	filetype["html"] = "html";
+	filetype["tt"] = "html";
 	filetype["java"] = "java";
 	filetype["js"] = "javascript";
 	filetype["jsm"] = "javascript";
 	filetype["json"] = "json";
 	filetype["latex"] = "latex";
+	filetype["tex"] = "latex";
 	filetype["less"] = "less";
 	filetype["ly"] = "latex";
 	filetype["ily"] = "latex";
@@ -69,11 +71,14 @@ function showControls(dir, filename, writeable) {
 	}
 	editorbarhtml += '<label for="editorseachval">' + t('files_texteditor', 'Search');
 	editorbarhtml += '</label><input type="text" name="editorsearchval" id="editorsearchval">';
-	editorbarhtml += '<button id="editor_close">';
-	editorbarhtml += t('files_texteditor', 'Close') + '</button></div>';
+	editorbarhtml += '<button id="editor_close" class="icon-close svg"></button>';
+	editorbarhtml += '</div>';
 
 	$('#controls').append(editorbarhtml);
 	$('#editorcontrols').show();
+	if (!OC.Util.hasSVGSupport()) {
+		OC.Util.replaceSVG($('#editorcontrols'));
+	}
 }
 
 function bindControlEvents() {
@@ -136,6 +141,8 @@ function doFileSave() {
 	if (editorIsShown()) {
 		// Changed contents?
 		if ($('#editor').attr('data-edited') == 'true') {
+			$('#editor').attr('data-edited', 'false');
+			$('#editor').attr('data-saving', 'true');
 			// Get file path
 			var path = $('#editor').attr('data-dir') + '/' + $('#editor').attr('data-filename');
 			// Get original mtime
@@ -153,18 +160,21 @@ function doFileSave() {
 					$('#editor_save').text(t('files_texteditor', 'Save'));
 					$('#notification').html(t('files_texteditor', 'Failed to save file'));
 					$('#notification').fadeIn();
-					$('#editor_save').live('click', doFileSave);
+					$('#editor').attr('data-edited', 'true');
+					$('#editor').attr('data-saving', 'false');
 				} else {
 					// Save OK
 					// Update mtime
 					$('#editor').attr('data-mtime', jsondata.data.mtime);
 					$('#editor_save').text(t('files_texteditor', 'Save'));
-					$("#editor_save").live('click', doFileSave);
 					// Update titles
-					$('#editor').attr('data-edited', 'false');
-					$('.crumb.last a').text($('#editor').attr('data-filename'));
-					document.title = $('#editor').attr('data-filename') + ' - ownCloud';
+					if($('#editor').attr('data-edited') != 'true') {
+						$('.crumb.last a').text($('#editor').attr('data-filename'));
+						document.title = $('#editor').attr('data-filename') + ' - ownCloud';
+					}
+					$('#editor').attr('data-saving', 'false');
 				}
+				$('#editor_save').live('click', doFileSave);
 			}, 'json');
 		}
 	}
@@ -192,6 +202,10 @@ function showFileEditor(dir, filename) {
 			$('#editor').remove();
 			// Loads the file editor and display it.
 			$('#content').append('<div id="editor_container"><div id="editor"></div></div>');
+
+			// bigger text for better readability
+			document.getElementById('editor').style.fontSize = '16px';
+
 			var data = $.getJSON(
 				OC.filePath('files_texteditor', 'ajax', 'loadfile.php'),
 				{file: filename, dir: dir},
@@ -231,8 +245,10 @@ function showFileEditor(dir, filename) {
 						window.aceEditor.getSession().on('change', function () {
 							if ($('#editor').attr('data-edited') != 'true') {
 								$('#editor').attr('data-edited', 'true');
-								$('.crumb.last a').text($('.crumb.last a').text() + ' *');
-								document.title = $('#editor').attr('data-filename') + ' * - ownCloud';
+								if($('#editor').attr('data-saving') != 'true') {
+									$('.crumb.last a').text($('.crumb.last a').text() + ' *');
+									document.title = $('#editor').attr('data-filename') + ' * - ownCloud';
+								}
 							}
 						});
 						// Add the ctrl+s event
@@ -244,7 +260,9 @@ function showFileEditor(dir, filename) {
 								sender: "editor"
 							},
 							exec: function () {
-								doFileSave();
+								if(!$('#editor').attr('data-saving')){
+									doFileSave();
+								}
 							}
 						});
 						giveEditorFocus();
@@ -358,6 +376,10 @@ $(document).ready(function () {
 			showFileEditor($('#dir').val(), filename);
 		});
 		FileActions.setDefault('application/x-pearl', 'Edit');
+		FileActions.register('application/x-tex', 'Edit', OC.PERMISSION_READ, '', function (filename) {
+			showFileEditor($('#dir').val(), filename);
+		});
+		FileActions.setDefault('application/x-tex', 'Edit');
 
 	}
 	

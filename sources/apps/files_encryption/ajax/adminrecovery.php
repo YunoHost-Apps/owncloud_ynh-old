@@ -5,7 +5,7 @@
  * This file is licensed under the Affero General Public License version 3 or later.
  * See the COPYING-README file.
  *
- * @brief Script to handle admin settings for encrypted key recovery
+ * Script to handle admin settings for encrypted key recovery
  */
 use OCA\Encryption;
 
@@ -18,7 +18,7 @@ $l = OC_L10N::get('files_encryption');
 $return = false;
 // Enable recoveryAdmin
 
-$recoveryKeyId = OC_Appconfig::getValue('files_encryption', 'recoveryKeyId');
+$recoveryKeyId = \OC::$server->getAppConfig()->getValue('files_encryption', 'recoveryKeyId');
 
 if (isset($_POST['adminEnableRecovery']) && $_POST['adminEnableRecovery'] === '1') {
 

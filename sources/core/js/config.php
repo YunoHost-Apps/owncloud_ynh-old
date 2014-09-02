@@ -16,14 +16,27 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 // Enable l10n support
 $l = OC_L10N::get('core');
 
+// Enable OC_Defaults support
+$defaults = new OC_Defaults();
+
 // Get the config
 $apps_paths = array();
 foreach(OC_App::getEnabledApps() as $app) {
 	$apps_paths[$app] = OC_App::getAppWebPath($app);
 }
 
+$value = \OCP\Config::getAppValue('core', 'shareapi_default_expire_date', 'no');
+$defaultExpireDateEnabled = ($value === 'yes') ? true :false;
+$defaultExpireDate = $enforceDefaultExpireDate = null;
+if ($defaultExpireDateEnabled) {
+	$defaultExpireDate = (int)\OCP\Config::getAppValue('core', 'shareapi_expire_after_n_days', '7');
+	$value = \OCP\Config::getAppValue('core', 'shareapi_enforce_expire_date', 'no');
+	$enforceDefaultExpireDate = ($value === 'yes') ? true : false;
+}
+
 $array = array(
 	"oc_debug" => (defined('DEBUG') && DEBUG) ? 'true' : 'false',
+	"oc_isadmin" => OC_User::isAdminUser(OC_User::getUser()) ? 'true' : 'false',
 	"oc_webroot" => "\"".OC::$WEBROOT."\"",
 	"oc_appswebroots" =>  str_replace('\\/', '/', json_encode($apps_paths)), // Ugly unescape slashes waiting for better solution
 	"datepickerFormatDate" => json_encode($l->l('jsdate', 'jsdate')),
@@ -57,8 +70,34 @@ $array = array(
 	"firstDay" => json_encode($l->l('firstday', 'firstday')) ,
 	"oc_config" => json_encode(
 		array(
-			'session_lifetime' => \OCP\Config::getSystemValue('session_lifetime', ini_get('session.gc_maxlifetime')),
-			'session_keepalive' => \OCP\Config::getSystemValue('session_keepalive', true)
+			'session_lifetime'	=> \OCP\Config::getSystemValue('session_lifetime', ini_get('session.gc_maxlifetime')),
+			'session_keepalive'	=> \OCP\Config::getSystemValue('session_keepalive', true),
+			'version'			=> implode('.', OC_Util::getVersion()),
+			'versionstring'		=> OC_Util::getVersionString(),
+		)
+	),
+	"oc_appconfig" => json_encode(
+			array("core" => array(
+				'defaultExpireDateEnabled' => $defaultExpireDateEnabled,
+				'defaultExpireDate' => $defaultExpireDate,
+				'defaultExpireDateEnforced' => $enforceDefaultExpireDate,
+				'enforcePasswordForPublicLink' => \OCP\Util::isPublicLinkPasswordRequired(),
+				'sharingDisabledForUser' => \OCP\Util::isSharingDisabledForUser(),
+				)
+			)
+	),
+	"oc_defaults" => json_encode(
+		array(
+			'entity' => $defaults->getEntity(),
+			'name' => $defaults->getName(),
+			'title' => $defaults->getTitle(),
+			'baseUrl' => $defaults->getBaseUrl(),
+			'syncClientUrl' => $defaults->getSyncClientUrl(),
+			'docBaseUrl' => $defaults->getDocBaseUrl(),
+			'slogan' => $defaults->getSlogan(),
+			'logoClaim' => $defaults->getLogoClaim(),
+			'shortFooter' => $defaults->getShortFooter(),
+			'longFooter' => $defaults->getLongFooter()
 		)
 	)
 );

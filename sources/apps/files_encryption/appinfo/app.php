@@ -10,6 +10,10 @@ OC::$CLASSPATH['OCA\Encryption\Session'] = 'files_encryption/lib/session.php';
 OC::$CLASSPATH['OCA\Encryption\Capabilities'] = 'files_encryption/lib/capabilities.php';
 OC::$CLASSPATH['OCA\Encryption\Helper'] = 'files_encryption/lib/helper.php';
 
+// Exceptions
+OC::$CLASSPATH['OCA\Encryption\Exceptions\MultiKeyEncryptException'] = 'files_encryption/lib/exceptions.php';
+OC::$CLASSPATH['OCA\Encryption\Exceptions\MultiKeyDecryptException'] = 'files_encryption/lib/exceptions.php';
+
 \OCP\Util::addscript('files_encryption', 'encryption');
 \OCP\Util::addscript('files_encryption', 'detect-migration');
 
@@ -40,7 +44,7 @@ if (!OC_Config::getValue('maintenance', false)) {
 			\OC_Util::setupFS();
 		}
 
-		$view = new OC_FilesystemView('/');
+		$view = new OC\Files\View('/');
 
 		$sessionReady = OCA\Encryption\Helper::checkRequirements();
 		if($sessionReady) {

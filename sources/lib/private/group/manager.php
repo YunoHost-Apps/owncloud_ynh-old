@@ -28,7 +28,7 @@ use OC\Hooks\PublicEmitter;
  */
 class Manager extends PublicEmitter {
 	/**
-	 * @var \OC_Group_Backend[] | \OC_Group_Database[] $backends
+	 * @var \OC_Group_Backend[]|\OC_Group_Database[] $backends
 	 */
 	private $backends = array();
 
@@ -40,19 +40,38 @@ class Manager extends PublicEmitter {
 	/**
 	 * @var \OC\Group\Group[]
 	 */
-	private $cachedGroups;
+	private $cachedGroups = array();
+
+	/**
+	 * @var \OC\Group\Group[]
+	 */
+	private $cachedUserGroups = array();
 
 	/**
 	 * @param \OC\User\Manager $userManager
 	 */
 	public function __construct($userManager) {
 		$this->userManager = $userManager;
-		$cache = & $this->cachedGroups;
-		$this->listen('\OC\Group', 'postDelete', function ($group) use (&$cache) {
+		$cachedGroups = & $this->cachedGroups;
+		$cachedUserGroups = & $this->cachedUserGroups;
+		$this->listen('\OC\Group', 'postDelete', function ($group) use (&$cachedGroups, &$cachedUserGroups) {
 			/**
 			 * @var \OC\Group\Group $group
 			 */
-			unset($cache[$group->getGID()]);
+			unset($cachedGroups[$group->getGID()]);
+			$cachedUserGroups = array();
+		});
+		$this->listen('\OC\Group', 'postAddUser', function ($group) use (&$cachedUserGroups) {
+			/**
+			 * @var \OC\Group\Group $group
+			 */
+			$cachedUserGroups = array();
+		});
+		$this->listen('\OC\Group', 'postRemoveUser', function ($group) use (&$cachedUserGroups) {
+			/**
+			 * @var \OC\Group\Group $group
+			 */
+			$cachedUserGroups = array();
 		});
 	}
 
@@ -76,12 +95,7 @@ class Manager extends PublicEmitter {
 		if (isset($this->cachedGroups[$gid])) {
 			return $this->cachedGroups[$gid];
 		}
-		foreach ($this->backends as $backend) {
-			if ($backend->groupExists($gid)) {
-				return $this->getGroupObject($gid);
-			}
-		}
-		return null;
+		return $this->getGroupObject($gid);
 	}
 
 	protected function getGroupObject($gid) {
@@ -90,6 +104,9 @@ class Manager extends PublicEmitter {
 			if ($backend->groupExists($gid)) {
 				$backends[] = $backend;
 			}
+		}
+		if (count($backends) === 0) {
+			return null;
 		}
 		$this->cachedGroups[$gid] = new Group($gid, $backends, $this->userManager, $this);
 		return $this->cachedGroups[$gid];
@@ -110,8 +127,8 @@ class Manager extends PublicEmitter {
 	public function createGroup($gid) {
 		if (!$gid) {
 			return false;
-		} else if ($this->groupExists($gid)) {
-			return $this->get($gid);
+		} else if ($group = $this->get($gid)) {
+			return $group;
 		} else {
 			$this->emit('\OC\Group', 'preCreate', array($gid));
 			foreach ($this->backends as $backend) {
@@ -137,7 +154,7 @@ class Manager extends PublicEmitter {
 		foreach ($this->backends as $backend) {
 			$groupIds = $backend->getGroups($search, $limit, $offset);
 			foreach ($groupIds as $groupId) {
-				$groups[$groupId] = $this->getGroupObject($groupId);
+				$groups[$groupId] = $this->get($groupId);
 			}
 			if (!is_null($limit) and $limit <= 0) {
 				return array_values($groups);
@@ -151,23 +168,40 @@ class Manager extends PublicEmitter {
 	 * @return \OC\Group\Group[]
 	 */
 	public function getUserGroups($user) {
+		$uid = $user->getUID();
+		if (isset($this->cachedUserGroups[$uid])) {
+			return $this->cachedUserGroups[$uid];
+		}
 		$groups = array();
 		foreach ($this->backends as $backend) {
-			$groupIds = $backend->getUserGroups($user->getUID());
+			$groupIds = $backend->getUserGroups($uid);
 			foreach ($groupIds as $groupId) {
-				$groups[$groupId] = $this->getGroupObject($groupId);
+				$groups[$groupId] = $this->get($groupId);
 			}
 		}
-		return array_values($groups);
+		$this->cachedUserGroups[$uid] = array_values($groups);
+		return $this->cachedUserGroups[$uid];
+	}
+	/**
+	 * @param \OC\User\User $user
+	 * @return array with group names
+	 */
+	public function getUserGroupIds($user) {
+		$groupIds = array();
+		foreach ($this->backends as $backend) {
+			$groupIds = array_merge($groupIds, $backend->getUserGroups($user->getUID()));
+			
+		}
+		return $groupIds;
 	}
 
 	/**
-	 * @brief get a list of all display names in a group
+	 * get a list of all display names in a group
 	 * @param string $gid
 	 * @param string $search
 	 * @param int $limit
 	 * @param int $offset
-	 * @return array with display names (value) and user ids (key)
+	 * @return array an array of display names (value) and user ids (key)
 	 */
 	public function displayNamesInGroup($gid, $search = '', $limit = -1, $offset = 0) {
 		$group = $this->get($gid);

@@ -2,8 +2,9 @@
 /**
 * ownCloud
 *
-* @author Michael Gapczynski
-* @copyright 2012 Michael Gapczynski mtgap@owncloud.com
+* @author Bjoern Schiessle, Michael Gapczynski
+* @copyright 2012 Michael Gapczynski <mtgap@owncloud.com>
+ *           2014 Bjoern Schiessle <schiessle@owncloud.com>
 *
 * This library is free software; you can redistribute it and/or
 * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
@@ -27,14 +28,17 @@ class OC_Share_Backend_File implements OCP\Share_Backend_File_Dependent {
 	const FORMAT_OPENDIR = 3;
 	const FORMAT_GET_ALL = 4;
 	const FORMAT_PERMISSIONS = 5;
+	const FORMAT_TARGET_NAMES = 6;
 
 	private $path;
 
 	public function isValidSource($itemSource, $uidOwner) {
-		$query = \OC_DB::prepare('SELECT `name` FROM `*PREFIX*filecache` WHERE `fileid` = ?');
-		$result = $query->execute(array($itemSource));
-		if ($row = $result->fetchRow()) {
-			$this->path = $row['name'];
+		$path = \OC\Files\Filesystem::getPath($itemSource);
+		if ($path) {
+			// FIXME: attributes should not be set here,
+			// keeping this pattern for now to avoid unexpected
+			// regressions
+			$this->path = basename($path);
 			return true;
 		}
 		return false;
@@ -49,25 +53,29 @@ class OC_Share_Backend_File implements OCP\Share_Backend_File_Dependent {
 		return false;
 	}
 
+	/**
+	 * create unique target
+	 * @param string $filePath
+	 * @param string $shareWith
+	 * @param string $exclude
+	 * @return string
+	 */
 	public function generateTarget($filePath, $shareWith, $exclude = null) {
 		$target = '/'.basename($filePath);
-		if (isset($exclude)) {
-			if ($pos = strrpos($target, '.')) {
-				$name = substr($target, 0, $pos);
-				$ext = substr($target, $pos);
-			} else {
-				$name = $target;
-				$ext = '';
-			}
-			$i = 2;
-			$append = '';
-			while (in_array($name.$append.$ext, $exclude)) {
-				$append = ' ('.$i.')';
-				$i++;
-			}
-			$target = $name.$append.$ext;
+
+		// for group shares we return the target right away
+		if ($shareWith === false) {
+			return $target;
 		}
-		return $target;
+
+		\OC\Files\Filesystem::initMountPoints($shareWith);
+		$view = new \OC\Files\View('/' . $shareWith . '/files');
+		$excludeList = \OCP\Share::getItemsSharedWithUser('file', $shareWith, self::FORMAT_TARGET_NAMES);
+		if (is_array($exclude)) {
+			$excludeList = array_merge($excludeList, $exclude);
+		}
+
+		return \OCA\Files_Sharing\Helper::generateUniqueTarget($target, $excludeList, $view);
 	}
 
 	public function formatItems($items, $format, $parameters = null) {
@@ -78,7 +86,7 @@ class OC_Share_Backend_File implements OCP\Share_Backend_File_Dependent {
 				'path' => $items[key($items)]['path'],
 				'storage' => $items[key($items)]['storage'],
 				'permissions' => $items[key($items)]['permissions'],
-				'uid_owner' => $items[key($items)]['uid_owner']
+				'uid_owner' => $items[key($items)]['uid_owner'],
 			);
 		} else if ($format == self::FORMAT_GET_FOLDER_CONTENTS) {
 			$files = array();
@@ -94,6 +102,9 @@ class OC_Share_Backend_File implements OCP\Share_Backend_File_Dependent {
 				$file['mtime'] = $item['mtime'];
 				$file['encrypted'] = $item['encrypted'];
 				$file['etag'] = $item['etag'];
+				$file['uid_owner'] = $item['uid_owner'];
+				$file['displayname_owner'] = $item['displayname_owner'];
+
 				$storage = \OC\Files\Filesystem::getStorage('/');
 				$cache = $storage->getCache();
 				if ($item['encrypted'] or ($item['unencrypted_size'] > 0 and $cache->getMimetype($item['mimetype']) === 'httpd/unix-directory')) {
@@ -105,22 +116,6 @@ class OC_Share_Backend_File implements OCP\Share_Backend_File_Dependent {
 				$files[] = $file;
 			}
 			return $files;
-		} else if ($format == self::FORMAT_FILE_APP_ROOT) {
-			$mtime = 0;
-			$size = 0;
-			foreach ($items as $item) {
-				if ($item['mtime'] > $mtime) {
-					$mtime = $item['mtime'];
-				}
-				$size += (int)$item['size'];
-			}
-			return array(
-				'fileid' => -1,
-				'name' => 'Shared',
-				'mtime' => $mtime,
-				'mimetype' => 'httpd/unix-directory',
-				'size' => $size
-			);
 		} else if ($format == self::FORMAT_OPENDIR) {
 			$files = array();
 			foreach ($items as $item) {
@@ -139,46 +134,65 @@ class OC_Share_Backend_File implements OCP\Share_Backend_File_Dependent {
 				$filePermissions[$item['file_source']] = $item['permissions'];
 			}
 			return $filePermissions;
+		} else if ($format === self::FORMAT_TARGET_NAMES) {
+			$targets = array();
+			foreach ($items as $item) {
+				$targets[] = $item['file_target'];
+			}
+			return $targets;
 		}
 		return array();
 	}
 
-	public static function getSource($target) {
-		if ($target == '') {
-			return false;
-		}
-		$target = '/'.$target;
-		$target = rtrim($target, '/');
-		$pos = strpos($target, '/', 1);
-		// Get shared folder name
-		if ($pos !== false) {
-			$folder = substr($target, 0, $pos);
-			$source = \OCP\Share::getItemSharedWith('folder', $folder, \OC_Share_Backend_File::FORMAT_SHARED_STORAGE);
-			if ($source) {
-				$source['path'] = $source['path'].substr($target, strlen($folder));
+	/**
+	 * resolve reshares to return the correct source item
+	 * @param array $source
+	 * @return array source item
+	 */
+	protected static function resolveReshares($source) {
+		if (isset($source['parent'])) {
+			$parent = $source['parent'];
+			while (isset($parent)) {
+				$query = \OC_DB::prepare('SELECT `parent`, `uid_owner` FROM `*PREFIX*share` WHERE `id` = ?', 1);
+				$item = $query->execute(array($parent))->fetchRow();
+				if (isset($item['parent'])) {
+					$parent = $item['parent'];
+				} else {
+					$fileOwner = $item['uid_owner'];
+					break;
+				}
 			}
 		} else {
-			$source = \OCP\Share::getItemSharedWith('file', $target, \OC_Share_Backend_File::FORMAT_SHARED_STORAGE);
+			$fileOwner = $source['uid_owner'];
+		}
+		if (isset($fileOwner)) {
+			$source['fileOwner'] = $fileOwner;
+		} else {
+			\OCP\Util::writeLog('files_sharing', "No owner found for reshare", \OCP\Util::ERROR);
+		}
+
+		return $source;
+	}
+
+	/**
+	 * @param string $target
+	 * @param string $mountPoint
+	 * @param string $itemType
+	 * @return array|false source item
+	 */
+	public static function getSource($target, $mountPoint, $itemType) {
+		if ($itemType === 'folder') {
+			$source = \OCP\Share::getItemSharedWith('folder', $mountPoint, \OC_Share_Backend_File::FORMAT_SHARED_STORAGE);
+			if ($source && $target !== '') {
+				$source['path'] = $source['path'].'/'.$target;
+			}
+		} else {
+			$source = \OCP\Share::getItemSharedWith('file', $mountPoint, \OC_Share_Backend_File::FORMAT_SHARED_STORAGE);
 		}
 		if ($source) {
-			if (isset($source['parent'])) {
-				$parent = $source['parent'];
-				while (isset($parent)) {
-					$query = \OC_DB::prepare('SELECT `parent`, `uid_owner` FROM `*PREFIX*share` WHERE `id` = ?', 1);
-					$item = $query->execute(array($parent))->fetchRow();
-					if (isset($item['parent'])) {
-						$parent = $item['parent'];
-					} else {
-						$fileOwner = $item['uid_owner'];
-						break;
-					}
-				}
-			} else {
-				$fileOwner = $source['uid_owner'];
-			}
-			$source['fileOwner'] = $fileOwner;
-			return $source;
+			return self::resolveReshares($source);
 		}
+
 		\OCP\Util::writeLog('files_sharing', 'File source not found for: '.$target, \OCP\Util::DEBUG);
 		return false;
 	}

@@ -15,7 +15,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
  *  
- * You should have received a copy of the GNU Lesser General Public 
+ * You should have received a copy of the GNU Affero General Public
  * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
  * 
  */
@@ -99,9 +99,10 @@ class File {
 	public function checkPassword($password){
 		$shareId  = $this->getShareId();
 		if (!$this->isPasswordProtected()
-			|| (\OC::$session->exists('public_link_authenticated')
-				&& \OC::$session->get('public_link_authenticated') === $shareId)	
-			){
+			|| (\OC::$server->getSession()->exists('public_link_authenticated')
+				&& \OC::$server->getSession()->get('public_link_authenticated') === $shareId
+			)
+		){
 				return true;
 		}
 		
@@ -111,7 +112,7 @@ class File {
 		if ($hasher->CheckPassword($password.\OC_Config::getValue('passwordsalt', ''),
 									 $this->getPassword())) {
 			// Save item id in session for future request
-			\OC::$session->set('public_link_authenticated', $shareId);
+			\OC::$server->getSession()->set('public_link_authenticated', $shareId);
 			return true;
 		}
 		return false;
@@ -148,22 +149,28 @@ class File {
 	 * @return string owner of the current file item
 	 * @throws \Exception
 	 */
-	public function getOwnerViewAndPath(){
+	public function getOwnerViewAndPath($useDefaultRoot = false){
 		if ($this->isPublicShare()){
 			$rootLinkItem = \OCP\Share::resolveReShare($this->sharing[0]);
 			if (isset($rootLinkItem['uid_owner'])){
 				$owner = $rootLinkItem['uid_owner'];
+				\OCP\JSON::checkUserExists($rootLinkItem['uid_owner']);
+				\OC_Util::tearDownFS();
+				\OC_Util::setupFS($rootLinkItem['uid_owner']);
 			} else {
 				throw new \Exception($this->fileId . ' is a broken share');
 			}
 			$view = new View('/' . $owner . '/files');
-			$path = $rootLinkItem['file_target'];
 		} else {
 			$owner = \OCP\User::getUser();
-			$view = new View('/' . $this->owner);
-			$path = $view->getPath($this->fileId);
+			$root = '/' . $owner;
+			if ($useDefaultRoot){
+				$root .= '/' . 'files';
+			}
+			$view = new View($root);
 		}
 			
+		$path = $view->getPath($this->fileId);
 		if (!$path){
 			throw new \Exception($this->fileId . ' can not be resolved');
 		}
@@ -208,7 +215,7 @@ class File {
 		
 		$query = \OC_DB::prepare('SELECT `*PREFIX*share`.`id`, `item_type`, `*PREFIX*share`.`parent`, `uid_owner`, '
 							.'`share_type`, `share_with`, `file_source`, `path`, `file_target`, '
-							.'`permissions`, `expiration`, `storage`, `*PREFIX*filecache`.`parent` as `file_parent`, '
+							.'`*PREFIX*share`.`permissions`, `expiration`, `storage`, `*PREFIX*filecache`.`parent` as `file_parent`, '
 							.'`name`, `mtime`, `mimetype`, `mimepart`, `size`, `encrypted`, `etag`' 
 							.'FROM `*PREFIX*share` INNER JOIN `*PREFIX*filecache` ON `file_source` = `*PREFIX*filecache`.`fileid` WHERE `item_type` = \'file\' ' . $where);
 		$result = $query->execute($values);

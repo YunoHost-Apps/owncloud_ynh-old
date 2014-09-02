@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ownCloud documentation contents &mdash; ownCloud Administrators Manual 6.0 documentation</title>
+    <title>ownCloud documentation contents &mdash; ownCloud Administrators Manual 7.0 documentation</title>
     
     <link rel="stylesheet" href="_static/style.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '6.0',
+        VERSION:     '7.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,8 +27,8 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Administrators Manual 6.0 documentation" href="index.html" />
-    <link rel="next" title="ownCloud 6.0 Admin Documentation" href="index.html" />
+    <link rel="top" title="ownCloud Administrators Manual 7.0 documentation" href="index.html" />
+    <link rel="next" title="Introduction" href="index.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -111,17 +111,12 @@
 										<li><a href="#">Overview</a></li>
 									</ul>
                   <ul>
-<li class="toctree-l1"><a class="reference internal" href="index.html">ownCloud 6.0 Admin Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Introduction</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration/index.html">Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="apps/index.html">Apps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="maintenance/index.html">Maintenance</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cron/index.html">Driving Events with Cron</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quota/index.html">Quota Calculation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sharing_api/index.html">Sharing API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config/index.html">The Configuration File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues/index.html">Issues</a></li>
 </ul>
 
@@ -157,33 +152,45 @@
 <li class="toctree-l3"><a class="reference internal" href="installation/installation_windows.html#installing-php">Installing PHP</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation/installation_windows.html#installing-mysql">Installing MySQL</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation/installation_windows.html#installing-owncloud">Installing ownCloud</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation/installation_windows.html#ensure-proper-http-verb-handling">Ensure Proper HTTP-Verb handling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation/installation_windows.html#ensure-proper-http-verb-handling">Ensure Proper HTTP-Verb Handling</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation/installation_windows.html#configuring-owncloud-php-and-iis-for-large-file-uploads">Configuring ownCloud, PHP and IIS for Large File Uploads</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="installation/installation_ucs.html">Univention Corporate Server</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="installation/installation_ucs.html#pre-configuration">Pre configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation/installation_ucs.html#installation">Installation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation/installation_ucs.html#post-configuration-optional">Post configuration (optional)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation/installation_ucs.html#postconfiguration-optional">Postconfiguration (optional)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation/installation_ucs.html#using-owncloud">Using ownCloud</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="installation/installation_source.html">Manual Installation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="installation/installation_source.html#prerequisites">Prerequisites</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation/installation_source.html#download-extract-and-copy-owncloud-to-your-web-server">Download, extract and copy ownCloud to Your Web Server</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation/installation_source.html#set-the-directory-permissions">Set the Directory Permissions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation/installation_source.html#web-server-configuration">Web Server Configuration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation/installation_source.html#follow-the-install-wizard">Follow the Install Wizard</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation/installation_source.html#note">Note</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation/installation_source.html#install-wizard">Install Wizard</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="installation/installation_others.html">PageKite Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation/installation_others.html#open-wrt">Open Wrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/installation_others.html">Other Installation Methods</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation/installation_others.html#amahi-home-server-configuration">Amahi Home Server Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation/installation_others.html#open-wrt">Open Wrt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation/installation_others.html#pagekite-configuration">PageKite Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="installation/installation_wizard.html">Installation Wizard</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation/installation_wizard.html#required-settings">Required Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation/installation_wizard.html#advanced-options">Advanced Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation/installation_wizard.html#finish-installation">Finish Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation/installation_wizard.html#note">Note</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="configuration/index.html">Configuration</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_apps.html">Managing Apps</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_apps.html#parameters">Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_apps.html">Apps Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_apps.html#viewing-enabled-apps">Viewing Enabled Apps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_apps.html#managing-apps">Managing Apps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_apps.html#adding-third-party-apps">Adding Third Party Apps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_apps.html#setting-app-parameters">Setting App Parameters</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="configuration/configuration_users.html">User Management</a><ul>
@@ -191,7 +198,7 @@
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_users.html#user-groups">User Groups</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration/auth_ldap.html">LDAP Authentication</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration/auth_ldap.html">User Authentication with LDAP</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="configuration/auth_ldap.html#configuration">Configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/auth_ldap.html#advanced-settings">Advanced Settings</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/auth_ldap.html#expert-settings">Expert Settings</a></li>
@@ -208,60 +215,63 @@
 <li class="toctree-l3"><a class="reference internal" href="configuration/auth_ldap.html#handling-with-backup-server">Handling with Backup Server</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration/background_jobs.html">Background Jobs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration/server_to_server_managing.html">Managing Server-to-Server Sharing Access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration/background_jobs.html">Defining Background Jobs</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="configuration/background_jobs.html#parameters">Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration/background_jobs.html#cron-jobs">Cron-Jobs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration/background_jobs.html#cron-jobs">Cron Jobs</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_3rdparty.html">Find Third-Party Libraries</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_3rdparty.html#parameters">Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_assets.html">Asset Management</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_assets.html#parameters">Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_automation.html">Automatic Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_3rdparty.html">Using Third Party Components</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_3rdparty.html#managing-third-party-parameters">Managing Third Party Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_automation.html">Defining Automatic Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_automation.html#parameters">Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_automation.html#sample-automatic-configurations">Sample Automatic Configurations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_automation.html#automatic-configurations-examples">Automatic Configurations Examples</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_custom_clients.html">Customizing Client Download Links</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_custom_clients.html">Custom Client Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_custom_clients.html#parameters">Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_database.html">MySQL/Postgres/SQLite Support</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_database.html">Database Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_database.html#requirements">Requirements</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_database.html#parameters">Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_database.html#trouble-shooting">Trouble Shooting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_database.html#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_encryption.html">Using Server-Side Encryption</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_encryption.html">Use Server-Side Encryption</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_encryption.html#enable-file-recovery-feature">Enable File Recovery Feature</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_encryption.html#recover-user-files">Recover User Files</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_encryption.html#ldap-and-other-external-user-back-ends">LDAP and other external user back-ends</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_knowledgebase.html">Disable Knowledge Base</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_knowledgebase.html">Knowledge Base Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_knowledgebase.html#parameters">Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_language.html">Setting the Default Language</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_language.html">Language Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_language.html#parameters">Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_logging.html">Configure Logging</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_logging.html">Logging Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_logging.html#parameters">Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_mail.html">Sending Mail Notifications</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_mail.html">Mail Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_mail.html#requirements">Requirements</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_mail.html#parameters">Parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_mail.html#send-a-test-email">Send a Test Email</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_mail.html#trouble-shooting">Trouble shooting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_mail.html#using-email-templates">Using Email Templates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_mail.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_mail.html#enabling-debug-mode">Enabling Debug Mode</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_maintenance.html">Enable Maintenance Mode</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="configuration/configuration_maintenance.html#parameters">Parameters</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_preview.html">Enabling File Previews</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration/configuration_preview.html">Preview Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_preview.html#soft-dependencies">Soft dependencies:</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_preview.html#parameters">Parameters</a></li>
 </ul>
@@ -271,19 +281,23 @@
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuration_reverseproxy.html#example">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration/configuring_big_file_upload.html">Dealing with Big File Uploads</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration/configuring_big_file_upload.html">Uploading big files &gt; 512MB (as set by default)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuring_big_file_upload.html#not-outnumberable-upload-limits">Not outnumberable upload limits:</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/configuring_big_file_upload.html#other-recommendable-preconditions">Other recommendable preconditions:</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration/configuring_big_file_upload.html#enabling-uploading-big-files">Enabling uploading big files</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration/custom_mount_config_gui.html">Custom Mount Configuration Web-GUI</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="configuration/custom_mount_config_gui.html#id1">Dropbox</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration/custom_mount_config_gui.html#id2">Google Drive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration/configuring_big_file_upload.html#enabling-uploading-big-files">Enabling uploading big files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration/custom_mount_config_gui.html">Custom Mount Configuration (GUI)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="configuration/custom_mount_config_gui.html#supported-mounts">Supported mounts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration/custom_mount_config_gui.html#configuration">Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration/custom_mount_config_gui.html#enable-the-app">Enable the app</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration/custom_mount_config_gui.html#configure-mounts">Configure mounts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration/custom_mount_config_gui.html#configuration-file">Configuration File</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="configuration/custom_mount_config.html">Custom Mount Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="configuration/custom_mount_config.html#example">Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration/custom_mount_config.html#priorities">Priorities</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/custom_mount_config.html#backends">Backends</a></li>
 </ul>
 </li>
@@ -301,79 +315,19 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="apps/index.html">Apps</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="apps/activity/index.html">Activity</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="apps/activity/index.html#configuration">Configuration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/activity/index.html#utilization">Utilization</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/activity/index.html#rss-feed">RSS Feed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="apps/admin_dependencies_chk/index.html">Finding Deployment Dependencies</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="apps/admin_dependencies_chk/index.html#configuration">Configuration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/admin_dependencies_chk/index.html#utilization">Utilization</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="apps/files_antivirus/index.html">File Antivirus Engine</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_antivirus/index.html#configuration">Configuration</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="apps/files_encryption/index.html">Encryption</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_encryption/index.html#what-gets-encrypted">What gets encrypted?</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_encryption/index.html#decrypting-the-data">Decrypting the data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_encryption/index.html#configuration">Configuration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_encryption/index.html#file-systems">File Systems</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="apps/files_external/index.html">External storage support</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_external/index.html#supported-mounts">Supported mounts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_external/index.html#configuration">Configuration</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="apps/files_sharing/index.html">Sharing</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_sharing/index.html#configuration">Configuration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_sharing/index.html#utilization">Utilization</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_sharing/index.html#retrieving-shared-data">Retrieving shared data</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="apps/files_trashbin/index.html">Deleted Files</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_trashbin/index.html#expiry-of-deleted-files">Expiry of deleted files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_trashbin/index.html#configuration-and-storage">Configuration and storage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_trashbin/index.html#utilization">Utilization</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="apps/files_versions/index.html">Versions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_versions/index.html#expiry-of-versions">Expiry of versions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_versions/index.html#space-limitations">Space limitations</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_versions/index.html#configuration-and-storage">Configuration and storage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/files_versions/index.html#utilization">Utilization</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="apps/firstrunwizard/index.html">First Run Wizard</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="apps/firstrunwizard/index.html#configuration">Configuration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/firstrunwizard/index.html#usage">Usage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/firstrunwizard/index.html#links">Links</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="apps/user_ldap/index.html">LDAP user and group backend</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="apps/user_ldap/index.html#configuration">Configuration</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="apps/viewers/index.html">File Viewers</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="apps/viewers/index.html#configuration">Configuration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="apps/viewers/index.html#utilization">Utilization</a></li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="maintenance/index.html">Maintenance</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="maintenance/enable_maintenance.html">Maintenance Mode Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="maintenance/enable_maintenance.html#parameters">Parameters</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="maintenance/backup.html">Backing up ownCloud</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="maintenance/backup.html#backup-folders">Backup Folders</a></li>
 <li class="toctree-l3"><a class="reference internal" href="maintenance/backup.html#backup-database">Backup Database</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="maintenance/update.html">Updating ownCloud</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="maintenance/update.html#update">Update</a></li>
-<li class="toctree-l3"><a class="reference internal" href="maintenance/update.html#upgrade">Upgrade</a></li>
+<li class="toctree-l3"><a class="reference internal" href="maintenance/update.html#verifying-the-updater-app-is-enabled">Verifying the Updater App is Enabled</a></li>
+<li class="toctree-l3"><a class="reference internal" href="maintenance/update.html#enabling-the-updater-app">Enabling the Updater App</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="maintenance/restore.html">Restoring ownCloud</a><ul>
@@ -382,38 +336,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="maintenance/migrating.html">Migrating ownCloud Installations</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="cron/index.html">Driving Events with Cron</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="cron/index.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cron/index.html#usage">Usage</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="quota/index.html">Quota Calculation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quota/index.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quota/index.html#checking-available-space">Checking available space</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quota/index.html#sharing">Sharing</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="quota/index.html#shared-files">Shared Files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quota/index.html#shared-directories">Shared Directories</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quota/index.html#resharing">Resharing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quota/index.html#public-sharing-with-upload-permission">Public sharing with upload permission</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quota/index.html#metadata-and-cache">Metadata and cache</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quota/index.html#deleted-files">Deleted Files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quota/index.html#version-control">Version Control</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quota/index.html#encryption">Encryption</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quota/index.html#external-storage">External Storage</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="sharing_api/index.html">Sharing API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="sharing_api/index.html#introduction">Introduction</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="sharing_api/index.html#permissions">Permissions</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="config/index.html">The Configuration File</a><ul>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="issues/index.html">Issues</a></li>

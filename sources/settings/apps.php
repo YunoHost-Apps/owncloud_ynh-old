@@ -22,17 +22,19 @@
 */
 
 OC_Util::checkAdminUser();
-OC_App::loadApps();
 
 // Load the files we need
 OC_Util::addStyle( "settings", "settings" );
+OC_Util::addScript("core", "multiselect");
 OC_App::setActiveNavigationEntry( "core_apps" );
 
 $combinedApps = OC_App::listAllApps();
+$groups = \OC_Group::getGroups();
 
 $tmpl = new OC_Template( "settings", "apps", "user" );
 
 $tmpl->assign('apps', $combinedApps);
+$tmpl->assign('groups', $groups);
 
 $appid = (isset($_GET['appid'])?strip_tags($_GET['appid']):'');
 

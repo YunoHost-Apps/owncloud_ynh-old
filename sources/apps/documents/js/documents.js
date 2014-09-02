@@ -1,8 +1,179 @@
 /*globals $,OC,fileDownloadPath,t,document,odf,webodfEditor,alert,require,dojo,runtime */
+
+$.widget('oc.documentGrid', {
+	options : {
+		context : '.documentslist',
+		documents : {},
+		sessions : {},
+		members : {}
+	},
+	
+	_create : function (){
+			
+	},
+	
+	render : function(){
+		var that = this;
+		jQuery.when(this._load())
+			.then(function(){
+				that._render();
+			});
+	},
+	
+	add : function(document) {
+		var docElem = $(this.options.context + ' .template').clone(),
+			a = docElem.find('a')
+		;
+
+		//Fill an element
+		docElem.removeClass('template').attr('data-id', document.fileid);
+		a.css('background-image', 'url("'+document.icon+'")')
+			.attr('href', OC.generateUrl('apps/files/download{file}',{file:document.path}))
+			.find('label').text(document.name)
+		;
+		
+		docElem.appendTo(this.options.context).show();
+		
+		//Preview
+		var previewURL,
+			urlSpec = {
+			file : document.path.replace(/^\/\//, '/'),
+			x : 200,
+			y : 200,
+			c : document.etag,
+			forceIcon : 0
+		};
+
+		if ( $('#isPublic').length ) {
+			urlSpec.t = $('#dirToken').val();
+		}
+		
+		if (!urlSpec.x) {
+			urlSpec.x = $('#filestable').data('preview-x');
+		}
+		if (!urlSpec.y) {
+			urlSpec.y = $('#filestable').data('preview-y');
+		}
+		urlSpec.y *= window.devicePixelRatio;
+		urlSpec.x *= window.devicePixelRatio;
+
+		previewURL = OC.generateUrl('/core/preview.png?') + $.param(urlSpec);
+		previewURL = previewURL.replace('(', '%28').replace(')', '%29');
+
+		var img = new Image();
+		img.onload = function(){
+			var ready = function (node){
+				return function(path){
+					node.css('background-image', 'url("'+ path +'")');
+				}; 
+			}(a);
+			ready(previewURL);
+		};
+		img.src = previewURL;
+	},
+	
+	_load : function (){
+		var that = this;
+		var def = new $.Deferred();
+		$.getJSON(OC.generateUrl('apps/documents/ajax/documents/list'))
+			.done(function (data) {
+				that.options.documents = data.documents;
+				that.options.sessions = data.sessions;
+				that.options.members = data.members;
+				def.resolve();
+			})
+			.fail(function(data){
+				console.log(t('documents','Failed to load documents.'));
+			});
+		return def;
+	},
+	
+	_render : function (data){
+		var that = this,
+			documents = data && data.documents || this.options.documents,
+			sessions = data && data.sessions || this.options.sessions,
+			members = data && data.members || this.options.members,
+			hasDocuments = false
+		;
+		
+		$(this.options.context + ' .document:not(.template,.progress)').remove();
+		
+		$.each(documents, function(i, document){
+			hasDocuments = true;
+			that.add(document);
+		});
+		
+		$.each(sessions, function(i, session){
+			if (members[session.es_id].length > 0) {
+				var docElem = $(that.options.context + ' .document[data-id="'+session.file_id+'"]');
+				if (docElem.length > 0) {
+					docElem.attr('data-esid', session.es_id);
+					docElem.find('label').after('<img class="svg session-active" src="'+OC.imagePath('core','places/contacts-dark')+'">');
+					docElem.addClass('session');
+				} else {
+					console.log('Could not find file '+session.file_id+' for session '+session.es_id);
+				}
+			}
+		});
+		
+		if (!hasDocuments){
+			$(this.options.context).before('<div id="emptycontent">'
+				+ t('documents', 'No documents were found. Upload or create a document to get started!')
+				+ '</div>'
+			);
+		} else {
+			$('#emptycontent').remove();
+		}
+	}
+});
+
+$.widget('oc.documentOverlay', {
+	options : {
+		parent : 'document.body'
+	},
+	_create : function (){
+		$(this.element).hide().appendTo(document.body);
+	},
+	show : function(){
+		$(this.element).fadeIn('fast');
+	},
+	hide : function(){
+		$(this.element).fadeOut('fast');
+	}
+});
+
+$.widget('oc.documentToolbar', {
+	options : {
+		innerhtml : '<div id="document-title">' +
+					'  <div id="header">' +
+					'    <div class="logo-wide"></div>' +
+					'    <div id="document-title-container">&nbsp;</div>' +
+			        '  </div>' +
+					'</div>' +
+					
+					'<span id="toolbar" class="claro">' +
+					'  <button id="odf-invite" class="drop hidden icon-share svg">' +
+					t('documents', 'Share') +
+					'  </button>' +
+					'  <button id="odf-close" class="icon-close svg"></button>' +
+					'  <img id="saving-document" alt=""' +
+					'    src="' + OC.imagePath('core', 'loading.gif') + '"' +
+					'  />' +
+					'</span>'
+	},
+	_create : function (){
+		$(this.element).html(this.options.innerhtml).hide().prependTo(document.body);
+	},
+	show : function (){
+		$(this.element).show();
+	},
+	hide : function(){
+		$(this.element).fadeOut('fast');
+		$(this.element).html(this.options.innerhtml);
+	}
+});
+
 var documentsMain = {
-	_documents: [],
-	_sessions: [],
-	_members: [],
 	isEditormode : false,
 	useUnstable : false,
 	isGuest : false,
@@ -11,31 +182,9 @@ var documentsMain = {
 	ready :false,
 	fileName: null,
 	
-	UI : {
-		/* Overlay HTML */
-		overlay : '<div id="documents-overlay" class="icon-loading-dark"></div> <div id="documents-overlay-below" class="icon-loading-dark"></div>',
-				
-		/* Toolbar HTML */
-		toolbar : '<div id="odf-toolbar" class="dijitToolbar">' +
-					'  <div id="document-title" class="icon-noise">' +
-					'<div class="logo-wide"></div>' +
-					'<div id="document-title-container"></div>' +
-			        '</div>' +
-					'  <span id="toolbar" class="claro">' +
-					'  <button id="odf-invite" class="drop">' +
-						  t('documents', 'Share') +
-					'  </button>' +
-					'  <button id="odf-close">' +
-					       t('documents', 'Close') +
-					'  </button>' +
-					'  <img id="saving-document" alt=""' +
-					'   src="' + OC.imagePath('core', 'loading.gif') + '"' +
-					'  />' +
-					'</span>' +
-					'</div>',
-					
+	UI : {		
 		/* Editor wrapper HTML */
-		container : '<div id = "mainContainer" class="claro" style="">' +
+		container : '<div id = "mainContainer" class="claro">' +
 					'  <div id = "editor">' +
 					'    <div id = "container">' +
 					'      <div id="canvas"></div>' +
@@ -55,25 +204,20 @@ var documentsMain = {
 		mainTitle : '',
 				
 		init : function(){
-			$(documentsMain.UI.overlay).hide().appendTo(document.body);
 			documentsMain.UI.mainTitle = $('title').text();
 		},
 		
-		showOverlay : function(){
-			$('#documents-overlay,#documents-overlay-below').fadeIn('fast');
-		},
-		
-		hideOverlay : function(){
-			$('#documents-overlay,#documents-overlay-below').fadeOut('fast');
-		},
-		
 		showEditor : function(title, canShare){
-			$(document.body).prepend(documentsMain.UI.toolbar);
+			if (documentsMain.isGuest){
+				// !Login page mess wih WebODF toolbars
+				$(document.body).attr('id', 'body-user');
+			}
+
 			$('#document-title-container').text(title);
 			if (!canShare){
 				$('#odf-invite').remove();
 			} else {
-				//TODO: fill in with users
+				$('#odf-invite').show();
 			}
 			$(document.body).addClass("claro");
 			$(document.body).prepend(documentsMain.UI.container);
@@ -83,16 +227,21 @@ var documentsMain = {
 		},
 		
 		hideEditor : function(){
-				// Fade out toolbar
-				$('#odf-toolbar').fadeOut('fast');
-				// Fade out editor
-				$('#mainContainer').fadeOut('fast', function() {
-					$('#mainContainer').remove();
-					$('#odf-toolbar').remove();
-					$('#content').fadeIn('fast');
-					$(document.body).removeClass('claro');
-					$('title').text(documentsMain.UI.mainTitle);
-				});
+			if (documentsMain.isGuest){
+				// !Login page mess wih WebODF toolbars
+				$(document.body).attr('id', 'body-login');
+				$('header,footer,nav').show();
+			}
+			
+			documentsMain.toolbar.documentToolbar('hide');
+			
+			// Fade out editor
+			$('#mainContainer').fadeOut('fast', function() {
+				$('#mainContainer').remove();
+				$('#content').fadeIn('fast');
+				$(document.body).removeClass('claro');
+				$('title').text(documentsMain.UI.mainTitle);
+			});
 		},
 		
 		showSave : function (){
@@ -145,11 +294,8 @@ var documentsMain = {
 		if (!OC.currentUser){
 			documentsMain.isGuest = true;
 			
-			
 			if ($("[name='document']").val()){
-				// !Login page mess wih WebODF toolbars
-				$(document.body).attr('id', 'body-user');
-				$('header,footer').hide();
+				documentsMain.toolbar.documentToolbar('show');
 				documentsMain.prepareSession();
 				documentsMain.joinSession(
 					$("[name='document']").val()
@@ -163,7 +309,7 @@ var documentsMain = {
 		
 		documentsMain.show();
 		if (fileId){
-			documentsMain.UI.showOverlay();
+			documentsMain.overlay.documentOverlay('show');
 		}
 		
 		var webodfSource = (oc_debug === true) ? 'webodf-debug' : 'webodf';
@@ -186,7 +332,7 @@ var documentsMain = {
 	
 	prepareSession : function(){
 		documentsMain.isEditorMode = true;
-		documentsMain.UI.showOverlay();
+		documentsMain.overlay.documentOverlay('show');
 		$(window).on('beforeunload', function(){
 			return t('documents', "Leaving this page in Editor mode might cause unsaved data. It is recommended to use 'Close' button instead."); 
 		});
@@ -195,7 +341,7 @@ var documentsMain = {
 	
 	prepareGrid : function(){
 		documentsMain.isEditorMode = false;
-		documentsMain.UI.hideOverlay();
+		documentsMain.overlay.documentOverlay('hide');
 	},
 	
 	initSession: function(response) {
@@ -203,8 +349,11 @@ var documentsMain = {
 
 		if(response && (response.id && !response.es_id)){
 			return documentsMain.view(response.id);
-		} 
-
+		}
+		
+		$('header,footer,nav').hide();
+		documentsMain.toolbar.documentToolbar('show');
+		
 		if (!response || !response.status || response.status==='error'){
 			documentsMain.onEditorShutdown(t('documents', 'Failed to load this document. Please check if it can be opened with an external odt editor. This might also mean it has been unshared or deleted recently.'));
 			return;
@@ -222,13 +371,14 @@ var documentsMain = {
 			$('#content').fadeOut('fast').promise().done(function() {
 				
 				documentsMain.fileId = response.file_id;
-				documentsMain.fileName = documentsMain.getNameByFileid(response.file_id);
+				documentsMain.fileName = response.title;
 				documentsMain.UI.showEditor(
 						documentsMain.fileName || response.title,
 						typeof OC.Share !== 'undefined' && response.permissions & OC.PERMISSION_SHARE && !documentsMain.isGuest
 				);
 				if (documentsMain.isGuest){
 					$('#odf-close').text(t('documents', 'Save') );
+					$('#odf-close').removeClass('icon-close');
 				}
 				var serverFactory = new ServerFactory();
 				documentsMain.esId = response.es_id;
@@ -252,7 +402,7 @@ var documentsMain = {
 				// load the document and get called back when it's live
 				documentsMain.webodfEditorInstance.openSession(documentsMain.esId, documentsMain.memberId, function() {
 					documentsMain.webodfEditorInstance.startEditing();
-					documentsMain.UI.hideOverlay();
+					documentsMain.overlay.documentOverlay('hide');
 					parent.location.hash = response.file_id;
 				});
 			});
@@ -264,9 +414,9 @@ var documentsMain = {
 		console.log('joining session '+fileId);
 		var url;
 		if (documentsMain.isGuest){
-			url = OC.Router.generate('documents_session_joinasguest') + '/' + fileId;
+			url = OC.generateUrl('apps/documents/ajax/session/joinasguest/{token}', {token: fileId});
 		} else {
-			url = OC.Router.generate('documents_session_joinasuser') + '/' + fileId;
+			url = OC.generateUrl('apps/documents/ajax/session/joinasuser/{file_id}', {file_id: fileId});
 		}
 		$.post(
 			url,
@@ -294,7 +444,7 @@ var documentsMain = {
 		docElem.insertAfter('.documentslist .template');
 		docElem.show();
 		$.post(
-			OC.Router.generate('documents_documents_create'),
+			OC.generateUrl('apps/documents/ajax/documents/create'),
 			{},
 			function(response){
 				if (response && response.fileid){
@@ -405,7 +555,7 @@ var documentsMain = {
 	},
 
 	renameDocument: function(name) {
-		var url = OC.Router.generate('documents_rename') + '/' + documentsMain.fileId;
+		var url = OC.generateUrl('apps/documents/ajax/documents/rename/{file_id}', {file_id: documentsMain.fileId});
 		$.post(
 			url,
 			{ name : name },
@@ -430,15 +580,15 @@ var documentsMain = {
 		var extension = name.substr(lastPos + 1);
 		name = name.substr(0, lastPos);
 		var input = $('<input type="text" class="filename"/>').val(name);
-		$('#document-title').append(input);
-		$('#document-title>div').hide();
+		$('#header').append(input);
+		$('#document-title-container').hide();
 
 		input.on('blur', function(){
 			var newName = input.val();
 			if (!newName || newName === name) {
 				input.tipsy('hide');
 				input.remove();
-				$('#document-title>div').show();
+				$('#document-title-container').show();
 				return;
 			}
 			else {
@@ -449,7 +599,7 @@ var documentsMain = {
 					if (Files.isFileNameValid(newName)) {
 						input.tipsy('hide');
 						input.remove();
-						$('#document-title>div').show();
+						$('#document-title-container').show();
 						documentsMain.renameDocument(newName);
 					}
 				}
@@ -518,19 +668,18 @@ var documentsMain = {
 			// successfull shutdown - all is good.
 			// TODO: proper session leaving call to server, either by webodfServerInstance or custom
 // 			documentsMain.webodfServerInstance.leaveSession(sessionId, memberId, function() {
-			if (documentsMain.isGuest){
-				$(document.body).attr('id', 'body-login');
-				$('header,footer').show();
-			}
+
+			$('header,footer,nav').show();
 			documentsMain.webodfEditorInstance.destroy(documentsMain.UI.hideEditor);
-			
+
+			var url = '';
 			if (documentsMain.isGuest){
-				var url = OC.Router.generate('documents_user_disconnectGuest');
+				url = OC.generateUrl('apps/documents/ajax/user/disconnectGuest/{member_id}', {member_id: documentsMain.memberId});
 			} else {
-				var url = OC.Router.generate('documents_user_disconnect');
+				url = OC.generateUrl('apps/documents/ajax/user/disconnect/{member_id}', {member_id: documentsMain.memberId});
 			}
 			
-			$.post(url + '/' + documentsMain.memberId, {esId: documentsMain.esId});
+			$.post(url, {esId: documentsMain.esId});
 			
 			documentsMain.show();
 // 			});
@@ -556,16 +705,11 @@ var documentsMain = {
 		documentsMain.webodfEditorInstance.endEditing();
 		documentsMain.webodfEditorInstance.closeSession(function() {
 			if (documentsMain.isGuest){
-				$(document.body).attr('id', 'body-login');
-				$('header,footer').show();
+				$('header,footer,nav').show();
 			}
 			documentsMain.webodfEditorInstance.destroy(documentsMain.UI.hideEditor);
 		});
 
-	},
-	
-	getNameByFileid : function(fileid){
-		return $('.documentslist li[data-id='+ fileid + ']').find('label').text();
 	},
 	
 	show: function(){
@@ -573,75 +717,8 @@ var documentsMain = {
 			return;
 		}
 		documentsMain.UI.showProgress(t('documents', 'Loading documents...'));
-		jQuery.when(documentsMain.loadDocuments())
-			.then(function(){
-				documentsMain.renderDocuments();
-				documentsMain.UI.hideProgress();
-			});
-	},
-	
-	loadDocuments: function () {
-		var self = this;
-		var def = new $.Deferred();
-		OC.Router.registerLoadedCallback(function () {
-			jQuery.getJSON(OC.Router.generate('documents_documents_list'))
-				.done(function (data) {
-					self._documents = data.documents;
-					self._sessions = data.sessions;
-					self._members = data.members;
-					def.resolve();
-				})
-				.fail(function(data){
-					console.log(t('documents','Failed to load documents.'));
-				});
-		});
-		return def;
-	},
-	
-	renderDocuments: function () {
-		var self = this,
-		hasDocuments = false;
-
-		//remove all but template
-		$('.documentslist .document:not(.template,.progress)').remove();
-
-		jQuery.each(this._documents, function(i,document){
-			var docElem = $('.documentslist .template').clone();
-			docElem.removeClass('template');
-			docElem.addClass('document');
-			docElem.attr('data-id', document.fileid);
-
-			var a = docElem.find('a');
-			a.attr('href', OC.Router.generate('download',{file:document.path}));
-			a.find('label').text(document.name);
-			a.css('background-image', 'url("'+document.icon+'")');
-			Files.lazyLoadPreview(document.path, document.mimetype, function(node){ return function(path){node.css('background-image', 'url("'+ path +'")');}; }(a),  32, 40, document.etag, document.icon);
-//function(path, mime, ready, width, height, etag) {
-			$('.documentslist').append(docElem);
-			docElem.show();
-			hasDocuments = true;
-		});
-		jQuery.each(this._sessions, function(i,session){
-			if (self._members[session.es_id].length > 0) {
-				var docElem = $('.documentslist .document[data-id="'+session.file_id+'"]');
-				if (docElem.length > 0) {
-					docElem.attr('data-esid', session.es_id);
-					docElem.find('label').after('<img class="svg session-active" src="'+OC.imagePath('core','places/contacts-dark')+'">');
-					docElem.addClass('session');
-				} else {
-					console.log('Could not find file '+session.file_id+' for session '+session.es_id);
-				}
-			}
-		});
-		
-		if (!hasDocuments){
-			$('#documents-content').append('<div id="emptycontent">'
-				+ t('documents', 'No documents are found. Please upload or create a document!')
-				+ '</div>'
-			);
-		} else {
-			$('#emptycontent').remove();
-		}
+		documentsMain.docs.documentGrid('render');
+		documentsMain.UI.hideProgress();
 	}
 };
 
@@ -650,7 +727,7 @@ var documentsMain = {
 /*globals navigator,dojoConfig */
 var usedLocale = "C";
 
-if (navigator && navigator.language.match(/^(de)/)) {
+if (navigator && navigator.language && navigator.language.match(/^(de)/)) {
 	usedLocale = navigator.language.substr(0,2);
 }
 
@@ -687,59 +764,6 @@ var Files = Files || {
 		return true;
 	},
 	
-	generatePreviewUrl : function(urlSpec) {
-		urlSpec = urlSpec || {};
-		if (!urlSpec.x) {
-			urlSpec.x = $('#filestable').data('preview-x');
-		}
-		if (!urlSpec.y) {
-			urlSpec.y = $('#filestable').data('preview-y');
-		}
-		urlSpec.y *= window.devicePixelRatio;
-		urlSpec.x *= window.devicePixelRatio;
-		urlSpec.forceIcon = 0;
-		return OC.generateUrl('/core/preview.png?') + $.param(urlSpec);
-	},
-	
-	lazyLoadPreview : function(path, mime, ready, width, height, etag, defaultIcon) {
-		var urlSpec = {};
-		var previewURL;
-		ready(defaultIcon); // set mimeicon URL
-
-		urlSpec.file = Files.fixPath(path);
-		if (etag){
-			// use etag as cache buster
-			urlSpec.c = etag;
-		} else {
-			console.warn('Files.lazyLoadPreview(): missing etag argument');
-		}
-
-		urlSpec.x = width;
-		urlSpec.y = height;
-		if ( $('#isPublic').length ) {
-			urlSpec.t = $('#dirToken').val();
-		}
-		previewURL = Files.generatePreviewUrl(urlSpec);
-		previewURL = previewURL.replace('(', '%28');
-		previewURL = previewURL.replace(')', '%29');
-
-		// preload image to prevent delay
-		// this will make the browser cache the image
-		var img = new Image();
-		img.onload = function(){
-			//set preview thumbnail URL
-			ready(previewURL);
-		};
-		img.src = previewURL;
-	},
-	
-	fixPath: function(fileName) {
-		if (fileName.substr(0, 2) === '//') {
-			return fileName.substr(1);
-		}
-		return fileName;
-	},
-	
 	updateStorageStatistics: function(){}
 },
 FileList = FileList || {};
@@ -750,6 +774,10 @@ FileList.getCurrentDirectory = function(){
 
 $(document).ready(function() {
 	"use strict";
+	
+	documentsMain.docs = $('.documentslist').documentGrid();
+	documentsMain.overlay = $('<div id="documents-overlay" class="icon-loading"></div><div id="documents-overlay-below" class="icon-loading-dark"></div>').documentOverlay();
+	documentsMain.toolbar = $('<div id="odf-toolbar" class="dijitToolbar"></div>').documentToolbar();
 	
 	$('.documentslist').on('click', 'li:not(.add-document)', function(event) {
 		event.preventDefault();
@@ -764,7 +792,7 @@ $(document).ready(function() {
 		}
 	});
 	
-	$(document.body).on('click', '#document-title>div', documentsMain.onRenamePrompt);
+	$(document.body).on('click', '#document-title-container', documentsMain.onRenamePrompt);
 	$(document.body).on('click', '#odf-close', documentsMain.onClose);
 	$(document.body).on('click', '#odf-invite', documentsMain.onInvite);
 
@@ -775,15 +803,14 @@ $(document).ready(function() {
 	if (typeof supportAjaxUploadWithProgress !== 'undefined' && supportAjaxUploadWithProgress()) {
 		file_upload_start.on('fileuploadstart', function(e, data) {
 			$('#upload').addClass('icon-loading');
-			$('.add-document .upload').css({opacity:0})
+			$('.add-document .upload').css({opacity:0});
 		});
 	}
 	file_upload_start.on('fileuploaddone', function(){
 		$('#upload').removeClass('icon-loading');
-		$('.add-document .upload').css({opacity:0.7})
+		$('.add-document .upload').css({opacity:0.7});
 		documentsMain.show();
 	});
-	//TODO when ending a session as the last user close session?
 	
 	OC.addScript('documents', '3rdparty/webodf/dojo-amalgamation', documentsMain.onStartup);
 });

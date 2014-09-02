@@ -7,21 +7,35 @@
  */
 namespace OC\Files\Storage;
 
-set_include_path(get_include_path() . PATH_SEPARATOR .
-	\OC_App::getAppPath('files_external') . '/3rdparty/phpseclib/phpseclib');
-require 'Net/SFTP.php';
-
+/**
+* Uses phpseclib's Net_SFTP class and the Net_SFTP_Stream stream wrapper to
+* provide access to SFTP servers.
+*/
 class SFTP extends \OC\Files\Storage\Common {
 	private $host;
 	private $user;
 	private $password;
 	private $root;
 
+	/**
+	* @var \Net_SFTP
+	*/
 	private $client;
 
 	private static $tempFiles = array();
 
 	public function __construct($params) {
+		// The sftp:// scheme has to be manually registered via inclusion of
+		// the 'Net/SFTP/Stream.php' file which registers the Net_SFTP_Stream
+		// stream wrapper as a side effect.
+		// A slightly better way to register the stream wrapper is available
+		// since phpseclib 0.3.7 in the form of a static call to
+		// Net_SFTP_Stream::register() which will trigger autoloading if
+		// necessary.
+		// TODO: Call Net_SFTP_Stream::register() instead when phpseclib is
+		//       updated to 0.3.7 or higher.
+		require_once 'Net/SFTP/Stream.php';
+
 		$this->host = $params['host'];
 		$proto = strpos($this->host, '://');
 		if ($proto != false) {
@@ -43,12 +57,8 @@ class SFTP extends \OC\Files\Storage\Common {
 		$hostKeys = $this->readHostKeys();
 		$this->client = new \Net_SFTP($this->host);
 
-		if (!$this->client->login($this->user, $this->password)) {
-			throw new \Exception('Login failed');
-		}
-
+		// The SSH Host Key MUST be verified before login().
 		$currentHostKey = $this->client->getServerPublicHostKey();
-
 		if (array_key_exists($this->host, $hostKeys)) {
 			if ($hostKeys[$this->host] != $currentHostKey) {
 				throw new \Exception('Host public key does not match known key');
@@ -56,6 +66,10 @@ class SFTP extends \OC\Files\Storage\Common {
 		} else {
 			$hostKeys[$this->host] = $currentHostKey;
 			$this->writeHostKeys($hostKeys);
+		}
+
+		if (!$this->client->login($this->user, $this->password)) {
+			throw new \Exception('Login failed');
 		}
 	}
 
@@ -74,6 +88,9 @@ class SFTP extends \OC\Files\Storage\Common {
 		return 'sftp::' . $this->user . '@' . $this->host . '/' . $this->root;
 	}
 
+	/**
+	 * @param string $path
+	 */
 	private function absPath($path) {
 		return $this->root . $this->cleanPath($path);
 	}
@@ -205,16 +222,6 @@ class SFTP extends \OC\Files\Storage\Common {
 					if ( !$this->file_exists($path)) {
 						return false;
 					}
-
-					if (strrpos($path, '.')!==false) {
-						$ext=substr($path, strrpos($path, '.'));
-					} else {
-						$ext='';
-					}
-					$tmp = \OC_Helper::tmpFile($ext);
-					$this->getFile($absPath, $tmp);
-					return fopen($tmp, $mode);
-
 				case 'w':
 				case 'wb':
 				case 'a':
@@ -227,36 +234,12 @@ class SFTP extends \OC\Files\Storage\Common {
 				case 'x+':
 				case 'c':
 				case 'c+':
-					if (strrpos($path, '.')!==false) {
-						$ext=substr($path, strrpos($path, '.'));
-					} else {
-						$ext='';
-					}
-
-					$tmpFile=\OC_Helper::tmpFile($ext);
-					\OC\Files\Stream\Close::registerCallback(
-						$tmpFile,
-						array($this, 'writeBack')
-					);
-
-					if ($this->file_exists($path)) {
-						$this->getFile($absPath, $tmpFile);
-					}
-
-					self::$tempFiles[$tmpFile]=$absPath;
-					return fopen('close://'.$tmpFile, $mode);
+					$context = stream_context_create(array('sftp' => array('session' => $this->client)));
+					return fopen($this->constructUrl($path), $mode, false, $context);
 			}
 		} catch (\Exception $e) {
 		}
 		return false;
-	}
-
-	public function writeBack($tmpFile) {
-		if (array_key_exists($tmpFile, self::$tempFiles)) {
-			$this->uploadFile($tmpFile, self::$tempFiles[$tmpFile]);
-			unlink($tmpFile);
-			unset(self::$tempFiles[$tmpFile]);
-		}
 	}
 
 	public function touch($path, $mtime=null) {
@@ -308,5 +291,16 @@ class SFTP extends \OC\Files\Storage\Common {
 		} catch (\Exception $e) {
 			return false;
 		}
+	}
+
+	/**
+	 * @param string $path
+	 */
+	public function constructUrl($path) {
+		// Do not pass the password here. We want to use the Net_SFTP object
+		// supplied via stream context or fail. We only supply username and
+		// hostname because this might show up in logs (they are not used).
+		$url = 'sftp://'.$this->user.'@'.$this->host.$this->root.$path;
+		return $url;
 	}
 }

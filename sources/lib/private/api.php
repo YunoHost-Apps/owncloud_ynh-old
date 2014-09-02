@@ -65,13 +65,15 @@ class OC_API {
 		$name = strtolower($method).$url;
 		$name = str_replace(array('/', '{', '}'), '_', $name);
 		if(!isset(self::$actions[$name])) {
-			OC::getRouter()->useCollection('ocs');
-			OC::getRouter()->create($name, $url)
+			$oldCollection = OC::$server->getRouter()->getCurrentCollection();
+			OC::$server->getRouter()->useCollection('ocs');
+			OC::$server->getRouter()->create($name, $url)
 				->method($method)
 				->defaults($defaults)
 				->requirements($requirements)
 				->action('OC_API', 'call');
 			self::$actions[$name] = array();
+			OC::$server->getRouter()->useCollection($oldCollection);
 		}
 		self::$actions[$name][] = array('app' => $app, 'action' => $action, 'authlevel' => $authLevel);
 	}
@@ -127,9 +129,9 @@ class OC_API {
 	/**
 	 * merge the returned result objects into one response
 	 * @param array $responses
+	 * @return array|\OC_OCS_Result
 	 */
 	public static function mergeResponses($responses) {
-		$response = array();
 		// Sort into shipped and thirdparty
 		$shipped = array(
 			'succeeded' => array(),
@@ -191,7 +193,7 @@ class OC_API {
 		// Merge the successful responses
 		$data = array();
 
-		foreach($responses as $app => $response) {
+		foreach($responses as $response) {
 			if($response['shipped']) {
 				$data = array_merge_recursive($response['response']->getData(), $data);
 			} else {
@@ -301,7 +303,7 @@ class OC_API {
 	 * @param OC_OCS_Result $result
 	 * @param string $format the format xml|json
 	 */
-	private static function respond($result, $format='xml') {
+	public static function respond($result, $format='xml') {
 		// Send 401 headers if unauthorised
 		if($result->getStatusCode() === self::RESPOND_UNAUTHORISED) {
 			header('WWW-Authenticate: Basic realm="Authorisation Required"');
@@ -327,6 +329,9 @@ class OC_API {
 		}
 	}
 
+	/**
+	 * @param XMLWriter $writer
+	 */
 	private static function toXML($array, $writer) {
 		foreach($array as $k => $v) {
 			if ($k[0] === '@') {

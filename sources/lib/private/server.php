@@ -3,6 +3,7 @@
 namespace OC;
 
 use OC\AppFramework\Http\Request;
+use OC\AppFramework\Db\Db;
 use OC\AppFramework\Utility\SimpleContainer;
 use OC\Cache\UserCache;
 use OC\DB\ConnectionWrapper;
@@ -30,9 +31,9 @@ class Server extends SimpleContainer implements IServerContainer {
 			}
 
 			if (\OC::$session->exists('requesttoken')) {
-				$requesttoken = \OC::$session->get('requesttoken');
+				$requestToken = \OC::$session->get('requesttoken');
 			} else {
-				$requesttoken = false;
+				$requestToken = false;
 			}
 
 			if (defined('PHPUNIT_RUN') && PHPUNIT_RUN
@@ -54,7 +55,7 @@ class Server extends SimpleContainer implements IServerContainer {
 						? $_SERVER['REQUEST_METHOD']
 						: null,
 					'urlParams' => $urlParams,
-					'requesttoken' => $requesttoken,
+					'requesttoken' => $requestToken,
 				), $stream
 			);
 		});
@@ -131,11 +132,16 @@ class Server extends SimpleContainer implements IServerContainer {
 		$this->registerService('AllConfig', function($c) {
 			return new \OC\AllConfig();
 		});
+		$this->registerService('AppConfig', function ($c) {
+			return new \OC\AppConfig(\OC_DB::getConnection());
+		});
 		$this->registerService('L10NFactory', function($c) {
 			return new \OC\L10N\Factory();
 		});
 		$this->registerService('URLGenerator', function($c) {
-			return new \OC\URLGenerator();
+			/** @var $c SimpleContainer */
+			$config = $c->query('AllConfig');
+			return new \OC\URLGenerator($config);
 		});
 		$this->registerService('AppHelper', function($c) {
 			return new \OC\AppHelper();
@@ -143,11 +149,48 @@ class Server extends SimpleContainer implements IServerContainer {
 		$this->registerService('UserCache', function($c) {
 			return new UserCache();
 		});
+		$this->registerService('MemCacheFactory', function ($c) {
+			$instanceId = \OC_Util::getInstanceId();
+			return new \OC\Memcache\Factory($instanceId);
+		});
 		$this->registerService('ActivityManager', function($c) {
 			return new ActivityManager();
 		});
 		$this->registerService('AvatarManager', function($c) {
 			return new AvatarManager();
+		});
+		$this->registerService('Logger', function($c) {
+			/** @var $c SimpleContainer */
+			$logClass = $c->query('AllConfig')->getSystemValue('log_type', 'owncloud');
+			$logger = 'OC_Log_' . ucfirst($logClass);
+			call_user_func(array($logger, 'init'));
+
+			return new Log($logger);
+		});
+		$this->registerService('JobList', function ($c) {
+			/**
+			 * @var Server $c
+			 */
+			$config = $c->getConfig();
+			return new \OC\BackgroundJob\JobList($c->getDatabaseConnection(), $config);
+		});
+		$this->registerService('Router', function ($c){
+			/**
+			 * @var Server $c
+			 */
+			$cacheFactory = $c->getMemCacheFactory();
+			if ($cacheFactory->isAvailable()) {
+				$router = new \OC\Route\CachingRouter($cacheFactory->create('route'));
+			} else {
+				$router = new \OC\Route\Router();
+			}
+			return $router;
+		});
+		$this->registerService('Search', function($c){
+			return new Search();
+		});
+		$this->registerService('Db', function($c){
+			return new Db();
 		});
 	}
 
@@ -212,15 +255,27 @@ class Server extends SimpleContainer implements IServerContainer {
 	 * @return \OCP\Files\Folder
 	 */
 	function getUserFolder() {
-
-		$dir = '/files';
+		$user = $this->getUserSession()->getUser();
+		if (!$user) {
+			return null;
+		}
+		$dir = '/' . $user->getUID();
 		$root = $this->getRootFolder();
 		$folder = null;
+
 		if(!$root->nodeExists($dir)) {
 			$folder = $root->newFolder($dir);
 		} else {
 			$folder = $root->get($dir);
 		}
+
+		$dir = '/files';
+		if(!$folder->nodeExists($dir)) {
+			$folder = $folder->newFolder($dir);
+		} else {
+			$folder = $folder->get($dir);
+		}
+
 		return $folder;
 	}
 
@@ -264,15 +319,24 @@ class Server extends SimpleContainer implements IServerContainer {
 	}
 
 	/**
-	 * @return \OC\Config
+	 * @return \OCP\IConfig
 	 */
 	function getConfig() {
 		return $this->query('AllConfig');
 	}
 
 	/**
+	 * Returns the app config manager
+	 *
+	 * @return \OCP\IAppConfig
+	 */
+	function getAppConfig(){
+		return $this->query('AppConfig');
+	}
+
+	/**
 	 * get an L10N instance
-	 * @param $app string appid
+	 * @param string $app appid
 	 * @return \OC_L10N
 	 */
 	function getL10N($app) {
@@ -280,14 +344,14 @@ class Server extends SimpleContainer implements IServerContainer {
 	}
 
 	/**
-	 * @return \OC\URLGenerator
+	 * @return \OCP\IURLGenerator
 	 */
 	function getURLGenerator() {
 		return $this->query('URLGenerator');
 	}
 
 	/**
-	 * @return \OC\Helper
+	 * @return \OCP\IHelper
 	 */
 	function getHelper() {
 		return $this->query('AppHelper');
@@ -300,6 +364,15 @@ class Server extends SimpleContainer implements IServerContainer {
 	 */
 	function getCache() {
 		return $this->query('UserCache');
+	}
+
+	/**
+	 * Returns an \OCP\CacheFactory instance
+	 *
+	 * @return \OCP\ICacheFactory
+	 */
+	function getMemCacheFactory() {
+		return $this->query('MemCacheFactory');
 	}
 
 	/**
@@ -327,5 +400,48 @@ class Server extends SimpleContainer implements IServerContainer {
 	 */
 	function getActivityManager() {
 		return $this->query('ActivityManager');
+	}
+
+	/**
+	 * Returns an job list for controlling background jobs
+	 *
+	 * @return \OCP\BackgroundJob\IJobList
+	 */
+	function getJobList(){
+		return $this->query('JobList');
+	}
+
+	/**
+	 * Returns a logger instance
+	 *
+	 * @return \OCP\ILogger
+	 */
+	function getLogger() {
+		return $this->query('Logger');
+	}
+
+	/**
+	 * Returns a router for generating and matching urls
+	 *
+	 * @return \OCP\Route\IRouter
+	 */
+	function getRouter(){
+		return $this->query('Router');
+	}
+
+	/**
+	 * Returns a search instance
+	 * @return \OCP\ISearch
+	 */
+	function getSearch() {
+		return $this->query('Search');
+	}
+
+	/**
+	 * Returns an instance of the db facade
+	 * @return \OCP\IDb
+	 */
+	function getDb() {
+		return $this->query('Db');
 	}
 }

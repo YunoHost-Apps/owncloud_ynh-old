@@ -16,9 +16,6 @@ use OC\Hooks\BasicEmitter;
  *  - maintenanceStart()
  *  - maintenanceEnd()
  *  - dbUpgrade()
- *  - filecacheStart()
- *  - filecacheProgress(int $percentage)
- *  - filecacheDone()
  *  - failure(string $message)
  */
 class Updater extends BasicEmitter {
@@ -28,17 +25,44 @@ class Updater extends BasicEmitter {
 	 */
 	private $log;
 
+	private $simulateStepEnabled;
+
+	private $updateStepEnabled;
+
 	/**
 	 * @param \OC\Log $log
 	 */
 	public function __construct($log = null) {
 		$this->log = $log;
+		$this->simulateStepEnabled = true;
+		$this->updateStepEnabled = true;
+	}
+
+	/**
+	 * Sets whether the database migration simulation must
+	 * be enabled.
+	 * This can be set to false to skip this test.
+	 *
+	 * @param bool $flag true to enable simulation, false otherwise
+	 */
+	public function setSimulateStepEnabled($flag) {
+		$this->simulateStepEnabled = $flag;
+	}
+
+	/**
+	 * Sets whether the update must be performed.
+	 * This can be set to false to skip the actual update.
+	 *
+	 * @param bool $flag true to enable update, false otherwise
+	 */
+	public function setUpdateStepEnabled($flag) {
+		$this->updateStepEnabled = $flag;
 	}
 
 	/**
 	 * Check if a new version is available
 	 * @param string $updaterUrl the url to check, i.e. 'http://apps.owncloud.com/updater.php'
-	 * @return array | bool
+	 * @return array|bool
 	 */
 	public function check($updaterUrl) {
 
@@ -56,7 +80,7 @@ class Updater extends BasicEmitter {
 		$version = \OC_Util::getVersion();
 		$version['installed'] = \OC_Appconfig::getValue('core', 'installedat');
 		$version['updated'] = \OC_Appconfig::getValue('core', 'lastupdatedat');
-		$version['updatechannel'] = \OC_Util::getChannel(); 
+		$version['updatechannel'] = \OC_Util::getChannel();
 		$version['edition'] = \OC_Util::getEditionString();
 		$version['build'] = \OC_Util::getBuild();
 		$versionString = implode('x', $version);
@@ -94,16 +118,45 @@ class Updater extends BasicEmitter {
 
 	/**
 	 * runs the update actions in maintenance mode, does not upgrade the source files
+	 * except the main .htaccess file
+	 *
+	 * @return bool true if the operation succeeded, false otherwise
 	 */
 	public function upgrade() {
 		\OC_DB::enableCaching(false);
 		\OC_Config::setValue('maintenance', true);
+
 		$installedVersion = \OC_Config::getValue('version', '0.0.0');
 		$currentVersion = implode('.', \OC_Util::getVersion());
 		if ($this->log) {
 			$this->log->debug('starting upgrade from ' . $installedVersion . ' to ' . $currentVersion, array('app' => 'core'));
 		}
 		$this->emit('\OC\Updater', 'maintenanceStart');
+
+		try {
+			$this->doUpgrade($currentVersion, $installedVersion);
+		} catch (\Exception $exception) {
+			$this->emit('\OC\Updater', 'failure', array($exception->getMessage()));
+		}
+
+		\OC_Config::setValue('maintenance', false);
+		$this->emit('\OC\Updater', 'maintenanceEnd');
+	}
+
+	/**
+	 * runs the update actions in maintenance mode, does not upgrade the source files
+	 * except the main .htaccess file
+	 *
+	 * @param string $currentVersion current version to upgrade to
+	 * @param string $installedVersion previous version from which to upgrade from
+	 *
+	 * @return bool true if the operation succeeded, false otherwise
+	 */
+	private function doUpgrade($currentVersion, $installedVersion) {
+		// Update htaccess files for apache hosts
+		if (isset($_SERVER['SERVER_SOFTWARE']) && strstr($_SERVER['SERVER_SOFTWARE'], 'Apache')) {
+			\OC_Setup::updateHtaccess();
+		}
 
 		// create empty file in data dir, so we can later find
 		// out that this is indeed an ownCloud data directory
@@ -113,76 +166,69 @@ class Updater extends BasicEmitter {
 		/*
 		 * START CONFIG CHANGES FOR OLDER VERSIONS
 		 */
-		if (!\OC::$CLI && version_compare($installedVersion, '6.00.4', '<')) {
+		if (!\OC::$CLI && version_compare($installedVersion, '6.90.1', '<')) {
 			// Add the trusted_domains config if it is not existant
 			// This is added to prevent host header poisoning
-			\OC_Config::setValue('trusted_domains', \OC_Config::getValue('trusted_domains', array(\OC_Request::serverHost()))); 
+			\OC_Config::setValue('trusted_domains', \OC_Config::getValue('trusted_domains', array(\OC_Request::serverHost())));
 		}
+
 		/*
 		 * STOP CONFIG CHANGES FOR OLDER VERSIONS
 		 */
 
+		// pre-upgrade repairs
+		$repair = new \OC\Repair(\OC\Repair::getBeforeUpgradeRepairSteps());
+		$repair->run();
 
-		try {
+		// simulate DB upgrade
+		if ($this->simulateStepEnabled) {
+			// simulate core DB upgrade
+			\OC_DB::simulateUpdateDbFromStructure(\OC::$SERVERROOT . '/db_structure.xml');
+
+			// simulate apps DB upgrade
+			$version = \OC_Util::getVersion();
+			$apps = \OC_App::getEnabledApps();
+			foreach ($apps as $appId) {
+				$info = \OC_App::getAppInfo($appId);
+				if (\OC_App::isAppCompatible($version, $info) && \OC_App::shouldUpgrade($appId)) {
+					if (file_exists(\OC_App::getAppPath($appId) . '/appinfo/database.xml')) {
+						\OC_DB::simulateUpdateDbFromStructure(\OC_App::getAppPath($appId) . '/appinfo/database.xml');
+					}
+				}
+			}
+
+			$this->emit('\OC\Updater', 'dbSimulateUpgrade');
+		}
+
+		// upgrade from OC6 to OC7
+		// TODO removed it again for OC8
+		$sharePolicy = \OC_Appconfig::getValue('core', 'shareapi_share_policy', 'global');
+		if ($sharePolicy === 'groups_only') {
+			\OC_Appconfig::setValue('core', 'shareapi_only_share_with_group_members', 'yes');
+		}
+
+		if ($this->updateStepEnabled) {
+			// do the real upgrade
 			\OC_DB::updateDbFromStructure(\OC::$SERVERROOT . '/db_structure.xml');
 			$this->emit('\OC\Updater', 'dbUpgrade');
 
-			// do a file cache upgrade for users with files
-			// this can take loooooooooooooooooooooooong
-			$this->upgradeFileCache();
-		} catch (\Exception $exception) {
-			$this->emit('\OC\Updater', 'failure', array($exception->getMessage()));
-		}
-		\OC_Config::setValue('version', implode('.', \OC_Util::getVersion()));
-		\OC_App::checkAppsRequirements();
-		// load all apps to also upgrade enabled apps
-		\OC_App::loadApps();
-
-		$repair = new Repair();
-		$repair->run();
-
-		//Invalidate update feed
-		\OC_Appconfig::setValue('core', 'lastupdatedat', 0);
-		\OC_Config::setValue('maintenance', false);
-		$this->emit('\OC\Updater', 'maintenanceEnd');
-	}
-
-	private function upgradeFileCache() {
-		try {
-			$query = \OC_DB::prepare('
-				SELECT DISTINCT `user`
-				FROM `*PREFIX*fscache`
-			');
-			$result = $query->execute();
-		} catch (\Exception $e) {
-			return;
-		}
-		$users = $result->fetchAll();
-		if (count($users) == 0) {
-			return;
-		}
-		$step = 100 / count($users);
-		$percentCompleted = 0;
-		$lastPercentCompletedOutput = 0;
-		$startInfoShown = false;
-		foreach ($users as $userRow) {
-			$user = $userRow['user'];
-			\OC\Files\Filesystem::initMountPoints($user);
-			\OC\Files\Cache\Upgrade::doSilentUpgrade($user);
-			if (!$startInfoShown) {
-				//We show it only now, because otherwise Info about upgraded apps
-				//will appear between this and progress info
-				$this->emit('\OC\Updater', 'filecacheStart');
-				$startInfoShown = true;
+			$disabledApps = \OC_App::checkAppsRequirements();
+			if (!empty($disabledApps)) {
+				$this->emit('\OC\Updater', 'disabledApps', array($disabledApps));
 			}
-			$percentCompleted += $step;
-			$out = floor($percentCompleted);
-			if ($out != $lastPercentCompletedOutput) {
-				$this->emit('\OC\Updater', 'filecacheProgress', array($out));
-				$lastPercentCompletedOutput = $out;
-			}
+			// load all apps to also upgrade enabled apps
+			\OC_App::loadApps();
+
+			// post-upgrade repairs
+			$repair = new \OC\Repair(\OC\Repair::getRepairSteps());
+			$repair->run();
+
+			//Invalidate update feed
+			\OC_Appconfig::setValue('core', 'lastupdatedat', 0);
+
+			// only set the final version if everything went well
+			\OC_Config::setValue('version', implode('.', \OC_Util::getVersion()));
 		}
-		$this->emit('\OC\Updater', 'filecacheDone');
 	}
 }
 

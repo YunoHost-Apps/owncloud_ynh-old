@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Background Jobs &mdash; ownCloud Administrators Manual 6.0 documentation</title>
+    <title>Defining Background Jobs &mdash; ownCloud Administrators Manual 7.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '6.0',
+        VERSION:     '7.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,10 +27,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Administrators Manual 6.0 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Administrators Manual 7.0 documentation" href="../index.html" />
     <link rel="up" title="Configuration" href="index.html" />
-    <link rel="next" title="Find Third-Party Libraries" href="configuration_3rdparty.html" />
-    <link rel="prev" title="LDAP Authentication" href="auth_ldap.html" />
+    <link rel="next" title="Asset Management" href="configuration_assets.html" />
+    <link rel="prev" title="Managing Server-to-Server Sharing Access" href="server_to_server_managing.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -113,44 +113,41 @@
 										<li><a href="../contents.html">Overview</a></li>
 									</ul>
                   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 6.0 Admin Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Configuration</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="configuration_apps.html">Managing Apps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_apps.html">Apps Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="configuration_users.html">User Management</a></li>
-<li class="toctree-l2"><a class="reference internal" href="auth_ldap.html">LDAP Authentication</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Background Jobs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="auth_ldap.html">User Authentication with LDAP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server_to_server_managing.html">Managing Server-to-Server Sharing Access</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Defining Background Jobs</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#parameters">Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#cron-jobs">Cron-Jobs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cron-jobs">Cron Jobs</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_3rdparty.html">Find Third-Party Libraries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_automation.html">Automatic Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_custom_clients.html">Customizing Client Download Links</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_database.html">MySQL/Postgres/SQLite Support</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_encryption.html">Using Server-Side Encryption</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_knowledgebase.html">Disable Knowledge Base</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_language.html">Setting the Default Language</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_logging.html">Configure Logging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_mail.html">Sending Mail Notifications</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_maintenance.html">Enable Maintenance Mode</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_preview.html">Enabling File Previews</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_assets.html">Asset Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_3rdparty.html">Using Third Party Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_automation.html">Defining Automatic Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_custom_clients.html">Custom Client Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_database.html">Database Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_encryption.html">Use Server-Side Encryption</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_knowledgebase.html">Knowledge Base Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_language.html">Language Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_logging.html">Logging Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_mail.html">Mail Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_preview.html">Preview Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="configuration_reverseproxy.html">Reverse Proxy Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html">Dealing with Big File Uploads</a></li>
-<li class="toctree-l2"><a class="reference internal" href="custom_mount_config_gui.html">Custom Mount Configuration Web-GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html">Uploading big files &gt; 512MB (as set by default)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuring_big_file_upload.html#enabling-uploading-big-files">Enabling uploading big files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_mount_config_gui.html">Custom Mount Configuration (GUI)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_mount_config.html">Custom Mount Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_user_backend.html">Custom User Backend Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xsendfile.html">Serving static files via web server</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../apps/index.html">Apps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cron/index.html">Driving Events with Cron</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quota/index.html">Quota Calculation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sharing_api/index.html">Sharing API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../config/index.html">The Configuration File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues</a></li>
 </ul>
 
@@ -164,14 +161,11 @@
 				<div class="span9">
 					<div class="page-content">
 						
-  <div class="section" id="background-jobs">
-<h1>Background Jobs<a class="headerlink" href="#background-jobs" title="Permalink to this headline">¶</a></h1>
-<p>A system like ownCloud sometimes requires tasks to be done on a regular
-base without blocking the user interface. For that purpose you, as a system
-administrator, can define background jobs which make it possible to execute
-tasks without any need of user interaction, e.g. database clean-ups etc.
-For the sake of completeness it is worth to know that additionally background
-jobs can also be defined by installed apps.</p>
+  <div class="section" id="defining-background-jobs">
+<h1>Defining Background Jobs<a class="headerlink" href="#defining-background-jobs" title="Permalink to this headline">¶</a></h1>
+<p>A system like ownCloud sometimes requires tasks to be done on a regular basis without the need for user interaction or hindering ownCloud performance. For that purpose, as a system administrator, you can define background jobs (for example, database clean-ups) which are executed without any need for user interaction.</p>
+<p>These jobs are typically referred to as <em>cron jobs</em>.  Cron jobs are commands or shell-based scripts that are scheduled to run periodically at fixed times, dates, or intervals.   <tt class="docutils literal"><span class="pre">cron.php</span></tt> is an ownCloud internal process that runs such background jobs on demand.</p>
+<p>ownCloud plug-in applications register actions with <tt class="docutils literal"><span class="pre">cron.php</span></tt> automatically to take care of typical housekeeping operations, such as garbage collecting of temporary files or checking for newly updated files using <tt class="docutils literal"><span class="pre">filescan()</span></tt> for externally mounted file systems.</p>
 <div class="section" id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <p>In the admin settings menu you can configure how cron-jobs should be executed.
@@ -183,38 +177,35 @@ You can choose between the following options:</p>
 </ul>
 </div>
 <div class="section" id="cron-jobs">
-<h2>Cron-Jobs<a class="headerlink" href="#cron-jobs" title="Permalink to this headline">¶</a></h2>
-<p>OwnCloud requires various automated background jobs to be run. There are three methods to achieve this.
-The default way is AJAX and the recommended way is cron.</p>
+<h2>Cron Jobs<a class="headerlink" href="#cron-jobs" title="Permalink to this headline">¶</a></h2>
+<p>You can schedule cron jobs in three ways &#8211; using AJAX, Webcron, or cron. The default method is to use AJAX.  However, the recommended method is to use cron.  The following sections describe the differences between each method.</p>
 <div class="section" id="ajax">
 <h3>AJAX<a class="headerlink" href="#ajax" title="Permalink to this headline">¶</a></h3>
-<p>This option is the default option, although it is the least reliable. Every
-time a user visits the ownCloud page a single background job will be executed.
-The advantage of this mechanism is, that is does not require access to the
-system nor registration at a third party service.
-The disadvantage of this solution compared to the Webcron service is, that it
-requires regular visits of the page to get triggered.</p>
+<p>The AJAX scheduling method is the default option.  Unfortunately, however, it is also the least reliable. Each time a user visits the ownCloud page, a single background job is executed. The advantage of this mechanism is that is does not require access to the system nor registration with a third party service. The disadvantage of this mechanism, when compared to the Webcron service, is that it requires regular visits to the page for it to be triggered.</p>
 </div>
 <div class="section" id="webcron">
 <h3>Webcron<a class="headerlink" href="#webcron" title="Permalink to this headline">¶</a></h3>
 <p>By registering your ownCloud <tt class="docutils literal"><span class="pre">cron.php</span></tt> script address at an external webcron
-service, like e.g. <a class="reference external" href="http://www.easycron.com/">easyCron</a>, you ensure that background jobs will be executed
-regularly. To use such a service your server need to be reachable via the Internet.</p>
-<p><strong>Example</strong></p>
+service (for example, <a class="reference external" href="http://www.easycron.com/">easyCron</a>), you ensure that background jobs are executed
+regularly. To use this type of service, your server you must be able to access
+your server using the Internet. For example:</p>
 <div class="highlight-python"><pre>URL to call: http[s]://&lt;domain-of-your-server&gt;/owncloud/cron.php</pre>
 </div>
 </div>
 <div class="section" id="cron">
 <h3>Cron<a class="headerlink" href="#cron" title="Permalink to this headline">¶</a></h3>
-<p>Using the systems cron feature is the preferred way to run regular tasks,
-because it allows to execute jobs without the limitations which a web server
-may have.</p>
-<p><strong>Example</strong></p>
-<p>To run a cron job on a *nix system, e.g. every 15min, under the default web server
-user, e.g. <strong>www-data</strong>, you need to set-up the following cron job to call the
-<strong>cron.php</strong> script. Please check the crontab man page for the exact command syntax.</p>
+<p>Using the operating system cron feature is the preferred method for executing regular tasks.  This method enables the execution of scheduled jobs without the inherent limitations the web server might have.  For example:</p>
+<p>To run a cron job on a *nix system, every 15 minutes, under the default web server user (often, <tt class="docutils literal"><span class="pre">www-data</span></tt> or <tt class="docutils literal"><span class="pre">wwwrun</span></tt>), you must set up the following cron job to call the <strong>cron.php</strong> script:</p>
 <div class="highlight-python"><pre># crontab -u www-data -e
 */15  *  *  *  * php -f /var/www/owncloud/cron.php</pre>
+</div>
+<p>You can verify if the cron job has been added and scheduled by executing:</p>
+<div class="highlight-python"><pre># crontab -u www-data -l
+*/15  *  *  *  * php -f /var/www/owncloud/cron.php</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please refer to the crontab man page for the exact command syntax.</p>
 </div>
 </div>
 </div>

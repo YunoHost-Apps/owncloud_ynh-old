@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ownCloud\n"
 "Report-Msgid-Bugs-To: translations@owncloud.org\n"
-"POT-Creation-Date: 2013-11-21 21:15-0500\n"
-"PO-Revision-Date: 2013-11-22 02:15+0000\n"
-"Last-Translator: I Robot <owncloud-bot@tmit.eu>\n"
+"POT-Creation-Date: 2014-05-27 02:10-0400\n"
+"PO-Revision-Date: 2014-05-26 09:11+0000\n"
+"Last-Translator: I Robot\n"
 "Language-Team: Afrikaans (South Africa) (http://www.transifex.com/projects/p/owncloud/language/af_ZA/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -47,7 +47,7 @@ msgstr ""
 
 #: js/bookmarks.js:370
 msgid "Warning"
-msgstr ""
+msgstr "Waarskuwing"
 
 #: js/settings.js:18
 msgid "Import error"
@@ -99,7 +99,7 @@ msgstr ""
 
 #: templates/js_tpl.php:44
 msgid "Cancel"
-msgstr ""
+msgstr "Kanseleer"
 
 #: templates/list.php:14
 msgid ""
@@ -117,7 +117,7 @@ msgstr ""
 
 #: templates/list.php:23
 msgid "Add"
-msgstr ""
+msgstr "Voeg by"
 
 #: templates/list.php:31
 msgid "Related Tags"

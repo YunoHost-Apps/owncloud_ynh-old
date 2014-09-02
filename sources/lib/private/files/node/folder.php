@@ -9,7 +9,6 @@
 namespace OC\Files\Node;
 
 use OC\Files\Cache\Cache;
-use OC\Files\Cache\Scanner;
 use OCP\Files\NotFoundException;
 use OCP\Files\NotPermittedException;
 
@@ -72,13 +71,11 @@ class Folder extends Node implements \OCP\Files\Folder {
 		list($storage, $internalPath) = $this->view->resolvePath($this->path);
 		if ($storage) {
 			$cache = $storage->getCache($internalPath);
-			$permissionsCache = $storage->getPermissionsCache($internalPath);
 
 			//trigger cache update check
 			$this->view->getFileInfo($this->path);
 
 			$files = $cache->getFolderContents($internalPath);
-			$permissions = $permissionsCache->getDirectoryPermissions($this->getId(), $this->root->getUser()->getUID());
 		} else {
 			$files = array();
 		}
@@ -130,9 +127,6 @@ class Folder extends Node implements \OCP\Files\Folder {
 
 		foreach ($files as $file) {
 			if ($file) {
-				if (isset($permissions[$file['fileid']])) {
-					$file['permissions'] = $permissions[$file['fileid']];
-				}
 				$node = $this->createNode($this->path . '/' . $file['name'], $file);
 				$result[] = $node;
 			}
@@ -297,7 +291,7 @@ class Folder extends Node implements \OCP\Files\Folder {
 	}
 
 	/**
-	 * @param $id
+	 * @param int $id
 	 * @return \OC\Files\Node\Node[]
 	 */
 	public function getById($id) {

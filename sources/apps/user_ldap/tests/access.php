@@ -30,30 +30,39 @@ class Test_Access extends \PHPUnit_Framework_TestCase {
 	private function getConnecterAndLdapMock() {
 		static $conMethods;
 		static $accMethods;
+		static $umMethods;
 
 		if(is_null($conMethods) || is_null($accMethods)) {
 			$conMethods = get_class_methods('\OCA\user_ldap\lib\Connection');
 			$accMethods = get_class_methods('\OCA\user_ldap\lib\Access');
+			$umMethods  = get_class_methods('\OCA\user_ldap\lib\user\Manager');
 		}
 		$lw  = $this->getMock('\OCA\user_ldap\lib\ILDAPWrapper');
 		$connector = $this->getMock('\OCA\user_ldap\lib\Connection',
 									$conMethods,
 									array($lw, null, null));
+		$um = $this->getMock('\OCA\user_ldap\lib\user\Manager',
+			$umMethods, array(
+				$this->getMock('\OCP\IConfig'),
+				$this->getMock('\OCA\user_ldap\lib\FilesystemHelper'),
+				$this->getMock('\OCA\user_ldap\lib\LogWrapper'),
+				$this->getMock('\OCP\IAvatarManager'),
+				$this->getMock('\OCP\Image')));
 
-		return array($lw, $connector);
+		return array($lw, $connector, $um);
 	}
 
 	public function testEscapeFilterPartValidChars() {
-		list($lw, $con) = $this->getConnecterAndLdapMock();
-		$access = new Access($con, $lw);
+		list($lw, $con, $um) = $this->getConnecterAndLdapMock();
+		$access = new Access($con, $lw, $um);
 
 		$input = 'okay';
 		$this->assertTrue($input === $access->escapeFilterPart($input));
 	}
 
 	public function testEscapeFilterPartEscapeWildcard() {
-		list($lw, $con) = $this->getConnecterAndLdapMock();
-		$access = new Access($con, $lw);
+		list($lw, $con, $um) = $this->getConnecterAndLdapMock();
+		$access = new Access($con, $lw, $um);
 
 		$input = '*';
 		$expected = '\\\\*';
@@ -61,11 +70,90 @@ class Test_Access extends \PHPUnit_Framework_TestCase {
 	}
 
 	public function testEscapeFilterPartEscapeWildcard2() {
-		list($lw, $con) = $this->getConnecterAndLdapMock();
-		$access = new Access($con, $lw);
+		list($lw, $con, $um) = $this->getConnecterAndLdapMock();
+		$access = new Access($con, $lw, $um);
 
 		$input = 'foo*bar';
 		$expected = 'foo\\\\*bar';
 		$this->assertTrue($expected === $access->escapeFilterPart($input));
+	}
+
+	public function testConvertSID2StrSuccess() {
+		list($lw, $con, $um) = $this->getConnecterAndLdapMock();
+		$access = new Access($con, $lw, $um);
+
+		if(!function_exists('\bcadd')) {
+			$this->markTestSkipped('bcmath not available');
+		}
+
+		$sidBinary = file_get_contents(__DIR__ . '/data/sid.dat');
+		$sidExpected = 'S-1-5-21-249921958-728525901-1594176202';
+
+		$this->assertSame($sidExpected, $access->convertSID2Str($sidBinary));
+	}
+
+	public function testConvertSID2StrInputError() {
+		list($lw, $con, $um) = $this->getConnecterAndLdapMock();
+		$access = new Access($con, $lw, $um);
+
+		if(!function_exists('\bcadd')) {
+			$this->markTestSkipped('bcmath not available');
+		}
+
+		$sidIllegal = 'foobar';
+		$sidExpected = '';
+
+		$this->assertSame($sidExpected, $access->convertSID2Str($sidIllegal));
+	}
+
+	public function testConvertSID2StrNoBCMath() {
+		if(function_exists('\bcadd')) {
+			$removed = false;
+			if(function_exists('runkit_function_remove')) {
+				$removed = !runkit_function_remove('\bcadd');
+			}
+			if(!$removed) {
+				$this->markTestSkipped('bcadd could not be removed for ' .
+					'testing without bcmath');
+			}
+		}
+
+		list($lw, $con, $um) = $this->getConnecterAndLdapMock();
+		$access = new Access($con, $lw, $um);
+
+		$sidBinary = file_get_contents(__DIR__ . '/data/sid.dat');
+		$sidExpected = '';
+
+		$this->assertSame($sidExpected, $access->convertSID2Str($sidBinary));
+	}
+
+	public function testGetDomainDNFromDNSuccess() {
+		list($lw, $con, $um) = $this->getConnecterAndLdapMock();
+		$access = new Access($con, $lw, $um);
+
+		$inputDN = 'uid=zaphod,cn=foobar,dc=my,dc=server,dc=com';
+		$domainDN = 'dc=my,dc=server,dc=com';
+
+		$lw->expects($this->once())
+			->method('explodeDN')
+			->with($inputDN, 0)
+			->will($this->returnValue(explode(',', $inputDN)));
+
+		$this->assertSame($domainDN, $access->getDomainDNFromDN($inputDN));
+	}
+
+	public function testGetDomainDNFromDNError() {
+		list($lw, $con, $um) = $this->getConnecterAndLdapMock();
+		$access = new Access($con, $lw, $um);
+
+		$inputDN = 'foobar';
+		$expected = '';
+
+		$lw->expects($this->once())
+			->method('explodeDN')
+			->with($inputDN, 0)
+			->will($this->returnValue(false));
+
+		$this->assertSame($expected, $access->getDomainDNFromDN($inputDN));
 	}
 }

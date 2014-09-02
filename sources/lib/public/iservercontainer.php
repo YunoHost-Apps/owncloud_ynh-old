@@ -93,6 +93,13 @@ interface IServerContainer {
 	function getAppFolder();
 
 	/**
+	 * Returns a user manager
+	 *
+	 * @return \OCP\IUserManager
+	 */
+	function getUserManager();
+
+	/**
 	 * Returns the user session
 	 *
 	 * @return \OCP\IUserSession
@@ -113,9 +120,24 @@ interface IServerContainer {
 	 */
 	function getConfig();
 
+
+	/**
+	 * Returns an instance of the db facade
+	 * @return \OCP\IDb
+	 */
+	function getDb();
+
+
+	/**
+	 * Returns the app config manager
+	 *
+	 * @return \OCP\IAppConfig
+	 */
+	function getAppConfig();
+
 	/**
 	 * get an L10N instance
-	 * @param $app string appid
+	 * @param string $app appid
 	 * @return \OCP\IL10N
 	 */
 	function getL10N($app);
@@ -140,6 +162,13 @@ interface IServerContainer {
 	 * @return \OCP\ICache
 	 */
 	function getCache();
+
+	/**
+	 * Returns an \OCP\CacheFactory instance
+	 *
+	 * @return \OCP\ICacheFactory
+	 */
+	function getMemCacheFactory();
 
 	/**
 	 * Returns the current session
@@ -168,5 +197,26 @@ interface IServerContainer {
 	 * @return \OCP\IAvatarManager
 	 */
 	function getAvatarManager();
+
+	/**
+	 * Returns an job list for controlling background jobs
+	 *
+	 * @return \OCP\BackgroundJob\IJobList
+	 */
+	function getJobList();
+
+	/**
+	 * Returns a router for generating and matching urls
+	 *
+	 * @return \OCP\Route\IRouter
+	 */
+	function getRouter();
+
+	/**
+	 * Returns a search instance
+	 *
+	 * @return \OCP\ISearch
+	 */
+	function getSearch();
 
 }

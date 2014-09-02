@@ -1,3 +1,5 @@
+/* global Gallery, Thumbnail */
+
 jQuery.fn.slideShow = function (container, start, options) {
 	var i, images = [], settings;
 	start = start || 0;
@@ -6,20 +8,25 @@ jQuery.fn.slideShow = function (container, start, options) {
 		'play'    : false,
 		'maxScale': 2
 	}, options);
+	var slideShow = $('#slideshow');
 	if (settings.play){
-		$('#slideshow').children('.play').hide();
-		$('#slideshow').children('.pause').show();
+		slideShow.children('.play').hide();
+		slideShow.children('.pause').show();
 	}
 	else{
-		$('#slideshow').children('.play').show();
-		$('#slideshow').children('.pause').hide();
+		slideShow.children('.play').show();
+		slideShow.children('.pause').hide();
 	}
 	jQuery.fn.slideShow.container = container;
 	jQuery.fn.slideShow.settings = settings;
 	jQuery.fn.slideShow.current = start;
-	for (i = 0; i < this.length; i++) {
-		var imageLink = this[i];
-		images.push(imageLink.imageUrl || imageLink.href);
+	if (settings.images) {
+		images = settings.images;
+	} else {
+		for (i = 0; i < this.length; i++) {
+			var imageLink = this[i];
+			images.push(imageLink.imageUrl || imageLink.href);
+		}
 	}
 	container.children('img').remove();
 	container.show();
@@ -29,7 +36,7 @@ jQuery.fn.slideShow = function (container, start, options) {
 	jQuery.fn.slideShow.progressBar = container.find('.progress');
 
 	// hide arrows and play/pause when only one pic
-	$('#slideshow').find('.next, .previous').toggle(images.length > 1);
+	slideShow.find('.next, .previous').toggle(images.length > 1);
 	if (images.length === 1) {
 		// note: only handling hide case here as we don't want to
 		// re-show the buttons that might have been hidden by
@@ -51,7 +58,7 @@ jQuery.fn.slideShow.loadImage = function (url) {
 	if (!jQuery.fn.slideShow.cache[url]) {
 		jQuery.fn.slideShow.cache[url] = new jQuery.Deferred();
 		var image = new Image();
-		jQuery.fn.slideShow.cache[url].fail(function (u) {
+		jQuery.fn.slideShow.cache[url].fail(function () {
 			image = false;
 			jQuery.fn.slideShow.cache[url] = false;
 		});
@@ -204,15 +211,16 @@ jQuery.fn.slideShow.onstop = null;
 
 Slideshow = {};
 Slideshow.start = function (images, start, options) {
-
+	options = options || {};
 	var content = $('#content');
 	start = start || 0;
 	Thumbnail.concurrent = 1; //make sure we can load the image and doesn't get blocked by loading thumbnail
-	if (content.is(":visible") && typeof Gallery !== 'undefined') {
-		Gallery.scrollLocation = $(window).scrollTop();
+	if (images.slideShow) {
+		images.slideShow($('#slideshow'), start, options);
+	} else {
+		options.images = images;
+		jQuery.fn.slideShow($('#slideshow'), start, options);
 	}
-	images.slideShow($('#slideshow'), start, options);
-	content.hide();
 };
 
 Slideshow.end = function () {
@@ -326,31 +334,52 @@ $(document).ready(function () {
 		}
 	})
 		.fail(function () {
-			alert(t('core', 'Error loading slideshow template'));
+			OC.Notification.show(t('core', 'Error loading slideshow template'));
 		});
 
 
-	if (typeof FileActions !== 'undefined' && typeof Slideshow !== 'undefined' && $('#filesApp').val()) {
-		FileActions.register('image', 'View', OC.PERMISSION_READ, '', function (filename) {
-			var images = $('#fileList tr[data-mime^="image"] a.name');
-			var dir = FileList.getCurrentDirectory() + '/';
-			var user = OC.currentUser;
-			if (!user) {
-				user = $('#sharingToken').val();
-			}
+	if (OCA.Files && typeof Slideshow !== 'undefined') {
+		OCA.Files.fileActions.register('image', 'View', OC.PERMISSION_READ, '', function (filename, context) {
+			var files = context.fileList.files;
 			var start = 0;
-			$.each(images, function (i, e) {
-				var tr = $(e).closest('tr');
-				var imageFile = tr.data('file');
-				if (imageFile === filename) {
+			var images = [];
+			var dir = context.dir + '/';
+			var user = OC.currentUser;
+			var width = $(document).width() * window.devicePixelRatio;
+			for (var i = 0; i < files.length; i++) {
+				var file = files[i];
+				if (file.mimetype && file.mimetype.indexOf('image') >= 0) {
+					if (file.mimetype === 'image/svg+xml') {
+						imageUrl = OCA.Files.Files.getDownloadUrl(file.name, dir);
+					} else {
+						var imageUrl = OC.generateUrl('/core/preview.png?file={file}&x={x}&a=true&scalingup=0', {
+							x: width,
+							file: encodeURIComponent(dir + file.name)
+						});
+						if (!user) {
+							imageUrl = OC.generateUrl(
+								'/apps/files_sharing/publicpreview?file={file}&x={x}&a=true&t={t}&scalingup=0', {
+									file: encodeURIComponent(dir + file.name),
+									x: width,
+									t: $('#sharingToken').val()
+								});
+						}
+					}
+
+					images.push({
+						name: file.name,
+						// use gallery URL instead of download URL
+						imageUrl: imageUrl
+					});
+				}
+			}
+			for (i = 0; i < images.length; i++) {
+				if (images[i].name === filename) {
 					start = i;
 				}
-				// use gallery URL instead of download URL
-				e.imageUrl = OC.linkTo('gallery', 'ajax/image.php') +
-					'?file=' + encodeURIComponent(user + dir + imageFile);
-			});
-			images.slideShow($('#slideshow'), start);
+			}
+			jQuery.fn.slideShow.call(images, $('#slideshow'), start);
 		});
-		FileActions.setDefault('image', 'View');
+		OCA.Files.fileActions.setDefault('image', 'View');
 	}
 });

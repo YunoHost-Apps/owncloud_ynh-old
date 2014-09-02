@@ -8,9 +8,6 @@ class Controller {
 		\OC_JSON::callCheck();
 		\OC_JSON::checkLoggedIn();
 
-		// Manually load apps to ensure hooks work correctly (workaround for issue 1503)
-		\OC_App::loadApps();
-
 		$username = \OC_User::getUser();
 		$password = isset($_POST['personal-password']) ? $_POST['personal-password'] : null;
 		$oldPassword = isset($_POST['oldpassword']) ? $_POST['oldpassword'] : '';
@@ -31,9 +28,6 @@ class Controller {
 		// Check if we are an user
 		\OC_JSON::callCheck();
 		\OC_JSON::checkLoggedIn();
-
-		// Manually load apps to ensure hooks work correctly (workaround for issue 1503)
-		\OC_App::loadApps();
 
 		if (isset($_POST['username'])) {
 			$username = $_POST['username'];
@@ -58,7 +52,7 @@ class Controller {
 
 		if (\OC_App::isEnabled('files_encryption')) {
 			//handle the recovery case
-			$util = new \OCA\Encryption\Util(new \OC_FilesystemView('/'), $username);
+			$util = new \OCA\Encryption\Util(new \OC\Files\View('/'), $username);
 			$recoveryAdminEnabled = \OC_Appconfig::getValue('files_encryption', 'recoveryAdminEnabled');
 
 			$validRecoveryPassword = false;

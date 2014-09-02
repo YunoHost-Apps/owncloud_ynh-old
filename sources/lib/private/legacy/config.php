@@ -38,7 +38,6 @@
  * This class is responsible for reading and writing config.php, the very basic
  * configuration file of ownCloud.
  */
-OC_Config::$object = new \OC\Config(OC::$SERVERROOT.'/config/');
 class OC_Config {
 
 	/**
@@ -51,8 +50,8 @@ class OC_Config {
 	}
 
 	/**
-	 * @brief Lists all available config keys
-	 * @return array with key names
+	 * Lists all available config keys
+	 * @return array an array of key names
 	 *
 	 * This function returns all keys saved in config.php. Please note that it
 	 * does not return the values.
@@ -62,10 +61,10 @@ class OC_Config {
 	}
 
 	/**
-	 * @brief Gets a value from config.php
+	 * Gets a value from config.php
 	 * @param string $key key
-	 * @param string $default = null default value
-	 * @return string the value or $default
+	 * @param mixed $default = null default value
+	 * @return mixed the value or $default
 	 *
 	 * This function gets the value from config.php. If it does not exist,
 	 * $default will be returned.
@@ -75,9 +74,9 @@ class OC_Config {
 	}
 
 	/**
-	 * @brief Sets a value
+	 * Sets a value
 	 * @param string $key key
-	 * @param string $value value
+	 * @param mixed $value value
 	 *
 	 * This function sets the value and writes the config.php.
 	 *
@@ -87,7 +86,7 @@ class OC_Config {
 	}
 
 	/**
-	 * @brief Removes a key from the config
+	 * Removes a key from the config
 	 * @param string $key key
 	 *
 	 * This function removes a key from the config.php.

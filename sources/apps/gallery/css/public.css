@@ -1,34 +1,5 @@
-/*body {*/
-	/*background:#ddd;*/
-/*}*/
-
-#header {
-	background: #1d2d44 url('%webroot%/core/img/noise.png') repeat;
-	height:32px;
-	left:0;
-	line-height:32px;
-	position:fixed;
-	right:0;
-	top:0;
-	z-index:100;
-	padding:7px;
-}
-
 #gallery {
 	margin-top: 45px;
-}
-
-.header-right {
-	padding: 0;
-	height: 32px;
-}
-
-#details {
-	color:#fff;
-	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-	filter: alpha(opacity=50);
-	opacity: .5;
-	padding-right: 5px;
 }
 
 #public_upload,
@@ -46,7 +17,6 @@ body {
 	height: 100%;
 	width: 100%;
 	text-align: center;
-	background: #404040 url('%webroot%/core/img/noise.png') repeat;
 }
 
 /* toggle for opening shared picture view as file list */
@@ -68,14 +38,11 @@ body {
 
 footer {
 	text-align: center;
-	color: #ccc;
-	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
-	filter: alpha(opacity=60);
-	opacity: .6;
+	color: #777;
 }
 footer p.info a {
 	font-weight: bold;
-	color: #ccc;
+	color: #777;
 	padding: 13px;
 	margin: -13px;
 }
