@@ -73,7 +73,7 @@ done
 # Reload Nginx and regenerate SSOwat conf
 sudo service php5-fpm restart
 sudo service nginx reload
-sudo yunohost app setting owncloud skipped_uris -v "/"
+sudo yunohost app setting owncloud unprotected_uris -v "/"
 sudo yunohost app ssowatconf
 
 # Owncloud installation via curl
@@ -116,9 +116,6 @@ sudo chmod -R 770 $data_path
 # Make an LDAP user as admin
 mysql -u $db_user -p$db_pwd $db_user -e "INSERT INTO oc_group_user VALUES ('admin','$user');"
 
-# Unprotect URIs
-sudo yunohost app setting owncloud skipped_uris -v "/public.php,/core,/apps/files,/index.php/apps/files,/index.php/apps/,/index.php/core,/apps,/3rdparty,/search"
-sudo yunohost app setting owncloud unprotected_uris -v "/remote.php,/cron.php,/status.php"
 sudo yunohost app ssowatconf
 
 # Remove temporary entry in /etc/hosts
