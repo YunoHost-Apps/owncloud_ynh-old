@@ -10,7 +10,6 @@ sudo rm -rf /var/www/owncloud
 sudo rm -rf /home/yunohost.app/owncloud
 sudo rm -f /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo rm -f /etc/php5/fpm/pool.d/owncloud.conf
-sudo rm -f /etc/php5/conf.d/20-owncloud.ini
 for i in $(ls /home)
 do
     if [[ ! $i == yunohost.* ]];
