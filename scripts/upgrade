@@ -23,7 +23,6 @@ sudo mkdir -p $data_path
 sudo cp -a ../sources/* $final_path
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo cp ../conf/php-fpm.conf /etc/php5/fpm/pool.d/owncloud.conf
-sudo cp ../conf/php-fpm.ini /etc/php5/fpm/conf.d/20-owncloud.ini
 sudo cp ../conf/mount.json $data_path
 sudo chown -hR owncloud:www-data $final_path
 sudo chown -hR owncloud:www-data $data_path
