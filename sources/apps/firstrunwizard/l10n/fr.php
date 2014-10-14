@@ -1,6 +1,6 @@
 <?php
 $TRANSLATIONS = array(
-"Welcome to %s" => "Bienvenue su %s",
+"Welcome to %s" => "Bienvenue sur %s",
 "Your personal web services. All your files, contacts, calendar and more, in one place." => "Vos services web personnels. Tous vos fichiers, vos contacts, agendas et bien plus encore, réunis en un seul endroit.",
 "Get the apps to sync your files" => "Obtenez les applications de synchronisation de vos fichiers",
 "Connect your desktop apps to %s" => "Connectez vos applications de bureau à %s",
