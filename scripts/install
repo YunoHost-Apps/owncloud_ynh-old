@@ -48,7 +48,7 @@ sudo chown -hR owncloud:www-data $final_path
 sudo chown -hR owncloud:www-data $data_path
 sudo chown owncloud:www-data /home/yunohost.app/owncloud
 sudo chmod 755 /home/yunohost.app
-sudo find $final_path -type f -print0 | xargs -0 sudo chmod 664
+sudo chmod 664 -R $final_path
 sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775
 sudo chmod -R 770 $data_path
 
