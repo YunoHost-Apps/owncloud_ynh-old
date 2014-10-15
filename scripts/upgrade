@@ -40,7 +40,7 @@ sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/php5/fpm/pool.d/owncloud.conf
 # Reload Nginx and regenerate SSOwat conf
 sudo service php5-fpm restart
 sudo service nginx reload
-sudo yunohost app setting owncloud unprotected_uris -v "/"
+sudo yunohost app setting owncloud skipped_uris -v "/"
 sudo yunohost app ssowatconf
 
 # Optionnal DB upgrade here
