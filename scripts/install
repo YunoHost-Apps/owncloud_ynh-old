@@ -99,7 +99,7 @@ do
     let result=$?
     if [ $loop_number -eq 4 ];
     then
-        print "Web installation failed"
+        echo "Web installation failed"
         exit 1
     fi
     let loop_number++
