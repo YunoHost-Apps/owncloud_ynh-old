@@ -19,6 +19,9 @@ if [[ ! $? -eq 0 ]]; then
     exit 1
 fi
 
+# Remove trailing "/" for next commands
+path=${path%/}
+
 # Install dependencies
 sudo apt-get install acl smbclient -y -qq
 
