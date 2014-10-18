@@ -957,6 +957,10 @@ class View {
 					$content['permissions'] = $storage->getPermissions($content['path']);
 					$cache->update($content['fileid'], array('permissions' => $content['permissions']));
 				}
+				// if sharing was disabled for the user we remove the share permissions
+				if (\OCP\Util::isSharingDisabledForUser()) {
+					$content['permissions'] = $content['permissions'] & ~\OCP\PERMISSION_SHARE;
+				}
 				$files[] = new FileInfo($path . '/' . $content['name'], $storage, $content['path'], $content);
 			}
 
@@ -1005,6 +1009,12 @@ class View {
 								}
 							}
 							$rootEntry['path'] = substr($path . '/' . $rootEntry['name'], strlen($user) + 2); // full path without /$user/
+
+							// if sharing was disabled for the user we remove the share permissions
+							if (\OCP\Util::isSharingDisabledForUser()) {
+								$content['permissions'] = $content['permissions'] & ~\OCP\PERMISSION_SHARE;
+							}
+
 							$files[] = new FileInfo($path . '/' . $rootEntry['name'], $subStorage, '', $rootEntry);
 						}
 					}
@@ -1169,6 +1179,7 @@ class View {
 	 * @return string|null
 	 */
 	public function getPath($id) {
+		$id = (int) $id;
 		$manager = Filesystem::getMountManager();
 		$mounts = $manager->findIn($this->fakeRoot);
 		$mounts[] = $manager->find($this->fakeRoot);

@@ -473,29 +473,15 @@ class OC {
 		@ini_set('file_uploads', '50');
 
 		self::handleAuthHeaders();
-
 		self::initPaths();
-		if (OC_Config::getValue('instanceid', false)) {
-			// \OC\Memcache\Cache has a hidden dependency on
-			// OC_Util::getInstanceId() for namespacing. See #5409.
-			try {
-				self::$loader->setMemoryCache(\OC\Memcache\Factory::createLowLatency('Autoloader'));
-			} catch (\Exception $ex) {
-			}
-		}
+		self::registerAutoloaderCache();
+
 		OC_Util::isSetLocaleWorking();
 
 		// setup 3rdparty autoloader
 		$vendorAutoLoad = OC::$THIRDPARTYROOT . '/3rdparty/autoload.php';
 		if (file_exists($vendorAutoLoad)) {
 			require_once $vendorAutoLoad;
-		}
-
-		// set debug mode if an xdebug session is active
-		if (!defined('DEBUG') || !DEBUG) {
-			if (isset($_COOKIE['XDEBUG_SESSION'])) {
-				define('DEBUG', true);
-			}
 		}
 
 		if (!defined('PHPUNIT_RUN')) {
@@ -642,6 +628,23 @@ class OC {
 		}
 	}
 
+	protected static function registerAutoloaderCache() {
+		// The class loader takes an optional low-latency cache, which MUST be
+		// namespaced. The instanceid is used for namespacing, but might be
+		// unavailable at this point. Futhermore, it might not be possible to
+		// generate an instanceid via \OC_Util::getInstanceId() because the
+		// config file may not be writable. As such, we only register a class
+		// loader cache if instanceid is available without trying to create one.
+		$instanceId = OC_Config::getValue('instanceid', null);
+		if ($instanceId) {
+			try {
+				$memcacheFactory = new \OC\Memcache\Factory($instanceId);
+				self::$loader->setMemoryCache($memcacheFactory->createLowLatency('Autoloader'));
+			} catch (\Exception $ex) {
+			}
+		}
+	}
+
 	/**
 	 * Handle the request
 	 */
@@ -667,10 +670,9 @@ class OC {
 
 			header('HTTP/1.1 400 Bad Request');
 			header('Status: 400 Bad Request');
-			OC_Template::printErrorPage(
-				$l->t('You are accessing the server from an untrusted domain.'),
-				$l->t('Please contact your administrator. If you are an administrator of this instance, configure the "trusted_domain" setting in config/config.php. An example configuration is provided in config/config.sample.php.')
-			);
+			$tmpl = new OCP\Template('core', 'untrustedDomain', 'guest');
+			$tmpl->assign('domain', $_SERVER['SERVER_NAME']);
+			$tmpl->printPage();
 			return;
 		}
 
@@ -682,6 +684,9 @@ class OC {
 
 		if (!OC_User::isLoggedIn()) {
 			// Test it the user is already authenticated using Apaches AuthType Basic... very usable in combination with LDAP
+			if (!OC_Config::getValue('maintenance', false) && !self::checkUpgrade(false)) {
+				OC_App::loadApps(array('authentication'));
+			}
 			OC::tryBasicAuthLogin();
 		}
 
@@ -836,13 +841,6 @@ class OC {
 		} // logon via web form
 		elseif (OC::tryFormLogin()) {
 			$error[] = 'invalidpassword';
-			if ( OC_Config::getValue('log_authfailip', false) ) {
-				OC_Log::write('core', 'Login failed: user \''.$_POST["user"].'\' , wrong password, IP:'.$_SERVER['REMOTE_ADDR'],
-				OC_Log::WARN);
-			} else {
-				OC_Log::write('core', 'Login failed: user \''.$_POST["user"].'\' , wrong password, IP:set log_authfailip=true in conf',
-                                OC_Log::WARN);
-			}
 		}
 
 		OC_Util::displayLoginPage(array_unique($error));
