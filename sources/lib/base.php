@@ -969,10 +969,12 @@ class OC {
 			return false;
 		}
 
-		if (OC_User::login($_SERVER["PHP_AUTH_USER"], $_SERVER["PHP_AUTH_PW"])) {
-			//OC_Log::write('core',"Logged in with HTTP Authentication", OC_Log::DEBUG);
-			OC_User::unsetMagicInCookie();
-			$_SERVER['HTTP_REQUESTTOKEN'] = OC_Util::callRegister();
+		if (!OC_User::isLoggedIn()) {
+			if (OC_User::login($_SERVER["PHP_AUTH_USER"], $_SERVER["PHP_AUTH_PW"])) {
+				//OC_Log::write('core',"Logged in with HTTP Authentication", OC_Log::DEBUG);
+				OC_User::unsetMagicInCookie();
+				$_SERVER['HTTP_REQUESTTOKEN'] = OC_Util::callRegister();
+			}
 		}
 		return true;
 	}
