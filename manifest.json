@@ -5,6 +5,7 @@
         "en": "Sync & share your files, pictures, music, contacts, calendars, and much more !",
         "fr": "Synchronisez et partagez vos fichiers, images, musiques, contacts, calendriers, et bien plus !"
     },
+    "licence": "AGPL-3",
     "developer": {
         "name": "kload",
         "email": "kload@kload.fr",
