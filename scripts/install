@@ -6,7 +6,7 @@ path=$2
 user=$3
 
 # Check user parameter
-sudo yunohost user list --json | grep -q "\"username\": \"$user\""
+sudo yunohost user list --json | grep -qi "\"username\": \"$user\""
 if [[ ! $? -eq 0 ]]; then
     echo "Wrong user"
     exit 1
