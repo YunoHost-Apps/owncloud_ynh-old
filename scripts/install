@@ -79,14 +79,12 @@ sudo yunohost app setting owncloud unprotected_uris -v "/"
 sudo yunohost app ssowatconf
 
 # Owncloud installation via curl
-echo "127.0.0.1 $domain #yunoowncloud" | sudo tee -a /etc/hosts
-sleep 1
-curl -kL -X POST https://$domain$path/index.php --data "install=true&adminlogin=admin&adminpass=$db_pwd&directory=/home/yunohost.app/owncloud/data&dbtype=mysql&dbuser=$db_user&dbpass=$db_pwd&dbname=$db_user&dbhost=localhost" > /dev/null 2>&1
+curl -kL -H "Host: $domain" -X POST https://$domain$path/index.php --data "install=true&adminlogin=admin&adminpass=$db_pwd&directory=/home/yunohost.app/owncloud/data&dbtype=mysql&dbuser=$db_user&dbpass=$db_pwd&dbname=$db_user&dbhost=localhost" > /dev/null 2>&1
 
 # Enable plugins
 sleep 5
-curl -kL -X POST https://$domain$path/index.php/settings/ajax/enableapp.php --data "appid=files_external" -u "admin:$db_pwd" > /dev/null 2>&1
-curl -kL -X POST https://$domain$path/index.php/settings/ajax/enableapp.php --data "appid=user_ldap" -u "admin:$db_pwd" > /dev/null 2>&1
+curl -kL -H "Host: $domain" -X POST https://$domain$path/index.php/settings/ajax/enableapp.php --data "appid=files_external" -u "admin:$db_pwd" > /dev/null 2>&1
+curl -kL -H "Host: $domain" -X POST https://$domain$path/index.php/settings/ajax/enableapp.php --data "appid=user_ldap" -u "admin:$db_pwd" > /dev/null 2>&1
 
 # Check if the Mysql database is initialized & running
 mysql -u $db_user -p$db_pwd $db_user -e "select * from oc_appconfig;" > /dev/null 2>&1
@@ -119,6 +117,3 @@ sudo chmod -R 770 $data_path
 mysql -u $db_user -p$db_pwd $db_user -e "INSERT INTO oc_group_user VALUES ('admin','$user');"
 
 sudo yunohost app ssowatconf
-
-# Remove temporary entry in /etc/hosts
-sudo sed -i '/yunoowncloud/d' /etc/hosts
