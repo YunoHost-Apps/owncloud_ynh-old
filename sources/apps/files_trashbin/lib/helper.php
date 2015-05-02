@@ -31,10 +31,13 @@ class Helper
 			return $result;
 		}
 
-		list($storage, $internalPath) = $view->resolvePath($dir);
+		$mount = $view->getMount($dir);
+		$storage = $mount->getStorage();
 		$absoluteDir = $view->getAbsolutePath($dir);
+		$internalPath = $mount->getInternalPath($absoluteDir);
 
 		if (is_resource($dirContent)) {
+			$originalLocations = \OCA\Files_Trashbin\Trashbin::getLocations($user);
 			while (($entryName = readdir($dirContent)) !== false) {
 				if (!\OC\Files\Filesystem::isIgnoredDir($entryName)) {
 					$id = $entryName;
@@ -47,6 +50,13 @@ class Helper
 						$parts = explode('/', ltrim($dir, '/'));
 						$timestamp = substr(pathinfo($parts[0], PATHINFO_EXTENSION), 1);
 					}
+					$originalPath = '';
+					if (isset($originalLocations[$id][$timestamp])) {
+						$originalPath = $originalLocations[$id][$timestamp];
+						if (substr($originalPath, -1) === '/') {
+							$originalPath = substr($originalPath, 0, -1);
+						}
+					}
 					$i = array(
 						'name' => $id,
 						'mtime' => $timestamp,
@@ -54,7 +64,10 @@ class Helper
 						'type' => $view->is_dir($dir . '/' . $entryName) ? 'dir' : 'file',
 						'directory' => ($dir === '/') ? '' : $dir,
 					);
-					$result[] = new FileInfo($absoluteDir . '/' . $i['name'], $storage, $internalPath . '/' . $i['name'], $i);
+					if ($originalPath) {
+						$i['extraData'] = $originalPath.'/'.$id;
+					}
+					$result[] = new FileInfo($absoluteDir . '/' . $i['name'], $storage, $internalPath . '/' . $i['name'], $i, $mount);
 				}
 			}
 			closedir($dirContent);
@@ -77,7 +90,7 @@ class Helper
 			$entry = \OCA\Files\Helper::formatFileInfo($i);
 			$entry['id'] = $id++;
 			$entry['etag'] = $entry['mtime']; // add fake etag, it is only needed to identify the preview image
-			$entry['permissions'] = \OCP\PERMISSION_READ;
+			$entry['permissions'] = \OCP\Constants::PERMISSION_READ;
 			if (\OCP\App::isEnabled('files_encryption')) {
 				$entry['isPreviewAvailable'] = false;
 			}

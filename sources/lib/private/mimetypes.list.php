@@ -28,9 +28,11 @@
  * is considered secure.
  */
 return array(
+	'3gp' => array('video/3gpp', null),
 	'7z' => array('application/x-7z-compressed', null),
 	'accdb' => array('application/msaccess', null),
 	'ai' => array('application/illustrator', null),
+	'apk' => array('application/vnd.android.package-archive', null),
 	'avi' => array('video/x-msvideo', null),
 	'bash' => array('text/x-shellscript', null),
 	'blend' => array('application/x-blender', null),
@@ -59,6 +61,7 @@ return array(
 	'dv' => array('video/dv', null),
 	'eot' => array('application/vnd.ms-fontobject', null),
 	'epub' => array('application/epub+zip', null),
+	'eps' => array('application/postscript', null),
 	'exe' => array('application/x-ms-dos-executable', null),
 	'flac' => array('audio/flac', null),
 	'flv' => array('video/x-flv', null),
@@ -118,6 +121,7 @@ return array(
 	'ppt' => array('application/vnd.ms-powerpoint', null),
 	'pptm' => array('application/vnd.ms-powerpoint.presentation.macroEnabled.12', null),
 	'pptx' => array('application/vnd.openxmlformats-officedocument.presentationml.presentation', null),
+	'ps' => array('application/postscript', null),
 	'psd' => array('application/x-photoshop', null),
 	'py' => array('text/x-python', null),
 	'rar' => array('application/x-rar-compressed', null),
@@ -137,6 +141,7 @@ return array(
 	'txt' => array('text/plain', null),
 	'vcard' => array('text/vcard', null),
 	'vcf' => array('text/vcard', null),
+	'vob' => array('video/dvd', null),
 	'wav' => array('audio/wav', null),
 	'webm' => array('video/webm', null),
 	'woff' => array('application/font-woff', null),

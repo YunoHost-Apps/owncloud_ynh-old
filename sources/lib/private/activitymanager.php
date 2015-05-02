@@ -168,6 +168,25 @@ class ActivityManager implements IManager {
 	}
 
 	/**
+	 * @param string $app
+	 * @param string $text
+	 * @return array|false
+	 */
+	function getSpecialParameterList($app, $text) {
+		foreach($this->extensions as $extension) {
+			$c = $extension();
+			if ($c instanceof IExtension) {
+				$specialParameter = $c->getSpecialParameterList($app, $text);
+				if (is_array($specialParameter)) {
+					return $specialParameter;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * @param string $type
 	 * @return string
 	 */
@@ -247,16 +266,28 @@ class ActivityManager implements IManager {
 	 * @return array
 	 */
 	function getQueryForFilter($filter) {
+
+		$conditions = array();
+		$parameters = array();
+
 		foreach($this->extensions as $extension) {
 			$c = $extension();
 			if ($c instanceof IExtension) {
 				$result = $c->getQueryForFilter($filter);
 				if (is_array($result)) {
-					return $result;
+					list($condition, $parameter) = $result;
+					if ($condition && is_array($parameter)) {
+						$conditions[] = $condition;
+						$parameters = array_merge($parameters, $parameter);
+					}
 				}
 			}
 		}
 
-		return array(null, null);
+		if (empty($conditions)) {
+			return array(null, null);
+		}
+
+		return array(' and ((' . implode(') or (', $conditions) . '))', $parameters);
 	}
 }

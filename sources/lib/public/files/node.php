@@ -29,7 +29,7 @@
 // This means that they should be used by apps instead of the internal ownCloud classes
 namespace OCP\Files;
 
-interface Node {
+interface Node extends FileInfo {
 	/**
 	 * Move the file or folder to a new location
 	 *
@@ -89,6 +89,8 @@ interface Node {
 	 * Get the internal file id for the file or folder
 	 *
 	 * @return int
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function getId();
 
@@ -106,6 +108,8 @@ interface Node {
 	 * Get the modified date of the file or folder as unix timestamp
 	 *
 	 * @return int
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function getMTime();
 
@@ -113,6 +117,8 @@ interface Node {
 	 * Get the size of the file or folder in bytes
 	 *
 	 * @return int
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function getSize();
 
@@ -122,19 +128,23 @@ interface Node {
 	 * every time the file or folder is changed the Etag will change to
 	 *
 	 * @return string
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function getEtag();
 
 
 	/**
 	 * Get the permissions of the file or folder as a combination of one or more of the following constants:
-	 *  - \OCP\PERMISSION_READ
-	 *  - \OCP\PERMISSION_UPDATE
-	 *  - \OCP\PERMISSION_CREATE
-	 *  - \OCP\PERMISSION_DELETE
-	 *  - \OCP\PERMISSION_SHARE
+	 *  - \OCP\Constants::PERMISSION_READ
+	 *  - \OCP\Constants::PERMISSION_UPDATE
+	 *  - \OCP\Constants::PERMISSION_CREATE
+	 *  - \OCP\Constants::PERMISSION_DELETE
+	 *  - \OCP\Constants::PERMISSION_SHARE
 	 *
 	 * @return int
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function getPermissions();
 
@@ -142,6 +152,8 @@ interface Node {
 	 * Check if the file or folder is readable
 	 *
 	 * @return bool
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function isReadable();
 
@@ -149,6 +161,8 @@ interface Node {
 	 * Check if the file or folder is writable
 	 *
 	 * @return bool
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function isUpdateable();
 
@@ -156,6 +170,8 @@ interface Node {
 	 * Check if the file or folder is deletable
 	 *
 	 * @return bool
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function isDeletable();
 
@@ -163,6 +179,8 @@ interface Node {
 	 * Check if the file or folder is shareable
 	 *
 	 * @return bool
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function isShareable();
 

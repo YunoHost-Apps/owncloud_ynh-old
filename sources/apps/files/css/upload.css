@@ -9,7 +9,7 @@
 	overflow: hidden;
 	vertical-align: top;
 }
-#upload a {
+#upload .icon-upload {
 	position: relative;
 	display: block;
 	width: 100%;
@@ -64,6 +64,28 @@
 	font-size: 13px;
 }
 
+.oc-dialog .fileexists {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.oc-dialog .fileexists .conflict .filename,
+.oc-dialog .fileexists .conflict .mtime,
+.oc-dialog .fileexists .conflict .size {
+	-webkit-touch-callout: initial;
+	-webkit-user-select: initial;
+	-khtml-user-select: initial;
+	-moz-user-select: initial;
+	-ms-user-select: initial;
+	user-select: initial;
+}
+.oc-dialog .fileexists .conflict .message {
+	color: #e9322d;
+}
 .oc-dialog .fileexists table {
 	width: 100%;
 }
@@ -136,4 +158,28 @@
 }
 .oc-dialog .oc-dialog-buttonrow .cancel {
 	float:left;
+}
+
+.highlightUploaded {
+	-webkit-animation: highlightAnimation 2s 1;
+	-moz-animation: highlightAnimation 2s 1;
+	-o-animation: highlightAnimation 2s 1;
+	animation: highlightAnimation 2s 1;
+}
+
+@-webkit-keyframes highlightAnimation {
+  0% { background-color: rgba(255, 255, 140, 1); }
+  100% { background-color: rgba(0, 0, 0, 0); }
+}
+@-moz-keyframes highlightAnimation {
+  0% { background-color: rgba(255, 255, 140, 1); }
+  100% { background-color: rgba(0, 0, 0, 0); }
+}
+@-o-keyframes highlightAnimation {
+  0% { background-color: rgba(255, 255, 140, 1); }
+  100% { background-color: rgba(0, 0, 0, 0); }
+}
+@keyframes highlightAnimation {
+  0% { background-color: rgba(255, 255, 140, 1); }
+  100% { background-color: rgba(0, 0, 0, 0); }
 }

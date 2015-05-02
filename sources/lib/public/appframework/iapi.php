@@ -30,6 +30,7 @@ namespace OCP\AppFramework;
 
 /**
  * A few very basic and frequently used API functions are combined in here
+ * @deprecated
  */
 interface IApi {
 
@@ -37,12 +38,14 @@ interface IApi {
 	/**
 	 * Gets the userid of the current user
 	 * @return string the user id of the current user
+	 * @deprecated Use \OC::$server->getUserSession()->getUser()->getUID()
 	 */
 	function getUserId();
 
 
 	/**
 	 * Adds a new javascript file
+	 * @deprecated include javascript and css in template files
 	 * @param string $scriptName the name of the javascript in js/ without the suffix
 	 * @param string $appName the name of the app, defaults to the current one
 	 * @return void
@@ -52,6 +55,7 @@ interface IApi {
 
 	/**
 	 * Adds a new css file
+	 * @deprecated include javascript and css in template files
 	 * @param string $styleName the name of the css file in css/without the suffix
 	 * @param string $appName the name of the app, defaults to the current one
 	 * @return void
@@ -60,6 +64,7 @@ interface IApi {
 
 
 	/**
+	 * @deprecated include javascript and css in template files
 	 * shorthand for addScript for files in the 3rdparty directory
 	 * @param string $name the name of the file without the suffix
 	 * @return void
@@ -68,6 +73,7 @@ interface IApi {
 
 
 	/**
+	 * @deprecated include javascript and css in template files
 	 * shorthand for addStyle for files in the 3rdparty directory
 	 * @param string $name the name of the file without the suffix
 	 * @return void
@@ -77,6 +83,10 @@ interface IApi {
 
 	/**
 	 * Checks if an app is enabled
+	 * @deprecated communication between apps should happen over built in
+	 * callbacks or interfaces (check the contacts and calendar managers)
+	 * Checks if an app is enabled
+	 * also use \OC::$server->getAppManager()->isEnabledForUser($appName)
 	 * @param string $appName the name of an app
 	 * @return bool true if app is enabled
 	 */

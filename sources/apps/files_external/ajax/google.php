@@ -1,12 +1,12 @@
 <?php
 set_include_path(get_include_path().PATH_SEPARATOR.
 	\OC_App::getAppPath('files_external').'/3rdparty/google-api-php-client/src');
-require_once 'Google_Client.php';
+require_once 'Google/Client.php';
 
 OCP\JSON::checkAppEnabled('files_external');
 OCP\JSON::checkLoggedIn();
 OCP\JSON::callCheck();
-$l = OC_L10N::get('files_external');
+$l = \OC::$server->getL10N('files_external');
 
 if (isset($_POST['client_id']) && isset($_POST['client_secret']) && isset($_POST['redirect'])) {
 	$client = new Google_Client();
@@ -14,6 +14,7 @@ if (isset($_POST['client_id']) && isset($_POST['client_secret']) && isset($_POST
 	$client->setClientSecret($_POST['client_secret']);
 	$client->setRedirectUri($_POST['redirect']);
 	$client->setScopes(array('https://www.googleapis.com/auth/drive'));
+	$client->setAccessType('offline');
 	if (isset($_POST['step'])) {
 		$step = $_POST['step'];
 		if ($step == 1) {

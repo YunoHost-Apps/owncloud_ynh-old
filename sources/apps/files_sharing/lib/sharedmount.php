@@ -8,13 +8,13 @@
 
 namespace OCA\Files_Sharing;
 
-use OC\Files\Mount\Mount;
+use OC\Files\Mount\MountPoint;
 use OC\Files\Mount\MoveableMount;
 
 /**
  * Shared mount points can be moved by the user
  */
-class SharedMount extends Mount implements MoveableMount {
+class SharedMount extends MountPoint implements MoveableMount {
 	/**
 	 * @var \OC\Files\Storage\Shared $storage
 	 */
@@ -22,27 +22,27 @@ class SharedMount extends Mount implements MoveableMount {
 
 	public function __construct($storage, $mountpoint, $arguments = null, $loader = null) {
 		// first update the mount point before creating the parent
-		$newMountPoint = self::verifyMountPoint($arguments['share']);
-		$absMountPoint = '/' . \OCP\User::getUser() . '/files' . $newMountPoint;
+		$newMountPoint = $this->verifyMountPoint($arguments['share'], $arguments['user']);
+		$absMountPoint = '/' . $arguments['user'] . '/files' . $newMountPoint;
 		parent::__construct($storage, $absMountPoint, $arguments, $loader);
 	}
 
 	/**
 	 * check if the parent folder exists otherwise move the mount point up
 	 */
-	private static function verifyMountPoint(&$share) {
+	private function verifyMountPoint(&$share, $user) {
 
 		$mountPoint = basename($share['file_target']);
 		$parent = dirname($share['file_target']);
 
-		while (!\OC\Files\Filesystem::is_dir($parent)) {
-			$parent = dirname($parent);
+		if (!\OC\Files\Filesystem::is_dir($parent)) {
+			$parent = Helper::getShareFolder();
 		}
 
 		$newMountPoint = \OCA\Files_Sharing\Helper::generateUniqueTarget(
 				\OC\Files\Filesystem::normalizePath($parent . '/' . $mountPoint),
 				array(),
-				new \OC\Files\View('/' . \OCP\User::getUser() . '/files')
+				new \OC\Files\View('/' . $user . '/files')
 				);
 
 		if($newMountPoint !== $share['file_target']) {
@@ -58,7 +58,7 @@ class SharedMount extends Mount implements MoveableMount {
 	 * update fileTarget in the database if the mount point changed
 	 * @param string $newPath
 	 * @param array $share reference to the share which should be modified
-	 * @return type
+	 * @return bool
 	 */
 	private static function updateFileTarget($newPath, &$share) {
 		// if the user renames a mount point from a group share we need to create a new db entry
@@ -91,7 +91,7 @@ class SharedMount extends Mount implements MoveableMount {
 	 * @param string $path the absolute path
 	 * @return string e.g. turns '/admin/files/test.txt' into '/test.txt'
 	 */
-	private function stripUserFilesPath($path) {
+	protected function stripUserFilesPath($path) {
 		$trimmed = ltrim($path, '/');
 		$split = explode('/', $trimmed);
 
@@ -99,8 +99,8 @@ class SharedMount extends Mount implements MoveableMount {
 		if (count($split) < 3 || $split[1] !== 'files') {
 			\OCP\Util::writeLog('file sharing',
 				'Can not strip userid and "files/" from path: ' . $path,
-				\OCP\Util::DEBUG);
-			return false;
+				\OCP\Util::ERROR);
+			throw new \OCA\Files_Sharing\Exceptions\BrokenPath('Path does not start with /user/files', 10);
 		}
 
 		// skip 'user' and 'files'
@@ -121,7 +121,15 @@ class SharedMount extends Mount implements MoveableMount {
 		$relTargetPath = $this->stripUserFilesPath($target);
 		$share = $this->storage->getShare();
 
-		$result = $this->updateFileTarget($relTargetPath, $share);
+		$result = true;
+
+		if (!empty($share['grouped'])) {
+			foreach ($share['grouped'] as $s) {
+				$result = $this->updateFileTarget($relTargetPath, $s) && $result;
+			}
+		} else {
+			$result = $this->updateFileTarget($relTargetPath, $share) && $result;
+		}
 
 		if ($result) {
 			$this->setMountPoint($target);
@@ -144,8 +152,9 @@ class SharedMount extends Mount implements MoveableMount {
 	 */
 	public function removeMount() {
 		$mountManager = \OC\Files\Filesystem::getMountManager();
+		/** @var \OC\Files\Storage\Shared */
 		$storage = $this->getStorage();
-		$result =  \OCP\Share::unshareFromSelf($storage->getItemType(), $storage->getMountPoint());
+		$result = $storage->unshareStorage();
 		$mountManager->removeMount($this->mountPoint);
 
 		return $result;

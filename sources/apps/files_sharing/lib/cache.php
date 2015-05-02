@@ -89,16 +89,18 @@ class Shared_Cache extends Cache {
 			$cache = $this->getSourceCache($file);
 			if ($cache) {
 				$data = $cache->get($this->files[$file]);
-				$data['displayname_owner'] = \OC_User::getDisplayName($this->storage->getSharedFrom());
-				$data['path'] = $file;
-				if ($file === '') {
-					$data['is_share_mount_point'] = true;
-				}
-				$data['uid_owner'] = $this->storage->getOwner($file);
-				if (isset($data['permissions'])) {
-					$data['permissions'] &= $this->storage->getPermissions($file);
-				} else {
-					$data['permissions'] = $this->storage->getPermissions($file);
+				if ($data) {
+					$data['displayname_owner'] = \OC_User::getDisplayName($this->storage->getSharedFrom());
+					$data['path'] = $file;
+					if ($file === '') {
+						$data['is_share_mount_point'] = true;
+					}
+					$data['uid_owner'] = $this->storage->getOwner($file);
+					if (isset($data['permissions'])) {
+						$data['permissions'] &= $this->storage->getPermissions($file);
+					} else {
+						$data['permissions'] = $this->storage->getPermissions($file);
+					}
 				}
 				return $data;
 			}
@@ -145,26 +147,23 @@ class Shared_Cache extends Cache {
 	/**
 	 * get the metadata of all files stored in $folder
 	 *
-	 * @param string $folder
+	 * @param string $folderId
 	 * @return array
 	 */
-	public function getFolderContents($folder) {
-
-		if ($folder === false) {
-			$folder = '';
-		}
-
-		$dir = ($folder !== '') ? $folder . '/' : '';
-
-		$cache = $this->getSourceCache($folder);
+	public function getFolderContentsById($folderId) {
+		$cache = $this->getSourceCache('');
 		if ($cache) {
-			$parent = $this->storage->getFile($folder);
-			$sourceFolderContent = $cache->getFolderContents($this->files[$folder]);
-			foreach ($sourceFolderContent as $key => $c) {
-				$sourceFolderContent[$key]['path'] = $dir . $c['name'];
-				$sourceFolderContent[$key]['uid_owner'] = $parent['uid_owner'];
-				$sourceFolderContent[$key]['displayname_owner'] = \OC_User::getDisplayName($parent['uid_owner']);
-				$sourceFolderContent[$key]['permissions'] = $sourceFolderContent[$key]['permissions'] & $this->storage->getPermissions($dir . $c['name']);
+			$owner = $this->storage->getSharedFrom();
+			$parentPath = $this->getPathById($folderId);
+			if ($parentPath !== '') {
+				$parentPath .= '/';
+			}
+			$sourceFolderContent = $cache->getFolderContentsById($folderId);
+			foreach ($sourceFolderContent as &$c) {
+				$c['path'] = ltrim($parentPath . $c['name'], '/');
+				$c['uid_owner'] = $owner;
+				$c['displayname_owner'] = \OC_User::getDisplayName($owner);
+				$c['permissions'] = $c['permissions'] & $this->storage->getPermissions(false);
 			}
 
 			return $sourceFolderContent;
@@ -276,7 +275,7 @@ class Shared_Cache extends Cache {
 	 */
 	public function search($pattern) {
 
-		$pattern = trim($pattern,'%');
+		$pattern = trim($pattern, '%');
 
 		$normalizedPattern = $this->normalize($pattern);
 
@@ -343,6 +342,78 @@ class Shared_Cache extends Cache {
 			}
 		}
 		return $result;
+	}
+
+	/**
+	 * Checks whether the given file has the given tag.
+	 *
+	 * @param \OCP\ITags $tagger
+	 * @param array $fileData file data
+	 * @param string $tag tag to check for
+	 * @return boolean true if the given file has the expected tag,
+	 * false otherwise
+	 */
+	private function hasTag($tagger, $fileData, $tag) {
+		$tags = $tagger->getTagsForObjects(array((int)$fileData['fileid']));
+		return (!empty($tags) && in_array($tag, current($tags)));
+	}
+
+	/**
+	 * search for files by tag
+	 *
+	 * @param string|int $tag tag to search for
+	 * @param string $userId owner of the tags
+	 * @return array file data
+	 */
+	public function searchByTag($tag, $userId) {
+		// TODO: inject this
+		$tagger = \OC::$server->getTagManager()->load('files', null, null, $userId);
+		$result = array();
+		$exploreDirs = array('');
+		// check if root is tagged
+		$file = $this->get('');
+		if ($this->hasTag($tagger, $file, $tag)) {
+			$result[] = $file;
+		}
+		// FIXME: this is so wrong and unefficient, need to replace with actual DB queries
+		while (count($exploreDirs) > 0) {
+			$dir = array_pop($exploreDirs);
+			$files = $this->getFolderContents($dir);
+			if (!$files) {
+				continue;
+			}
+			foreach ($files as $file) {
+				if ($this->hasTag($tagger, $file, $tag)) {
+					$result[] = $file;
+				}
+				if ($file['mimetype'] === 'httpd/unix-directory') {
+					$exploreDirs[] = ltrim($dir . '/' . $file['name'], '/');
+				}
+			}
+		}
+		return $result;
+	}
+
+	/**
+	 * update the folder size and the size of all parent folders
+	 *
+	 * @param string|boolean $path
+	 * @param array $data (optional) meta data of the folder
+	 */
+	public function correctFolderSize($path, $data = null) {
+		$this->calculateFolderSize($path, $data);
+		if ($path !== '') {
+			$parent = dirname($path);
+			if ($parent === '.' or $parent === '/') {
+				$parent = '';
+			}
+			$this->correctFolderSize($parent);
+		} else {
+			// bubble up to source cache
+			$sourceCache = $this->getSourceCache($path);
+			$parent = dirname($this->files[$path]);
+			$sourceCache->correctFolderSize($parent);
+		}
 	}
 
 	/**

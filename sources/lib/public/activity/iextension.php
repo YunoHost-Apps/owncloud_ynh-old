@@ -30,6 +30,13 @@
 namespace OCP\Activity;
 
 interface IExtension {
+
+	const PRIORITY_VERYLOW 	= 10;
+	const PRIORITY_LOW	= 20;
+	const PRIORITY_MEDIUM	= 30;
+	const PRIORITY_HIGH	= 40;
+	const PRIORITY_VERYHIGH	= 50;
+
 	/**
 	 * The extension can return an array of additional notification types.
 	 * If no additional types are to be added false is to be returned
@@ -71,6 +78,19 @@ interface IExtension {
 	 * @return string|false
 	 */
 	public function translate($app, $text, $params, $stripPath, $highlightParams, $languageCode);
+
+	/**
+	 * The extension can define the type of parameters for translation
+	 *
+	 * Currently known types are:
+	 * * file		=> will strip away the path of the file and add a tooltip with it
+	 * * username	=> will add the avatar of the user
+	 *
+	 * @param string $app
+	 * @param string $text
+	 * @return array|false
+	 */
+	function getSpecialParameterList($app, $text);
 
 	/**
 	 * A string naming the css class for the icon to be used can be returned.

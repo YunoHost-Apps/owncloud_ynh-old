@@ -3,10 +3,11 @@
 /**
  * ownCloud
  *
- * @author Bjoern Schiessle, Sam Tuke, Robin Appelman
- * @copyright 2012 Sam Tuke <samtuke@owncloud.com>
- *            2012 Robin Appelman <icewind1991@gmail.com>
- *            2014 Bjoern Schiessle <schiessle@owncloud.com>
+ * @copyright (C) 2014 ownCloud, Inc.
+ *
+ * @author Bjoern Schiessle <schiessle@owncloud.com>
+ * @author Sam Tuke <samtuke@owncloud.com>
+ * @author Robin Appelman <icewind1991@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
@@ -29,11 +30,11 @@
  *        webui.
  */
 
-namespace OCA\Encryption;
+namespace OCA\Files_Encryption;
 
 /**
  * Class Proxy
- * @package OCA\Encryption
+ * @package OCA\Files_Encryption
  */
 class Proxy extends \OC_FileProxy {
 
@@ -46,24 +47,39 @@ class Proxy extends \OC_FileProxy {
 	 * check if path is excluded from encryption
 	 *
 	 * @param string $path relative to data/
-	 * @param string $uid user
 	 * @return boolean
 	 */
-	private function isExcludedPath($path, $uid) {
+	protected function isExcludedPath($path) {
 
 		$view = new \OC\Files\View();
 
-		// files outside of the files-folder are excluded
-		if(strpos($path, '/' . $uid . '/files') !== 0) {
+		$normalizedPath = \OC\Files\Filesystem::normalizePath($path);
+
+		$parts = explode('/', $normalizedPath);
+
+		// we only encrypt/decrypt files in the files and files_versions folder
+		if (sizeof($parts) < 3) {
+			/**
+			 * Less then 3 parts means, we can't match:
+			 * - /{$uid}/files/* nor
+			 * - /{$uid}/files_versions/*
+			 * So this is not a path we are looking for.
+			 */
+			return true;
+		}
+		if(
+			!($parts[2] === 'files' && \OCP\User::userExists($parts[1])) &&
+			!($parts[2] === 'files_versions' && \OCP\User::userExists($parts[1]))) {
+
 			return true;
 		}
 
-		if (!$view->file_exists($path)) {
-			$path = dirname($path);
+		if (!$view->file_exists($normalizedPath)) {
+			$normalizedPath = dirname($normalizedPath);
 		}
 
 		// we don't encrypt server-to-server shares
-		list($storage, ) = \OC\Files\Filesystem::resolvePath($path);
+		list($storage, ) = \OC\Files\Filesystem::resolvePath($normalizedPath);
 		/**
 		 * @var \OCP\Files\Storage $storage
 		 */
@@ -85,19 +101,16 @@ class Proxy extends \OC_FileProxy {
 	 */
 	private function shouldEncrypt($path, $mode = 'w') {
 
-		$userId = Helper::getUser($path);
-		$session = new Session(new \OC\Files\View());
-
 		// don't call the crypt stream wrapper, if...
 		if (
-				$session->getInitialized() !== Session::INIT_SUCCESSFUL // encryption successful initialized
-				|| Crypt::mode() !== 'server'   // we are not in server-side-encryption mode
-				|| $this->isExcludedPath($path, $userId) // if path is excluded from encryption
+				Crypt::mode() !== 'server'   // we are not in server-side-encryption mode
+				|| $this->isExcludedPath($path) // if path is excluded from encryption
 				|| substr($path, 0, 8) === 'crypt://' // we are already in crypt mode
 		) {
 			return false;
 		}
 
+		$userId = Helper::getUser($path);
 		$view = new \OC\Files\View('');
 		$util = new Util($view, $userId);
 
@@ -126,7 +139,7 @@ class Proxy extends \OC_FileProxy {
 				$view = new \OC\Files\View('/');
 
 				// get relative path
-				$relativePath = \OCA\Encryption\Helper::stripUserFilesPath($path);
+				$relativePath = Helper::stripUserFilesPath($path);
 
 				if (!isset($relativePath)) {
 					return true;
@@ -157,8 +170,8 @@ class Proxy extends \OC_FileProxy {
 					// store new unenecrypted size so that it can be updated
 					// in the post proxy
 					$tmpFileInfo = $view->getFileInfo($tmpPath);
-					if ( isset($tmpFileInfo['size']) ) {
-						self::$unencryptedSizes[\OC\Files\Filesystem::normalizePath($path)] = $tmpFileInfo['size'];
+					if ( isset($tmpFileInfo['unencrypted_size']) ) {
+						self::$unencryptedSizes[\OC\Files\Filesystem::normalizePath($path)] = $tmpFileInfo['unencrypted_size'];
 					}
 
 					// remove our temp file
@@ -201,14 +214,11 @@ class Proxy extends \OC_FileProxy {
 	public function postFile_get_contents($path, $data) {
 
 		$plainData = null;
-		$view = new \OC\Files\View('/');
-
-		// init session
-		$session = new \OCA\Encryption\Session($view);
 
 		// If data is a catfile
 		if (
 			Crypt::mode() === 'server'
+			&& $this->shouldEncrypt($path)
 			&& Crypt::isCatfileContent($data)
 		) {
 
@@ -220,18 +230,6 @@ class Proxy extends \OC_FileProxy {
 				}
 			}
 
-		} elseif (
-			Crypt::mode() == 'server'
-			&& \OC::$session->exists('legacyenckey')
-			&& Crypt::isEncryptedMeta($path)
-		) {
-			// Disable encryption proxy to prevent recursive calls
-			$proxyStatus = \OC_FileProxy::$enabled;
-			\OC_FileProxy::$enabled = false;
-
-			$plainData = Crypt::legacyBlockDecrypt($data, $session->getLegacyKey());
-
-			\OC_FileProxy::$enabled = $proxyStatus;
 		}
 
 		if (!isset($plainData)) {
@@ -262,7 +260,7 @@ class Proxy extends \OC_FileProxy {
 	 * @param resource $result
 	 * @return resource
 	 */
-	public function postFopen($path, &$result) {
+	public function postFopen($path, $result) {
 
 		$path = \OC\Files\Filesystem::normalizePath($path);
 
@@ -349,15 +347,15 @@ class Proxy extends \OC_FileProxy {
 		}
 
 		// get relative path
-		$relativePath = \OCA\Encryption\Helper::stripUserFilesPath($path);
+		$relativePath = Helper::stripUserFilesPath($path);
 
 		// if path is empty we cannot resolve anything
 		if (empty($relativePath)) {
 			return $size;
 		}
 
-		// get file info from database/cache if not .part file
-		if (empty($fileInfo) && !Helper::isPartialFilePath($path)) {
+		// get file info from database/cache
+		if (empty($fileInfo)) {
 			$proxyState = \OC_FileProxy::$enabled;
 			\OC_FileProxy::$enabled = false;
 			$fileInfo = $view->getFileInfo($path);

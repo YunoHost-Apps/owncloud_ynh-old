@@ -17,7 +17,7 @@
 		 *
 		 * @param $el progress list element
 		 */
-		start: function($el) {
+		start: function($el, options) {
 			if (this._started) {
 				return;
 			}
@@ -28,8 +28,8 @@
 			this.addMessage(t(
 				'core',
 				'Updating {productName} to version {version}, this may take a while.', {
-					productName: OC.theme.name || 'ownCloud',
-					version: OC.config.versionstring
+					productName: options.productName || 'ownCloud',
+					version: options.version
 				}),
 				'bold'
 			).append('<br />'); // FIXME: these should be ul/li with CSS paddings!
@@ -37,6 +37,9 @@
 			var updateEventSource = new OC.EventSource(OC.webroot+'/core/ajax/update.php');
 			updateEventSource.listen('success', function(message) {
 				$('<span>').append(message).append('<br />').appendTo($el);
+			});
+			updateEventSource.listen('notice', function(message) {
+				$('<span>').addClass('error').append(message).append('<br />').appendTo($el);
 			});
 			updateEventSource.listen('error', function(message) {
 				$('<span>').addClass('error').append(message).append('<br />').appendTo($el);
@@ -47,9 +50,8 @@
 			updateEventSource.listen('failure', function(message) {
 				$('<span>').addClass('error').append(message).append('<br />').appendTo($el);
 				$('<span>')
-				.addClass('error bold')
-				.append('<br />')
-				.append(t('core', 'The update was unsuccessful.' +
+				.addClass('bold')
+				.append(t('core', 'The update was unsuccessful. ' +
 					'Please report this issue to the ' +
 					'<a href="https://github.com/owncloud/core/issues" target="_blank">ownCloud community</a>.'))
 				.appendTo($el);
@@ -77,10 +79,14 @@
 
 $(document).ready(function() {
 	$('.updateButton').on('click', function() {
+		var $updateEl = $('.update');
 		var $progressEl = $('.updateProgress');
 		$progressEl.removeClass('hidden');
 		$('.updateOverview').addClass('hidden');
-		OC.Update.start($progressEl);
+		OC.Update.start($progressEl, {
+			productName: $updateEl.attr('data-productname'),
+			version: $updateEl.attr('data-version'),
+		});
 		return false;
 	});
 });

@@ -22,25 +22,53 @@
  */
 
 class OC_Connector_Sabre_Auth extends \Sabre\DAV\Auth\Backend\AbstractBasic {
+	const DAV_AUTHENTICATED = 'AUTHENTICATED_TO_DAV_BACKEND';
+
+	/**
+	 * Whether the user has initially authenticated via DAV
+	 *
+	 * This is required for WebDAV clients that resent the cookies even when the
+	 * account was changed.
+	 *
+	 * @see https://github.com/owncloud/core/issues/13245
+	 *
+	 * @param string $username
+	 * @return bool
+	 */
+	protected function isDavAuthenticated($username) {
+		return !is_null(\OC::$server->getSession()->get(self::DAV_AUTHENTICATED)) &&
+		\OC::$server->getSession()->get(self::DAV_AUTHENTICATED) === $username;
+	}
+
 	/**
 	 * Validates a username and password
 	 *
 	 * This method should return true or false depending on if login
 	 * succeeded.
 	 *
+	 * @param string $username
+	 * @param string $password
 	 * @return bool
 	 */
 	protected function validateUserPass($username, $password) {
-		if (OC_User::isLoggedIn()) {
+		if (OC_User::isLoggedIn() &&
+			$this->isDavAuthenticated(OC_User::getUser())
+		) {
 			OC_Util::setupFS(OC_User::getUser());
+			\OC::$server->getSession()->close();
 			return true;
 		} else {
-			OC_Util::setUpFS();//login hooks may need early access to the filesystem
+			OC_Util::setUpFS(); //login hooks may need early access to the filesystem
 			if(OC_User::login($username, $password)) {
-				OC_Util::setUpFS(OC_User::getUser());
+			        // make sure we use owncloud's internal username here
+			        // and not the HTTP auth supplied one, see issue #14048
+			        $ocUser = OC_User::getUser();
+				OC_Util::setUpFS($ocUser);
+				\OC::$server->getSession()->set(self::DAV_AUTHENTICATED, $ocUser);
+				\OC::$server->getSession()->close();
 				return true;
-			}
-			else{
+			} else {
+				\OC::$server->getSession()->close();
 				return false;
 			}
 		}
@@ -55,10 +83,10 @@ class OC_Connector_Sabre_Auth extends \Sabre\DAV\Auth\Backend\AbstractBasic {
 	 */
 	public function getCurrentUser() {
 		$user = OC_User::getUser();
-		if(!$user) {
-			return null;
+		if($user && $this->isDavAuthenticated($user)) {
+			return $user;
 		}
-		return $user;
+		return null;
 	}
 
 	/**
@@ -76,10 +104,6 @@ class OC_Connector_Sabre_Auth extends \Sabre\DAV\Auth\Backend\AbstractBasic {
 	public function authenticate(\Sabre\DAV\Server $server, $realm) {
 
 		$result = $this->auth($server, $realm);
-
-		// close the session - right after authentication there is not need to write to the session any more
-		\OC::$session->close();
-
 		return $result;
     }
 
@@ -89,10 +113,13 @@ class OC_Connector_Sabre_Auth extends \Sabre\DAV\Auth\Backend\AbstractBasic {
 	 * @return bool
 	 */
 	private function auth(\Sabre\DAV\Server $server, $realm) {
-		if (OC_User::handleApacheAuth() || OC_User::isLoggedIn()) {
+		if (OC_User::handleApacheAuth() ||
+			(OC_User::isLoggedIn() && is_null(\OC::$server->getSession()->get(self::DAV_AUTHENTICATED)))
+		) {
 			$user = OC_User::getUser();
 			OC_Util::setupFS($user);
 			$this->currentUser = $user;
+			\OC::$server->getSession()->close();
 			return true;
 		}
 

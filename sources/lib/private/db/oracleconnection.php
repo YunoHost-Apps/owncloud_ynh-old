@@ -20,7 +20,7 @@ class OracleConnection extends Connection {
 		return $return;
 	}
 
-	/*
+	/**
 	 * {@inheritDoc}
 	 */
 	public function insert($tableName, array $data, array $types = array()) {
@@ -29,7 +29,7 @@ class OracleConnection extends Connection {
 		return parent::insert($tableName, $data, $types);
 	}
 
-	/*
+	/**
 	 * {@inheritDoc}
 	 */
 	public function update($tableName, array $data, array $identifier, array $types = array()) {
@@ -39,12 +39,39 @@ class OracleConnection extends Connection {
 		return parent::update($tableName, $data, $identifier, $types);
 	}
 
-	/*
+	/**
 	 * {@inheritDoc}
 	 */
-	public function delete($tableName, array $identifier) {
-		$tableName = $this->quoteIdentifier($tableName);
+	public function delete($tableExpression, array $identifier, array $types = array()) {
+		$tableName = $this->quoteIdentifier($tableExpression);
 		$identifier = $this->quoteKeys($identifier);
 		return parent::delete($tableName, $identifier);
+	}
+
+	/**
+	 * Drop a table from the database if it exists
+	 *
+	 * @param string $table table name without the prefix
+	 */
+	public function dropTable($table) {
+		$table = $this->tablePrefix . trim($table);
+		$table = $this->quoteIdentifier($table);
+		$schema = $this->getSchemaManager();
+		if($schema->tablesExist(array($table))) {
+			$schema->dropTable($table);
+		}
+	}
+
+	/**
+	 * Check if a table exists
+	 *
+	 * @param string $table table name without the prefix
+	 * @return bool
+	 */
+	public function tableExists($table){
+		$table = $this->tablePrefix . trim($table);
+		$table = $this->quoteIdentifier($table);
+		$schema = $this->getSchemaManager();
+		return $schema->tablesExist(array($table));
 	}
 }

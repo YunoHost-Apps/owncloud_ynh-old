@@ -1,6 +1,8 @@
 [class^="icon-"], [class*=" icon-"] {
 	background-repeat: no-repeat;
 	background-position: center;
+	min-width: 16px;
+	min-height: 16px;
 }
 
 
@@ -46,10 +48,6 @@
 	background-image: url('../img/actions/checkmark-white.svg');
 }
 
-.icon-clock {
-	background-image: url('../img/actions/clock.svg');
-}
-
 .icon-close {
 	background-image: url('../img/actions/close.svg');
 }
@@ -70,16 +68,16 @@
 	background-image: url('../img/actions/download.svg');
 }
 
+.icon-external {
+	background-image: url('../img/actions/external.svg');
+}
+
 .icon-history {
 	background-image: url('../img/actions/history.svg');
 }
 
 .icon-info {
 	background-image: url('../img/actions/info.svg');
-}
-
-.icon-lock {
-	background-image: url('../img/actions/lock.svg');
 }
 
 .icon-logout {

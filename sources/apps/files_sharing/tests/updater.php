@@ -20,13 +20,11 @@
  *
  */
 
-require_once __DIR__ . '/../appinfo/update.php';
-require_once __DIR__ . '/base.php';
 
 /**
  * Class Test_Files_Sharing_Updater
  */
-class Test_Files_Sharing_Updater extends Test_Files_Sharing_Base {
+class Test_Files_Sharing_Updater extends OCA\Files_sharing\Tests\TestCase {
 
 	const TEST_FOLDER_NAME = '/folder_share_updater_test';
 
@@ -35,7 +33,7 @@ class Test_Files_Sharing_Updater extends Test_Files_Sharing_Base {
 		\OCA\Files_Sharing\Helper::registerHooks();
 	}
 
-	function setUp() {
+	protected function setUp() {
 		parent::setUp();
 
 		$this->folder = self::TEST_FOLDER_NAME;
@@ -48,7 +46,7 @@ class Test_Files_Sharing_Updater extends Test_Files_Sharing_Base {
 		$this->view->file_put_contents($this->folder . '/' . $this->filename, $this->data);
 	}
 
-	function tearDown() {
+	protected function tearDown() {
 		$this->view->unlink($this->filename);
 		$this->view->deleteAll($this->folder);
 
@@ -100,12 +98,12 @@ class Test_Files_Sharing_Updater extends Test_Files_Sharing_Base {
 
 		// trashbin should contain the local file but not the mount point
 		$rootView = new \OC\Files\View('/' . self::TEST_FILES_SHARING_API_USER2);
-		$dirContent = $rootView->getDirectoryContent('files_trashbin/files');
-		$this->assertSame(1, count($dirContent));
-		$firstElement = reset($dirContent);
-		$ext = pathinfo($firstElement['path'], PATHINFO_EXTENSION);
-		$this->assertTrue($rootView->file_exists('files_trashbin/files/localFolder.' . $ext . '/localFile.txt'));
-		$this->assertFalse($rootView->file_exists('files_trashbin/files/localFolder.' . $ext . '/' . $this->folder));
+		$trashContent = \OCA\Files_Trashbin\Helper::getTrashFiles('/', self::TEST_FILES_SHARING_API_USER2);
+		$this->assertSame(1, count($trashContent));
+		$firstElement = reset($trashContent);
+		$timestamp = $firstElement['mtime'];
+		$this->assertTrue($rootView->file_exists('files_trashbin/files/localFolder.d' . $timestamp . '/localFile.txt'));
+		$this->assertFalse($rootView->file_exists('files_trashbin/files/localFolder.d' . $timestamp . '/' . $this->folder));
 
 		//cleanup
 		$rootView->deleteAll('files_trashin');
@@ -113,6 +111,8 @@ class Test_Files_Sharing_Updater extends Test_Files_Sharing_Base {
 		if ($status === false) {
 			\OC_App::disable('files_trashbin');
 		}
+
+		\OC\Files\Filesystem::getLoader()->removeStorageWrapper('oc_trashbin');
 	}
 
 	/**

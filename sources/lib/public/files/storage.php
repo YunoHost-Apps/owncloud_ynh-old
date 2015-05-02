@@ -335,8 +335,14 @@ interface Storage {
 	 * @return bool
 	 */
 	public function instanceOfStorage($class);
-}
 
-interface IHomeStorage {
-
+	/**
+	 * A custom storage implementation can return an url for direct download of a give file.
+	 *
+	 * For now the returned array can hold the parameter url - in future more attributes might follow.
+	 *
+	 * @param string $path
+	 * @return array
+	 */
+	public function getDirectDownload($path);
 }

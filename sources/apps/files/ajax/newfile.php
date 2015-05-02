@@ -7,7 +7,7 @@ if(!OC_User::isLoggedIn()) {
 	exit;
 }
 
-\OC::$session->close();
+\OC::$server->getSession()->close();
 
 // Get the params
 $dir = isset( $_REQUEST['dir'] ) ? '/'.trim($_REQUEST['dir'], '/\\') : '';
@@ -16,7 +16,7 @@ $content = isset( $_REQUEST['content'] ) ? $_REQUEST['content'] : '';
 $source = isset( $_REQUEST['source'] ) ? trim($_REQUEST['source'], '/\\') : '';
 
 if($source) {
-	$eventSource=new OC_EventSource();
+	$eventSource = \OC::$server->createEventSource();
 } else {
 	OC_JSON::callCheck();
 }
@@ -33,7 +33,7 @@ function progress($notification_code, $severity, $message, $message_code, $bytes
 
 		case STREAM_NOTIFY_PROGRESS:
 			if ($bytes_transferred > 0) {
-				if (!isset($filesize)) {
+				if (!isset($filesize) || $filesize === 0) {
 				} else {
 					$progress = (int)(($bytes_transferred/$filesize)*100);
 					if($progress>$lastsize) { //limit the number or messages send
@@ -46,7 +46,8 @@ function progress($notification_code, $severity, $message, $message_code, $bytes
 	}
 }
 
-$l10n = \OC_L10n::get('files');
+
+$l10n = \OC::$server->getL10N('files');
 
 $result = array(
 	'success' 	=> false,
@@ -80,7 +81,6 @@ if (!\OC\Files\Filesystem::file_exists($dir . '/')) {
 	exit();
 }
 
-//TODO why is stripslashes used on foldername in newfolder.php but not here?
 $target = $dir.'/'.$filename;
 
 if (\OC\Files\Filesystem::file_exists($target)) {
@@ -93,7 +93,8 @@ if (\OC\Files\Filesystem::file_exists($target)) {
 }
 
 if($source) {
-	if(substr($source, 0, 8)!='https://' and substr($source, 0, 7)!='http://') {
+	$httpHelper = \OC::$server->getHTTPHelper();
+	if(!$httpHelper->isHTTPURL($source)) {
 		OCP\JSON::error(array('data' => array('message' => $l10n->t('Not a valid source'))));
 		exit();
 	}
@@ -104,7 +105,10 @@ if($source) {
 		exit();
 	}
 
-	$ctx = stream_context_create(null, array('notification' =>'progress'));
+	$source = $httpHelper->getFinalLocationOfURL($source);
+
+	$ctx = stream_context_create(\OC::$server->getHTTPHelper()->getDefaultContextArray(), array('notification' =>'progress'));
+
 	$sourceStream=@fopen($source, 'rb', false, $ctx);
 	$result = 0;
 	if (is_resource($sourceStream)) {
@@ -115,6 +119,9 @@ if($source) {
 			$freeSpace = $storageStats['freeSpace'];
 
 			foreach($meta['wrapper_data'] as $header) {
+				if (strpos($header, ':') === false){
+					continue;
+				}
 				list($name, $value) = explode(':', $header);
 				if ('content-length' === strtolower(trim($name))) {
 					$length = (int) trim($value);

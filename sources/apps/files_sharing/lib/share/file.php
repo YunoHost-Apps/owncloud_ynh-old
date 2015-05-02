@@ -38,7 +38,7 @@ class OC_Share_Backend_File implements OCP\Share_Backend_File_Dependent {
 			// FIXME: attributes should not be set here,
 			// keeping this pattern for now to avoid unexpected
 			// regressions
-			$this->path = basename($path);
+			$this->path = \OC\Files\Filesystem::normalizePath(basename($path));
 			return true;
 		}
 		return false;
@@ -49,6 +49,11 @@ class OC_Share_Backend_File implements OCP\Share_Backend_File_Dependent {
 			$path = $this->path;
 			$this->path = null;
 			return $path;
+		} else {
+			$path = \OC\Files\Filesystem::getPath($itemSource);
+			if ($path) {
+				return $path;
+			}
 		}
 		return false;
 	}
@@ -57,7 +62,7 @@ class OC_Share_Backend_File implements OCP\Share_Backend_File_Dependent {
 	 * create unique target
 	 * @param string $filePath
 	 * @param string $shareWith
-	 * @param string $exclude
+	 * @param array $exclude (optional)
 	 * @return string
 	 */
 	public function generateTarget($filePath, $shareWith, $exclude = null) {
@@ -83,10 +88,7 @@ class OC_Share_Backend_File implements OCP\Share_Backend_File_Dependent {
 			}
 		}
 
-		$excludeList = \OCP\Share::getItemsSharedWithUser('file', $shareWith, self::FORMAT_TARGET_NAMES);
-		if (is_array($exclude)) {
-			$excludeList = array_merge($excludeList, $exclude);
-		}
+		$excludeList = (is_array($exclude)) ? $exclude : array();
 
 		return \OCA\Files_Sharing\Helper::generateUniqueTarget($target, $excludeList, $view);
 	}
@@ -94,12 +96,13 @@ class OC_Share_Backend_File implements OCP\Share_Backend_File_Dependent {
 	public function formatItems($items, $format, $parameters = null) {
 		if ($format == self::FORMAT_SHARED_STORAGE) {
 			// Only 1 item should come through for this format call
+			$item = array_shift($items);
 			return array(
-				'parent' => $items[key($items)]['parent'],
-				'path' => $items[key($items)]['path'],
-				'storage' => $items[key($items)]['storage'],
-				'permissions' => $items[key($items)]['permissions'],
-				'uid_owner' => $items[key($items)]['uid_owner'],
+				'parent' => $item['parent'],
+				'path' => $item['path'],
+				'storage' => $item['storage'],
+				'permissions' => $item['permissions'],
+				'uid_owner' => $item['uid_owner'],
 			);
 		} else if ($format == self::FORMAT_GET_FOLDER_CONTENTS) {
 			$files = array();
@@ -158,6 +161,20 @@ class OC_Share_Backend_File implements OCP\Share_Backend_File_Dependent {
 	}
 
 	/**
+	 * check if server2server share is enabled
+	 *
+	 * @param int $shareType
+	 * @return boolean
+	 */
+	public function isShareTypeAllowed($shareType) {
+		if ($shareType === \OCP\Share::SHARE_TYPE_REMOTE) {
+			return \OCA\Files_Sharing\Helper::isOutgoingServer2serverShareEnabled();
+		}
+
+		return true;
+	}
+
+	/**
 	 * resolve reshares to return the correct source item
 	 * @param array $source
 	 * @return array source item
@@ -197,7 +214,9 @@ class OC_Share_Backend_File implements OCP\Share_Backend_File_Dependent {
 		if ($itemType === 'folder') {
 			$source = \OCP\Share::getItemSharedWith('folder', $mountPoint, \OC_Share_Backend_File::FORMAT_SHARED_STORAGE);
 			if ($source && $target !== '') {
-				$source['path'] = $source['path'].'/'.$target;
+				// note: in case of ext storage mount points the path might be empty
+				// which would cause a leading slash to appear
+				$source['path'] = ltrim($source['path'] . '/' . $target, '/');
 			}
 		} else {
 			$source = \OCP\Share::getItemSharedWith('file', $mountPoint, \OC_Share_Backend_File::FORMAT_SHARED_STORAGE);

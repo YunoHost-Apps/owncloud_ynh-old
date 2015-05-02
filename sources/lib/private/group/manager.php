@@ -48,6 +48,7 @@ class Manager extends PublicEmitter implements IGroupManager {
 	 */
 	private $cachedUserGroups = array();
 
+
 	/**
 	 * @param \OC\User\Manager $userManager
 	 */
@@ -133,7 +134,7 @@ class Manager extends PublicEmitter implements IGroupManager {
 		} else {
 			$this->emit('\OC\Group', 'preCreate', array($gid));
 			foreach ($this->backends as $backend) {
-				if ($backend->implementsActions(OC_GROUP_BACKEND_CREATE_GROUP)) {
+				if ($backend->implementsActions(\OC_Group_Backend::CREATE_GROUP)) {
 					$backend->createGroup($gid);
 					$group = $this->getGroupObject($gid);
 					$this->emit('\OC\Group', 'postCreate', array($group));
@@ -169,7 +170,14 @@ class Manager extends PublicEmitter implements IGroupManager {
 	 * @return \OC\Group\Group[]
 	 */
 	public function getUserGroups($user) {
-		$uid = $user->getUID();
+		return $this->getUserIdGroups($user->getUID());
+	}
+
+	/**
+	 * @param string $uid the user id
+	 * @return \OC\Group\Group[]
+	 */
+	public function getUserIdGroups($uid) {
 		if (isset($this->cachedUserGroups[$uid])) {
 			return $this->cachedUserGroups[$uid];
 		}
@@ -180,18 +188,43 @@ class Manager extends PublicEmitter implements IGroupManager {
 				$groups[$groupId] = $this->get($groupId);
 			}
 		}
-		$this->cachedUserGroups[$uid] = array_values($groups);
+		$this->cachedUserGroups[$uid] = $groups;
 		return $this->cachedUserGroups[$uid];
 	}
+
 	/**
+	 * Checks if a userId is in the admin group
+	 * @param string $userId
+	 * @return bool if admin
+	 */
+	public function isAdmin($userId) {
+		return $this->isInGroup($userId, 'admin');
+	}
+
+	/**
+	 * Checks if a userId is in a group
+	 * @param string $userId
+	 * @param group $group
+	 * @return bool if in group
+	 */
+	public function isInGroup($userId, $group) {
+		return array_key_exists($group, $this->getUserIdGroups($userId));
+	}
+
+	/**
+	 * get a list of group ids for a user
 	 * @param \OC\User\User $user
-	 * @return array with group names
+	 * @return array with group ids
 	 */
 	public function getUserGroupIds($user) {
 		$groupIds = array();
-		foreach ($this->backends as $backend) {
-			$groupIds = array_merge($groupIds, $backend->getUserGroups($user->getUID()));
-			
+		$userId = $user->getUID();
+		if (isset($this->cachedUserGroups[$userId])) {
+			return array_keys($this->cachedUserGroups[$userId]);
+		} else {
+			foreach ($this->backends as $backend) {
+				$groupIds = array_merge($groupIds, $backend->getUserGroups($userId));
+			}
 		}
 		return $groupIds;
 	}
@@ -209,23 +242,40 @@ class Manager extends PublicEmitter implements IGroupManager {
 		if(is_null($group)) {
 			return array();
 		}
-		// only user backends have the capability to do a complex search for users
-		$groupUsers  = $group->searchUsers('', $limit, $offset);
+
 		$search = trim($search);
+		$groupUsers = array();
+
 		if(!empty($search)) {
-			//TODO: for OC 7 earliest: user backend should get a method to check selected users against a pattern
-			$filteredUsers = $this->userManager->search($search);
-			$testUsers = true;
+			// only user backends have the capability to do a complex search for users
+			$searchOffset = 0;
+			$searchLimit = $limit * 100;
+			if($limit === -1) {
+				$searchLimit = 500;
+			}
+
+			do {
+				$filteredUsers = $this->userManager->search($search, $searchLimit, $searchOffset);
+				foreach($filteredUsers as $filteredUser) {
+					if($group->inGroup($filteredUser)) {
+						$groupUsers[]= $filteredUser;
+					}
+				}
+				$searchOffset += $searchLimit;
+			} while(count($groupUsers) < $searchLimit+$offset && count($filteredUsers) >= $searchLimit);
+
+			if($limit === -1) {
+				$groupUsers = array_slice($groupUsers, $offset);
+			} else {
+				$groupUsers = array_slice($groupUsers, $offset, $limit);
+			}
 		} else {
-			$filteredUsers = array();
-			$testUsers = false;
+			$groupUsers = $group->searchUsers('', $limit, $offset);
 		}
 
 		$matchingUsers = array();
-		foreach($groupUsers as $user) {
-			if(!$testUsers || isset($filteredUsers[$user->getUID()])) {
-				$matchingUsers[$user->getUID()] = $user->getDisplayName();
-			}
+		foreach($groupUsers as $groupUser) {
+			$matchingUsers[$groupUser->getUID()] = $groupUser->getDisplayName();
 		}
 		return $matchingUsers;
 	}

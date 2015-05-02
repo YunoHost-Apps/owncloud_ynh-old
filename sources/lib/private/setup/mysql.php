@@ -9,40 +9,56 @@ class MySQL extends AbstractDatabase {
 		//check if the database user has admin right
 		$connection = @mysql_connect($this->dbhost, $this->dbuser, $this->dbpassword);
 		if(!$connection) {
-			throw new \DatabaseSetupException($this->trans->t('MySQL/MariaDB username and/or password not valid'),
+			throw new \OC\DatabaseSetupException($this->trans->t('MySQL/MariaDB username and/or password not valid'),
 				$this->trans->t('You need to enter either an existing account or the administrator.'));
 		}
+		//user already specified in config
 		$oldUser=\OC_Config::getValue('dbuser', false);
 
-		//this should be enough to check for admin rights in mysql
-		$query="SELECT user FROM mysql.user WHERE user='$this->dbuser'";
-		if(mysql_query($query, $connection)) {
-			//use the admin login data for the new database user
+		//we don't have a dbuser specified in config
+		if($this->dbuser!=$oldUser) {
+			//add prefix to the admin username to prevent collisions
+			$adminUser=substr('oc_'.$username, 0, 16);
 
-			//add prefix to the mysql user name to prevent collisions
-			$this->dbuser=substr('oc_'.$username, 0, 16);
-			if($this->dbuser!=$oldUser) {
-				//hash the password so we don't need to store the admin config in the config file
-				$this->dbpassword=\OC_Util::generateRandomBytes(30);
+			$i = 1;
+			while(true) {
+				//this should be enough to check for admin rights in mysql
+				$query="SELECT user FROM mysql.user WHERE user='$adminUser'";
 
-				$this->createDBUser($connection);
+				$result = mysql_query($query, $connection);
 
-				\OC_Config::setValue('dbuser', $this->dbuser);
-				\OC_Config::setValue('dbpassword', $this->dbpassword);
-			}
+				//current dbuser has admin rights
+				if($result) {
+					//new dbuser does not exist
+					if(mysql_num_rows($result) === 0) {
+						//use the admin login data for the new database user
+						$this->dbuser=$adminUser;
 
-			//create the database
-			$this->createDatabase($connection);
+						//create a random password so we don't need to store the admin password in the config file
+						$this->dbpassword=\OC_Util::generateRandomBytes(30);
+
+						$this->createDBUser($connection);
+
+						break;
+					} else {
+						//repeat with different username
+						$length=strlen((string)$i);
+						$adminUser=substr('oc_'.$username, 0, 16 - $length).$i;
+						$i++;
+					}
+				} else {
+					break;
+				}
+			};
+
+			\OC_Config::setValues([
+				'dbuser'		=> $this->dbuser,
+				'dbpassword'	=> $this->dbpassword,
+			]);
 		}
-		else {
-			if($this->dbuser!=$oldUser) {
-				\OC_Config::setValue('dbuser', $this->dbuser);
-				\OC_Config::setValue('dbpassword', $this->dbpassword);
-			}
 
-			//create the database
-			$this->createDatabase($connection);
-		}
+		//create the database
+		$this->createDatabase($connection);
 
 		//fill the database if needed
 		$query='select count(*) from information_schema.tables'
@@ -82,13 +98,13 @@ class MySQL extends AbstractDatabase {
 		$query = "CREATE USER '$name'@'localhost' IDENTIFIED BY '$password'";
 		$result = mysql_query($query, $connection);
 		if (!$result) {
-			throw new \DatabaseSetupException($this->trans->t("MySQL/MariaDB user '%s'@'localhost' exists already.", array($name)),
+			throw new \OC\DatabaseSetupException($this->trans->t("MySQL/MariaDB user '%s'@'localhost' exists already.", array($name)),
 				$this->trans->t("Drop this user from MySQL/MariaDB", array($name)));
 		}
 		$query = "CREATE USER '$name'@'%' IDENTIFIED BY '$password'";
 		$result = mysql_query($query, $connection);
 		if (!$result) {
-			throw new \DatabaseSetupException($this->trans->t("MySQL/MariaDB user '%s'@'%%' already exists", array($name)),
+			throw new \OC\DatabaseSetupException($this->trans->t("MySQL/MariaDB user '%s'@'%%' already exists", array($name)),
 				$this->trans->t("Drop this user from MySQL/MariaDB."));
 		}
 	}

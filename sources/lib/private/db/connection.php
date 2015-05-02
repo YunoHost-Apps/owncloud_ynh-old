@@ -7,12 +7,14 @@
  */
 
 namespace OC\DB;
+use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\Common\EventManager;
+use OCP\IDBConnection;
 
-class Connection extends \Doctrine\DBAL\Connection {
+class Connection extends \Doctrine\DBAL\Connection implements IDBConnection {
 	/**
 	 * @var string $tablePrefix
 	 */
@@ -23,12 +25,21 @@ class Connection extends \Doctrine\DBAL\Connection {
 	 */
 	protected $adapter;
 
-	/**
-	 * @var \Doctrine\DBAL\Driver\Statement[] $preparedQueries
-	 */
-	protected $preparedQueries = array();
+	public function connect() {
+		try {
+			return parent::connect();
+		} catch (DBALException $e) {
+			// throw a new exception to prevent leaking info from the stacktrace
+			throw new DBALException($e->getMessage(), $e->getCode());
+		}
+	}
 
-	protected $cachingQueryStatementEnabled = true;
+	/**
+	 * @return string
+	 */
+	public function getPrefix() {
+		return $this->tablePrefix;
+	}
 
 	/**
 	 * Initializes a new instance of the Connection class.
@@ -51,6 +62,8 @@ class Connection extends \Doctrine\DBAL\Connection {
 		parent::__construct($params, $driver, $config, $eventManager);
 		$this->adapter = new $params['adapter']($this);
 		$this->tablePrefix = $params['tablePrefix'];
+
+		parent::setTransactionIsolation(parent::TRANSACTION_READ_COMMITTED);
 	}
 
 	/**
@@ -69,9 +82,6 @@ class Connection extends \Doctrine\DBAL\Connection {
 			$platform = $this->getDatabasePlatform();
 			$statement = $platform->modifyLimitQuery($statement, $limit, $offset);
 		} else {
-			if (isset($this->preparedQueries[$statement]) && $this->cachingQueryStatementEnabled) {
-				return $this->preparedQueries[$statement];
-			}
 			$origStatement = $statement;
 		}
 		$statement = $this->replaceTablePrefix($statement);
@@ -80,11 +90,7 @@ class Connection extends \Doctrine\DBAL\Connection {
 		if(\OC_Config::getValue( 'log_query', false)) {
 			\OC_Log::write('core', 'DB prepare : '.$statement, \OC_Log::DEBUG);
 		}
-		$result = parent::prepare($statement);
-		if (is_null($limit) && $this->cachingQueryStatementEnabled) {
-			$this->preparedQueries[$origStatement] = $result;
-		}
-		return $result;
+		return parent::prepare($statement);
 	}
 
 	/**
@@ -146,19 +152,23 @@ class Connection extends \Doctrine\DBAL\Connection {
 	}
 
 	// internal use
-	public function realLastInsertId($seqName = null)
-	{
+	public function realLastInsertId($seqName = null) {
 		return parent::lastInsertId($seqName);
 	}
 
 	/**
-	 * Insert a row if a matching row doesn't exists.
-	 * @param string $table. The table to insert into in the form '*PREFIX*tableName'
-	 * @param array $input. An array of fieldname/value pairs
-	 * @return bool The return value from execute()
+	 * Insert a row if the matching row does not exists.
+	 *
+	 * @param string $table The table name (will replace *PREFIX* with the actual prefix)
+	 * @param array $input data that should be inserted into the table  (column name => value)
+	 * @param array|null $compare List of values that should be checked for "if not exists"
+	 *				If this is null or an empty array, all keys of $input will be compared
+	 *				Please note: text fields (clob) must not be used in the compare array
+	 * @return int number of inserted rows
+	 * @throws \Doctrine\DBAL\DBALException
 	 */
-	public function insertIfNotExist($table, $input) {
-		return $this->adapter->insertIfNotExist($table, $input);
+	public function insertIfNotExist($table, $input, array $compare = null) {
+		return $this->adapter->insertIfNotExist($table, $input, $compare);
 	}
 
 	/**
@@ -177,6 +187,31 @@ class Connection extends \Doctrine\DBAL\Connection {
 		return $msg;
 	}
 
+	/**
+	 * Drop a table from the database if it exists
+	 *
+	 * @param string $table table name without the prefix
+	 */
+	public function dropTable($table) {
+		$table = $this->tablePrefix . trim($table);
+		$schema = $this->getSchemaManager();
+		if($schema->tablesExist(array($table))) {
+			$schema->dropTable($table);
+		}
+	}
+
+	/**
+	 * Check if a table exists
+	 *
+	 * @param string $table table name without the prefix
+	 * @return bool
+	 */
+	public function tableExists($table){
+		$table = $this->tablePrefix . trim($table);
+		$schema = $this->getSchemaManager();
+		return $schema->tablesExist(array($table));
+	}
+
 	// internal use
 	/**
 	 * @param string $statement
@@ -184,14 +219,5 @@ class Connection extends \Doctrine\DBAL\Connection {
 	 */
 	protected function replaceTablePrefix($statement) {
 		return str_replace( '*PREFIX*', $this->tablePrefix, $statement );
-	}
-
-	public function enableQueryStatementCaching() {
-		$this->cachingQueryStatementEnabled = true;
-	}
-
-	public function disableQueryStatementCaching() {
-		$this->cachingQueryStatementEnabled = false;
-		$this->preparedQueries = array();
 	}
 }

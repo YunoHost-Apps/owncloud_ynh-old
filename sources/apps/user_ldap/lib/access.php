@@ -23,6 +23,8 @@
 
 namespace OCA\user_ldap\lib;
 
+use OCA\User_LDAP\Mapping\AbstractMapping;
+
 /**
  * Class Access
  * @package OCA\user_ldap\lib
@@ -36,8 +38,26 @@ class Access extends LDAPUtility implements user\IUserTools {
 	//never ever check this var directly, always use getPagedSearchResultState
 	protected $pagedSearchedSuccessful;
 
+	/**
+	 * @var string[] $cookies an array of returned Paged Result cookies
+	 */
 	protected $cookies = array();
 
+	/**
+	 * @var string $lastCookie the last cookie returned from a Paged Results
+	 * operation, defaults to an empty string
+	 */
+	protected $lastCookie = '';
+
+	/**
+	 * @var AbstractMapping $userMapper
+	 */
+	protected $userMapper;
+
+	/**
+	* @var AbstractMapping $userMapper
+	*/
+	protected $groupMapper;
 
 	public function __construct(Connection $connection, ILDAPWrapper $ldap,
 		user\Manager $userManager) {
@@ -45,6 +65,46 @@ class Access extends LDAPUtility implements user\IUserTools {
 		$this->connection = $connection;
 		$this->userManager = $userManager;
 		$this->userManager->setLdapAccess($this);
+	}
+
+	/**
+	 * sets the User Mapper
+	 * @param AbstractMapping $mapper
+	 */
+	public function setUserMapper(AbstractMapping $mapper) {
+		$this->userMapper = $mapper;
+	}
+
+	/**
+	 * returns the User Mapper
+	 * @throws \Exception
+	 * @return AbstractMapping
+	 */
+	public function getUserMapper() {
+		if(is_null($this->userMapper)) {
+			throw new \Exception('UserMapper was not assigned to this Access instance.');
+		}
+		return $this->userMapper;
+	}
+
+	/**
+	 * sets the Group Mapper
+	 * @param AbstractMapping $mapper
+	 */
+	public function setGroupMapper(AbstractMapping $mapper) {
+		$this->groupMapper = $mapper;
+	}
+
+	/**
+	 * returns the Group Mapper
+	 * @throws \Exception
+	 * @return AbstractMapping
+	 */
+	public function getGroupMapper() {
+		if(is_null($this->groupMapper)) {
+			throw new \Exception('GroupMapper was not assigned to this Access instance.');
+		}
+		return $this->groupMapper;
 	}
 
 	/**
@@ -84,7 +144,16 @@ class Access extends LDAPUtility implements user\IUserTools {
 			\OCP\Util::writeLog('user_ldap', 'LDAP resource not available.', \OCP\Util::DEBUG);
 			return false;
 		}
-		//all or nothing! otherwise we get in trouble with.
+		//Cancel possibly running Paged Results operation, otherwise we run in
+		//LDAP protocol errors
+		$this->abandonPagedSearch();
+		// openLDAP requires that we init a new Paged Search. Not needed by AD,
+		// but does not hurt either.
+		$pagingSize = intval($this->connection->ldapPagingSize);
+		// 0 won't result in replies, small numbers may leave out groups
+		// (cf. #12306), 500 is default for paging and should work everywhere.
+		$maxResults = $pagingSize > 20 ? $pagingSize : 500;
+		$this->initPagedSearch($filter, array($dn), array($attr), $maxResults, 0);
 		$dn = $this->DNasBaseParameter($dn);
 		$rr = @$this->ldap->read($cr, $dn, $filter, array($attr));
 		if(!$this->ldap->isResource($rr)) {
@@ -223,31 +292,12 @@ class Access extends LDAPUtility implements user\IUserTools {
 	}
 
 	/**
-	 * gives back the database table for the query
-	 * @param bool $isUser
-	 * @return string
-	 */
-	private function getMapTable($isUser) {
-		if($isUser) {
-			return '*PREFIX*ldap_user_mapping';
-		} else {
-			return '*PREFIX*ldap_group_mapping';
-		}
-	}
-
-	/**
 	 * returns the LDAP DN for the given internal ownCloud name of the group
 	 * @param string $name the ownCloud name in question
-	 * @return string with the LDAP DN on success, otherwise false
+	 * @return string|false LDAP DN on success, otherwise false
 	 */
 	public function groupname2dn($name) {
-		$dn = $this->ocname2dn($name, false);
-
-		if($dn) {
-			return $dn;
-		}
-
-		return false;
+		return $this->groupMapper->getDNbyName($name);
 	}
 
 	/**
@@ -256,50 +306,33 @@ class Access extends LDAPUtility implements user\IUserTools {
 	 * @return string with the LDAP DN on success, otherwise false
 	 */
 	public function username2dn($name) {
-		$dn = $this->ocname2dn($name, true);
+		$fdn = $this->userMapper->getDNbyName($name);
+
 		//Check whether the DN belongs to the Base, to avoid issues on multi-
 		//server setups
-		if($dn && $this->isDNPartOfBase($dn, $this->connection->ldapBaseUsers)) {
-			return $dn;
+		if(is_string($fdn) && $this->isDNPartOfBase($fdn, $this->connection->ldapBaseUsers)) {
+			return $fdn;
 		}
 
 		return false;
 	}
 
 	/**
-	 * returns the LDAP DN for the given internal ownCloud name
-	 * @param string $name the ownCloud name in question
-	 * @param boolean $isUser is it a user? otherwise group
-	 * @return string with the LDAP DN on success, otherwise false
-	 */
-	private function ocname2dn($name, $isUser) {
-		$table = $this->getMapTable($isUser);
-
-		$query = \OCP\DB::prepare('
-			SELECT `ldap_dn`
-			FROM `'.$table.'`
-			WHERE `owncloud_name` = ?
-		');
-
-		$record = $query->execute(array($name))->fetchOne();
-		return $record;
-	}
-
-	/**
+	public function ocname2dn($name, $isUser) {
 	 * returns the internal ownCloud name for the given LDAP DN of the group, false on DN outside of search DN or failure
-	 * @param string $dn the dn of the group object
+	 * @param string $fdn the dn of the group object
 	 * @param string $ldapName optional, the display name of the object
 	 * @return string with the name to use in ownCloud, false on DN outside of search DN
 	 */
-	public function dn2groupname($dn, $ldapName = null) {
+	public function dn2groupname($fdn, $ldapName = null) {
 		//To avoid bypassing the base DN settings under certain circumstances
 		//with the group support, check whether the provided DN matches one of
 		//the given Bases
-		if(!$this->isDNPartOfBase($dn, $this->connection->ldapBaseGroups)) {
+		if(!$this->isDNPartOfBase($fdn, $this->connection->ldapBaseGroups)) {
 			return false;
 		}
 
-		return $this->dn2ocname($dn, $ldapName, false);
+		return $this->dn2ocname($fdn, $ldapName, false);
 	}
 
 	/**
@@ -308,15 +341,15 @@ class Access extends LDAPUtility implements user\IUserTools {
 	 * @param string $ldapName optional, the display name of the object
 	 * @return string with with the name to use in ownCloud
 	 */
-	public function dn2username($dn, $ldapName = null) {
+	public function dn2username($fdn, $ldapName = null) {
 		//To avoid bypassing the base DN settings under certain circumstances
 		//with the group support, check whether the provided DN matches one of
 		//the given Bases
-		if(!$this->isDNPartOfBase($dn, $this->connection->ldapBaseUsers)) {
+		if(!$this->isDNPartOfBase($fdn, $this->connection->ldapBaseUsers)) {
 			return false;
 		}
 
-		return $this->dn2ocname($dn, $ldapName, true);
+		return $this->dn2ocname($fdn, $ldapName, true);
 	}
 
 	/**
@@ -326,50 +359,39 @@ class Access extends LDAPUtility implements user\IUserTools {
 	 * @param bool $isUser optional, whether it is a user object (otherwise group assumed)
 	 * @return string with with the name to use in ownCloud
 	 */
-	public function dn2ocname($dn, $ldapName = null, $isUser = true) {
-		$table = $this->getMapTable($isUser);
+	public function dn2ocname($fdn, $ldapName = null, $isUser = true) {
 		if($isUser) {
-			$fncFindMappedName = 'findMappedUser';
+			$mapper = $this->getUserMapper();
 			$nameAttribute = $this->connection->ldapUserDisplayName;
 		} else {
-			$fncFindMappedName = 'findMappedGroup';
+			$mapper = $this->getGroupMapper();
 			$nameAttribute = $this->connection->ldapGroupDisplayName;
 		}
 
 		//let's try to retrieve the ownCloud name from the mappings table
-		$ocName = $this->$fncFindMappedName($dn);
-		if($ocName) {
+		$ocName = $mapper->getNameByDN($fdn);
+		if(is_string($ocName)) {
 			return $ocName;
 		}
 
 		//second try: get the UUID and check if it is known. Then, update the DN and return the name.
-		$uuid = $this->getUUID($dn, $isUser);
-		if($uuid) {
-			$query = \OCP\DB::prepare('
-				SELECT `owncloud_name`
-				FROM `'.$table.'`
-				WHERE `directory_uuid` = ?
-			');
-			$component = $query->execute(array($uuid))->fetchOne();
-			if($component) {
-				$query = \OCP\DB::prepare('
-					UPDATE `'.$table.'`
-					SET `ldap_dn` = ?
-					WHERE `directory_uuid` = ?
-				');
-				$query->execute(array($dn, $uuid));
-				return $component;
+		$uuid = $this->getUUID($fdn, $isUser);
+		if(is_string($uuid)) {
+			$ocName = $mapper->getNameByUUID($uuid);
+			if(is_string($ocName)) {
+				$mapper->setDNbyUUID($fdn, $uuid);
+				return $ocName;
 			}
 		} else {
 			//If the UUID can't be detected something is foul.
-			\OCP\Util::writeLog('user_ldap', 'Cannot determine UUID for '.$dn.'. Skipping.', \OCP\Util::INFO);
+			\OCP\Util::writeLog('user_ldap', 'Cannot determine UUID for '.$fdn.'. Skipping.', \OCP\Util::INFO);
 			return false;
 		}
 
 		if(is_null($ldapName)) {
-			$ldapName = $this->readAttribute($dn, $nameAttribute);
+			$ldapName = $this->readAttribute($fdn, $nameAttribute);
 			if(!isset($ldapName[0]) && empty($ldapName[0])) {
-				\OCP\Util::writeLog('user_ldap', 'No or empty name for '.$dn.'.', \OCP\Util::INFO);
+				\OCP\Util::writeLog('user_ldap', 'No or empty name for '.$fdn.'.', \OCP\Util::INFO);
 				return false;
 			}
 			$ldapName = $ldapName[0];
@@ -377,8 +399,8 @@ class Access extends LDAPUtility implements user\IUserTools {
 
 		if($isUser) {
 			$usernameAttribute = $this->connection->ldapExpertUsernameAttr;
-			if(!emptY($usernameAttribute)) {
-				$username = $this->readAttribute($dn, $usernameAttribute);
+			if(!empty($usernameAttribute)) {
+				$username = $this->readAttribute($fdn, $usernameAttribute);
 				$username = $username[0];
 			} else {
 				$username = $uuid;
@@ -390,11 +412,13 @@ class Access extends LDAPUtility implements user\IUserTools {
 
 		//a new user/group! Add it only if it doesn't conflict with other backend's users or existing groups
 		//disabling Cache is required to avoid that the new user is cached as not-existing in fooExists check
+		//NOTE: mind, disabling cache affects only this instance! Using it
+		// outside of core user management will still cache the user as non-existing.
 		$originalTTL = $this->connection->ldapCacheTTL;
 		$this->connection->setConfiguration(array('ldapCacheTTL' => 0));
 		if(($isUser && !\OCP\User::userExists($intName))
 			|| (!$isUser && !\OC_Group::groupExists($intName))) {
-			if($this->mapComponent($dn, $intName, $isUser)) {
+			if($mapper->map($fdn, $intName, $uuid)) {
 				$this->connection->setConfiguration(array('ldapCacheTTL' => $originalTTL));
 				return $intName;
 			}
@@ -402,12 +426,12 @@ class Access extends LDAPUtility implements user\IUserTools {
 		$this->connection->setConfiguration(array('ldapCacheTTL' => $originalTTL));
 
 		$altName = $this->createAltInternalOwnCloudName($intName, $isUser);
-		if($this->mapComponent($dn, $altName, $isUser)) {
+		if(is_string($altName) && $mapper->map($fdn, $altName, $uuid)) {
 			return $altName;
 		}
 
 		//if everything else did not help..
-		\OCP\Util::writeLog('user_ldap', 'Could not create unique name for '.$dn.'.', \OCP\Util::INFO);
+		\OCP\Util::writeLog('user_ldap', 'Could not create unique name for '.$fdn.'.', \OCP\Util::INFO);
 		return false;
 	}
 
@@ -434,46 +458,6 @@ class Access extends LDAPUtility implements user\IUserTools {
 	}
 
 	/**
-	 * @param string $dn
-	 * @return bool|string
-	 */
-	private function findMappedUser($dn) {
-		static $query = null;
-		if(is_null($query)) {
-			$query = \OCP\DB::prepare('
-				SELECT `owncloud_name`
-				FROM `'.$this->getMapTable(true).'`
-				WHERE `ldap_dn` = ?'
-			);
-		}
-		$res = $query->execute(array($dn))->fetchOne();
-		if($res) {
-			return  $res;
-		}
-		return false;
-	}
-
-	/**
-	 * @param string $dn
-	 * @return bool|string
-	 */
-	private function findMappedGroup($dn) {
-		static $query = null;
-		if(is_null($query)) {
-			$query = \OCP\DB::prepare('
-					SELECT `owncloud_name`
-					FROM `'.$this->getMapTable(false).'`
-					WHERE `ldap_dn` = ?'
-			);
-		}
-		$res = $query->execute(array($dn))->fetchOne();
-		if($res) {
-			return  $res;
-		}
-		return false;
-	}
-
-	/**
 	 * @param array $ldapObjects
 	 * @param bool $isUsers
 	 * @return array
@@ -494,12 +478,21 @@ class Access extends LDAPUtility implements user\IUserTools {
 				if($isUsers) {
 					//cache the user names so it does not need to be retrieved
 					//again later (e.g. sharing dialogue).
+					$this->cacheUserExists($ocName);
 					$this->cacheUserDisplayName($ocName, $nameByLDAP);
 				}
 			}
 			continue;
 		}
 		return $ownCloudNames;
+	}
+
+	/**
+	 * caches a user as existing
+	 * @param string $ocName the internal ownCloud username
+	 */
+	public function cacheUserExists($ocName) {
+		$this->connection->writeToCache('userExists'.$ocName, true);
 	}
 
 	/**
@@ -547,17 +540,7 @@ class Access extends LDAPUtility implements user\IUserTools {
 	 * "Developers"
 	 */
 	private function _createAltInternalOwnCloudNameForGroups($name) {
-		$query = \OCP\DB::prepare('
-			SELECT `owncloud_name`
-			FROM `'.$this->getMapTable(false).'`
-			WHERE `owncloud_name` LIKE ?
-		');
-
-		$usedNames = array();
-		$res = $query->execute(array($name.'_%'));
-		while($row = $res->fetchRow()) {
-			$usedNames[] = $row['owncloud_name'];
-		}
+		$usedNames = $this->groupMapper->getNamesBySearch($name.'_%');
 		if(!($usedNames) || count($usedNames) === 0) {
 			$lastNo = 1; //will become name_2
 		} else {
@@ -599,92 +582,6 @@ class Access extends LDAPUtility implements user\IUserTools {
 		$this->connection->setConfiguration(array('ldapCacheTTL' => $originalTTL));
 
 		return $altName;
-	}
-
-	/**
-	 * retrieves all known groups from the mappings table
-	 * @return array with the results
-	 *
-	 * retrieves all known groups from the mappings table
-	 */
-	private function mappedGroups() {
-		return $this->mappedComponents(false);
-	}
-
-	/**
-	 * retrieves all known users from the mappings table
-	 * @return array with the results
-	 *
-	 * retrieves all known users from the mappings table
-	 */
-	private function mappedUsers() {
-		return $this->mappedComponents(true);
-	}
-
-	/**
-	 * @param boolean $isUsers
-	 * @return array
-	 */
-	private function mappedComponents($isUsers) {
-		$table = $this->getMapTable($isUsers);
-
-		$query = \OCP\DB::prepare('
-			SELECT `ldap_dn`, `owncloud_name`
-			FROM `'. $table . '`'
-		);
-
-		return $query->execute()->fetchAll();
-	}
-
-	/**
-	 * inserts a new user or group into the mappings table
-	 * @param string $dn the record in question
-	 * @param string $ocName the name to use in ownCloud
-	 * @param bool $isUser is it a user or a group?
-	 * @return bool true on success, false otherwise
-	 *
-	 * inserts a new user or group into the mappings table
-	 */
-	private function mapComponent($dn, $ocName, $isUser = true) {
-		$table = $this->getMapTable($isUser);
-
-		$sqlAdjustment = '';
-		$dbType = \OCP\Config::getSystemValue('dbtype');
-		if($dbType === 'mysql' || $dbType == 'oci') {
-			$sqlAdjustment = 'FROM DUAL';
-		}
-
-		$insert = \OCP\DB::prepare('
-			INSERT INTO `'.$table.'` (`ldap_dn`, `owncloud_name`, `directory_uuid`)
-				SELECT ?,?,?
-				'.$sqlAdjustment.'
-				WHERE NOT EXISTS (
-					SELECT 1
-					FROM `'.$table.'`
-					WHERE `ldap_dn` = ?
-						OR `owncloud_name` = ?)
-		');
-
-		//feed the DB
-		$insRows = $insert->execute(array($dn, $ocName,
-										  $this->getUUID($dn, $isUser), $dn,
-										  $ocName));
-
-		if(\OCP\DB::isError($insRows)) {
-			return false;
-		}
-
-		if($insRows === 0) {
-			return false;
-		}
-
-		if($isUser) {
-			//make sure that email address is retrieved prior to login, so user
-			//will be notified when something is shared with him
-			$this->userManager->get($ocName)->update();
-		}
-
-		return true;
 	}
 
 	/**
@@ -800,14 +697,11 @@ class Access extends LDAPUtility implements user\IUserTools {
 		}
 
 		//check whether paged search should be attempted
-		$pagedSearchOK = $this->initPagedSearch($filter, $base, $attr, $limit, $offset);
+		$pagedSearchOK = $this->initPagedSearch($filter, $base, $attr, intval($limit), $offset);
 
 		$linkResources = array_pad(array(), count($base), $cr);
 		$sr = $this->ldap->search($linkResources, $base, $filter, $attr);
 		$error = $this->ldap->errno($cr);
-		if ($pagedSearchOK) {
-			$this->ldap->controlPagedResult($cr, 999999, false, "");
-		}
 		if(!is_array($sr) || $error !== 0) {
 			\OCP\Util::writeLog('user_ldap',
 				'Error when searching: '.$this->ldap->error($cr).
@@ -877,8 +771,9 @@ class Access extends LDAPUtility implements user\IUserTools {
 	private function count($filter, $base, $attr = null, $limit = null, $offset = null, $skipHandling = false) {
 		\OCP\Util::writeLog('user_ldap', 'Count filter:  '.print_r($filter, true), \OCP\Util::DEBUG);
 
-		if(is_null($limit) || $limit <= 0) {
-			$limit = intval($this->connection->ldapPagingSize);
+		$limitPerPage = intval($this->connection->ldapPagingSize);
+		if(!is_null($limit) && $limit < $limitPerPage && $limit > 0) {
+			$limitPerPage = $limit;
 		}
 
 		$counter = 0;
@@ -888,19 +783,19 @@ class Access extends LDAPUtility implements user\IUserTools {
 		do {
 			$continue = false;
 			$search = $this->executeSearch($filter, $base, $attr,
-										   $limit, $offset);
+										   $limitPerPage, $offset);
 			if($search === false) {
 				return $counter > 0 ? $counter : false;
 			}
 			list($sr, $pagedSearchOK) = $search;
 
-			$count = $this->countEntriesInSearchResults($sr, $limit, $continue);
+			$count = $this->countEntriesInSearchResults($sr, $limitPerPage, $continue);
 			$counter += $count;
 
-			$this->processPagedSearchStatus($sr, $filter, $base, $count, $limit,
+			$this->processPagedSearchStatus($sr, $filter, $base, $count, $limitPerPage,
 										$offset, $pagedSearchOK, $skipHandling);
-			$offset += $limit;
-		} while($continue);
+			$offset += $limitPerPage;
+		} while($continue && (is_null($limit) || $limit <= 0 || $limit > $counter));
 
 		return $counter;
 	}
@@ -918,7 +813,7 @@ class Access extends LDAPUtility implements user\IUserTools {
 		foreach($searchResults as $res) {
 			$count = intval($this->ldap->countEntries($cr, $res));
 			$counter += $count;
-			if($count === $limit) {
+			if($count > 0 && $count === $limit) {
 				$hasHitLimit = true;
 			}
 		}
@@ -1063,12 +958,18 @@ class Access extends LDAPUtility implements user\IUserTools {
 	/**
 	* escapes (user provided) parts for LDAP filter
 	* @param string $input, the provided value
+	* @param bool $allowAsterisk wether in * at the beginning should be preserved
 	* @return string the escaped string
 	*/
-	public function escapeFilterPart($input) {
+	public function escapeFilterPart($input, $allowAsterisk = false) {
+		$asterisk = '';
+		if($allowAsterisk && strlen($input) > 0 && $input[0] === '*') {
+			$asterisk = '*';
+			$input = mb_substr($input, 1, null, 'UTF-8');
+		}
 		$search  = array('*', '\\', '(', ')');
 		$replace = array('\\*', '\\\\', '\\(', '\\)');
-		return str_replace($search, $replace, $input);
+		return $asterisk . str_replace($search, $replace, $input);
 	}
 
 	/**
@@ -1131,6 +1032,33 @@ class Access extends LDAPUtility implements user\IUserTools {
 	}
 
 	/**
+	 * creates a filter part for searches by splitting up the given search
+	 * string into single words
+	 * @param string $search the search term
+	 * @param string[] $searchAttributes needs to have at least two attributes,
+	 * otherwise it does not make sense :)
+	 * @return string the final filter part to use in LDAP searches
+	 * @throws \Exception
+	 */
+	private function getAdvancedFilterPartForSearch($search, $searchAttributes) {
+		if(!is_array($searchAttributes) || count($searchAttributes) < 2) {
+			throw new \Exception('searchAttributes must be an array with at least two string');
+		}
+		$searchWords = explode(' ', trim($search));
+		$wordFilters = array();
+		foreach($searchWords as $word) {
+			$word .= '*';
+			//every word needs to appear at least once
+			$wordMatchOneAttrFilters = array();
+			foreach($searchAttributes as $attr) {
+				$wordMatchOneAttrFilters[] = $attr . '=' . $word;
+			}
+			$wordFilters[] = $this->combineFilterWithOr($wordMatchOneAttrFilters);
+		}
+		return $this->combineFilterWithAnd($wordFilters);
+	}
+
+	/**
 	 * creates a filter part for searches
 	 * @param string $search the search term
 	 * @param string[]|null $searchAttributes
@@ -1140,7 +1068,19 @@ class Access extends LDAPUtility implements user\IUserTools {
 	 */
 	private function getFilterPartForSearch($search, $searchAttributes, $fallbackAttribute) {
 		$filter = array();
-		$search = empty($search) ? '*' : '*'.$search.'*';
+		$haveMultiSearchAttributes = (is_array($searchAttributes) && count($searchAttributes) > 0);
+		if($haveMultiSearchAttributes && strpos(trim($search), ' ') !== false) {
+			try {
+				return $this->getAdvancedFilterPartForSearch($search, $searchAttributes);
+			} catch(\Exception $e) {
+				\OCP\Util::writeLog(
+					'user_ldap',
+					'Creating advanced filter for search failed, falling back to simple method.',
+					\OCP\Util::INFO
+				);
+			}
+		}
+		$search = empty($search) ? '*' : $search.'*';
 		if(!is_array($searchAttributes) || count($searchAttributes) === 0) {
 			if(empty($fallbackAttribute)) {
 				return '';
@@ -1155,6 +1095,19 @@ class Access extends LDAPUtility implements user\IUserTools {
 			return '('.$filter[0].')';
 		}
 		return $this->combineFilterWithOr($filter);
+	}
+
+	/**
+	 * returns the filter used for counting users
+	 * @return string
+	 */
+	public function getFilterForUserCount() {
+		$filter = $this->combineFilterWithAnd(array(
+			$this->connection->ldapUserFilter,
+			$this->connection->ldapUserDisplayName . '=*'
+		));
+
+		return $filter;
 	}
 
 	/**
@@ -1225,7 +1178,7 @@ class Access extends LDAPUtility implements user\IUserTools {
 	/**
 	 * @param string $dn
 	 * @param bool $isUser
-	 * @return array|bool|false
+	 * @return string|bool
 	 */
 	public function getUUID($dn, $isUser = true) {
 		if($isUser) {
@@ -1306,32 +1259,38 @@ class Access extends LDAPUtility implements user\IUserTools {
 	 * converts a binary SID into a string representation
 	 * @param string $sid
 	 * @return string
-	 * @link http://blogs.freebsdish.org/tmclaugh/2010/07/21/finding-a-users-primary-group-in-ad/#comment-2855
 	 */
 	public function convertSID2Str($sid) {
-		try {
-			if(!function_exists('bcadd')) {
-				\OCP\Util::writeLog('user_ldap',
-					'You need to install bcmath module for PHP to have support ' .
-					'for AD primary groups', \OCP\Util::WARN);
-				throw new \Exception('missing bcmath module');
-			}
-			$srl = ord($sid[0]);
-			$numberSubID = ord($sid[1]);
-			$x = substr($sid, 2, 6);
-			$h = unpack('N', "\x0\x0" . substr($x,0,2));
-			$l = unpack('N', substr($x,2,6));
-			$iav = bcadd(bcmul($h[1], bcpow(2,32)), $l[1]);
-			$subIDs = array();
-			for ($i=0; $i<$numberSubID; $i++) {
-				$subID = unpack('V', substr($sid, 8+4*$i, 4));
-				$subIDs[] = $subID[1];
-			}
-		} catch (\Exception $e) {
+		// The format of a SID binary string is as follows:
+		// 1 byte for the revision level
+		// 1 byte for the number n of variable sub-ids
+		// 6 bytes for identifier authority value
+		// n*4 bytes for n sub-ids
+		//
+		// Example: 010400000000000515000000a681e50e4d6c6c2bca32055f
+		//  Legend: RRNNAAAAAAAAAAAA11111111222222223333333344444444
+		$revision = ord($sid[0]);
+		$numberSubID = ord($sid[1]);
+
+		$subIdStart = 8; // 1 + 1 + 6
+		$subIdLength = 4;
+		if (strlen($sid) !== $subIdStart + $subIdLength * $numberSubID) {
+			// Incorrect number of bytes present.
 			return '';
 		}
 
-		return sprintf('S-%d-%d-%s', $srl, $iav, implode('-', $subIDs));
+		// 6 bytes = 48 bits can be represented using floats without loss of
+		// precision (see https://gist.github.com/bantu/886ac680b0aef5812f71)
+		$iav = number_format(hexdec(bin2hex(substr($sid, 2, 6))), 0, '', '');
+
+		$subIDs = array();
+		for ($i = 0; $i < $numberSubID; $i++) {
+			$subID = unpack('V', substr($sid, $subIdStart + $subIdLength * $i, $subIdLength));
+			$subIDs[] = sprintf('%u', $subID[1]);
+		}
+
+		// Result for example above: S-1-5-21-249921958-728525901-1594176202
+		return sprintf('S-%d-%s-%s', $revision, $iav, implode('-', $subIDs));
 	}
 
 	/**
@@ -1349,7 +1308,7 @@ class Access extends LDAPUtility implements user\IUserTools {
 	 * @param string[] $bases array containing the allowed base DN or DNs
 	 * @return bool
 	 */
-	private function isDNPartOfBase($dn, $bases) {
+	public function isDNPartOfBase($dn, $bases) {
 		$belongsToBase = false;
 		$bases = $this->sanitizeDN($bases);
 
@@ -1363,6 +1322,19 @@ class Access extends LDAPUtility implements user\IUserTools {
 			}
 		}
 		return $belongsToBase;
+	}
+
+	/**
+	 * resets a running Paged Search operation
+	 */
+	private function abandonPagedSearch() {
+		if($this->connection->hasPagedResultSupport) {
+			$cr = $this->connection->getConnectionResource();
+			$this->ldap->controlPagedResult($cr, 0, false, $this->lastCookie);
+			$this->getPagedSearchResultState();
+			$this->lastCookie = '';
+			$this->cookies = array();
+		}
 	}
 
 	/**
@@ -1400,9 +1372,11 @@ class Access extends LDAPUtility implements user\IUserTools {
 	 * @return void
 	 */
 	private function setPagedResultCookie($base, $filter, $limit, $offset, $cookie) {
-		if(!empty($cookie)) {
+		// allow '0' for 389ds
+		if(!empty($cookie) || $cookie === '0') {
 			$cacheKey = 'lc' . crc32($base) . '-' . crc32($filter) . '-' .intval($limit) . '-' . intval($offset);
 			$this->cookies[$cacheKey] = $cookie;
+			$this->lastCookie = $cookie;
 		}
 	}
 
@@ -1427,7 +1401,7 @@ class Access extends LDAPUtility implements user\IUserTools {
 	 */
 	private function initPagedSearch($filter, $bases, $attr, $limit, $offset) {
 		$pagedSearchOK = false;
-		if($this->connection->hasPagedResultSupport && !is_null($limit)) {
+		if($this->connection->hasPagedResultSupport && ($limit !== 0)) {
 			$offset = intval($offset); //can be null
 			\OCP\Util::writeLog('user_ldap',
 				'initializing paged search for  Filter '.$filter.' base '.print_r($bases, true)
@@ -1437,11 +1411,12 @@ class Access extends LDAPUtility implements user\IUserTools {
 			foreach($bases as $base) {
 
 				$cookie = $this->getPagedResultCookie($base, $filter, $limit, $offset);
-				if(empty($cookie) && ($offset > 0)) {
+				if(empty($cookie) && $cookie !== "0" && ($offset > 0)) {
 					// no cookie known, although the offset is not 0. Maybe cache run out. We need
 					// to start all over *sigh* (btw, Dear Reader, did you know LDAP paged
 					// searching was designed by MSFT?)
 					// 		Lukas: No, but thanks to reading that source I finally know!
+					// '0' is valid, because 389ds
 					$reOffset = ($offset - $limit) < 0 ? 0 : $offset - $limit;
 					//a bit recursive, $offset of 0 is the exit
 					\OCP\Util::writeLog('user_ldap', 'Looking for cookie L/O '.$limit.'/'.$reOffset, \OCP\Util::INFO);
@@ -1449,21 +1424,21 @@ class Access extends LDAPUtility implements user\IUserTools {
 					$cookie = $this->getPagedResultCookie($base, $filter, $limit, $offset);
 					//still no cookie? obviously, the server does not like us. Let's skip paging efforts.
 					//TODO: remember this, probably does not change in the next request...
-					if(empty($cookie)) {
+					if(empty($cookie) && $cookie !== '0') {
+						// '0' is valid, because 389ds
 						$cookie = null;
 					}
 				}
 				if(!is_null($cookie)) {
-					if($offset > 0) {
-						\OCP\Util::writeLog('user_ldap', 'Cookie '.CRC32($cookie), \OCP\Util::INFO);
-					}
+					//since offset = 0, this is a new search. We abandon other searches that might be ongoing.
+					$this->abandonPagedSearch();
 					$pagedSearchOK = $this->ldap->controlPagedResult(
 						$this->connection->getConnectionResource(), $limit,
 						false, $cookie);
 					if(!$pagedSearchOK) {
 						return false;
 					}
-					\OCP\Util::writeLog('user_ldap', 'Ready for a paged search', \OCP\Util::INFO);
+					\OCP\Util::writeLog('user_ldap', 'Ready for a paged search', \OCP\Util::DEBUG);
 				} else {
 					\OCP\Util::writeLog('user_ldap',
 						'No paged search for us, Cpt., Limit '.$limit.' Offset '.$offset,
@@ -1471,6 +1446,17 @@ class Access extends LDAPUtility implements user\IUserTools {
 				}
 
 			}
+		} else if($this->connection->hasPagedResultSupport && $limit === 0) {
+			// a search without limit was requested. However, if we do use
+			// Paged Search once, we always must do it. This requires us to
+			// initialize it with the configured page size.
+			$this->abandonPagedSearch();
+			// in case someone set it to 0 … use 500, otherwise no results will
+			// be returned.
+			$pageSize = intval($this->connection->ldapPagingSize) > 0 ? intval($this->connection->ldapPagingSize) : 500;
+			$pagedSearchOK = $this->ldap->controlPagedResult(
+				$this->connection->getConnectionResource(), $pageSize, false, ''
+			);
 		}
 
 		return $pagedSearchOK;

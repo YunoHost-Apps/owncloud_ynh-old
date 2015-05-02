@@ -10,7 +10,7 @@
 
 namespace OC\Core\Command\Db;
 
-use OC\Config;
+use \OCP\IConfig;
 use OC\DB\Connection;
 use OC\DB\ConnectionFactory;
 
@@ -22,7 +22,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ConvertType extends Command {
 	/**
-	 * @var \OC\Config
+	 * @var \OCP\IConfig
 	 */
 	protected $config;
 
@@ -32,10 +32,10 @@ class ConvertType extends Command {
 	protected $connectionFactory;
 
 	/**
-	 * @param \OC\Config $config
+	 * @param \OCP\IConfig $config
 	 * @param \OC\DB\ConnectionFactory $connectionFactory
 	 */
-	public function __construct(Config $config, ConnectionFactory $connectionFactory) {
+	public function __construct(IConfig $config, ConnectionFactory $connectionFactory) {
 		$this->config = $config;
 		$this->connectionFactory = $connectionFactory;
 		parent::__construct();
@@ -104,7 +104,7 @@ class ConvertType extends Command {
 				'Converting to Microsoft SQL Server (mssql) is currently not supported.'
 			);
 		}
-		if ($type === $this->config->getValue('dbtype', '')) {
+		if ($type === $this->config->getSystemValue('dbtype', '')) {
 			throw new \InvalidArgumentException(sprintf(
 				'Can not convert from %1$s to %1$s.',
 				$type
@@ -180,7 +180,7 @@ class ConvertType extends Command {
 			$dialog = $this->getHelperSet()->get('dialog');
 			if (!$dialog->askConfirmation(
 				$output,
-				'<question>Continue with the conversion?</question>',
+				'<question>Continue with the conversion (y/n)? [n] </question>',
 				false
 			)) {
 				return;
@@ -209,7 +209,7 @@ class ConvertType extends Command {
 			'user' => $input->getArgument('username'),
 			'password' => $input->getOption('password'),
 			'dbname' => $input->getArgument('database'),
-			'tablePrefix' => $this->config->getValue('dbtableprefix', 'oc_'),
+			'tablePrefix' => $this->config->getSystemValue('dbtableprefix', 'oc_'),
 		);
 		if ($input->getOption('port')) {
 			$connectionParams['port'] = $input->getOption('port');
@@ -228,6 +228,9 @@ class ConvertType extends Command {
 	}
 
 	protected function getTables(Connection $db) {
+		$filterExpression = '/^' . preg_quote($this->config->getSystemValue('dbtableprefix', 'oc_')) . '/';
+		$db->getConfiguration()->
+			setFilterSchemaAssetsExpression($filterExpression);
 		return $db->getSchemaManager()->listTableNames();
 	}
 
@@ -256,7 +259,7 @@ class ConvertType extends Command {
 	}
 
 	protected function convertDB(Connection $fromDB, Connection $toDB, array $tables, InputInterface $input, OutputInterface $output) {
-		$this->config->setValue('maintenance', true);
+		$this->config->setSystemValue('maintenance', true);
 		try {
 			// copy table rows
 			foreach($tables as $table) {
@@ -264,32 +267,34 @@ class ConvertType extends Command {
 				$this->copyTable($fromDB, $toDB, $table, $input, $output);
 			}
 			if ($input->getArgument('type') === 'pgsql') {
-				$tools = new \OC\DB\PgSqlTools;
+				$tools = new \OC\DB\PgSqlTools($this->config);
 				$tools->resynchronizeDatabaseSequences($toDB);
 			}
 			// save new database config
 			$this->saveDBInfo($input);
 		} catch(\Exception $e) {
-			$this->config->setValue('maintenance', false);
+			$this->config->setSystemValue('maintenance', false);
 			throw $e;
 		}
-		$this->config->setValue('maintenance', false);
+		$this->config->setSystemValue('maintenance', false);
 	}
 
 	protected function saveDBInfo(InputInterface $input) {
 		$type = $input->getArgument('type');
 		$username = $input->getArgument('username');
-		$dbhost = $input->getArgument('hostname');
-		$dbname = $input->getArgument('database');
+		$dbHost = $input->getArgument('hostname');
+		$dbName = $input->getArgument('database');
 		$password = $input->getOption('password');
 		if ($input->getOption('port')) {
-			$dbhost .= ':'.$input->getOption('port');
+			$dbHost .= ':'.$input->getOption('port');
 		}
 
-		$this->config->setValue('dbtype', $type);
-		$this->config->setValue('dbname', $dbname);
-		$this->config->setValue('dbhost', $dbhost);
-		$this->config->setValue('dbuser', $username);
-		$this->config->setValue('dbpassword', $password);
+		$this->config->setSystemValues([
+			'dbtype'		=> $type,
+			'dbname'		=> $dbName,
+			'dbhost'		=> $dbHost,
+			'dbuser'		=> $username,
+			'dbpassword'	=> $password,
+		]);
 	}
 }

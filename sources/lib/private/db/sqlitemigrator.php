@@ -14,20 +14,6 @@ use Doctrine\DBAL\Schema\Schema;
 class SQLiteMigrator extends Migrator {
 
 	/**
-	 * @var \OCP\IConfig
-	 */
-	private $config;
-
-	/**
-	 * @param \Doctrine\DBAL\Connection $connection
-	 * @param \OCP\IConfig $config
-	 */
-	public function __construct(\Doctrine\DBAL\Connection $connection, \OCP\IConfig $config) {
-		parent::__construct($connection);
-		$this->config = $config;
-	}
-
-	/**
 	 * @param \Doctrine\DBAL\Schema\Schema $targetSchema
 	 * @throws \OC\DB\MigrationException
 	 *
@@ -71,6 +57,8 @@ class SQLiteMigrator extends Migrator {
 	protected function getDiff(Schema $targetSchema, \Doctrine\DBAL\Connection $connection) {
 		$platform = $connection->getDatabasePlatform();
 		$platform->registerDoctrineTypeMapping('tinyint unsigned', 'integer');
+		$platform->registerDoctrineTypeMapping('smallint unsigned', 'integer');
+		$platform->registerDoctrineTypeMapping('varchar ', 'string');
 
 		return parent::getDiff($targetSchema, $connection);
 	}

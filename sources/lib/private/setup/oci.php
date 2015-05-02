@@ -14,7 +14,24 @@ class OCI extends AbstractDatabase {
 		} else {
 			$this->dbtablespace = 'USERS';
 		}
-		\OC_Config::setValue('dbtablespace', $this->dbtablespace);
+		// allow empty hostname for oracle
+		$this->dbhost = $config['dbhost'];
+
+		\OC_Config::setValues([
+			'dbhost'		=> $this->dbhost,
+			'dbtablespace'	=> $this->dbtablespace,
+		]);
+	}
+
+	public function validate($config) {
+		$errors = array();
+		if(empty($config['dbuser'])) {
+			$errors[] = $this->trans->t("%s enter the database username.", array($this->dbprettyname));
+		}
+		if(empty($config['dbname'])) {
+			$errors[] = $this->trans->t("%s enter the database name.", array($this->dbprettyname));
+		}
+		return $errors;
 	}
 
 	public function setupDatabase($username) {
@@ -31,14 +48,14 @@ class OCI extends AbstractDatabase {
 		if(!$connection) {
 			$errorMessage = $this->getLastError();
 			if ($errorMessage) {
-				throw new \DatabaseSetupException($this->trans->t('Oracle connection could not be established'),
+				throw new \OC\DatabaseSetupException($this->trans->t('Oracle connection could not be established'),
 				$errorMessage.' Check environment: ORACLE_HOME='.getenv('ORACLE_HOME')
 							.' ORACLE_SID='.getenv('ORACLE_SID')
 							.' LD_LIBRARY_PATH='.getenv('LD_LIBRARY_PATH')
 							.' NLS_LANG='.getenv('NLS_LANG')
 							.' tnsnames.ora is '.(is_readable(getenv('ORACLE_HOME').'/network/admin/tnsnames.ora')?'':'not ').'readable');
 			}
-			throw new \DatabaseSetupException($this->trans->t('Oracle username and/or password not valid'),
+			throw new \OC\DatabaseSetupException($this->trans->t('Oracle username and/or password not valid'),
 					'Check environment: ORACLE_HOME='.getenv('ORACLE_HOME')
 							.' ORACLE_SID='.getenv('ORACLE_SID')
 							.' LD_LIBRARY_PATH='.getenv('LD_LIBRARY_PATH')
@@ -58,37 +75,32 @@ class OCI extends AbstractDatabase {
 		$result = oci_execute($stmt);
 		if($result) {
 			$row = oci_fetch_row($stmt);
+
+			if ($row[0] > 0) {
+				//use the admin login data for the new database user
+
+				//add prefix to the oracle user name to prevent collisions
+				$this->dbuser='oc_'.$username;
+				//create a new password so we don't need to store the admin config in the config file
+				$this->dbpassword=\OC_Util::generateRandomBytes(30);
+
+				//oracle passwords are treated as identifiers:
+				//  must start with alphanumeric char
+				//  needs to be shortened to 30 bytes, as the two " needed to escape the identifier count towards the identifier length.
+				$this->dbpassword=substr($this->dbpassword, 0, 30);
+
+				$this->createDBUser($connection);
+			}
 		}
-		if($result and $row[0] > 0) {
-			//use the admin login data for the new database user
 
-			//add prefix to the oracle user name to prevent collisions
-			$this->dbuser='oc_'.$username;
-			//create a new password so we don't need to store the admin config in the config file
-			$this->dbpassword=\OC_Util::generateRandomBytes(30);
+		\OC_Config::setValues([
+			'dbuser'		=> $this->dbuser,
+			'dbname'		=> $this->dbname,
+			'dbpassword'	=> $this->dbpassword,
+		]);
 
-			//oracle passwords are treated as identifiers:
-			//  must start with alphanumeric char
-			//  needs to be shortened to 30 bytes, as the two " needed to escape the identifier count towards the identifier length.
-			$this->dbpassword=substr($this->dbpassword, 0, 30);
-
-			$this->createDBUser($connection);
-
-			\OC_Config::setValue('dbuser', $this->dbuser);
-			\OC_Config::setValue('dbname', $this->dbuser);
-			\OC_Config::setValue('dbpassword', $this->dbpassword);
-
-			//create the database not necessary, oracle implies user = schema
-			//$this->createDatabase($this->dbname, $this->dbuser, $connection);
-		} else {
-
-			\OC_Config::setValue('dbuser', $this->dbuser);
-			\OC_Config::setValue('dbname', $this->dbname);
-			\OC_Config::setValue('dbpassword', $this->dbpassword);
-
-			//create the database not necessary, oracle implies user = schema
-			//$this->createDatabase($this->dbname, $this->dbuser, $connection);
-		}
+		//create the database not necessary, oracle implies user = schema
+		//$this->createDatabase($this->dbname, $this->dbuser, $connection);
 
 		//FIXME check tablespace exists: select * from user_tablespaces
 
@@ -110,7 +122,7 @@ class OCI extends AbstractDatabase {
 		}
 		$connection = @oci_connect($this->dbuser, $this->dbpassword, $easy_connect_string);
 		if(!$connection) {
-			throw new \DatabaseSetupException($this->trans->t('Oracle username and/or password not valid'),
+			throw new \OC\DatabaseSetupException($this->trans->t('Oracle username and/or password not valid'),
 					$this->trans->t('You need to enter either an existing account or the administrator.'));
 		}
 		$query = "SELECT count(*) FROM user_tables WHERE table_name = :un";

@@ -24,8 +24,11 @@
 namespace OCA\user_ldap;
 
 use OCA\user_ldap\lib\ILDAPWrapper;
+use OCA\User_LDAP\lib\User\User;
+use \OCA\user_ldap\User_LDAP;
+use OCP\IConfig;
 
-class User_Proxy extends lib\Proxy implements \OCP\UserInterface {
+class User_Proxy extends lib\Proxy implements \OCP\IUserBackend, \OCP\UserInterface {
 	private $backends = array();
 	private $refBackend = null;
 
@@ -33,11 +36,11 @@ class User_Proxy extends lib\Proxy implements \OCP\UserInterface {
 	 * Constructor
 	 * @param array $serverConfigPrefixes array containing the config Prefixes
 	 */
-	public function __construct($serverConfigPrefixes, ILDAPWrapper $ldap) {
+	public function __construct(array $serverConfigPrefixes, ILDAPWrapper $ldap, IConfig $ocConfig) {
 		parent::__construct($ldap);
 		foreach($serverConfigPrefixes as $configPrefix) {
 			$this->backends[$configPrefix] =
-				new \OCA\user_ldap\USER_LDAP($this->getAccess($configPrefix));
+				new User_LDAP($this->getAccess($configPrefix), $ocConfig);
 			if(is_null($this->refBackend)) {
 				$this->refBackend = &$this->backends[$configPrefix];
 			}
@@ -118,6 +121,14 @@ class User_Proxy extends lib\Proxy implements \OCP\UserInterface {
 	}
 
 	/**
+	 * Backend name to be shown in user management
+	 * @return string the name of the backend to be shown
+	 */
+	public function getBackendName() {
+		return $this->refBackend->getBackendName();
+	}
+
+	/**
 	 * Get a list of all users
 	 * @return string[] with all uids
 	 *
@@ -142,6 +153,17 @@ class User_Proxy extends lib\Proxy implements \OCP\UserInterface {
 	 */
 	public function userExists($uid) {
 		return $this->handleRequest($uid, 'userExists', array($uid));
+	}
+
+	/**
+	 * check if a user exists on LDAP
+	 * @param string|OCA\User_LDAP\lib\User\User $user either the ownCloud user
+	 * name or an instance of that user
+	 * @return boolean
+	 */
+	public function userExistsOnLDAP($user) {
+		$id = ($user instanceof User) ? $user->getUsername() : $user;
+		return $this->handleRequest($id, 'userExistsOnLDAP', array($user));
 	}
 
 	/**
@@ -209,7 +231,7 @@ class User_Proxy extends lib\Proxy implements \OCP\UserInterface {
 	 * Deletes a user
 	 */
 	public function deleteUser($uid) {
-		return false;
+		return $this->handleRequest($uid, 'deleteUser', array($uid));
 	}
 
 	/**

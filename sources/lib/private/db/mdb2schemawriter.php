@@ -10,16 +10,27 @@ class OC_DB_MDB2SchemaWriter {
 
 	/**
 	 * @param string $file
-	 * @param \Doctrine\DBAL\Schema\AbstractSchemaManager $sm
+	 * @param \OC\DB\Connection $conn
 	 * @return bool
 	 */
-	static public function saveSchemaToFile($file, $sm) {
+	static public function saveSchemaToFile($file, \OC\DB\Connection $conn) {
+		$config = \OC::$server->getConfig();
+
 		$xml = new SimpleXMLElement('<database/>');
-		$xml->addChild('name', OC_Config::getValue( "dbname", "owncloud" ));
+		$xml->addChild('name', $config->getSystemValue('dbname', 'owncloud'));
 		$xml->addChild('create', 'true');
 		$xml->addChild('overwrite', 'false');
 		$xml->addChild('charset', 'utf8');
-		foreach ($sm->listTables() as $table) {
+
+		// FIX ME: bloody work around
+		if ($config->getSystemValue('dbtype', 'sqlite') === 'oci') {
+			$filterExpression = '/^"' . preg_quote($conn->getPrefix()) . '/';
+		} else {
+			$filterExpression = '/^' . preg_quote($conn->getPrefix()) . '/';
+		}
+		$conn->getConfiguration()->setFilterSchemaAssetsExpression($filterExpression);
+
+		foreach ($conn->getSchemaManager()->listTables() as $table) {
 			self::saveTable($table, $xml->addChild('table'));
 		}
 		file_put_contents($file, $xml->asXML());

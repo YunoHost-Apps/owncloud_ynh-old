@@ -6,109 +6,127 @@
  */
 
 OC_Util::checkAdminUser();
+OC_App::setActiveNavigationEntry("admin");
 
-OC_Util::addStyle( "settings", "settings" );
-OC_Util::addScript( "settings", "admin" );
-OC_Util::addScript( "settings", "log" );
-OC_Util::addScript( 'core', 'multiselect' );
-OC_App::setActiveNavigationEntry( "admin" );
+$template = new OC_Template('settings', 'admin', 'user');
 
-$tmpl = new OC_Template( 'settings', 'admin', 'user');
-$forms=OC_App::getForms('admin');
-$htaccessworking=OC_Util::isHtaccessWorking();
-
-$entries=OC_Log_Owncloud::getEntries(3);
-$entriesremain = count(OC_Log_Owncloud::getEntries(4)) > 3;
+$showLog = (\OC::$server->getConfig()->getSystemValue('log_type', 'owncloud') === 'owncloud');
+$numEntriesToLoad = 3;
+$entries = OC_Log_Owncloud::getEntries($numEntriesToLoad + 1);
+$entriesRemaining = count($entries) > $numEntriesToLoad;
+$entries = array_slice($entries, 0, $numEntriesToLoad);
+$logFilePath = OC_Log_Owncloud::getLogFilePath();
+$doesLogFileExist = file_exists($logFilePath);
+$logFileSize = filesize($logFilePath);
 $config = \OC::$server->getConfig();
+$appConfig = \OC::$server->getAppConfig();
 
 // Should we display sendmail as an option?
-$tmpl->assign('sendmail_is_available', (bool) findBinaryPath('sendmail'));
+$template->assign('sendmail_is_available', (bool) \OC_Helper::findBinaryPath('sendmail'));
 
-$tmpl->assign('loglevel', OC_Config::getValue( "loglevel", 2 ));
-$tmpl->assign('mail_domain', OC_Config::getValue( "mail_domain", '' ));
-$tmpl->assign('mail_from_address', OC_Config::getValue( "mail_from_address", '' ));
-$tmpl->assign('mail_smtpmode', OC_Config::getValue( "mail_smtpmode", '' ));
-$tmpl->assign('mail_smtpsecure', OC_Config::getValue( "mail_smtpsecure", '' ));
-$tmpl->assign('mail_smtphost', OC_Config::getValue( "mail_smtphost", '' ));
-$tmpl->assign('mail_smtpport', OC_Config::getValue( "mail_smtpport", '' ));
-$tmpl->assign('mail_smtpauthtype', OC_Config::getValue( "mail_smtpauthtype", '' ));
-$tmpl->assign('mail_smtpauth', OC_Config::getValue( "mail_smtpauth", false ));
-$tmpl->assign('mail_smtpname', OC_Config::getValue( "mail_smtpname", '' ));
-$tmpl->assign('mail_smtppassword', OC_Config::getValue( "mail_smtppassword", '' ));
-$tmpl->assign('entries', $entries);
-$tmpl->assign('entriesremain', $entriesremain);
-$tmpl->assign('htaccessworking', $htaccessworking);
-$tmpl->assign('internetconnectionworking', OC_Util::isInternetConnectionEnabled() ? OC_Util::isInternetConnectionWorking() : false);
-$tmpl->assign('isLocaleWorking', OC_Util::isSetLocaleWorking());
-$tmpl->assign('isAnnotationsWorking', OC_Util::isAnnotationsWorking());
-$tmpl->assign('isWebDavWorking', OC_Util::isWebDAVWorking());
-$tmpl->assign('has_fileinfo', OC_Util::fileInfoLoaded());
-$tmpl->assign('old_php', OC_Util::isPHPoutdated());
-$tmpl->assign('backgroundjobs_mode', OC_Appconfig::getValue('core', 'backgroundjobs_mode', 'ajax'));
-$tmpl->assign('cron_log', OC_Config::getValue('cron_log', true));
-$tmpl->assign('lastcron', OC_Appconfig::getValue('core', 'lastcron', false));
-$tmpl->assign('shareAPIEnabled', OC_Appconfig::getValue('core', 'shareapi_enabled', 'yes'));
-$tmpl->assign('shareDefaultExpireDateSet', OC_Appconfig::getValue('core', 'shareapi_default_expire_date', 'no'));
-$tmpl->assign('shareExpireAfterNDays', OC_Appconfig::getValue('core', 'shareapi_expire_after_n_days', '7'));
-$tmpl->assign('shareEnforceExpireDate', OC_Appconfig::getValue('core', 'shareapi_enforce_expire_date', 'no'));
-$excludeGroups = OC_Appconfig::getValue('core', 'shareapi_exclude_groups', 'no') === 'yes' ? true : false;
-$tmpl->assign('shareExcludeGroups', $excludeGroups);
-$allGroups =  OC_Group::getGroups();
-$excludedGroupsList = OC_Appconfig::getValue('core', 'shareapi_exclude_groups_list', '');
-$excludedGroups = $excludedGroupsList !== '' ? explode(',', $excludedGroupsList) : array();
-$groups = array();
-foreach ($allGroups as $group) {
-	if (in_array($group, $excludedGroups)) {
-		$groups[$group] = array('gid' => $group,
-			'excluded' => true);
-	} else {
-		$groups[$group] = array('gid' => $group,
-			'excluded' => false);
-	}
-}
-ksort($groups);
-$tmpl->assign('groups', $groups);
-
+$template->assign('loglevel', $config->getSystemValue("loglevel", 2));
+$template->assign('mail_domain', $config->getSystemValue("mail_domain", ''));
+$template->assign('mail_from_address', $config->getSystemValue("mail_from_address", ''));
+$template->assign('mail_smtpmode', $config->getSystemValue("mail_smtpmode", ''));
+$template->assign('mail_smtpsecure', $config->getSystemValue("mail_smtpsecure", ''));
+$template->assign('mail_smtphost', $config->getSystemValue("mail_smtphost", ''));
+$template->assign('mail_smtpport', $config->getSystemValue("mail_smtpport", ''));
+$template->assign('mail_smtpauthtype', $config->getSystemValue("mail_smtpauthtype", ''));
+$template->assign('mail_smtpauth', $config->getSystemValue("mail_smtpauth", false));
+$template->assign('mail_smtpname', $config->getSystemValue("mail_smtpname", ''));
+$template->assign('mail_smtppassword', $config->getSystemValue("mail_smtppassword", ''));
+$template->assign('entries', $entries);
+$template->assign('entriesremain', $entriesRemaining);
+$template->assign('logFileSize', $logFileSize);
+$template->assign('doesLogFileExist', $doesLogFileExist);
+$template->assign('showLog', $showLog);
+$template->assign('readOnlyConfigEnabled', OC_Helper::isReadOnlyConfigEnabled());
+$template->assign('isLocaleWorking', OC_Util::isSetLocaleWorking());
+$template->assign('isPhpCharSetUtf8', OC_Util::isPhpCharSetUtf8());
+$template->assign('isAnnotationsWorking', OC_Util::isAnnotationsWorking());
+$template->assign('has_fileinfo', OC_Util::fileInfoLoaded());
+$template->assign('backgroundjobs_mode', $appConfig->getValue('core', 'backgroundjobs_mode', 'ajax'));
+$template->assign('cron_log', $config->getSystemValue('cron_log', true));
+$template->assign('lastcron', $appConfig->getValue('core', 'lastcron', false));
+$template->assign('shareAPIEnabled', $appConfig->getValue('core', 'shareapi_enabled', 'yes'));
+$template->assign('shareDefaultExpireDateSet', $appConfig->getValue('core', 'shareapi_default_expire_date', 'no'));
+$template->assign('shareExpireAfterNDays', $appConfig->getValue('core', 'shareapi_expire_after_n_days', '7'));
+$template->assign('shareEnforceExpireDate', $appConfig->getValue('core', 'shareapi_enforce_expire_date', 'no'));
+$excludeGroups = $appConfig->getValue('core', 'shareapi_exclude_groups', 'no') === 'yes' ? true : false;
+$template->assign('shareExcludeGroups', $excludeGroups);
+$excludedGroupsList = $appConfig->getValue('core', 'shareapi_exclude_groups_list', '');
+$excludedGroupsList = explode(',', $excludedGroupsList); // FIXME: this should be JSON!
+$template->assign('shareExcludedGroupsList', implode('|', $excludedGroupsList));
 
 // Check if connected using HTTPS
-$tmpl->assign('isConnectedViaHTTPS', OC_Request::serverProtocol() === 'https');
-$tmpl->assign('enforceHTTPSEnabled', OC_Config::getValue( "forcessl", false));
+$template->assign('isConnectedViaHTTPS', OC_Request::serverProtocol() === 'https');
+$template->assign('enforceHTTPSEnabled', $config->getSystemValue('forcessl', false));
+$template->assign('forceSSLforSubdomainsEnabled', $config->getSystemValue('forceSSLforSubdomains', false));
 
-// If the current webroot is non-empty but the webroot from the config is,
+// If the current web root is non-empty but the web root from the config is,
 // and system cron is used, the URL generator fails to build valid URLs.
-$shouldSuggestOverwriteWebroot = $config->getAppValue('core', 'backgroundjobs_mode', 'ajax') === 'cron' &&
+$shouldSuggestOverwriteCliUrl = $config->getAppValue('core', 'backgroundjobs_mode', 'ajax') === 'cron' &&
 	\OC::$WEBROOT && \OC::$WEBROOT !== '/' &&
-	!$config->getSystemValue('overwritewebroot', '');
-$tmpl->assign('suggestedOverwriteWebroot', ($shouldSuggestOverwriteWebroot) ? \OC::$WEBROOT : '');
+	!$config->getSystemValue('overwrite.cli.url', '');
+$suggestedOverwriteCliUrl = ($shouldSuggestOverwriteCliUrl) ? \OC::$WEBROOT : '';
+$template->assign('suggestedOverwriteCliUrl', $suggestedOverwriteCliUrl);
 
-$tmpl->assign('allowLinks', OC_Appconfig::getValue('core', 'shareapi_allow_links', 'yes'));
-$tmpl->assign('enforceLinkPassword', \OCP\Util::isPublicLinkPasswordRequired());
-$tmpl->assign('allowPublicUpload', OC_Appconfig::getValue('core', 'shareapi_allow_public_upload', 'yes'));
-$tmpl->assign('allowResharing', OC_Appconfig::getValue('core', 'shareapi_allow_resharing', 'yes'));
-$tmpl->assign('allowMailNotification', OC_Appconfig::getValue('core', 'shareapi_allow_mail_notification', 'no'));
-$tmpl->assign('onlyShareWithGroupMembers', \OC\Share\Share::shareWithGroupMembersOnly());
-$tmpl->assign('forms', array());
-foreach($forms as $form) {
-	$tmpl->append('forms', $form);
-}
-
+$template->assign('allowLinks', $appConfig->getValue('core', 'shareapi_allow_links', 'yes'));
+$template->assign('enforceLinkPassword', \OCP\Util::isPublicLinkPasswordRequired());
+$template->assign('allowPublicUpload', $appConfig->getValue('core', 'shareapi_allow_public_upload', 'yes'));
+$template->assign('allowResharing', $appConfig->getValue('core', 'shareapi_allow_resharing', 'yes'));
+$template->assign('allowPublicMailNotification', $appConfig->getValue('core', 'shareapi_allow_public_notification', 'no'));
+$template->assign('allowMailNotification', $appConfig->getValue('core', 'shareapi_allow_mail_notification', 'no'));
+$template->assign('onlyShareWithGroupMembers', \OC\Share\Share::shareWithGroupMembersOnly());
 $databaseOverload = (strpos(\OCP\Config::getSystemValue('dbtype'), 'sqlite') !== false);
-$tmpl->assign('databaseOverload', $databaseOverload);
+$template->assign('databaseOverload', $databaseOverload);
+$template->assign('cronErrors', $appConfig->getValue('core', 'cronErrors'));
 
-$tmpl->printPage();
+// warn if Windows is used
+$template->assign('WindowsWarning', OC_Util::runningOnWindows());
 
-/**
- * Try to find a programm
- *
- * @param string $program
- * @return null|string
- */
-function findBinaryPath($program) {
-	if (OC_Helper::is_function_enabled('exec')) {
-		exec('command -v ' . escapeshellarg($program) . ' 2> /dev/null', $output, $returnCode);
-		if ($returnCode === 0 && count($output) > 0) {
-			return escapeshellcmd($output[0]);
-		}
-	}
-	return null;
+// warn if outdated version of APCu is used
+$template->assign('ApcuOutdatedWarning',
+	extension_loaded('apcu') && version_compare(phpversion('apc'), '4.0.6') === -1);
+
+// add hardcoded forms from the template
+$forms = OC_App::getForms('admin');
+$l = OC_L10N::get('settings');
+$formsAndMore = array();
+if (OC_Request::serverProtocol() !== 'https' || !OC_Util::isAnnotationsWorking() ||
+	$suggestedOverwriteCliUrl || !OC_Util::isSetLocaleWorking() || !OC_Util::isPhpCharSetUtf8() ||
+	!OC_Util::fileInfoLoaded() || $databaseOverload
+) {
+	$formsAndMore[] = array('anchor' => 'security-warning', 'section-name' => $l->t('Security & Setup Warnings'));
 }
+
+$formsMap = array_map(function ($form) {
+	if (preg_match('%(<h2[^>]*>.*?</h2>)%i', $form, $regs)) {
+		$sectionName = str_replace('<h2>', '', $regs[0]);
+		$sectionName = str_replace('</h2>', '', $sectionName);
+		$anchor = strtolower($sectionName);
+		$anchor = str_replace(' ', '-', $anchor);
+
+		return array(
+			'anchor' => 'goto-' . $anchor,
+			'section-name' => $sectionName,
+			'form' => $form
+		);
+	}
+	return array(
+		'form' => $form
+	);
+}, $forms);
+
+$formsAndMore = array_merge($formsAndMore, $formsMap);
+
+// add bottom hardcoded forms from the template
+$formsAndMore[] = array('anchor' => 'backgroundjobs', 'section-name' => $l->t('Cron'));
+$formsAndMore[] = array('anchor' => 'shareAPI', 'section-name' => $l->t('Sharing'));
+$formsAndMore[] = array('anchor' => 'security', 'section-name' => $l->t('Security'));
+$formsAndMore[] = array('anchor' => 'mail_general_settings', 'section-name' => $l->t('Email Server'));
+$formsAndMore[] = array('anchor' => 'log-section', 'section-name' => $l->t('Log'));
+
+$template->assign('forms', $formsAndMore);
+
+$template->printPage();

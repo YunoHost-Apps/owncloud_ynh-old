@@ -2,18 +2,38 @@
  * Copyright (c) 2011, Robin Appelman <icewind1991@gmail.com>
  * This file is licensed under the Affero General Public License version 3 or later.
  * See the COPYING-README file.
- */?>
+ */
+
+/** @var $_ array */
+?>
+
+<div id="app-navigation">
+	<ul>
+	<?php foreach($_['forms'] as $form) {
+		if (isset($form['anchor'])) {
+			$anchor = '#' . $form['anchor'];
+			$sectionName = $form['section-name'];
+			print_unescaped(sprintf("<li><a href='%s'>%s</a></li>", OC_Util::sanitizeHTML($anchor), OC_Util::sanitizeHTML($sectionName)));
+		}
+	}?>
+	</ul>
+</div>
+
+<div id="app-content">
 
 <div class="clientsbox center">
 	<h2><?php p($l->t('Get the apps to sync your files'));?></h2>
 	<a href="<?php p($_['clients']['desktop']); ?>" target="_blank">
-		<img src="<?php print_unescaped(OCP\Util::imagePath('core', 'desktopapp.png')); ?>" />
+		<img src="<?php print_unescaped(OCP\Util::imagePath('core', 'desktopapp.png')); ?>"
+			alt="<?php p($l->t('Desktop client'));?>" />
 	</a>
 	<a href="<?php p($_['clients']['android']); ?>" target="_blank">
-		<img src="<?php print_unescaped(OCP\Util::imagePath('core', 'googleplay.png')); ?>" />
+		<img src="<?php print_unescaped(OCP\Util::imagePath('core', 'googleplay.png')); ?>"
+			alt="<?php p($l->t('Android app'));?>" />
 	</a>
 	<a href="<?php p($_['clients']['ios']); ?>" target="_blank">
-		<img src="<?php print_unescaped(OCP\Util::imagePath('core', 'appstore.png')); ?>" />
+		<img src="<?php print_unescaped(OCP\Util::imagePath('core', 'appstore.png')); ?>"
+			alt="<?php p($l->t('iOS app'));?>" />
 	</a>
 
 	<?php if (OC_Util::getEditionString() === ''): ?>
@@ -34,7 +54,8 @@
 
 
 <div id="quota" class="section">
-	<div style="width:<?php p($_['usage_relative']);?>%;">
+	<div style="width:<?php p($_['usage_relative']);?>%"
+		<?php if($_['usage_relative'] > 80): ?> class="quota-warning" <?php endif; ?>>
 		<p id="quotatext">
 			<?php print_unescaped($l->t('You have used <strong>%s</strong> of the available <strong>%s</strong>',
 			array($_['usage'], $_['total_space'])));?>
@@ -45,6 +66,7 @@
 
 <?php
 if($_['passwordChangeSupported']) {
+	script('jquery-showpassword');
 ?>
 <form id="passwordform" class="section">
 	<h2><?php p($l->t('Password'));?></h2>
@@ -70,13 +92,22 @@ if($_['passwordChangeSupported']) {
 if($_['displayNameChangeSupported']) {
 ?>
 <form id="displaynameform" class="section">
-	<h2><?php echo $l->t('Full Name');?></h2>
+	<h2>
+		<label for="displayName"><?php echo $l->t('Full Name');?></label>
+	</h2>
 	<input type="text" id="displayName" name="displayName"
 		value="<?php p($_['displayName'])?>"
 		autocomplete="on" autocapitalize="off" autocorrect="off" />
     <span class="msg"></span>
 	<input type="hidden" id="oldDisplayName" name="oldDisplayName" value="<?php p($_['displayName'])?>" />
 </form>
+<?php
+} else {
+?>
+<div class="section">
+	<h2><?php echo $l->t('Full Name');?></h2>
+	<span><?php if(isset($_['displayName'][0])) { p($_['displayName']); } else { p($l->t('No display name set')); } ?></span>
+</div>
 <?php
 }
 ?>
@@ -85,13 +116,22 @@ if($_['displayNameChangeSupported']) {
 if($_['passwordChangeSupported']) {
 ?>
 <form id="lostpassword" class="section">
-	<h2><?php p($l->t('Email'));?></h2>
-	<input type="text" name="email" id="email" value="<?php p($_['email']); ?>"
+	<h2>
+		<label for="email"><?php p($l->t('Email'));?></label>
+	</h2>
+	<input type="email" name="email" id="email" value="<?php p($_['email']); ?>"
 		placeholder="<?php p($l->t('Your email address'));?>"
 		autocomplete="on" autocapitalize="off" autocorrect="off" />
 	<span class="msg"></span><br />
 	<em><?php p($l->t('Fill in an email address to enable password recovery and receive notifications'));?></em>
 </form>
+<?php
+} else {
+?>
+<div class="section">
+	<h2><?php echo $l->t('Email'); ?></h2>
+	<span><?php if(isset($_['email'][0])) { p($_['email']); } else { p($l->t('No email address set')); }?></span>
+</div>
 <?php
 }
 ?>
@@ -120,7 +160,9 @@ if($_['passwordChangeSupported']) {
 <?php endif; ?>
 
 <form class="section">
-	<h2><?php p($l->t('Language'));?></h2>
+	<h2>
+		<label for="languageinput"><?php p($l->t('Language'));?></label>
+	</h2>
 	<select id="languageinput" name="lang" data-placeholder="<?php p($l->t('Language'));?>">
 		<option value="<?php p($_['activelanguage']['code']);?>">
 			<?php p($_['activelanguage']['name']);?>
@@ -146,11 +188,51 @@ if($_['passwordChangeSupported']) {
 </form>
 
 <?php foreach($_['forms'] as $form) {
-	print_unescaped($form);
+	if (isset($form['form'])) {?>
+	<div id="<?php isset($form['anchor']) ? p($form['anchor']) : p('');?>"><?php print_unescaped($form['form']);?></div>
+	<?php }
 };?>
 
+<div id="ssl-root-certificates" class="section">
+	<h2><?php p($l->t('SSL root certificates')); ?></h2>
+	<table id="sslCertificate" class="grid">
+		<thead>
+			<th><?php p($l->t('Common Name')); ?></th>
+			<th><?php p($l->t('Valid until')); ?></th>
+			<th><?php p($l->t('Issued By')); ?></th>
+			<th/>
+		</thead>
+		<tbody>
+			<?php foreach ($_['certs'] as $rootCert): /**@var \OCP\ICertificate $rootCert*/ ?>
+				<tr class="<?php echo ($rootCert->isExpired()) ? 'expired' : 'valid' ?>" data-name="<?php p($rootCert->getName()) ?>">
+					<td class="rootCert" title="<?php p($rootCert->getOrganization())?>">
+						<?php p($rootCert->getCommonName()) ?>
+					</td>
+					<td title="<?php p($l->t('Valid until %s', $l->l('date', $rootCert->getExpireDate()))) ?>">
+						<?php echo $l->l('date', $rootCert->getExpireDate()) ?>
+					</td>
+					<td title="<?php p($rootCert->getIssuerOrganization()) ?>">
+						<?php p($rootCert->getIssuerName()) ?>
+					</td>
+					<td <?php if ($rootCert != ''): ?>class="remove"
+						<?php else: ?>style="visibility:hidden;"
+						<?php endif; ?>><img alt="<?php p($l->t('Delete')); ?>"
+											 title="<?php p($l->t('Delete')); ?>"
+											 class="svg action"
+											 src="<?php print_unescaped(image_path('core', 'actions/delete.svg')); ?>"/>
+					</td>
+				</tr>
+			<?php endforeach; ?>
+		</tbody>
+	</table>
+	<form class="uploadButton" method="post" action="<?php p(\OC_Helper::linkToRoute('settings_cert_post')); ?>" target="certUploadFrame">
+		<input type="file" id="rootcert_import" name="rootcert_import" class="hidden">
+		<input type="button" id="rootcert_import_button" value="<?php p($l->t('Import Root Certificate')); ?>"/>
+	</form>
+</div>
+
 <?php if($_['enableDecryptAll']): ?>
-<div class="section">
+<div id="encryption" class="section">
 
 	<h2>
 		<?php p( $l->t( 'Encryption' ) ); ?>
@@ -176,10 +258,7 @@ if($_['passwordChangeSupported']) {
 	</p>
 	<br />
 	</div>
-
 	<?php endif; ?>
-
-
 
 	<div id="restoreBackupKeys" <?php $_['backupKeysExists'] ? '' : print_unescaped("class='hidden'") ?>>
 
@@ -206,7 +285,7 @@ if($_['passwordChangeSupported']) {
 
 <div class="section">
 	<h2><?php p($l->t('Version'));?></h2>
-	<strong><?php p($theme->getName()); ?></strong> <?php p(OC_Util::getHumanVersion()) ?><br />
+	<strong><?php p($theme->getTitle()); ?></strong> <?php p(OC_Util::getHumanVersion()) ?><br />
 <?php if (OC_Util::getEditionString() === ''): ?>
 	<?php print_unescaped($l->t('Developed by the <a href="http://ownCloud.org/contact" target="_blank">ownCloud community</a>, the <a href="https://github.com/owncloud" target="_blank">source code</a> is licensed under the <a href="http://www.gnu.org/licenses/agpl-3.0.html" target="_blank"><abbr title="Affero General Public License">AGPL</abbr></a>.')); ?>
 <?php endif; ?>
@@ -214,4 +293,8 @@ if($_['passwordChangeSupported']) {
 
 <div class="section credits-footer">
 	<p><?php print_unescaped($theme->getShortFooter()); ?></p>
+</div>
+
+
+
 </div>

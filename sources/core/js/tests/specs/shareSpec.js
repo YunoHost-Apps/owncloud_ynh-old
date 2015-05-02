@@ -31,6 +31,7 @@ describe('OC.Share tests', function() {
 			$('#testArea').append($('<div id="shareContainer"></div>'));
 			// horrible parameters
 			$('#testArea').append('<input id="allowShareWithLink" type="hidden" value="yes">');
+			$('#testArea').append('<input id="mailPublicNotificationEnabled" name="mailPublicNotificationEnabled" type="hidden" value="yes">');
 			$container = $('#shareContainer');
 			/* jshint camelcase:false */
 			oldAppConfig = _.extend({}, oc_appconfig.core);
@@ -60,6 +61,7 @@ describe('OC.Share tests', function() {
 			loadItemStub.restore();
 
 			autocompleteStub.restore();
+			$('#dropdown').remove();
 		});
 		it('calls loadItem with the correct arguments', function() {
 			OC.Share.showDropDown(
@@ -151,7 +153,7 @@ describe('OC.Share tests', function() {
 				expect($('#dropdown #linkCheckbox').prop('checked')).toEqual(true);
 				// this is how the OC.Share class does it...
 				var link = parent.location.protocol + '//' + location.host +
-					OC.linkTo('', 'public.php')+'?service=files&t=tehtoken';
+					OC.generateUrl('/s/') + 'tehtoken';
 				expect($('#dropdown #linkText').val()).toEqual(link);
 			});
 			it('does not show populated link share when a link share exists for a different file', function() {
@@ -243,7 +245,7 @@ describe('OC.Share tests', function() {
 				expect($('#dropdown #linkCheckbox').prop('checked')).toEqual(true);
 				// this is how the OC.Share class does it...
 				var link = parent.location.protocol + '//' + location.host +
-					OC.linkTo('', 'public.php')+'?service=files&t=tehtoken';
+					OC.generateUrl('/s/') + 'tehtoken';
 				expect($('#dropdown #linkText').val()).toEqual(link);
 
 				// nested one
@@ -258,7 +260,7 @@ describe('OC.Share tests', function() {
 				expect($('#dropdown #linkCheckbox').prop('checked')).toEqual(true);
 				// this is how the OC.Share class does it...
 				link = parent.location.protocol + '//' + location.host +
-					OC.linkTo('', 'public.php')+'?service=files&t=anothertoken';
+					OC.generateUrl('/s/') + 'anothertoken';
 				expect($('#dropdown #linkText').val()).toEqual(link);
 			});
 			describe('expiration date', function() {
@@ -361,6 +363,16 @@ describe('OC.Share tests', function() {
 					expect($('#dropdown [name=expirationCheckbox]').prop('disabled')).toEqual(true);
 					$('#dropdown [name=expirationCheckbox]').click();
 					expect($('#dropdown [name=expirationCheckbox]').prop('checked')).toEqual(true);
+				});
+				it('displayes email form when sending emails is enabled', function() {
+					$('input[name=mailPublicNotificationEnabled]').val('yes');
+					showDropDown();
+					expect($('#emailPrivateLink').length).toEqual(1);
+				});
+				it('not renders email form when sending emails is disabled', function() {
+					$('input[name=mailPublicNotificationEnabled]').val('no');
+					showDropDown();
+					expect($('#emailPrivateLink').length).toEqual(0);
 				});
 				it('sets picker minDate to today and no maxDate by default', function() {
 					showDropDown();
@@ -491,6 +503,161 @@ describe('OC.Share tests', function() {
 				expect(shares[OC.Share.SHARE_TYPE_GROUP]).not.toBeDefined();
 			});
 		});
+		describe('share permissions', function() {
+			beforeEach(function() {
+				oc_appconfig.core.resharingAllowed = true;
+			});
+
+			/**
+			 * Tests sharing with the given possible permissions
+			 *
+			 * @param {int} possiblePermissions
+			 * @return {int} permissions sent to the server
+			 */
+			function testWithPermissions(possiblePermissions) {
+				OC.Share.showDropDown(
+					'file',
+					123,
+					$container,
+					true,
+					possiblePermissions,
+					'shared_file_name.txt'
+				);
+				var autocompleteOptions = autocompleteStub.getCall(0).args[0];
+				// simulate autocomplete selection
+				autocompleteOptions.select(new $.Event('select'), {
+					item: {
+						label: 'User Two',
+						value: {
+							shareType: OC.Share.SHARE_TYPE_USER,
+							shareWith: 'user2'
+						}
+					}
+				});
+				autocompleteStub.reset();
+				var requestBody = OC.parseQueryString(_.last(fakeServer.requests).requestBody);
+				return parseInt(requestBody.permissions, 10);
+			}
+
+			describe('regular sharing', function() {
+				it('shares with given permissions with default config', function() {
+					loadItemStub.returns({
+						reshare: [],
+						shares: []
+					});
+					expect(
+						testWithPermissions(OC.PERMISSION_READ | OC.PERMISSION_UPDATE | OC.PERMISSION_SHARE)
+					).toEqual(OC.PERMISSION_READ | OC.PERMISSION_UPDATE | OC.PERMISSION_SHARE);
+					expect(
+						testWithPermissions(OC.PERMISSION_READ | OC.PERMISSION_SHARE)
+					).toEqual(OC.PERMISSION_READ | OC.PERMISSION_SHARE);
+				});
+				it('removes share permission when not allowed', function() {
+					oc_appconfig.core.resharingAllowed = false;
+					loadItemStub.returns({
+						reshare: [],
+						shares: []
+					});
+					expect(
+						testWithPermissions(OC.PERMISSION_READ | OC.PERMISSION_UPDATE | OC.PERMISSION_SHARE)
+					).toEqual(OC.PERMISSION_READ | OC.PERMISSION_UPDATE);
+				});
+				it('automatically adds READ permission even when not specified', function() {
+					oc_appconfig.core.resharingAllowed = false;
+					loadItemStub.returns({
+						reshare: [],
+						shares: []
+					});
+					expect(
+						testWithPermissions(OC.PERMISSION_UPDATE | OC.PERMISSION_SHARE)
+					).toEqual(OC.PERMISSION_READ | OC.PERMISSION_UPDATE | OC.PERMISSION_UPDATE);
+				});
+				it('does not show sharing options when sharing not allowed', function() {
+					loadItemStub.returns({
+						reshare: [],
+						shares: []
+					});
+					OC.Share.showDropDown(
+						'file',
+						123,
+						$container,
+						true,
+						OC.PERMISSION_READ,
+						'shared_file_name.txt'
+					);
+					expect($('#dropdown #shareWithList').length).toEqual(0);
+				});
+			});
+			describe('resharing', function() {
+				it('shares with given permissions when original share had all permissions', function() {
+					loadItemStub.returns({
+						reshare: {
+							permissions: OC.PERMISSION_ALL
+						},
+						shares: []
+					});
+					expect(
+						testWithPermissions(OC.PERMISSION_READ | OC.PERMISSION_UPDATE | OC.PERMISSION_SHARE)
+					).toEqual(OC.PERMISSION_READ | OC.PERMISSION_UPDATE | OC.PERMISSION_SHARE);
+				});
+				it('reduces reshare permissions to the ones from the original share', function() {
+					loadItemStub.returns({
+						reshare: {
+							permissions: OC.PERMISSION_READ,
+							uid_owner: 'user1'
+						},
+						shares: []
+					});
+					OC.Share.showDropDown(
+						'file',
+						123,
+						$container,
+						true,
+						OC.PERMISSION_ALL,
+						'shared_file_name.txt'
+					);
+					// no resharing allowed
+					expect($('#dropdown #shareWithList').length).toEqual(0);
+				});
+				it('reduces reshare permissions to possible permissions', function() {
+					loadItemStub.returns({
+						reshare: {
+							permissions: OC.PERMISSION_ALL,
+							uid_owner: 'user1'
+						},
+						shares: []
+					});
+					OC.Share.showDropDown(
+						'file',
+						123,
+						$container,
+						true,
+						OC.PERMISSION_READ,
+						'shared_file_name.txt'
+					);
+					// no resharing allowed
+					expect($('#dropdown #shareWithList').length).toEqual(0);
+				});
+				it('does not show sharing options when resharing not allowed', function() {
+					loadItemStub.returns({
+						reshare: {
+							permissions: OC.PERMISSION_READ | OC.PERMISSION_UPDATE | OC.PERMISSION_DELETE,
+							uid_owner: 'user1'
+						},
+						shares: []
+					});
+					OC.Share.showDropDown(
+						'file',
+						123,
+						$container,
+						true,
+						OC.PERMISSION_ALL,
+						'shared_file_name.txt'
+					);
+					expect($('#dropdown #shareWithList').length).toEqual(0);
+				});
+			});
+		});
 	});
 	describe('markFileAsShared', function() {
 		var $file;
@@ -498,7 +665,7 @@ describe('OC.Share tests', function() {
 
 		beforeEach(function() {
 			tipsyStub = sinon.stub($.fn, 'tipsy');
-			$file = $('<tr><td class="filename">File name</td></tr>');
+			$file = $('<tr><td class="filename"><div class="thumbnail"></div><span class="name">File name</span></td></tr>');
 			$file.find('.filename').append(
 				'<span class="fileactions">' +
 				'<a href="#" class="action action-share" data-action="Share">' +
@@ -535,17 +702,17 @@ describe('OC.Share tests', function() {
 			it('displays the user name part of a remote share owner', function() {
 				checkOwner(
 					'User One@someserver.com',
-					'User One',
+					'User One@…',
 					'User One@someserver.com'
 				);
 				checkOwner(
 					'User One@someserver.com/',
-					'User One',
+					'User One@…',
 					'User One@someserver.com'
 				);
 				checkOwner(
 					'User One@someserver.com/root/of/owncloud',
-					'User One',
+					'User One@…',
 					'User One@someserver.com'
 				);
 			});
@@ -570,7 +737,7 @@ describe('OC.Share tests', function() {
 
 		describe('displaying the folder icon', function() {
 			function checkIcon(expectedImage) {
-				var imageUrl = OC.TestUtil.getImageUrl($file.find('.filename'));
+				var imageUrl = OC.TestUtil.getImageUrl($file.find('.filename .thumbnail'));
 				expectedIcon = OC.imagePath('core', expectedImage);
 				expect(imageUrl).toEqual(expectedIcon);
 			}

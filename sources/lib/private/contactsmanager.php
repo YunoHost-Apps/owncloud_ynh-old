@@ -62,11 +62,11 @@ namespace OC {
 				return null;
 			}
 
-			if ($addressBook->getPermissions() & \OCP\PERMISSION_DELETE) {
-				return null;
+			if ($addressBook->getPermissions() & \OCP\Constants::PERMISSION_DELETE) {
+				return $addressBook->delete($id);
 			}
 
-			return $addressBook->delete($id);
+			return null;
 		}
 
 		/**
@@ -83,11 +83,11 @@ namespace OC {
 				return null;
 			}
 
-			if ($addressBook->getPermissions() & \OCP\PERMISSION_CREATE) {
-				return null;
+			if ($addressBook->getPermissions() & \OCP\Constants::PERMISSION_CREATE) {
+				return $addressBook->createOrUpdate($properties);
 			}
 
-			return $addressBook->createOrUpdate($properties);
+			return null;
 		}
 
 		/**

@@ -29,6 +29,7 @@
 // use OCP namespace for all classes that are considered public.
 // This means that they should be used by apps instead of the internal ownCloud classes
 namespace OCP;
+use DateTimeZone;
 
 /**
  * This class provides different helper functions to make the life of a developer easier
@@ -82,38 +83,20 @@ class Util {
 	}
 
 	/**
-	 * write exception into the log. Include the stack trace
-	 * if DEBUG mode is enabled
+	 * write exception into the log
 	 * @param string $app app name
 	 * @param \Exception $ex exception to log
-	 * @param string $level log level, defaults to \OCP\Util::FATAL
+	 * @param int $level log level, defaults to \OCP\Util::FATAL
 	 */
 	public static function logException( $app, \Exception $ex, $level = \OCP\Util::FATAL ) {
-		$class = get_class($ex);
-		$message = $class . ': ' . $ex->getMessage();
-		if ($ex->getCode()) {
-			$message .= ' [' . $ex->getCode() . ']';
-		}
-		\OCP\Util::writeLog($app, $message, $level);
-		if (defined('DEBUG') and DEBUG) {
-			// also log stack trace
-			$stack = explode("\n", $ex->getTraceAsString());
-			// first element is empty
-			array_shift($stack);
-			foreach ($stack as $s) {
-				\OCP\Util::writeLog($app, 'Exception: ' . $s, $level);
-			}
-
-			// include cause
-			while (method_exists($ex, 'getPrevious') && $ex = $ex->getPrevious()) {
-				$message .= ' - Caused by:' . ' ';
-				$message .= $ex->getMessage();
-				if ($ex->getCode()) {
-					$message .= '[' . $ex->getCode() . '] ';
-				}
-				\OCP\Util::writeLog($app, 'Exception: ' . $message, $level);
-			}
-		}
+		$exception = array(
+			'Message' => $ex->getMessage(),
+			'Code' => $ex->getCode(),
+			'Trace' => $ex->getTraceAsString(),
+			'File' => $ex->getFile(),
+			'Line' => $ex->getLine(),
+		);
+		\OCP\Util::writeLog($app, 'Exception: ' . json_encode($exception), $level);
 	}
 
 	/**
@@ -128,10 +111,11 @@ class Util {
 	/**
 	 * get l10n object
 	 * @param string $application
+	 * @param string|null $language
 	 * @return \OC_L10N
 	 */
-	public static function getL10N( $application ) {
-		return \OC_L10N::get( $application );
+	public static function getL10N($application, $language = null) {
+		return \OC::$server->getL10N($application, $language);
 	}
 
 	/**
@@ -153,23 +137,37 @@ class Util {
 	}
 
 	/**
+	 * Add a translation JS file
+	 * @param string $application application id
+	 * @param string $languageCode language code, defaults to the current locale
+	 */
+	public static function addTranslations($application, $languageCode = null) {
+		\OC_Util::addTranslations($application, $languageCode);
+	}
+
+	/**
 	 * Add a custom element to the header
+	 * If $text is null then the element will be written as empty element.
+	 * So use "" to get a closing tag.
 	 * @param string $tag tag name of the element
 	 * @param array $attributes array of attributes for the element
 	 * @param string $text the text content for the element
 	 */
-	public static function addHeader( $tag, $attributes, $text='') {
-		\OC_Util::addHeader( $tag, $attributes, $text );
+	public static function addHeader($tag, $attributes, $text=null) {
+		\OC_Util::addHeader($tag, $attributes, $text);
 	}
 
 	/**
 	 * formats a timestamp in the "right" way
 	 * @param int $timestamp $timestamp
 	 * @param bool $dateOnly option to omit time from the result
+	 * @param DateTimeZone|string $timeZone where the given timestamp shall be converted to
 	 * @return string timestamp
+	 *
+	 * @deprecated Use \OC::$server->query('DateTimeFormatter') instead
 	 */
-	public static function formatDate( $timestamp, $dateOnly=false) {
-		return(\OC_Util::formatDate( $timestamp, $dateOnly ));
+	public static function formatDate($timestamp, $dateOnly=false, $timeZone = null) {
+		return(\OC_Util::formatDate($timestamp, $dateOnly, $timeZone));
 	}
 
 	/**
@@ -504,9 +502,21 @@ class Util {
 	 * Generates a cryptographic secure pseudo-random string
 	 * @param int $length of the random string
 	 * @return string
+	 * @deprecated Use \OC::$server->getSecureRandom()->getMediumStrengthGenerator()->generate($length); instead
 	 */
 	public static function generateRandomBytes($length = 30) {
 		return \OC_Util::generateRandomBytes($length);
+	}
+
+	/**
+	 * Compare two strings to provide a natural sort
+	 * @param string $a first string to compare
+	 * @param string $b second string to compare
+	 * @return -1 if $b comes before $a, 1 if $a comes before $b
+	 * or 0 if the strings are identical
+	 */
+	public static function naturalSortCompare($a, $b) {
+		return \OC\NaturalSort::getInstance()->compare($a, $b);
 	}
 
 	/**
@@ -532,6 +542,6 @@ class Util {
 	 * @return bool true if upgrade is needed, false otherwise
 	 */
 	public static function needUpgrade() {
-		return \OC_Util::needUpgrade();
+		return \OC_Util::needUpgrade(\OC::$server->getConfig());
 	}
 }

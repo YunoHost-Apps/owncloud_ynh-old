@@ -62,7 +62,7 @@ class OC_Installer{
 	 * @return integer
 	 */
 	public static function installApp( $data = array()) {
-		$l = \OC_L10N::get('lib');
+		$l = \OC::$server->getL10N('lib');
 
 		list($extractDir, $path) = self::downloadApp($data);
 		$info = self::checkAppsIntegrity($data, $extractDir, $path);
@@ -201,11 +201,10 @@ class OC_Installer{
 	/**
 	 * update an app by it's id
 	 * @param integer $ocsid
-	 * @param bool $isShipped
 	 * @return bool
 	 * @throws Exception
 	 */
-	public static function updateAppByOCSId($ocsid, $isShipped=false) {
+	public static function updateAppByOCSId($ocsid) {
 		$appdata = OC_OCSClient::getApplication($ocsid);
 		$download = OC_OCSClient::getApplicationDownload($ocsid, 1);
 
@@ -229,7 +228,7 @@ class OC_Installer{
 	 * @throws Exception
 	 */
 	public static function downloadApp($data = array()) {
-		$l = \OC_L10N::get('lib');
+		$l = \OC::$server->getL10N('lib');
 
 		if(!isset($data['source'])) {
 			throw new \Exception($l->t("No source specified when installing app"));
@@ -242,7 +241,7 @@ class OC_Installer{
 			if(!isset($data['href'])) {
 				throw new \Exception($l->t("No href specified when installing app from http"));
 			}
-			copy($data['href'], $path);
+			file_put_contents($path, \OC_Util::getUrlContent($data['href']));
 		}else{
 			if(!isset($data['path'])) {
 				throw new \Exception($l->t("No path specified when installing app from local file"));
@@ -285,7 +284,7 @@ class OC_Installer{
 	 * @throws \Exception
 	 */
 	public static function checkAppsIntegrity($data = array(), $extractDir, $path, $isShipped=false) {
-		$l = \OC_L10N::get('lib');
+		$l = \OC::$server->getL10N('lib');
 		//load the info.xml file of the app
 		if(!is_file($extractDir.'/appinfo/info.xml')) {
 			//try to find it in a subdir
@@ -557,10 +556,10 @@ class OC_Installer{
 		);
 
 		// is the code checker enabled?
-		if(OC_Config::getValue('appcodechecker', true)) {
+		if(OC_Config::getValue('appcodechecker', false)) {
 			// check if grep is installed
-			$grep = exec('command -v grep');
-			if($grep=='') {
+			$grep = \OC_Helper::findBinaryPath('grep');
+			if (!$grep) {
 				OC_Log::write('core',
 					'grep not installed. So checking the code of the app "'.$appname.'" was not possible',
 					OC_Log::ERROR);
@@ -569,7 +568,7 @@ class OC_Installer{
 
 			// iterate the bad patterns
 			foreach($blacklist as $bl) {
-				$cmd = 'grep -ri '.escapeshellarg($bl).' '.$folder.'';
+				$cmd = 'grep --include \\*.php -ri '.escapeshellarg($bl).' '.$folder.'';
 				$result = exec($cmd);
 				// bad pattern found
 				if($result<>'') {

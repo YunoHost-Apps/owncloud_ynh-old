@@ -35,18 +35,25 @@ class Scanner extends PublicEmitter {
 	protected $propagator;
 
 	/**
-	 * @param string $user
+	 * @var \OCP\IDBConnection
 	 */
-	public function __construct($user) {
+	protected $db;
+
+	/**
+	 * @param string $user
+	 * @param \OCP\IDBConnection $db
+	 */
+	public function __construct($user, $db) {
 		$this->user = $user;
 		$this->propagator = new ChangePropagator(new View(''));
+		$this->db = $db;
 	}
 
 	/**
 	 * get all storages for $dir
 	 *
 	 * @param string $dir
-	 * @return \OC\Files\Mount\Mount[]
+	 * @return \OC\Files\Mount\MountPoint[]
 	 */
 	protected function getMounts($dir) {
 		//TODO: move to the node based fileapi once that's done
@@ -65,7 +72,7 @@ class Scanner extends PublicEmitter {
 	/**
 	 * attach listeners to the scanner
 	 *
-	 * @param \OC\Files\Mount\Mount $mount
+	 * @param \OC\Files\Mount\MountPoint $mount
 	 */
 	protected function attachListener($mount) {
 		$scanner = $mount->getStorage()->getScanner();
@@ -107,7 +114,7 @@ class Scanner extends PublicEmitter {
 	 * @param string $dir
 	 * @throws \OC\ForbiddenException
 	 */
-	public function scan($dir) {
+	public function scan($dir = '') {
 		$mounts = $this->getMounts($dir);
 		foreach ($mounts as $mount) {
 			if (is_null($mount->getStorage())) {
@@ -120,9 +127,13 @@ class Scanner extends PublicEmitter {
 			) {
 				throw new ForbiddenException();
 			}
+			$relativePath = $mount->getInternalPath($dir);
 			$scanner = $storage->getScanner();
+			$scanner->setUseTransactions(false);
 			$this->attachListener($mount);
-			$scanner->scan('', \OC\Files\Cache\Scanner::SCAN_RECURSIVE, \OC\Files\Cache\Scanner::REUSE_ETAG | \OC\Files\Cache\Scanner::REUSE_SIZE);
+			$this->db->beginTransaction();
+			$scanner->scan($relativePath, \OC\Files\Cache\Scanner::SCAN_RECURSIVE, \OC\Files\Cache\Scanner::REUSE_ETAG | \OC\Files\Cache\Scanner::REUSE_SIZE);
+			$this->db->commit();
 		}
 		$this->propagator->propagateChanges(time());
 	}

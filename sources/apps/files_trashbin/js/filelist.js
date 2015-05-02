@@ -14,8 +14,8 @@
 	 * Convert a file name in the format filename.d12345 to the real file name.
 	 * This will use basename.
 	 * The name will not be changed if it has no ".d12345" suffix.
-	 * @param name file name
-	 * @return converted file name
+	 * @param {String} name file name
+	 * @return {String} converted file name
 	 */
 	function getDeletedFileName(name) {
 		name = OC.basename(name);
@@ -26,13 +26,26 @@
 		return name;
 	}
 
+	/**
+	 * @class OCA.Trashbin.FileList
+	 * @augments OCA.Files.FileList
+	 * @classdesc List of deleted files
+	 *
+	 * @param $el container element with existing markup for the #controls
+	 * and a table
+	 * @param [options] map of options
+	 */
 	var FileList = function($el, options) {
 		this.initialize($el, options);
 	};
-	FileList.prototype = _.extend({}, OCA.Files.FileList.prototype, {
+	FileList.prototype = _.extend({}, OCA.Files.FileList.prototype,
+		/** @lends OCA.Trashbin.FileList.prototype */ {
 		id: 'trashbin',
 		appName: t('files_trashbin', 'Deleted files'),
 
+		/**
+		 * @private
+		 */
 		initialize: function() {
 			var result = OCA.Files.FileList.prototype.initialize.apply(this, arguments);
 			this.$el.find('.undelete').click('click', _.bind(this._onClickRestoreSelected, this));
@@ -51,6 +64,7 @@
 				return parts;
 			};
 
+			OC.Plugins.attach('OCA.Trashbin.FileList', this);
 			return result;
 		},
 
@@ -148,7 +162,7 @@
 				files = _.pluck(this.getSelectedFiles(), 'name');
 				for (var i = 0; i < files.length; i++) {
 					var deleteAction = this.findFileEl(files[i]).children("td.date").children(".action.delete");
-					deleteAction.removeClass('delete-icon').addClass('progress-icon');
+					deleteAction.removeClass('icon-delete').addClass('icon-loading-small');
 				}
 				params = {
 					files: JSON.stringify(files),
@@ -202,7 +216,7 @@
 			else {
 				for (var i = 0; i < files.length; i++) {
 					var deleteAction = this.findFileEl(files[i]).children("td.date").children(".action.delete");
-					deleteAction.removeClass('delete-icon').addClass('progress-icon');
+					deleteAction.removeClass('icon-delete').addClass('icon-loading-small');
 				}
 			}
 
@@ -255,6 +269,10 @@
 		updateStorageStatistics: function() {
 			// no op because the trashbin doesn't have
 			// storage info like free space / used space
+		},
+
+		isSelectedDeletable: function() {
+			return true;
 		}
 
 	});

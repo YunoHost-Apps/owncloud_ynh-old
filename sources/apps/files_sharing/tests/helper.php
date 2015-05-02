@@ -1,4 +1,6 @@
 <?php
+use OCA\Files_sharing\Tests\TestCase;
+
 /**
  * ownCloud
  *
@@ -19,9 +21,8 @@
  * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-require_once __DIR__ . '/base.php';
 
-class Test_Files_Sharing_Helper extends Test_Files_Sharing_Base {
+class Test_Files_Sharing_Helper extends TestCase {
 
 	/**
 	 * test set and get share folder
@@ -29,12 +30,14 @@ class Test_Files_Sharing_Helper extends Test_Files_Sharing_Base {
 	function testSetGetShareFolder() {
 		$this->assertSame('/', \OCA\Files_Sharing\Helper::getShareFolder());
 
-		\OCA\Files_Sharing\Helper::setShareFolder('/Shared');
+		\OCA\Files_Sharing\Helper::setShareFolder('/Shared/Folder');
 
-		$this->assertSame('/Shared', \OCA\Files_Sharing\Helper::getShareFolder());
+		$sharedFolder = \OCA\Files_Sharing\Helper::getShareFolder();
+		$this->assertSame('/Shared/Folder', \OCA\Files_Sharing\Helper::getShareFolder());
+		$this->assertTrue(\OC\Files\Filesystem::is_dir($sharedFolder));
 
 		// cleanup
-		\OCP\Config::deleteSystemValue('share_folder');
+		\OC::$server->getConfig()->deleteSystemValue('share_folder');
 
 	}
 

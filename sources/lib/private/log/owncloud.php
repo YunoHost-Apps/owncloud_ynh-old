@@ -28,7 +28,6 @@
 
 class OC_Log_Owncloud {
 	static protected $logFile;
-	static protected $reqId;
 
 	/**
 	 * Init class data
@@ -69,19 +68,17 @@ class OC_Log_Owncloud {
 				$timezone = new DateTimeZone('UTC');
 			}
 			$time = new DateTime(null, $timezone);
+			$reqId = \OC_Request::getRequestID();
+			$remoteAddr = \OC_Request::getRemoteAddress();
 			// remove username/passwords from URLs before writing the to the log file
 			$time = $time->format($format);
 			if($minLevel == OC_Log::DEBUG) {
-				if(empty(self::$reqId)) {
-					self::$reqId = uniqid();
-				}
-				$reqId = self::$reqId;
 				$url = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '--';
 				$method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '--';
-				$entry = compact('reqId', 'app', 'message', 'level', 'time', 'method', 'url');
+				$entry = compact('reqId', 'remoteAddr', 'app', 'message', 'level', 'time', 'method', 'url');
 			}
 			else {
-				$entry = compact('app', 'message', 'level', 'time');
+				$entry = compact('reqId', 'remoteAddr', 'app', 'message', 'level', 'time');
 			}
 			$entry = json_encode($entry);
 			$handle = @fopen(self::$logFile, 'a');
@@ -114,7 +111,7 @@ class OC_Log_Owncloud {
 			$entriesCount = 0;
 			$lines = 0;
 			// Loop through each character of the file looking for new lines
-			while ($pos >= 0 && $entriesCount < $limit) {
+			while ($pos >= 0 && ($limit === null ||$entriesCount < $limit)) {
 				fseek($handle, $pos);
 				$ch = fgetc($handle);
 				if ($ch == "\n" || $pos == 0) {
@@ -143,5 +140,12 @@ class OC_Log_Owncloud {
 			fclose($handle);
 		}
 		return $entries;
+	}
+
+	/**
+	 * @return string
+	 */
+	public static function getLogFilePath() {
+		return self::$logFile;
 	}
 }

@@ -6,48 +6,21 @@
  * @author Jakob Sack
  * @copyright 2012 Frank Karlitschek frank@owncloud.org
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
- *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-/*
- *
- * An example of config.php
- *
- * <?php
- * $CONFIG = array(
- *     "database" => "mysql",
- *     "firstrun" => false,
- *     "pi" => 3.14
- * );
- * ?>
- *
+ * This file is licensed under the Affero General Public License version 3 or
+ * later.
+ * See the COPYING-README file.
  */
 
 /**
  * This class is responsible for reading and writing config.php, the very basic
  * configuration file of ownCloud.
+ *
+ * @deprecated use \OC::$server->getConfig() to get an \OCP\Config instance
  */
 class OC_Config {
 
-	/**
-	 * @var \OC\Config
-	 */
+	/** @var \OC\Config */
 	public static $object;
-
-	public static function getObject() {
-		return self::$object;
-	}
 
 	/**
 	 * Lists all available config keys
@@ -86,11 +59,20 @@ class OC_Config {
 	}
 
 	/**
+	 * Sets and deletes values and writes the config.php
+	 *
+	 * @param array $configs Associative array with `key => value` pairs
+	 *                       If value is null, the config key will be deleted
+	 */
+	public static function setValues(array $configs) {
+		self::$object->setValues($configs);
+	}
+
+	/**
 	 * Removes a key from the config
 	 * @param string $key key
 	 *
 	 * This function removes a key from the config.php.
-	 *
 	 */
 	public static function deleteKey($key) {
 		self::$object->deleteKey($key);

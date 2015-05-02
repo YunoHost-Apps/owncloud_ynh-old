@@ -8,6 +8,7 @@
 
 namespace OC\Files\Storage;
 
+use OCP\Files\StorageInvalidException;
 use OCP\Files\StorageNotAvailableException;
 use Sabre\DAV\Exception;
 
@@ -58,7 +59,7 @@ class DAV extends \OC\Files\Storage\Common {
 				$this->root .= '/';
 			}
 		} else {
-			throw new \Exception();
+			throw new \Exception('Invalid webdav storage configuration');
 		}
 	}
 
@@ -85,7 +86,7 @@ class DAV extends \OC\Files\Storage\Common {
 		return 'webdav::' . $this->user . '@' . $this->host . '/' . $this->root;
 	}
 
-	protected function createBaseUri() {
+	public function createBaseUri() {
 		$baseUri = 'http';
 		if ($this->secure) {
 			$baseUri .= 's';
@@ -123,7 +124,14 @@ class DAV extends \OC\Files\Storage\Common {
 			}
 			\OC\Files\Stream\Dir::register($id, $content);
 			return opendir('fakedir://' . $id);
+		} catch (Exception\NotFound $e) {
+			return false;
+		} catch (\Sabre\DAV\Exception $e) {
+			$this->convertSabreException($e);
+			return false;
 		} catch (\Exception $e) {
+			// TODO: log for now, but in the future need to wrap/rethrow exception
+			\OCP\Util::writeLog('files_external', $e->getMessage(), \OCP\Util::ERROR);
 			return false;
 		}
 	}
@@ -138,9 +146,14 @@ class DAV extends \OC\Files\Storage\Common {
 				$responseType = $response["{DAV:}resourcetype"]->resourceType;
 			}
 			return (count($responseType) > 0 and $responseType[0] == "{DAV:}collection") ? 'dir' : 'file';
+		} catch (Exception\NotFound $e) {
+			return false;
+		} catch (\Sabre\DAV\Exception $e) {
+			$this->convertSabreException($e);
+			return false;
 		} catch (\Exception $e) {
-			error_log($e->getMessage());
-			\OCP\Util::writeLog("webdav client", \OCP\Util::sanitizeHTML($e->getMessage()), \OCP\Util::ERROR);
+			// TODO: log for now, but in the future need to wrap/rethrow exception
+			\OCP\Util::writeLog('files_external', $e->getMessage(), \OCP\Util::ERROR);
 			return false;
 		}
 	}
@@ -151,7 +164,14 @@ class DAV extends \OC\Files\Storage\Common {
 		try {
 			$this->client->propfind($this->encodePath($path), array('{DAV:}resourcetype'));
 			return true; //no 404 exception
+		} catch (Exception\NotFound $e) {
+			return false;
+		} catch (\Sabre\DAV\Exception $e) {
+			$this->convertSabreException($e);
+			return false;
 		} catch (\Exception $e) {
+			// TODO: log for now, but in the future need to wrap/rethrow exception
+			\OCP\Util::writeLog('files_external', $e->getMessage(), \OCP\Util::ERROR);
 			return false;
 		}
 	}
@@ -177,6 +197,8 @@ class DAV extends \OC\Files\Storage\Common {
 				curl_setopt($curl, CURLOPT_URL, $this->createBaseUri() . $this->encodePath($path));
 				curl_setopt($curl, CURLOPT_FILE, $fp);
 				curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+				curl_setopt($curl, CURLOPT_PROTOCOLS,  CURLPROTO_HTTP | CURLPROTO_HTTPS);
+				curl_setopt($curl, CURLOPT_REDIR_PROTOCOLS,  CURLPROTO_HTTP | CURLPROTO_HTTPS);
 				if ($this->secure === true) {
 					curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
 					curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
@@ -243,10 +265,10 @@ class DAV extends \OC\Files\Storage\Common {
 			if (isset($response['{DAV:}quota-available-bytes'])) {
 				return (int)$response['{DAV:}quota-available-bytes'];
 			} else {
-				return \OC\Files\SPACE_UNKNOWN;
+				return \OCP\Files\FileInfo::SPACE_UNKNOWN;
 			}
 		} catch (\Exception $e) {
-			return \OC\Files\SPACE_UNKNOWN;
+			return \OCP\Files\FileInfo::SPACE_UNKNOWN;
 		}
 	}
 
@@ -261,7 +283,14 @@ class DAV extends \OC\Files\Storage\Common {
 		if ($this->file_exists($path)) {
 			try {
 				$this->client->proppatch($this->encodePath($path), array('{DAV:}lastmodified' => $mtime));
-			} catch (\Sabre\DAV\Exception\NotImplemented $e) {
+			} catch (Exception\NotImplemented $e) {
+				return false;
+			} catch (\Sabre\DAV\Exception $e) {
+				$this->convertSabreException($e);
+				return false;
+			} catch (\Exception $e) {
+				// TODO: log for now, but in the future need to wrap/rethrow exception
+				\OCP\Util::writeLog('files_external', $e->getMessage(), \OCP\Util::ERROR);
 				return false;
 			}
 		} else {
@@ -281,6 +310,9 @@ class DAV extends \OC\Files\Storage\Common {
 		curl_setopt($curl, CURLOPT_INFILE, $source); // file pointer
 		curl_setopt($curl, CURLOPT_INFILESIZE, filesize($path));
 		curl_setopt($curl, CURLOPT_PUT, true);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_PROTOCOLS,  CURLPROTO_HTTP | CURLPROTO_HTTPS);
+		curl_setopt($curl, CURLOPT_REDIR_PROTOCOLS,  CURLPROTO_HTTP | CURLPROTO_HTTPS);
 		if ($this->secure === true) {
 			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
 			curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
@@ -294,6 +326,7 @@ class DAV extends \OC\Files\Storage\Common {
 			\OCP\Util::writeLog("webdav client", 'curl GET ' . curl_getinfo($curl, CURLINFO_EFFECTIVE_URL) . ' returned status code ' . $statusCode, \OCP\Util::ERROR);
 		}
 		curl_close($curl);
+		fclose($source);
 		$this->removeCachedFile($target);
 	}
 
@@ -306,7 +339,12 @@ class DAV extends \OC\Files\Storage\Common {
 			$this->removeCachedFile($path1);
 			$this->removeCachedFile($path2);
 			return true;
+		} catch (\Sabre\DAV\Exception $e) {
+			$this->convertSabreException($e);
+			return false;
 		} catch (\Exception $e) {
+			// TODO: log for now, but in the future need to wrap/rethrow exception
+			\OCP\Util::writeLog('files_external', $e->getMessage(), \OCP\Util::ERROR);
 			return false;
 		}
 	}
@@ -319,7 +357,12 @@ class DAV extends \OC\Files\Storage\Common {
 			$this->client->request('COPY', $path1, null, array('Destination' => $path2));
 			$this->removeCachedFile($path2);
 			return true;
+		} catch (\Sabre\DAV\Exception $e) {
+			$this->convertSabreException($e);
+			return false;
 		} catch (\Exception $e) {
+			// TODO: log for now, but in the future need to wrap/rethrow exception
+			\OCP\Util::writeLog('files_external', $e->getMessage(), \OCP\Util::ERROR);
 			return false;
 		}
 	}
@@ -333,7 +376,14 @@ class DAV extends \OC\Files\Storage\Common {
 				'mtime' => strtotime($response['{DAV:}getlastmodified']),
 				'size' => (int)isset($response['{DAV:}getcontentlength']) ? $response['{DAV:}getcontentlength'] : 0,
 			);
+		} catch (Exception\NotFound $e) {
+			return array();
+		} catch (\Sabre\DAV\Exception $e) {
+			$this->convertSabreException($e);
+			return false;
 		} catch (\Exception $e) {
+			// TODO: log for now, but in the future need to wrap/rethrow exception
+			\OCP\Util::writeLog('files_external', $e->getMessage(), \OCP\Util::ERROR);
 			return array();
 		}
 	}
@@ -355,7 +405,14 @@ class DAV extends \OC\Files\Storage\Common {
 			} else {
 				return false;
 			}
+		} catch (Exception\NotFound $e) {
+			return false;
+		} catch (\Sabre\DAV\Exception $e) {
+			$this->convertSabreException($e);
+			return false;
 		} catch (\Exception $e) {
+			// TODO: log for now, but in the future need to wrap/rethrow exception
+			\OCP\Util::writeLog('files_external', $e->getMessage(), \OCP\Util::ERROR);
 			return false;
 		}
 	}
@@ -393,7 +450,19 @@ class DAV extends \OC\Files\Storage\Common {
 		try {
 			$response = $this->client->request($method, $this->encodePath($path), $body);
 			return $response['statusCode'] == $expected;
+		} catch (Exception\NotFound $e) {
+			if ($method === 'DELETE') {
+				return false;
+			}
+
+			$this->convertSabreException($e);
+			return false;
+		} catch (\Sabre\DAV\Exception $e) {
+			$this->convertSabreException($e);
+			return false;
 		} catch (\Exception $e) {
+			// TODO: log for now, but in the future need to wrap/rethrow exception
+			\OCP\Util::writeLog('files_external', $e->getMessage(), \OCP\Util::ERROR);
 			return false;
 		}
 	}
@@ -410,30 +479,31 @@ class DAV extends \OC\Files\Storage\Common {
 	}
 
 	public function isUpdatable($path) {
-		return (bool)($this->getPermissions($path) & \OCP\PERMISSION_UPDATE);
+		return (bool)($this->getPermissions($path) & \OCP\Constants::PERMISSION_UPDATE);
 	}
 
 	public function isCreatable($path) {
-		return (bool)($this->getPermissions($path) & \OCP\PERMISSION_CREATE);
+		return (bool)($this->getPermissions($path) & \OCP\Constants::PERMISSION_CREATE);
 	}
 
 	public function isSharable($path) {
-		return (bool)($this->getPermissions($path) & \OCP\PERMISSION_SHARE);
+		return (bool)($this->getPermissions($path) & \OCP\Constants::PERMISSION_SHARE);
 	}
 
 	public function isDeletable($path) {
-		return (bool)($this->getPermissions($path) & \OCP\PERMISSION_DELETE);
+		return (bool)($this->getPermissions($path) & \OCP\Constants::PERMISSION_DELETE);
 	}
 
 	public function getPermissions($path) {
 		$this->init();
+		$path = $this->cleanPath($path);
 		$response = $this->client->propfind($this->encodePath($path), array('{http://owncloud.org/ns}permissions'));
 		if (isset($response['{http://owncloud.org/ns}permissions'])) {
 			return $this->parsePermissions($response['{http://owncloud.org/ns}permissions']);
 		} else if ($this->is_dir($path)) {
-			return \OCP\PERMISSION_ALL;
+			return \OCP\Constants::PERMISSION_ALL;
 		} else if ($this->file_exists($path)) {
-			return \OCP\PERMISSION_ALL - \OCP\PERMISSION_CREATE;
+			return \OCP\Constants::PERMISSION_ALL - \OCP\Constants::PERMISSION_CREATE;
 		} else {
 			return 0;
 		}
@@ -444,19 +514,19 @@ class DAV extends \OC\Files\Storage\Common {
 	 * @return int
 	 */
 	protected function parsePermissions($permissionsString) {
-		$permissions = \OCP\PERMISSION_READ;
+		$permissions = \OCP\Constants::PERMISSION_READ;
 		if (strpos($permissionsString, 'R') !== false) {
-			$permissions |= \OCP\PERMISSION_SHARE;
+			$permissions |= \OCP\Constants::PERMISSION_SHARE;
 		}
 		if (strpos($permissionsString, 'D') !== false) {
-			$permissions |= \OCP\PERMISSION_DELETE;
+			$permissions |= \OCP\Constants::PERMISSION_DELETE;
 		}
 		if (strpos($permissionsString, 'W') !== false) {
-			$permissions |= \OCP\PERMISSION_UPDATE;
+			$permissions |= \OCP\Constants::PERMISSION_UPDATE;
 		}
 		if (strpos($permissionsString, 'CK') !== false) {
-			$permissions |= \OCP\PERMISSION_CREATE;
-			$permissions |= \OCP\PERMISSION_UPDATE;
+			$permissions |= \OCP\Constants::PERMISSION_CREATE;
+			$permissions |= \OCP\Constants::PERMISSION_UPDATE;
 		}
 		return $permissions;
 	}
@@ -471,6 +541,7 @@ class DAV extends \OC\Files\Storage\Common {
 	 */
 	public function hasUpdated($path, $time) {
 		$this->init();
+		$path = $this->cleanPath($path);
 		try {
 			$response = $this->client->propfind($this->encodePath($path), array(
 				'{DAV:}getlastmodified',
@@ -495,8 +566,32 @@ class DAV extends \OC\Files\Storage\Common {
 		} catch (Exception\NotFound $e) {
 			return false;
 		} catch (Exception $e) {
-			throw new StorageNotAvailableException();
+			$this->convertSabreException($e);
+			return false;
 		}
+	}
+
+	/**
+	 * Convert sabre DAV exception to a storage exception,
+	 * then throw it
+	 *
+	 * @param \Sabre\Dav\Exception $e sabre exception
+	 * @throws StorageInvalidException if the storage is invalid, for example
+	 * when the authentication expired or is invalid
+	 * @throws StorageNotAvailableException if the storage is not available,
+	 * which might be temporary
+	 */
+	private function convertSabreException(\Sabre\Dav\Exception $e) {
+		\OCP\Util::writeLog('files_external', $e->getMessage(), \OCP\Util::ERROR);
+		if ($e instanceof \Sabre\DAV\Exception\NotAuthenticated) {
+			// either password was changed or was invalid all along
+			throw new StorageInvalidException(get_class($e).': '.$e->getMessage());
+		} else if ($e instanceof \Sabre\DAV\Exception\MethodNotAllowed) {
+			// ignore exception, false will be returned
+			return;
+		}
+
+		throw new StorageNotAvailableException(get_class($e).': '.$e->getMessage());
 	}
 }
 

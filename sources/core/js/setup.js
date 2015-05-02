@@ -23,18 +23,21 @@ $(document).ready(function() {
 		$('#use_other_db').slideUp(250);
 		$('#use_oracle_db').slideUp(250);
 		$('#sqliteInformation').show();
+		$('#dbname').attr('pattern','[0-9a-zA-Z$_-]+');
 	});
 
 	$('#mysql,#pgsql,#mssql').click(function() {
 		$('#use_other_db').slideDown(250);
 		$('#use_oracle_db').slideUp(250);
 		$('#sqliteInformation').hide();
+		$('#dbname').attr('pattern','[0-9a-zA-Z$_-]+');
 	});
 
 	$('#oci').click(function() {
 		$('#use_other_db').slideDown(250);
 		$('#use_oracle_db').show(250);
 		$('#sqliteInformation').hide();
+		$('#dbname').attr('pattern','[0-9a-zA-Z$_-.]+');
 	});
 
 	$('input[checked]').trigger('click');
@@ -91,7 +94,7 @@ $(document).ready(function() {
 	}
 
 	$('#adminpass').strengthify({
-		zxcvbn: OC.linkTo('3rdparty','zxcvbn/js/zxcvbn.js'),
+		zxcvbn: OC.linkTo('core','vendor/zxcvbn/zxcvbn.js'),
 		titles: [
 			t('core', 'Very weak password'),
 			t('core', 'Weak password'),
@@ -100,4 +103,18 @@ $(document).ready(function() {
 			t('core', 'Strong password')
 		]
 	});
+
+	// centers the database chooser if it is too wide
+	if($('#databaseBackend').width() > 300) {
+		// this somehow needs to wait 250 milliseconds
+		// otherwise it gets overwritten
+		setTimeout(function(){
+			// calculate negative left margin
+			// half of the difference of width and default bix width of 300
+			// add 10 to clear left side padding of button group
+			var leftMargin = (($('#databaseBackend').width() - 300) / 2 + 10 ) * -1;
+
+			$('#databaseBackend').css('margin-left', Math.floor(leftMargin) + 'px');
+		}, 250);
+	}
 });

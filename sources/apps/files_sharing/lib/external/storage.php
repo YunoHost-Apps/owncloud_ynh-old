@@ -37,6 +37,11 @@ class Storage extends DAV implements ISharedStorage {
 	 */
 	private $token;
 
+	/**
+	 * @var \OCP\ICertificateManager
+	 */
+	private $certificateManager;
+
 	private $updateChecked = false;
 
 	/**
@@ -46,6 +51,7 @@ class Storage extends DAV implements ISharedStorage {
 
 	public function __construct($options) {
 		$this->manager = $options['manager'];
+		$this->certificateManager = $options['certificateManager'];
 		$this->remote = $options['remote'];
 		$this->remoteUser = $options['owner'];
 		list($protocol, $remote) = explode('://', $this->remote);
@@ -97,7 +103,7 @@ class Storage extends DAV implements ISharedStorage {
 	}
 
 	public function getCache($path = '', $storage = null) {
-		if (!$storage) {
+		if (is_null($this->cache)) {
 			$this->cache = new Cache($this, $this->remote, $this->remoteUser);
 		}
 		return $this->cache;
@@ -136,28 +142,56 @@ class Storage extends DAV implements ISharedStorage {
 		$this->updateChecked = true;
 		try {
 			return parent::hasUpdated('', $time);
+		} catch (StorageInvalidException $e) {
+			// check if it needs to be removed
+			$this->checkStorageAvailability();
+			throw $e;
 		} catch (StorageNotAvailableException $e) {
-			// see if we can find out why the share is unavailable\
-			try {
-				$this->getShareInfo();
-			} catch (NotFoundException $shareException) {
-				// a 404 can either mean that the share no longer exists or there is no ownCloud on the remote
-				if ($this->testRemote()) {
-					// valid ownCloud instance means that the public share no longer exists
-					// since this is permanent (re-sharing the file will create a new token)
-					// we remove the invalid storage
-					$this->manager->removeShare($this->mountPoint);
-					$this->manager->getMountManager()->removeMount($this->mountPoint);
-					throw new StorageInvalidException();
-				} else {
-					// ownCloud instance is gone, likely to be a temporary server configuration error
-					throw $e;
-				}
-			} catch (\Exception $shareException) {
-				// todo, maybe handle 403 better and ask the user for a new password
+			// check if it needs to be removed or just temp unavailable
+			$this->checkStorageAvailability();
+			throw $e;
+		}
+	}
+
+	/**
+	 * Check whether this storage is permanently or temporarily
+	 * unavailable
+	 *
+	 * @throws \OCP\Files\StorageNotAvailableException
+	 * @throws \OCP\Files\StorageInvalidException
+	 */
+	public function checkStorageAvailability() {
+		// see if we can find out why the share is unavailable
+		try {
+			$this->getShareInfo();
+		} catch (NotFoundException $e) {
+			// a 404 can either mean that the share no longer exists or there is no ownCloud on the remote
+			if ($this->testRemote()) {
+				// valid ownCloud instance means that the public share no longer exists
+				// since this is permanent (re-sharing the file will create a new token)
+				// we remove the invalid storage
+				$this->manager->removeShare($this->mountPoint);
+				$this->manager->getMountManager()->removeMount($this->mountPoint);
+				throw new StorageInvalidException();
+			} else {
+				// ownCloud instance is gone, likely to be a temporary server configuration error
 				throw $e;
 			}
+		} catch (ForbiddenException $e) {
+			// auth error, remove share for now (provide a dialog in the future)
+			$this->manager->removeShare($this->mountPoint);
+			$this->manager->getMountManager()->removeMount($this->mountPoint);
+			throw new StorageInvalidException();
+		} catch (\Exception $e) {
 			throw $e;
+		}
+	}
+
+	public function file_exists($path) {
+		if ($path === '') {
+			return true;
+		} else {
+			return parent::file_exists($path);
 		}
 	}
 
@@ -180,7 +214,7 @@ class Storage extends DAV implements ISharedStorage {
 		$remote = $this->getRemote();
 		$token = $this->getToken();
 		$password = $this->getPassword();
-		$url = $remote . '/index.php/apps/files_sharing/shareinfo?t=' . $token;
+		$url = rtrim($remote, '/') . '/index.php/apps/files_sharing/shareinfo?t=' . $token;
 
 		$ch = curl_init();
 
@@ -190,10 +224,21 @@ class Storage extends DAV implements ISharedStorage {
 			http_build_query(array('password' => $password)));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+		$path = $this->certificateManager->getCertificateBundle();
+		if (is_readable($path)) {
+			curl_setopt($ch, CURLOPT_CAINFO, $path);
+		}
+
 		$result = curl_exec($ch);
 
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		$errorMessage = curl_error($ch);
 		curl_close($ch);
+		if (!empty($errorMessage)) {
+			throw new \Exception($errorMessage);
+		}
 
 		switch ($status) {
 			case 401:

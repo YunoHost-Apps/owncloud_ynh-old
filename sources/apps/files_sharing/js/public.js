@@ -8,7 +8,7 @@
  *
  */
 
-/* global FileActions, Files */
+/* global FileActions, Files, FileList */
 /* global dragOptions, folderDropOptions */
 if (!OCA.Sharing) {
 	OCA.Sharing = {};
@@ -16,9 +16,17 @@ if (!OCA.Sharing) {
 if (!OCA.Files) {
 	OCA.Files = {};
 }
+/**
+ * @namespace
+ */
 OCA.Sharing.PublicApp = {
 	_initialized: false,
 
+	/**
+	 * Initializes the public share app.
+	 *
+	 * @param $el container
+	 */
 	initialize: function ($el) {
 		var self = this;
 		var fileActions;
@@ -45,6 +53,7 @@ OCA.Sharing.PublicApp = {
 			this.fileList = new OCA.Files.FileList(
 				$el,
 				{
+					id: 'files.public',
 					scrollContainer: $(window),
 					dragOptions: dragOptions,
 					folderDropOptions: folderDropOptions,
@@ -53,9 +62,17 @@ OCA.Sharing.PublicApp = {
 			);
 			this.files = OCA.Files.Files;
 			this.files.initialize();
+			// TODO: move to PublicFileList.initialize() once
+			// the code was split into a separate class
+			OC.Plugins.attach('OCA.Sharing.PublicFileList', this.fileList);
 		}
 
 		var mimetype = $('#mimetype').val();
+		var mimetypeIcon = $('#mimetypeIcon').val();
+		mimetypeIcon = mimetypeIcon.substring(0, mimetypeIcon.length - 3);
+		mimetypeIcon = mimetypeIcon + 'svg';
+
+		var previewSupported = $('#previewSupported').val();
 
 		if (typeof FileActions !== 'undefined') {
 			// Show file preview if previewer is available, images are already handled by the template
@@ -68,20 +85,34 @@ OCA.Sharing.PublicApp = {
 			}
 		}
 
+
 		// dynamically load image previews
-		if (mimetype.substr(0, mimetype.indexOf('/')) === 'image') {
+		var params = {
+			x: $(document).width() * window.devicePixelRatio,
+			y: $(document).height() * window.devicePixelRatio,
+			a: 'true',
+			file: encodeURIComponent(this.initialDir + $('#filename').val()),
+			t: $('#sharingToken').val(),
+			scalingup: 0
+		};
 
-			var params = {
-				x: $(document).width() * window.devicePixelRatio,
-				y: $(document).height() * window.devicePixelRatio,
-				a: 'true',
-				file: encodeURIComponent(this.initialDir + $('#filename').val()),
-				t: $('#sharingToken').val(),
-				scalingup: 0
-			};
+		var img = $('<img class="publicpreview" alt="">');
 
-			var img = $('<img class="publicpreview">');
+		var fileSize = parseInt($('#filesize').val(), 10);
+		var maxGifSize = parseInt($('#maxSizeAnimateGif').val(), 10);
+
+		if (mimetype === 'image/gif' &&
+			(maxGifSize === -1 || fileSize <= (maxGifSize * 1024 * 1024))) {
+			img.attr('src', $('#downloadURL').val());
+			img.appendTo('#imgframe');
+		} else if (previewSupported === 'true' ||
+			mimetype.substr(0, mimetype.indexOf('/')) === 'image' &&
+			mimetype !== 'image/svg+xml') {
 			img.attr('src', OC.filePath('files_sharing', 'ajax', 'publicpreview.php') + '?' + OC.buildQueryString(params));
+			img.appendTo('#imgframe');
+		} else if (mimetype.substr(0, mimetype.indexOf('/')) !== 'video') {
+			img.attr('src', OC.Util.replaceSVGIcon(mimetypeIcon));
+			img.attr('width', 128);
 			img.appendTo('#imgframe');
 		}
 
@@ -92,14 +123,12 @@ OCA.Sharing.PublicApp = {
 					filename = JSON.stringify(filename);
 				}
 				var path = dir || FileList.getCurrentDirectory();
+				var token = $('#sharingToken').val();
 				var params = {
-					service: 'files',
-					t: $('#sharingToken').val(),
 					path: path,
-					files: filename,
-					download: null
+					files: filename
 				};
-				return OC.filePath('', '', 'public.php') + '?' + OC.buildQueryString(params);
+				return OC.generateUrl('/s/'+token+'/download') + '?' + OC.buildQueryString(params);
 			};
 
 			this.fileList.getAjaxUrl = function (action, params) {
@@ -109,12 +138,11 @@ OCA.Sharing.PublicApp = {
 			};
 
 			this.fileList.linkTo = function (dir) {
+				var token = $('#sharingToken').val();
 				var params = {
-					service: 'files',
-					t: $('#sharingToken').val(),
 					dir: dir
 				};
-				return OC.filePath('', '', 'public.php') + '?' + OC.buildQueryString(params);
+				return OC.generateUrl('/s/'+token+'') + '?' + OC.buildQueryString(params);
 			};
 
 			this.fileList.generatePreviewUrl = function (urlSpec) {
@@ -146,6 +174,11 @@ OCA.Sharing.PublicApp = {
 			// URL history handling
 			this.fileList.$el.on('changeDirectory', _.bind(this._onDirectoryChanged, this));
 			OC.Util.History.addOnPopStateHandler(_.bind(this._onUrlChanged, this));
+
+			$('#download').click(function (e) {
+				e.preventDefault();
+				OC.redirect(FileList.getDownloadUrl());
+			});
 		}
 
 		$(document).on('click', '#directLink', function () {
@@ -176,8 +209,6 @@ OCA.Sharing.PublicApp = {
 
 	_onDirectoryChanged: function (e) {
 		OC.Util.History.pushState({
-			service: 'files',
-			t: $('#sharingToken').val(),
 			// arghhhh, why is this not called "dir" !?
 			path: e.dir
 		});
@@ -201,7 +232,7 @@ OCA.Sharing.PublicApp = {
 			// this check needs to happen on the server due to the Content Security Policy directive
 			$.get(OC.generateUrl('apps/files_sharing/testremote'), {remote: remote}).then(function (protocol) {
 				if (protocol !== 'http' && protocol !== 'https') {
-					OC.dialogs.alert(t('files_sharing', 'No ownCloud installation found at {remote}', {remote: remote}),
+					OC.dialogs.alert(t('files_sharing', 'No ownCloud installation (7 or higher) found at {remote}', {remote: remote}),
 						t('files_sharing', 'Invalid ownCloud url'));
 				} else {
 					OC.redirect(protocol + '://' + url);

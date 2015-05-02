@@ -66,8 +66,8 @@ class Mapper
 	 */
 	public function copy($path1, $path2)
 	{
-		$path1 = $this->stripLast($path1);
-		$path2 = $this->stripLast($path2);
+		$path1 = $this->resolveRelativePath($path1);
+		$path2 = $this->resolveRelativePath($path2);
 		$physicPath1 = $this->logicToPhysical($path1, true);
 		$physicPath2 = $this->logicToPhysical($path2, true);
 
@@ -113,18 +113,13 @@ class Mapper
 		return '';
 	}
 
-	private function stripLast($path) {
-		if (substr($path, -1) == '/') {
-			$path = substr_replace($path, '', -1);
-		}
-		return $path;
-	}
-
 	/**
 	 * @param string $logicPath
+	 * @return null
+	 * @throws \OC\DatabaseException
 	 */
 	private function resolveLogicPath($logicPath) {
-		$logicPath = $this->stripLast($logicPath);
+		$logicPath = $this->resolveRelativePath($logicPath);
 		$sql = 'SELECT * FROM `*PREFIX*file_map` WHERE `logic_path_hash` = ?';
 		$result = \OC_DB::executeAudited($sql, array(md5($logicPath)));
 		$result = $result->fetchRow();
@@ -136,7 +131,7 @@ class Mapper
 	}
 
 	private function resolvePhysicalPath($physicalPath) {
-		$physicalPath = $this->stripLast($physicalPath);
+		$physicalPath = $this->resolveRelativePath($physicalPath);
 		$sql = \OC_DB::prepare('SELECT * FROM `*PREFIX*file_map` WHERE `physic_path_hash` = ?');
 		$result = \OC_DB::executeAudited($sql, array(md5($physicalPath)));
 		$result = $result->fetchRow();
@@ -144,12 +139,36 @@ class Mapper
 		return $result['logic_path'];
 	}
 
+	private function resolveRelativePath($path) {
+		$explodedPath = explode('/', $path);
+		$pathArray = array();
+		foreach ($explodedPath as $pathElement) {
+			if (empty($pathElement) || ($pathElement == '.')) {
+				continue;
+			} elseif ($pathElement == '..') {
+				if (count($pathArray) == 0) {
+					return false;
+				}
+				array_pop($pathArray);
+			} else {
+				array_push($pathArray, $pathElement);
+			}
+		}
+		if (substr($path, 0, 1) == '/') {
+			$path = '/';
+		} else {
+			$path = '';
+		}
+		return $path.implode('/', $pathArray);
+	}
+
 	/**
 	 * @param string $logicPath
-	 * @param boolean $store
+	 * @param bool $store
+	 * @return string
 	 */
 	private function create($logicPath, $store) {
-		$logicPath = $this->stripLast($logicPath);
+		$logicPath = $this->resolveRelativePath($logicPath);
 		$index = 0;
 
 		// create the slugified path
@@ -175,41 +194,40 @@ class Mapper
 	}
 
 	/**
-	 * @param integer $index
+	 * @param string $path
+	 * @param int $index
+	 * @return string
 	 */
-	public function slugifyPath($path, $index=null) {
+	public function slugifyPath($path, $index = null) {
 		$path = $this->stripRootFolder($path, $this->unchangedPhysicalRoot);
 
 		$pathElements = explode('/', $path);
 		$sluggedElements = array();
-		
-		$last= end($pathElements);
-		
+
 		foreach ($pathElements as $pathElement) {
 			// remove empty elements
 			if (empty($pathElement)) {
 				continue;
 			}
 
-			$sluggedElements[] = self::slugify($pathElement);
+			$sluggedElements[] = $this->slugify($pathElement);
 		}
 
 		// apply index to file name
 		if ($index !== null) {
-			$last= array_pop($sluggedElements);
+			$last = array_pop($sluggedElements);
 			
 			// if filename contains periods - add index number before last period
-			if (preg_match('~\.[^\.]+$~i',$last,$extension)){
-				array_push($sluggedElements, substr($last,0,-(strlen($extension[0]))).'-'.$index.$extension[0]);
+			if (preg_match('~\.[^\.]+$~i', $last, $extension)) {
+				array_push($sluggedElements, substr($last, 0, -(strlen($extension[0]))) . '-' . $index . $extension[0]);
 			} else {
 				// if filename doesn't contain periods add index ofter the last char
-				array_push($sluggedElements, $last.'-'.$index);
-				}
-
+				array_push($sluggedElements, $last . '-' . $index);
+			}
 		}
 
 		$sluggedPath = $this->unchangedPhysicalRoot.implode('/', $sluggedElements);
-		return $this->stripLast($sluggedPath);
+		return $this->resolveRelativePath($sluggedPath);
 	}
 
 	/**
@@ -218,8 +236,8 @@ class Mapper
 	 * @param string $text
 	 * @return string
 	 */
-	private function slugify($text)
-	{
+	private function slugify($text) {
+		$originalText = $text;
 		// replace non letter or digits or dots by -
 		$text = preg_replace('~[^\\pL\d\.]+~u', '-', $text);
 
@@ -240,8 +258,23 @@ class Mapper
 		// trim ending dots (for security reasons and win compatibility)
 		$text = preg_replace('~\.+$~', '', $text);
 
-		if (empty($text)) {
-			return uniqid();
+		if (empty($text) || \OC\Files\Filesystem::isFileBlacklisted($text)) {
+			/**
+			 * Item slug would be empty. Previously we used uniqid() here.
+			 * However this means that the behaviour is not reproducible, so
+			 * when uploading files into a "empty" folder, the folders name is
+			 * different.
+			 *
+			 * The other case is, that the slugified name would be a blacklisted
+			 * filename. In this case we just use the same workaround by
+			 * returning the secure md5 hash of the original name.
+			 *
+			 *
+			 * If there would be a md5() hash collision, the deduplicate check
+			 * will spot this and append an index later, so this should not be
+			 * a problem.
+			 */
+			return md5($originalText);
 		}
 
 		return $text;

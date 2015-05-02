@@ -6,35 +6,30 @@
  * See the COPYING-README file.
  */
 
-use OC\Core\LostPassword\Application;
+use OC\Core\Application;
 
 $application = new Application();
 $application->registerRoutes($this, array('routes' => array(
 		array('name' => 'lost#email', 'url' => '/lostpassword/email', 'verb' => 'POST'),
 		array('name' => 'lost#resetform', 'url' => '/lostpassword/reset/form/{token}/{userId}', 'verb' => 'GET'),
 		array('name' => 'lost#setPassword', 'url' => '/lostpassword/set/{token}/{userId}', 'verb' => 'POST'),
+		array('name' => 'user#getDisplayNames', 'url' => '/displaynames', 'verb' => 'POST'),
 	)
 ));
 
 // Post installation check
 
 /** @var $this OCP\Route\IRouter */
-$this->create('post_setup_check', '/post-setup-check')
-	->action('OC_Setup', 'postSetupCheck');
-
 // Core ajax actions
 // Search
-$this->create('search_ajax_search', '/search/ajax/search.php')
-	->actionInclude('search/ajax/search.php');
+$this->create('search_ajax_search', '/core/search')
+	->actionInclude('core/search/ajax/search.php');
 // AppConfig
 $this->create('core_ajax_appconfig', '/core/ajax/appconfig.php')
 	->actionInclude('core/ajax/appconfig.php');
 // Share
 $this->create('core_ajax_share', '/core/ajax/share.php')
 	->actionInclude('core/ajax/share.php');
-// Translations
-$this->create('core_ajax_translations', '/core/ajax/translations.php')
-	->actionInclude('core/ajax/translations.php');
 // Tags
 $this->create('core_tags_tags', '/tags/{type}')
 	->get()
@@ -80,7 +75,8 @@ $this->create('core_ajax_preview', '/core/preview')
 	->actionInclude('core/ajax/preview.php');
 $this->create('core_ajax_preview', '/core/preview.png')
 	->actionInclude('core/ajax/preview.php');
-
+$this->create('core_ajax_update', '/core/ajax/update.php')
+	->actionInclude('core/ajax/update.php');
 // Avatar routes
 $this->create('core_avatar_get_tmp', '/avatar/tmp')
 	->get()
@@ -98,15 +94,23 @@ $this->create('core_avatar_post_cropped', '/avatar/cropped')
 	->post()
 	->action('OC\Core\Avatar\Controller', 'postCroppedAvatar');
 
-// Not specifically routed
-$this->create('app_index_script', '/apps/{app}/')
-	->defaults(array('file' => 'index.php'))
-	//->requirements(array('file' => '.*.php'))
-	->action('OC', 'loadAppScriptFile');
-$this->create('app_script', '/apps/{app}/{file}')
-	->defaults(array('file' => 'index.php'))
-	->requirements(array('file' => '.*.php'))
-	->action('OC', 'loadAppScriptFile');
+// Sharing routes
+$this->create('files_sharing.sharecontroller.showShare', '/s/{token}')->action(function($urlParams) {
+	$app = new \OCA\Files_Sharing\Application($urlParams);
+	$app->dispatch('ShareController', 'showShare');
+});
+$this->create('files_sharing.sharecontroller.authenticate', '/s/{token}/authenticate')->post()->action(function($urlParams) {
+	$app = new \OCA\Files_Sharing\Application($urlParams);
+	$app->dispatch('ShareController', 'authenticate');
+});
+$this->create('files_sharing.sharecontroller.showAuthenticate', '/s/{token}/authenticate')->get()->action(function($urlParams) {
+	$app = new \OCA\Files_Sharing\Application($urlParams);
+	$app->dispatch('ShareController', 'showAuthenticate');
+});
+$this->create('files_sharing.sharecontroller.downloadShare', '/s/{token}/download')->get()->action(function($urlParams) {
+	$app = new \OCA\Files_Sharing\Application($urlParams);
+	$app->dispatch('ShareController', 'downloadShare');
+});
 
 // used for heartbeat
 $this->create('heartbeat', '/heartbeat')->action(function(){

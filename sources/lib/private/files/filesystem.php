@@ -30,12 +30,10 @@
 
 namespace OC\Files;
 
-use OC\Files\Storage\Loader;
-const SPACE_NOT_COMPUTED = -1;
-const SPACE_UNKNOWN = -2;
-const SPACE_UNLIMITED = -3;
+use OC\Files\Storage\StorageFactory;
 
 class Filesystem {
+
 	/**
 	 * @var Mount\Manager $mounts
 	 */
@@ -47,6 +45,9 @@ class Filesystem {
 	 */
 	static private $defaultInstance;
 
+	static private $usersSetup = array();
+
+	static private $normalizedPathCache = array();
 
 	/**
 	 * classname which used for hooks handling
@@ -160,8 +161,13 @@ class Filesystem {
 	 */
 	const signal_param_run = 'run';
 
+	const signal_create_mount = 'create_mount';
+	const signal_delete_mount = 'delete_mount';
+	const signal_param_mount_type = 'mounttype';
+	const signal_param_users = 'users';
+
 	/**
-	 * @var \OC\Files\Storage\Loader $loader
+	 * @var \OC\Files\Storage\StorageFactory $loader
 	 */
 	private static $loader;
 
@@ -169,21 +175,30 @@ class Filesystem {
 	 * @param callable $wrapper
 	 */
 	public static function addStorageWrapper($wrapperName, $wrapper) {
-		self::getLoader()->addStorageWrapper($wrapperName, $wrapper);
-
 		$mounts = self::getMountManager()->getAll();
-		foreach ($mounts as $mount) {
-			$mount->wrapStorage($wrapper);
+		if (!self::getLoader()->addStorageWrapper($wrapperName, $wrapper, $mounts)) {
+			// do not re-wrap if storage with this name already existed
+			return;
 		}
 	}
 
+	/**
+	 * Returns the storage factory
+	 *
+	 * @return \OCP\Files\Storage\IStorageFactory
+	 */
 	public static function getLoader() {
 		if (!self::$loader) {
-			self::$loader = new Loader();
+			self::$loader = new StorageFactory();
 		}
 		return self::$loader;
 	}
 
+	/**
+	 * Returns the mount manager
+	 *
+	 * @return \OC\Files\Mount\Manager
+	 */
 	public static function getMountManager() {
 		if (!self::$mounts) {
 			\OC_Util::setupFS();
@@ -246,7 +261,7 @@ class Filesystem {
 
 	/**
 	 * @param string $id
-	 * @return Mount\Mount[]
+	 * @return Mount\MountPoint[]
 	 */
 	public static function getMountByStorageId($id) {
 		if (!self::$mounts) {
@@ -257,7 +272,7 @@ class Filesystem {
 
 	/**
 	 * @param int $id
-	 * @return Mount\Mount[]
+	 * @return Mount\MountPoint[]
 	 */
 	public static function getMountByNumericId($id) {
 		if (!self::$mounts) {
@@ -278,7 +293,7 @@ class Filesystem {
 		}
 		$mount = self::$mounts->find($path);
 		if ($mount) {
-			return array($mount->getStorage(), $mount->getInternalPath($path));
+			return array($mount->getStorage(), rtrim($mount->getInternalPath($path), '/'));
 		} else {
 			return array(null, null);
 		}
@@ -318,7 +333,10 @@ class Filesystem {
 		if ($user == '') {
 			$user = \OC_User::getUser();
 		}
-		$parser = new \OC\ArrayParser();
+		if (isset(self::$usersSetup[$user])) {
+			return;
+		}
+		self::$usersSetup[$user] = true;
 
 		$root = \OC_User::getHome($user);
 
@@ -363,6 +381,11 @@ class Filesystem {
 		self::mountCacheDir($user);
 
 		// Chance to mount for other storages
+		if($userObject) {
+			$mountConfigManager = \OC::$server->getMountProviderCollection();
+			$mounts = $mountConfigManager->getMountsForUser($userObject);
+			array_walk($mounts, array(self::$mounts, 'addMount'));
+		}
 		\OC_Hook::emit('OC_Filesystem', 'post_initMountPoints', array('user' => $user, 'user_dir' => $root));
 	}
 
@@ -424,6 +447,7 @@ class Filesystem {
 	 */
 	public static function clearMounts() {
 		if (self::$mounts) {
+			self::$usersSetup = array();
 			self::$mounts->clear();
 		}
 	}
@@ -439,7 +463,7 @@ class Filesystem {
 		if (!self::$mounts) {
 			\OC_Util::setupFS();
 		}
-		$mount = new Mount\Mount($class, $mountpoint, $arguments, self::getLoader());
+		$mount = new Mount\MountPoint($class, $mountpoint, $arguments, self::getLoader());
 		self::$mounts->addMount($mount);
 	}
 
@@ -489,7 +513,7 @@ class Filesystem {
 		if (!$path || $path[0] !== '/') {
 			$path = '/' . $path;
 		}
-		if (strstr($path, '/../') || strrchr($path, '/') === '/..') {
+		if (strpos($path, '/../') !== FALSE || strrchr($path, '/') === '/..') {
 			return false;
 		}
 		return true;
@@ -519,9 +543,11 @@ class Filesystem {
 	 * @return bool
 	 */
 	static public function isFileBlacklisted($filename) {
+		$filename = self::normalizePath($filename);
+
 		$blacklist = \OC_Config::getValue('blacklisted_files', array('.htaccess'));
 		$filename = strtolower(basename($filename));
-		return (in_array($filename, $blacklist));
+		return in_array($filename, $blacklist);
 	}
 
 	/**
@@ -674,6 +700,15 @@ class Filesystem {
 	}
 
 	/**
+	 * @param string|int $tag name or tag id
+	 * @param string $userId owner of the tags
+	 * @return FileInfo[] array or file info
+	 */
+	static public function searchByTag($tag, $userId) {
+		return self::$defaultInstance->searchByTag($tag, $userId);
+	}
+
+	/**
 	 * check if a file or folder has been updated since $time
 	 *
 	 * @param string $path
@@ -690,12 +725,30 @@ class Filesystem {
 	 * @param bool $stripTrailingSlash
 	 * @return string
 	 */
-	public static function normalizePath($path, $stripTrailingSlash = true) {
+	public static function normalizePath($path, $stripTrailingSlash = true, $isAbsolutePath = false) {
+		$cacheKey = json_encode([$path, $stripTrailingSlash, $isAbsolutePath]);
+
+		if(isset(self::$normalizedPathCache[$cacheKey])) {
+			return self::$normalizedPathCache[$cacheKey];
+		}
+
 		if ($path == '') {
 			return '/';
 		}
+
+		//normalize unicode if possible
+		$path = \OC_Util::normalizeUnicode($path);
+
 		//no windows style slashes
 		$path = str_replace('\\', '/', $path);
+
+		// When normalizing an absolute path, we need to ensure that the drive-letter
+		// is still at the beginning on windows
+		$windows_drive_letter = '';
+		if ($isAbsolutePath && \OC_Util::runningOnWindows() && preg_match('#^([a-zA-Z])$#', $path[0]) && $path[1] == ':' && $path[2] == '/') {
+			$windows_drive_letter = substr($path, 0, 2);
+			$path = substr($path, 2);
+		}
 
 		//add leading slash
 		if ($path[0] !== '/') {
@@ -722,10 +775,10 @@ class Filesystem {
 			$path = substr($path, 0, -2);
 		}
 
-		//normalize unicode if possible
-		$path = \OC_Util::normalizeUnicode($path);
+		$normalizedPath = $windows_drive_letter . $path;
+		self::$normalizedPathCache[$cacheKey] = $normalizedPath;
 
-		return $path;
+		return $normalizedPath;
 	}
 
 	/**
@@ -796,5 +849,3 @@ class Filesystem {
 		return self::$defaultInstance->getETag($path);
 	}
 }
-
-\OC_Util::setupFS();

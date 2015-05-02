@@ -13,7 +13,7 @@ $username = isset($_POST["username"])?$_POST["username"]:'';
 if(($username === '' && !OC_User::isAdminUser(OC_User::getUser()))
 	|| (!OC_User::isAdminUser(OC_User::getUser())
 		&& !OC_SubAdmin::isUserAccessible(OC_User::getUser(), $username))) {
-	$l = OC_L10N::get('core');
+	$l = \OC::$server->getL10N('core');
 	OC_JSON::error(array( 'data' => array( 'message' => $l->t('Authentication error') )));
 	exit();
 }
@@ -27,7 +27,7 @@ if($quota !== 'none' and $quota !== 'default') {
 
 // Return Success story
 if($username) {
-	OC_Preferences::setValue($username, 'files', 'quota', $quota);
+	\OC::$server->getConfig()->setUserValue($username, 'files', 'quota', $quota);
 }else{//set the default quota when no username is specified
 	if($quota === 'default') {//'default' as default quota makes no sense
 		$quota='none';

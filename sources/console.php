@@ -11,6 +11,9 @@ use Symfony\Component\Console\Application;
 try {
 	require_once 'lib/base.php';
 
+	// set to run indefinitely if needed
+	set_time_limit(0);
+
 	// Don't do anything if ownCloud has not been installed yet
 	if (!\OC::$server->getConfig()->getSystemValue('installed', false)) {
 		echo "Console can only be used once ownCloud has been installed" . PHP_EOL;
@@ -20,6 +23,21 @@ try {
 	if (!OC::$CLI) {
 		echo "This script can be run from the command line only" . PHP_EOL;
 		exit(0);
+	}
+
+	if (!OC_Util::runningOnWindows())  {
+		if (!function_exists('posix_getuid')) {
+			echo "The posix extensions are required - see http://php.net/manual/en/book.posix.php" . PHP_EOL;
+			exit(0);
+		}
+		$user = posix_getpwuid(posix_getuid());
+		$configUser = posix_getpwuid(fileowner(OC::$SERVERROOT . '/config/config.php'));
+		if ($user['name'] !== $configUser['name']) {
+			echo "Console has to be executed with the same user as the web server is operated" . PHP_EOL;
+			echo "Current user: " . $user['name'] . PHP_EOL;
+			echo "Web server user: " . $configUser['name'] . PHP_EOL;
+			exit(0);
+		}
 	}
 
 	// only load apps if no update is due,

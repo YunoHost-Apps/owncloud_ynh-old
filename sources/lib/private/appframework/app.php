@@ -24,8 +24,9 @@
 
 namespace OC\AppFramework;
 
-use OC\AppFramework\DependencyInjection\DIContainer;
-
+use \OC_App;
+use \OC\AppFramework\DependencyInjection\DIContainer;
+use \OCP\AppFramework\QueryException;
 
 /**
  * Entry point for every request in your app. You can consider this as your
@@ -34,6 +35,34 @@ use OC\AppFramework\DependencyInjection\DIContainer;
  * Handles all the dependency injection, controllers and output flow
  */
 class App {
+
+
+	/**
+	 * Turns an app id into a namespace by either reading the appinfo.xml's
+	 * namespace tag or uppercasing the appid's first letter
+	 * @param string $appId the app id
+	 * @param string $topNamespace the namespace which should be prepended to
+	 * the transformed app id, defaults to OCA\
+	 * @return string the starting namespace for the app
+	 */
+	public static function buildAppNamespace($appId, $topNamespace='OCA\\') {
+		// first try to parse the app's appinfo/info.xml <namespace> tag
+		$filePath = OC_App::getAppPath($appId) . '/appinfo/info.xml';
+		$loadEntities = libxml_disable_entity_loader(false);
+		$xml = @simplexml_load_file($filePath);
+		libxml_disable_entity_loader($loadEntities);
+
+		if ($xml) {
+			$result = $xml->xpath('/info/namespace');
+			if ($result && count($result) > 0) {
+				// take first namespace result
+				return $topNamespace . trim((string) $result[0]);
+			}
+		}
+
+		// if the tag is not found, fall back to uppercasing the first letter
+		return $topNamespace . ucfirst($appId);
+	}
 
 
 	/**
@@ -46,14 +75,25 @@ class App {
 	 */
 	public static function main($controllerName, $methodName, DIContainer $container, array $urlParams = null) {
 		if (!is_null($urlParams)) {
-			$container['urlParams'] = $urlParams;
+			$container['OCP\\IRequest']->setUrlParameters($urlParams);
+		} else if (isset($container['urlParams']) && !is_null($container['urlParams'])) {
+			$container['OCP\\IRequest']->setUrlParameters($container['urlParams']);
 		}
-		$controller = $container[$controllerName];
+		$appName = $container['AppName'];
+
+		// first try $controllerName then go for \OCA\AppName\Controller\$controllerName
+		try {
+			$controller = $container->query($controllerName);
+		} catch(QueryException $e) {
+			$appNameSpace = self::buildAppNamespace($appName);
+			$controllerName = $appNameSpace . '\\Controller\\' . $controllerName;
+			$controller = $container->query($controllerName);
+		}
 
 		// initialize the dispatcher and run all the middleware before the controller
 		$dispatcher = $container['Dispatcher'];
 
-		list($httpHeaders, $responseHeaders, $output) =
+		list($httpHeaders, $responseHeaders, $responseCookies, $output) =
 			$dispatcher->dispatch($controller, $methodName);
 
 		if(!is_null($httpHeaders)) {
@@ -62,6 +102,14 @@ class App {
 
 		foreach($responseHeaders as $name => $value) {
 			header($name . ': ' . $value);
+		}
+
+		foreach($responseCookies as $name => $value) {
+			$expireDate = null;
+			if($value['expireDate'] instanceof \DateTime) {
+				$expireDate = $value['expireDate']->getTimestamp();
+			}
+			setcookie($name, $value['value'], $expireDate, $container->getServer()->getWebRoot(), null, $container->getServer()->getConfig()->getSystemValue('forcessl', false), true);
 		}
 
 		if(!is_null($output)) {

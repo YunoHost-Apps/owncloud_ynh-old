@@ -77,13 +77,13 @@ class File extends \OCP\Search\Result {
 		$this->link = \OCP\Util::linkTo(
 			'files',
 			'index.php',
-			array('dir' => $info['dirname'], 'file' => $info['basename'])
+			array('dir' => $info['dirname'], 'scrollto' => $info['basename'])
 		);
 		$this->permissions = $data->getPermissions();
 		$this->path = $path;
 		$this->size = $data->getSize();
 		$this->modified = $data->getMtime();
-		$this->mime_type = $data->getMimetype();
+		$this->mime = $data->getMimetype();
 	}
 
 	/**
