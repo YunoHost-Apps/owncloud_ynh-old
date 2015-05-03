@@ -53,7 +53,8 @@ sudo chown -hR owncloud:owncloud $final_path
 sudo chown -hR owncloud:owncloud $data_path
 sudo chmod 755 /home/yunohost.app
 sudo chmod -R 770 $data_path
-sudo chmod -R 775 $final_path
+sudo chmod -R 664 $final_path
+sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775
 
 # Unprotect URIs
 sudo yunohost app ssowatconf
