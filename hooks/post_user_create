@@ -1,5 +1,5 @@
 #!/bin/bash
 
 user=$1
-mkdir -p /home/$user
+sudo mkdir -p /home/$user
 sudo setfacl -m g:owncloud:rwx /home/$user
