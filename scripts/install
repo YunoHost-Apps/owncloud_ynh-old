@@ -21,7 +21,7 @@ path=${path%/}
 
 # Install dependencies
 sudo apt-get update -qq
-sudo apt-get install acl smbclient -y -qq
+sudo apt-get install acl smbclient php5-cli -y -qq
 
 # Generate random password
 db_pwd=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d 'A-Za-z0-9' | sed -n 's/\(.\{24\}\).*/\1/p')
@@ -82,7 +82,9 @@ sudo yunohost app setting owncloud unprotected_uris -v "/"
 sudo yunohost app ssowatconf
 
 # Owncloud installation via curl
-curl -kL -H "Host: $domain" -X POST https://127.0.0.1$path/index.php --data "install=true&adminlogin=admin&adminpass=$db_pwd&directory=/home/yunohost.app/owncloud/data&dbtype=mysql&dbuser=$db_user&dbpass=$db_pwd&dbname=$db_user&dbhost=localhost" > /dev/null 2>&1
+sudo sh -c "echo '127.0.0.1 $domain' >> /etc/hosts"
+curl -kL -H "Host: $domain" -X POST https://$domain$path/index.php --data "install=true&adminlogin=admin&adminpass=$db_pwd&directory=/home/yunohost.app/owncloud/data&dbtype=mysql&dbuser=$db_user&dbpass=$db_pwd&dbname=$db_user&dbhost=localhost" > /dev/null 2>&1
+sudo sed -i '$ d' /etc/hosts
 
 # Check if the Mysql database is initialized & running
 loop_number=1
@@ -94,18 +96,61 @@ do
     if [ $loop_number -eq 5 ];
     then
         echo "Web installation failed"
+        root_pwd=$(sudo cat /etc/yunohost/mysql)
+        mysql -u root -p$root_pwd -e "DROP DATABASE owncloud ; DROP USER owncloud@localhost ;"
+        sudo rm /etc/php5/fpm/pool.d/owncloud.conf
+        
+        sudo killall php5-fpm
+        sudo service php5-fpm start
+        sudo userdel owncloud
         exit 1
     fi
 done
 
+# Enable plugins
+old_pwd=$(pwd)
+cd $final_path
+sudo su -c "php occ app:enable files_external -n -q --no-ansi" owncloud
+sudo su -c "php occ app:enable user_ldap -n -q --no-ansi" owncloud
+
 # Enable and configure LDAP and external storage plugin
-mysql -u $db_user -p$db_pwd $db_user < ../conf/ldap_config.sql
+sudo su -c "php occ ldap:create-empty-config -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapBase dc=yunohost,dc=org -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapBaseGroups dc=yunohost,dc=org -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapBaseUsers dc=yunohost,dc=org -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapCacheTTL 600 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapConfigurationActive 1 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapEmailAttribute mail -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapExperiencedAdmin 0 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapExpertUsernameAttr uid -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapGroupDisplayName cn -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapGroupFilter objectClass=posixGroup -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapGroupFilterMode 0 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapGroupMemberAssocAttr uniqueMember -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapHost localhost -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapLoginFilter '(&(|(objectclass=mailAccount))(uid=%uid))' -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapLoginFilterEmail 0 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapLoginFilterMode 0 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapLoginFilterUsername 1 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapNestedGroups 0 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapPagingSize 500 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapPort 389 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapQuotaAttribute mailQuota -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapTLS 0 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapUserDisplayName cn -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapUserFilter objectClass=mailAccount -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapUserFilterMode 0 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapUuidGroupAttribute auto -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapUuidUserAttribute auto -n -q --no-ansi" owncloud
+
+cd $old_pwd
 
 sudo chown -hR owncloud:owncloud $final_path
 sudo chown -hR owncloud:owncloud $data_path
 sudo chmod 755 /home/yunohost.app
-sudo find $final_path -type f -print0 | xargs -0 sudo chmod 664
-sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775
+sudo chmod -R 664 $final_path
+sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775 \
+	|| echo "No file to modify"
 sudo chmod -R 770 $data_path
 
 # Make an LDAP user as admin
