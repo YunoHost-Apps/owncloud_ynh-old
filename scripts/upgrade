@@ -7,7 +7,7 @@ path=$(sudo yunohost app setting owncloud path)
 db_pwd=$(sudo yunohost app setting owncloud mysqlpwd)
 
 # Install dependencies
-#sudo apt-get install acl smbclient -y -qq
+sudo apt-get install acl smbclient php5-cli -y -qq
 
 # Remove trailing "/" for next commands
 path=${path%/}
@@ -58,3 +58,5 @@ sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775
 
 # Unprotect URIs
 sudo yunohost app ssowatconf
+cd $final_path
+sudo -u owncloud php occ upgrade -n -q
