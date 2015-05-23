@@ -12,9 +12,7 @@ db_pwd=$(sudo yunohost app setting owncloud mysqlpwd)
 #sudo apt-get install acl smbclient -y -qq
 
 # Remove trailing "/" for next commands
-if [[ ! "$path" == "/" ]]; then
-    path=${path%/}
-fi
+path=${path%/}
 
 # Use 'owncloud' as database name and user
 db_user=owncloud
@@ -37,6 +35,11 @@ sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775 \
 sudo chmod -R 770 $data_path
 
 # Change variables in Owncloud configuration
+if [[ "$path" == "" ]]; then
+    sudo sed -i "s@LOCATIONTOCHANGE@/@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
+else
+	sudo sed -i "s@LOCATIONTOCHANGE@$path@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
+fi
 sudo sed -i "s@PATHTOCHANGE@$path@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo sed -i "s@ALIASTOCHANGE@$final_path/@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/nginx/conf.d/$domain.d/owncloud.conf

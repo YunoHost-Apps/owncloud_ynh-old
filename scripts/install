@@ -9,17 +9,15 @@ user=$3
 
 # Check user parameter
 sudo yunohost user list --json | grep -qi "\"username\": \"$user\"" \
-	|| echo "Wrong user" && exit 1
+	|| (echo "User does not exist: $user" && exit 1)
 sudo yunohost app setting owncloud admin_user -v $user
 
 # Check domain/path availability
 sudo yunohost app checkurl $domain$path -a owncloud \
-	|| echo "Path not available: $domain$path" && exit 1
+	|| (echo "Path not available: $domain$path" && exit 1)
 
 # Remove trailing "/" for next commands
-if [[ ! "$path" == "/" ]]; then
-    path=${path%/}
-fi
+path=${path%/}
 
 # Install dependencies
 sudo apt-get update -qq
@@ -57,6 +55,11 @@ sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775 \
 sudo chmod -R 770 $data_path
 
 # Change variables in Owncloud configuration
+if [[ "$path" == "" ]]; then
+    sudo sed -i "s@LOCATIONTOCHANGE@/@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
+else
+	sudo sed -i "s@LOCATIONTOCHANGE@$path@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
+fi
 sudo sed -i "s@PATHTOCHANGE@$path@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo sed -i "s@ALIASTOCHANGE@$final_path/@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
@@ -65,13 +68,10 @@ sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/php5/fpm/pool.d/owncloud.conf
 # Set permissions to owncloud directories and /home directories + add Home external storage
 for i in $(ls /home)
 do
-    sudo yunohost user list --json | grep -q "\"username\": \"$i\""
-    if [[ $? -eq 0 ]];
-    then
-        sudo setfacl -m g:owncloud:rwx /home/$i \
-			|| echo "ACL not available"
-        sudo mkdir $data_path/$i
-    fi
+    sudo yunohost user list --json | grep -q "\"username\": \"$i\"" && (
+	    sudo mkdir $data_path/$i
+	    sudo setfacl -m g:owncloud:rwx /home/$i || echo "ACL not available"
+	) || true
 done
 
 # Reload Nginx and regenerate SSOwat conf
