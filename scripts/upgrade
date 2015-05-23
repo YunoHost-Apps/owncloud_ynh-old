@@ -59,4 +59,4 @@ sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775
 # Unprotect URIs
 sudo yunohost app ssowatconf
 cd $final_path
-sudo -u owncloud php occ upgrade -n -q
+sudo su -c "php occ upgrade -n -q --no-ansi" owncloud

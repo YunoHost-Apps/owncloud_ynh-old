@@ -85,9 +85,10 @@ curl -kL -H "Host: $domain" -X POST https://$domain$path/index.php --data "insta
 
 # Enable plugins
 sleep 5
+old_pwd=$(pwd)
 cd $final_path
-sudo -u owncloud php occ app:enable files_external
-sudo -u owncloud php occ app:enable user_ldap
+sudo su -c "php occ app:enable files_external -n -q --no-ansi" owncloud
+sudo su -c "php occ app:enable user_ldap -n -q --no-ansi" owncloud
 sudo sed -i '$ d' /etc/hosts
 
 # Check if the Mysql database is initialized & running
@@ -96,7 +97,6 @@ result=$?
 loop_number=1
 while [ $result != 0 ] && [ $loop_number -lt 5 ];
 do
-    sleep 5
     mysql -u $db_user -p$db_pwd $db_user -e "select * from oc_appconfig;" > /dev/null 2>&1
     let result=$?
     if [ $loop_number -eq 4 ];
@@ -106,10 +106,12 @@ do
         mysql -u root -p$root_pwd -e "DROP DATABASE owncloud ; DROP USER owncloud@localhost ;"
         exit 1
     fi
+    sleep 5
     let loop_number++
 done
 
 # Configure LDAP plugin
+cd $old_pwd
 mysql -u $db_user -p$db_pwd $db_user < ../conf/ldap_config.sql
 
 
