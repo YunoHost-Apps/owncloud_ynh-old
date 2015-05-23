@@ -75,7 +75,8 @@ do
 done
 
 # Reload Nginx and regenerate SSOwat conf
-sudo service php5-fpm restart
+sudo killall php5-fpm
+sudo service php5-fpm start
 sudo service nginx reload
 sudo yunohost app setting owncloud unprotected_uris -v "/"
 sudo yunohost app ssowatconf

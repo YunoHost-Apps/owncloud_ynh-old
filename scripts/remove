@@ -17,6 +17,7 @@ do
         sudo setfacl -x g:owncloud:rwx > /dev/null 2>&1
     fi
 done
-sudo service php5-fpm restart
+sudo killall php5-fpm
+sudo service php5-fpm start
 sudo userdel owncloud > /dev/null 2>&1
 sudo service nginx reload

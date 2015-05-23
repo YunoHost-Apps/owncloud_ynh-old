@@ -38,7 +38,6 @@
                 "ask": {
                     "en": "Choose the Owncloud administrator (must be an existing YunoHost user)",
                     "fr": "Choisissez l'administrateur d'Owncloud (doit être un utilisateur YunoHost déjà existant)"
-                    
                 },
                 "example": "homer"
             }
