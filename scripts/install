@@ -81,12 +81,7 @@ sudo yunohost app setting owncloud unprotected_uris -v "/"
 sudo yunohost app ssowatconf
 
 # Owncloud installation via curl
-curl -kL -H "Host: $domain" -X POST https://127.0.0.1/$path/index.php --data "install=true&adminlogin=admin&adminpass=$db_pwd&directory=/home/yunohost.app/owncloud/data&dbtype=mysql&dbuser=$db_user&dbpass=$db_pwd&dbname=$db_user&dbhost=localhost" > /dev/null 2>&1
-
-# Enable plugins
-sleep 5
-curl -kL -H "Host: $domain" -X POST https://127.0.0.1/$path/index.php/settings/ajax/enableapp.php --data "appid=files_external" -u "admin:$db_pwd" > /dev/null 2>&1
-curl -kL -H "Host: $domain" -X POST https://127.0.0.1/$path/index.php/settings/ajax/enableapp.php --data "appid=user_ldap" -u "admin:$db_pwd" > /dev/null 2>&1
+curl -kL -H "Host: $domain" -X POST https://127.0.0.1$path/index.php --data "install=true&adminlogin=admin&adminpass=$db_pwd&directory=/home/yunohost.app/owncloud/data&dbtype=mysql&dbuser=$db_user&dbpass=$db_pwd&dbname=$db_user&dbhost=localhost" > /dev/null 2>&1
 
 # Check if the Mysql database is initialized & running
 mysql -u $db_user -p$db_pwd $db_user -e "select * from oc_appconfig;" > /dev/null 2>&1
