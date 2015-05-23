@@ -9,7 +9,8 @@ path=$(sudo yunohost app setting owncloud path)
 db_pwd=$(sudo yunohost app setting owncloud mysqlpwd)
 
 # Install dependencies
-#sudo apt-get install acl smbclient -y -qq
+sudo apt-get update -qq
+sudo apt-get install acl smbclient php5-cli -y -qq
 
 # Remove trailing "/" for next commands
 path=${path%/}
@@ -22,7 +23,19 @@ final_path=/var/www/owncloud
 data_path=/home/yunohost.app/owncloud/data
 sudo mkdir -p $final_path
 sudo mkdir -p $data_path
+old_pwd=$(pwd)
+cd $final_path
+sudo mv apps old_apps
+shopt -s extglob
+sudo rm -Rf !(old_apps|data|config|themes) 
+shopt -u extglob
+cd $old_pwd
 sudo cp -a ../sources/* $final_path
+cd $final_path/old_apps
+sudo rm -Rf $(ls $final_path/apps)
+cd $old_pwd
+sudo cp -a $final_path/old_apps/* $final_path/apps/
+
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo cp ../conf/php-fpm.conf /etc/php5/fpm/pool.d/owncloud.conf
 sudo cp ../conf/mount.json $data_path
@@ -53,12 +66,47 @@ sudo yunohost app setting owncloud unprotected_uris -v "/"
 sudo yunohost app setting owncloud skipped_uris -d
 sudo yunohost app ssowatconf
 
-# Enable and configure LDAP plugin
-mysql -u $db_user -p$db_pwd $db_user < ../conf/ldap_config.sql \
-	|| echo "LDAP plugin already configured"
 
 sudo chown -hR owncloud:owncloud $final_path
 sudo chown -hR owncloud:owncloud $data_path
 sudo chmod 755 /home/yunohost.app
 sudo chmod -R 770 $data_path
-sudo chmod -R 775 $final_path
+sudo chmod -R 664 $final_path
+sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775 \
+	|| echo "No file to modify"
+
+#Run owncloud upgrade script to avoid to have to do this in the browser
+cd $final_path
+
+sudo su -c "php occ app:disable gallery -n -q --no-ansi" owncloud
+sudo su -c "php occ upgrade -n -q --no-ansi" owncloud
+
+# Configure LDAP plugin
+sudo su -c "php occ ldap:set-config '' ldapBase dc=yunohost,dc=org -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapBaseGroups dc=yunohost,dc=org -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapBaseUsers dc=yunohost,dc=org -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapCacheTTL 600 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapConfigurationActive 1 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapEmailAttribute mail -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapExperiencedAdmin 0 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapExpertUsernameAttr uid -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapGroupDisplayName cn -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapGroupFilter objectClass=posixGroup -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapGroupFilterMode 0 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapGroupMemberAssocAttr uniqueMember -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapHost localhost -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapLoginFilter '(&(|(objectclass=mailAccount))(uid=%uid))' -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapLoginFilterEmail 0 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapLoginFilterMode 0 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapLoginFilterUsername 1 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapNestedGroups 0 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapPagingSize 500 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapPort 389 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapQuotaAttribute mailQuota -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapTLS 0 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapUserDisplayName cn -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapUserFilter objectClass=mailAccount -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapUserFilterMode 0 -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapUuidGroupAttribute auto -n -q --no-ansi" owncloud
+sudo su -c "php occ ldap:set-config '' ldapUuidUserAttribute auto -n -q --no-ansi" owncloud
+
