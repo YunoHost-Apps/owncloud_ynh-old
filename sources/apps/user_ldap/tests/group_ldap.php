@@ -22,14 +22,12 @@
 
 namespace OCA\user_ldap\tests;
 
-namespace OCA\user_ldap\tests;
-
 use \OCA\user_ldap\GROUP_LDAP as GroupLDAP;
 use \OCA\user_ldap\lib\Access;
 use \OCA\user_ldap\lib\Connection;
 use \OCA\user_ldap\lib\ILDAPWrapper;
 
-class Test_Group_Ldap extends \PHPUnit_Framework_TestCase {
+class Test_Group_Ldap extends \Test\TestCase {
 	private function getAccessMock() {
 		static $conMethods;
 		static $accMethods;
@@ -47,7 +45,8 @@ class Test_Group_Ldap extends \PHPUnit_Framework_TestCase {
 				$this->getMock('\OCA\user_ldap\lib\FilesystemHelper'),
 				$this->getMock('\OCA\user_ldap\lib\LogWrapper'),
 				$this->getMock('\OCP\IAvatarManager'),
-				$this->getMock('\OCP\Image')
+				$this->getMock('\OCP\Image'),
+				$this->getMock('\OCP\IDBConnection')
 			);
 		$access = $this->getMock('\OCA\user_ldap\lib\Access',
 								 $accMethods,
@@ -59,10 +58,7 @@ class Test_Group_Ldap extends \PHPUnit_Framework_TestCase {
 	private function enableGroups($access) {
 		$access->connection->expects($this->any())
 			   ->method('__get')
-			   ->will($this->returnCallback(function($name) {
-// 					if($name === 'ldapLoginFilter') {
-// 						return '%uid';
-// 					}
+			   ->will($this->returnCallback(function() {
 					return 1;
 			   }));
 	}
@@ -267,6 +263,48 @@ class Test_Group_Ldap extends \PHPUnit_Framework_TestCase {
 		$gid = $groupBackend->getGroupPrimaryGroupID($dn);
 
 		$this->assertSame(false, $gid);
+	}
+
+	/**
+	 * tests whether Group Backend behaves correctly when cache with uid and gid
+	 * is hit
+	 */
+	public function testInGroupHitsUidGidCache() {
+		$access = $this->getAccessMock();
+		$this->enableGroups($access);
+
+		$uid = 'someUser';
+		$gid = 'someGroup';
+		$cacheKey = 'inGroup'.$uid.':'.$gid;
+		$access->connection->expects($this->once())
+			->method('isCached')
+			->with($cacheKey)
+			->will($this->returnValue(true));
+
+		$access->connection->expects($this->once())
+			->method('getFromCache')
+			->with($cacheKey)
+			->will($this->returnValue(true));
+
+		$access->expects($this->never())
+			->method('username2dn');
+
+		$groupBackend = new GroupLDAP($access);
+		$groupBackend->inGroup($uid, $gid);
+	}
+
+	public function testGetGroupsWithOffset() {
+		$access = $this->getAccessMock();
+		$this->enableGroups($access);
+
+		$access->expects($this->once())
+			->method('ownCloudGroupNames')
+			->will($this->returnValue(array('group1', 'group2')));
+
+		$groupBackend = new GroupLDAP($access);
+		$groups = $groupBackend->getGroups('', 2, 2);
+
+		$this->assertSame(2, count($groups));
 	}
 
 }

@@ -20,12 +20,10 @@
  *
  */
 
-require_once __DIR__ . '/base.php';
-
 /**
  * Tests for the external Storage class for remote shares.
  */
-class Test_Files_Sharing_External_Storage extends \PHPUnit_Framework_TestCase {
+class Test_Files_Sharing_External_Storage extends \Test\TestCase {
 
 	function optionsProvider() {
 		return array(
@@ -65,6 +63,7 @@ class Test_Files_Sharing_External_Storage extends \PHPUnit_Framework_TestCase {
 	 * @dataProvider optionsProvider
 	 */
 	public function testStorageMountOptions($inputUri, $baseUri) {
+		$certificateManager = \OC::$server->getCertificateManager();
 		$storage = new TestSharingExternalStorage(
 			array(
 				'remote' => $inputUri,
@@ -72,7 +71,8 @@ class Test_Files_Sharing_External_Storage extends \PHPUnit_Framework_TestCase {
 				'mountpoint' => 'remoteshare',
 				'token' => 'abcdef',
 				'password' => '',
-				'manager' => null
+				'manager' => null,
+				'certificateManager' => $certificateManager
 			)
 		);
 		$this->assertEquals($baseUri, $storage->getBaseUri());

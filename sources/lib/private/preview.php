@@ -14,15 +14,8 @@
 namespace OC;
 
 use OC\Preview\Provider;
-
-require_once 'preview/image.php';
-require_once 'preview/movies.php';
-require_once 'preview/mp3.php';
-require_once 'preview/pdf.php';
-require_once 'preview/svg.php';
-require_once 'preview/txt.php';
-require_once 'preview/unknown.php';
-require_once 'preview/office.php';
+use OCP\Files\FileInfo;
+use OCP\Files\NotFoundException;
 
 class Preview {
 	//the thumbnail folder
@@ -48,6 +41,7 @@ class Preview {
 	//filemapper used for deleting previews
 	// index is path, value is fileinfo
 	static public $deleteFileMapper = array();
+	static public $deleteChildrenMapper = array();
 
 	/**
 	 * preview images object
@@ -59,6 +53,7 @@ class Preview {
 	//preview providers
 	static private $providers = array();
 	static private $registeredProviders = array();
+	static private $enabledProviders = array();
 
 	/**
 	 * @var \OCP\Files\FileInfo
@@ -104,7 +99,7 @@ class Preview {
 			self::initProviders();
 		}
 
-		if (empty(self::$providers)) {
+		if (empty(self::$providers) && \OC::$server->getConfig()->getSystemValue('enable_previews', true)) {
 			\OC_Log::write('core', 'No preview providers exist', \OC_Log::ERROR);
 			throw new \Exception('No preview providers');
 		}
@@ -188,17 +183,33 @@ class Preview {
 		return $this->info;
 	}
 
+
+	/**
+	 * @return array|null
+	 */
+	private function getChildren() {
+		$absPath = $this->fileView->getAbsolutePath($this->file);
+		$absPath = Files\Filesystem::normalizePath($absPath);
+
+		if (array_key_exists($absPath, self::$deleteChildrenMapper)) {
+			return self::$deleteChildrenMapper[$absPath];
+		}
+
+		return null;
+	}
+
 	/**
 	 * set the path of the file you want a thumbnail from
 	 * @param string $file
-	 * @return \OC\Preview $this
+	 * @return $this
 	 */
 	public function setFile($file) {
 		$this->file = $file;
 		$this->info = null;
+
 		if ($file !== '') {
 			$this->getFileInfo();
-			if($this->info !== null && $this->info !== false) {
+			if($this->info instanceof \OCP\Files\FileInfo) {
 				$this->mimeType = $this->info->getMimetype();
 			}
 		}
@@ -268,6 +279,10 @@ class Preview {
 		return $this;
 	}
 
+	/**
+	 * @param bool $keepAspect
+	 * @return $this
+	 */
 	public function setKeepAspect($keepAspect) {
 		$this->keepAspect = $keepAspect;
 		return $this;
@@ -311,20 +326,25 @@ class Preview {
 
 	/**
 	 * deletes all previews of a file
-	 * @return bool
 	 */
 	public function deleteAllPreviews() {
-		$file = $this->getFile();
+		$toDelete = $this->getChildren();
+		$toDelete[] = $this->getFileInfo();
 
-		$fileInfo = $this->getFileInfo($file);
-		if($fileInfo !== null && $fileInfo !== false) {
-			$fileId = $fileInfo->getId();
+		foreach ($toDelete as $delete) {
+			if ($delete instanceof FileInfo) {
+				/** @var \OCP\Files\FileInfo $delete */
+				$fileId = $delete->getId();
 
-			$previewPath = $this->getThumbnailsFolder() . '/' . $fileId . '/';
-			$this->userView->deleteAll($previewPath);
-			return $this->userView->rmdir($previewPath);
+				// getId() might return null, e.g. when the file is a
+				// .ocTransferId*.part file from chunked file upload.
+				if (!empty($fileId)) {
+					$previewPath = $this->getPreviewPath($fileId);
+					$this->userView->deleteAll($previewPath);
+					$this->userView->rmdir($previewPath);
+				}
+			}
 		}
-		return false;
 	}
 
 	/**
@@ -390,7 +410,7 @@ class Preview {
 			return array();
 		}
 
-		$previewPath = $this->getThumbnailsFolder() . '/' . $fileId . '/';
+		$previewPath = $this->getPreviewPath($fileId);
 
 		$wantedAspectRatio = (float) ($this->getMaxX() / $this->getMaxY());
 
@@ -476,12 +496,15 @@ class Preview {
 		$cached = $this->isCached($fileId);
 		if ($cached) {
 			$stream = $this->userView->fopen($cached, 'r');
-			$image = new \OC_Image();
-			$image->loadFromFileHandle($stream);
-			$this->preview = $image->valid() ? $image : null;
+			$this->preview = null;
+			if ($stream) {
+				$image = new \OC_Image();
+				$image->loadFromFileHandle($stream);
+				$this->preview = $image->valid() ? $image : null;
 
-			$this->resizeAndCrop();
-			fclose($stream);
+				$this->resizeAndCrop();
+				fclose($stream);
+			}
 		}
 
 		if (is_null($this->preview)) {
@@ -504,7 +527,7 @@ class Preview {
 				$this->preview = $preview;
 				$this->resizeAndCrop();
 
-				$previewPath = $this->getThumbnailsFolder() . '/' . $fileId . '/';
+				$previewPath = $this->getPreviewPath($fileId);
 				$cachePath = $this->buildCachePath($fileId);
 
 				if ($this->userView->is_dir($this->getThumbnailsFolder() . '/') === false) {
@@ -529,15 +552,22 @@ class Preview {
 	}
 
 	/**
-	 * show preview
-	 * @return void
+	 * @param null|string $mimeType
+	 * @throws NotFoundException
 	 */
 	public function showPreview($mimeType = null) {
+		// Check if file is valid
+		if($this->isFileValid() === false) {
+			throw new NotFoundException('File not found.');
+		}
+
 		\OCP\Response::enableCaching(3600 * 24); // 24 hours
 		if (is_null($this->preview)) {
 			$this->getPreview();
 		}
-		$this->preview->show($mimeType);
+		if ($this->preview instanceof \OC_Image) {
+			$this->preview->show($mimeType);
+		}
 	}
 
 	/**
@@ -555,8 +585,6 @@ class Preview {
 			\OC_Log::write('core', '$this->preview is not an instance of OC_Image', \OC_Log::DEBUG);
 			return;
 		}
-
-		$image->fixOrientation();
 
 		$realX = (int)$image->width();
 		$realY = (int)$image->height();
@@ -659,11 +687,45 @@ class Preview {
 
 	/**
 	 * register a new preview provider to be used
+	 * @param string $class
 	 * @param array $options
-	 * @return void
 	 */
 	public static function registerProvider($class, $options = array()) {
-		self::$registeredProviders[] = array('class' => $class, 'options' => $options);
+		/**
+		 * Only register providers that have been explicitly enabled
+		 *
+		 * The following providers are enabled by default:
+		 *  - OC\Preview\Image
+		 *  - OC\Preview\MP3
+		 *  - OC\Preview\TXT
+		 *  - OC\Preview\MarkDown
+		 *
+		 * The following providers are disabled by default due to performance or privacy concerns:
+		 *  - OC\Preview\MSOfficeDoc
+		 *  - OC\Preview\MSOffice2003
+		 *  - OC\Preview\MSOffice2007
+		 *  - OC\Preview\OpenDocument
+		 *  - OC\Preview\StarOffice
+ 		 *  - OC\Preview\SVG
+		 *  - OC\Preview\Movie
+		 *  - OC\Preview\PDF
+		 *  - OC\Preview\TIFF
+		 *  - OC\Preview\Illustrator
+		 *  - OC\Preview\Postscript
+		 *  - OC\Preview\Photoshop
+		 */
+		if(empty(self::$enabledProviders)) {
+			self::$enabledProviders = \OC::$server->getConfig()->getSystemValue('enabledPreviewProviders', array(
+				'OC\Preview\Image',
+				'OC\Preview\MP3',
+				'OC\Preview\TXT',
+				'OC\Preview\MarkDown',
+			));
+		}
+
+		if(in_array($class, self::$enabledProviders)) {
+			self::$registeredProviders[] = array('class' => $class, 'options' => $options);
+		}
 	}
 
 	/**
@@ -671,23 +733,22 @@ class Preview {
 	 * @return void
 	 */
 	private static function initProviders() {
-		if (!\OC_Config::getValue('enable_previews', true)) {
-			$provider = new Preview\Unknown(array());
-			self::$providers = array($provider->getMimeType() => $provider);
+		if (!\OC::$server->getConfig()->getSystemValue('enable_previews', true)) {
+			self::$providers = array();
 			return;
 		}
 
-		if (count(self::$providers) > 0) {
+		if (!empty(self::$providers)) {
 			return;
 		}
 
+		self::registerCoreProviders();
 		foreach (self::$registeredProviders as $provider) {
 			$class = $provider['class'];
 			$options = $provider['options'];
 
 			/** @var $object Provider */
 			$object = new $class($options);
-
 			self::$providers[$object->getMimeType()] = $object;
 		}
 
@@ -695,14 +756,92 @@ class Preview {
 		array_multisort($keys, SORT_DESC, self::$providers);
 	}
 
+	protected static function registerCoreProviders() {
+		self::registerProvider('OC\Preview\TXT');
+		self::registerProvider('OC\Preview\MarkDown');
+		self::registerProvider('OC\Preview\Image');
+		self::registerProvider('OC\Preview\MP3');
+
+		// SVG, Office and Bitmap require imagick
+		if (extension_loaded('imagick')) {
+			$checkImagick = new \Imagick();
+
+			$imagickProviders = array(
+				'SVG'	=> 'OC\Preview\SVG',
+				'TIFF'	=> 'OC\Preview\TIFF',
+				'PDF'	=> 'OC\Preview\PDF',
+				'AI'	=> 'OC\Preview\Illustrator',
+				'PSD'	=> 'OC\Preview\Photoshop',
+				// Requires adding 'eps' => array('application/postscript', null), to lib/private/mimetypes.list.php
+				'EPS'	=> 'OC\Preview\Postscript',
+			);
+
+			foreach ($imagickProviders as $queryFormat => $provider) {
+				if (count($checkImagick->queryFormats($queryFormat)) === 1) {
+					self::registerProvider($provider);
+				}
+			}
+
+			if (count($checkImagick->queryFormats('PDF')) === 1) {
+				// Office previews are currently not supported on Windows
+				if (!\OC_Util::runningOnWindows() && \OC_Helper::is_function_enabled('shell_exec')) {
+					$officeFound = is_string(\OC::$server->getConfig()->getSystemValue('preview_libreoffice_path', null));
+
+					if (!$officeFound) {
+						//let's see if there is libreoffice or openoffice on this machine
+						$whichLibreOffice = shell_exec('command -v libreoffice');
+						$officeFound = !empty($whichLibreOffice);
+						if (!$officeFound) {
+							$whichOpenOffice = shell_exec('command -v openoffice');
+							$officeFound = !empty($whichOpenOffice);
+						}
+					}
+
+					if ($officeFound) {
+						self::registerProvider('OC\Preview\MSOfficeDoc');
+						self::registerProvider('OC\Preview\MSOffice2003');
+						self::registerProvider('OC\Preview\MSOffice2007');
+						self::registerProvider('OC\Preview\OpenDocument');
+						self::registerProvider('OC\Preview\StarOffice');
+					}
+				}
+			}
+		}
+
+		// Video requires avconv or ffmpeg and is therefor
+		// currently not supported on Windows.
+		if (!\OC_Util::runningOnWindows()) {
+			$avconvBinary = \OC_Helper::findBinaryPath('avconv');
+			$ffmpegBinary = ($avconvBinary) ? null : \OC_Helper::findBinaryPath('ffmpeg');
+
+			if ($avconvBinary || $ffmpegBinary) {
+				// FIXME // a bit hacky but didn't want to use subclasses
+				\OC\Preview\Movie::$avconvBinary = $avconvBinary;
+				\OC\Preview\Movie::$ffmpegBinary = $ffmpegBinary;
+
+				self::registerProvider('OC\Preview\Movie');
+			}
+		}
+	}
+
+	/**
+	 * @param array $args
+	 */
 	public static function post_write($args) {
 		self::post_delete($args, 'files/');
 	}
 
+	/**
+	 * @param array $args
+	 */
 	public static function prepare_delete_files($args) {
 		self::prepare_delete($args, 'files/');
 	}
 
+	/**
+	 * @param array $args
+	 * @param string $prefix
+	 */
 	public static function prepare_delete($args, $prefix='') {
 		$path = $args['path'];
 		if (substr($path, 0, 1) === '/') {
@@ -710,25 +849,100 @@ class Preview {
 		}
 
 		$view = new \OC\Files\View('/' . \OC_User::getUser() . '/' . $prefix);
-		$info = $view->getFileInfo($path);
 
-		\OC\Preview::$deleteFileMapper = array_merge(
-			\OC\Preview::$deleteFileMapper,
-			array(
-				Files\Filesystem::normalizePath($view->getAbsolutePath($path)) => $info,
-			)
-		);
+		$absPath = Files\Filesystem::normalizePath($view->getAbsolutePath($path));
+		self::addPathToDeleteFileMapper($absPath, $view->getFileInfo($path));
+		if ($view->is_dir($path)) {
+			$children = self::getAllChildren($view, $path);
+			self::$deleteChildrenMapper[$absPath] = $children;
+		}
 	}
 
+	/**
+	 * @param string $absolutePath
+	 * @param \OCP\Files\FileInfo $info
+	 */
+	private static function addPathToDeleteFileMapper($absolutePath, $info) {
+		self::$deleteFileMapper[$absolutePath] = $info;
+	}
+
+	/**
+	 * @param \OC\Files\View $view
+	 * @param string $path
+	 * @return array
+	 */
+	private static function getAllChildren($view, $path) {
+		$children = $view->getDirectoryContent($path);
+		$childrensFiles = array();
+
+		$fakeRootLength = strlen($view->getRoot());
+
+		for ($i = 0; $i < count($children); $i++) {
+			$child = $children[$i];
+
+			$childsPath = substr($child->getPath(), $fakeRootLength);
+
+			if ($view->is_dir($childsPath)) {
+				$children = array_merge(
+					$children,
+					$view->getDirectoryContent($childsPath)
+				);
+			} else {
+				$childrensFiles[] = $child;
+			}
+		}
+
+		return $childrensFiles;
+	}
+
+	/**
+	 * @param array $args
+	 */
 	public static function post_delete_files($args) {
 		self::post_delete($args, 'files/');
 	}
 
+	/**
+	 * @param array $args
+	 * @param string $prefix
+	 */
 	public static function post_delete($args, $prefix='') {
 		$path = Files\Filesystem::normalizePath($args['path']);
 
 		$preview = new Preview(\OC_User::getUser(), $prefix, $path);
 		$preview->deleteAllPreviews();
+	}
+
+	/**
+	 * Check if a preview can be generated for a file
+	 *
+	 * @param \OC\Files\FileInfo $file
+	 * @return bool
+	 */
+	public static function isAvailable(\OC\Files\FileInfo $file) {
+		if (!\OC_Config::getValue('enable_previews', true)) {
+			return false;
+		}
+
+		$mount = $file->getMountPoint();
+		if ($mount and !$mount->getOption('previews', true)){
+			return false;
+		}
+
+		//check if there are preview backends
+		if (empty(self::$providers)) {
+			self::initProviders();
+		}
+
+		foreach (self::$providers as $supportedMimeType => $provider) {
+			/**
+			 * @var \OC\Preview\Provider $provider
+			 */
+			if (preg_match($supportedMimeType, $file->getMimetype())) {
+				return $provider->isAvailable($file);
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -745,10 +959,8 @@ class Preview {
 			self::initProviders();
 		}
 
-		//remove last element because it has the mimetype *
-		$providers = array_slice(self::$providers, 0, -1);
-		foreach ($providers as $supportedMimeType => $provider) {
-			if (preg_match($supportedMimeType, $mimeType)) {
+		foreach(self::$providers as $supportedMimetype => $provider) {
+			if(preg_match($supportedMimetype, $mimeType)) {
 				return true;
 			}
 		}
@@ -763,12 +975,22 @@ class Preview {
 		$maxX = $this->getMaxX();
 		$maxY = $this->getMaxY();
 
-		$previewPath = $this->getThumbnailsFolder() . '/' . $fileId . '/';
-		$preview = $previewPath . $maxX . '-' . $maxY . '.png';
+		$previewPath = $this->getPreviewPath($fileId);
+		$preview = $previewPath . strval($maxX) . '-' . strval($maxY);
 		if ($this->keepAspect) {
-			$preview = $previewPath . $maxX . '-with-aspect.png';
-			return $preview;
+			$preview .= '-with-aspect';
 		}
+		$preview .= '.png';
+
 		return $preview;
+	}
+
+
+	/**
+	 * @param int $fileId
+	 * @return string
+	 */
+	private function getPreviewPath($fileId) {
+		return $this->getThumbnailsFolder() . '/' . $fileId . '/';
 	}
 }

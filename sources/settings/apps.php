@@ -22,23 +22,17 @@
 */
 
 OC_Util::checkAdminUser();
+\OC::$server->getSession()->close();
 
 // Load the files we need
-OC_Util::addStyle( "settings", "settings" );
-OC_Util::addScript("core", "multiselect");
-OC_App::setActiveNavigationEntry( "core_apps" );
-
-$combinedApps = OC_App::listAllApps();
-$groups = \OC_Group::getGroups();
+\OC_Util::addVendorScript('handlebars/handlebars');
+\OCP\Util::addScript("settings", "settings");
+\OCP\Util::addStyle("settings", "settings");
+\OC_Util::addVendorScript('select2/select2');
+\OC_Util::addVendorStyle('select2/select2');
+\OCP\Util::addScript("settings", "apps");
+\OC_App::setActiveNavigationEntry( "core_apps" );
 
 $tmpl = new OC_Template( "settings", "apps", "user" );
-
-$tmpl->assign('apps', $combinedApps);
-$tmpl->assign('groups', $groups);
-
-$appid = (isset($_GET['appid'])?strip_tags($_GET['appid']):'');
-
-$tmpl->assign('appid', $appid);
-
 $tmpl->printPage();
 

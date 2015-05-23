@@ -19,14 +19,15 @@
 *
 */
 
-/* global OC, n, t */
-
 (function() {
 	/**
 	 * The FileSummary class encapsulates the file summary values and
 	 * the logic to render it in the given container
+	 *
+	 * @constructs FileSummary
+	 * @memberof OCA.Files
+	 *
 	 * @param $tr table row element
-	 * $param summary optional initial summary value
 	 */
 	var FileSummary = function($tr) {
 		this.$el = $tr;
@@ -38,7 +39,8 @@
 		summary: {
 			totalFiles: 0,
 			totalDirs: 0,
-			totalSize: 0
+			totalSize: 0,
+			filter:''
 		},
 
 		/**
@@ -47,6 +49,9 @@
 		 * @param update whether to update the display
 		 */
 		add: function(file, update) {
+			if (file.name && file.name.toLowerCase().indexOf(this.summary.filter) === -1) {
+				return;
+			}
 			if (file.type === 'dir' || file.mime === 'httpd/unix-directory') {
 				this.summary.totalDirs++;
 			}
@@ -64,6 +69,9 @@
 		 * @param update whether to update the display
 		 */
 		remove: function(file, update) {
+			if (file.name && file.name.toLowerCase().indexOf(this.summary.filter) === -1) {
+				return;
+			}
 			if (file.type === 'dir' || file.mime === 'httpd/unix-directory') {
 				this.summary.totalDirs--;
 			}
@@ -74,6 +82,10 @@
 			if (!!update) {
 				this.update();
 			}
+		},
+		setFilter: function(filter, files){
+			this.summary.filter = filter.toLowerCase();
+			this.calculate(files);
 		},
 		/**
 		 * Returns the total of files and directories
@@ -90,11 +102,15 @@
 			var summary = {
 				totalDirs: 0,
 				totalFiles: 0,
-				totalSize: 0
+				totalSize: 0,
+				filter: this.summary.filter
 			};
 
 			for (var i = 0; i < files.length; i++) {
 				file = files[i];
+				if (file.name && file.name.toLowerCase().indexOf(this.summary.filter) === -1) {
+					continue;
+				}
 				if (file.type === 'dir' || file.mime === 'httpd/unix-directory') {
 					summary.totalDirs++;
 				}
@@ -117,6 +133,9 @@
 		 */
 		setSummary: function(summary) {
 			this.summary = summary;
+			if (typeof this.summary.filter === 'undefined') {
+				this.summary.filter = '';
+			}
 			this.update();
 		},
 
@@ -136,6 +155,7 @@
 			var $dirInfo = this.$el.find('.dirinfo');
 			var $fileInfo = this.$el.find('.fileinfo');
 			var $connector = this.$el.find('.connector');
+			var $filterInfo = this.$el.find('.filter');
 
 			// Substitute old content with new translations
 			$dirInfo.html(n('files', '%n folder', '%n folders', this.summary.totalDirs));
@@ -158,6 +178,13 @@
 			if (this.summary.totalDirs > 0 && this.summary.totalFiles > 0) {
 				$connector.removeClass('hidden');
 			}
+			if (this.summary.filter === '') {
+				$filterInfo.html('');
+				$filterInfo.addClass('hidden');
+			} else {
+				$filterInfo.html(' ' + n('files', 'matches \'{filter}\'', 'match \'{filter}\'', this.summary.totalDirs + this.summary.totalFiles, {filter: this.summary.filter}));
+				$filterInfo.removeClass('hidden');
+			}
 		},
 		render: function() {
 			if (!this.$el) {
@@ -167,6 +194,11 @@
 			var summary = this.summary;
 			var directoryInfo = n('files', '%n folder', '%n folders', summary.totalDirs);
 			var fileInfo = n('files', '%n file', '%n files', summary.totalFiles);
+			if (this.summary.filter === '') {
+				var filterInfo = '';
+			} else {
+				var filterInfo = ' ' + n('files', 'matches \'{filter}\'', 'match \'{filter}\'', summary.totalFiles + summary.totalDirs, {filter: summary.filter});
+			}
 
 			var infoVars = {
 				dirs: '<span class="dirinfo">'+directoryInfo+'</span><span class="connector">',
@@ -179,9 +211,9 @@
 				fileSize = '<td class="filesize">' + OC.Util.humanFileSize(summary.totalSize) + '</td>';
 			}
 
-			var info = t('files', '{dirs} and {files}', infoVars);
+			var info = t('files', '{dirs} and {files}', infoVars, null, {'escape': false});
 
-			var $summary = $('<td><span class="info">'+info+'</span></td>'+fileSize+'<td class="date"></td>');
+			var $summary = $('<td><span class="info">'+info+'<span class="filter">'+filterInfo+'</span></span></td>'+fileSize+'<td class="date"></td>');
 
 			if (!this.summary.totalFiles && !this.summary.totalDirs) {
 				this.$el.addClass('hidden');

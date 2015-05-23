@@ -30,14 +30,23 @@ class FileInfo implements \OCP\Files\FileInfo, \ArrayAccess {
 	private $internalPath;
 
 	/**
+	 * @var \OCP\Files\Mount\IMountPoint
+	 */
+	private $mount;
+
+	/**
 	 * @param string|boolean $path
 	 * @param Storage\Storage $storage
+	 * @param string $internalPath
+	 * @param array $data
+	 * @param \OCP\Files\Mount\IMountPoint $mount
 	 */
-	public function __construct($path, $storage, $internalPath, $data) {
+	public function __construct($path, $storage, $internalPath, $data, $mount) {
 		$this->path = $path;
 		$this->storage = $storage;
 		$this->internalPath = $internalPath;
 		$this->data = $data;
+		$this->mount = $mount;
 	}
 
 	public function offsetSet($offset, $value) {
@@ -122,7 +131,7 @@ class FileInfo implements \OCP\Files\FileInfo, \ArrayAccess {
 	 * @return int
 	 */
 	public function getSize() {
-		return $this->data['size'];
+		return isset($this->data['size']) ? $this->data['size'] : 0;
 	}
 
 	/**
@@ -173,32 +182,42 @@ class FileInfo implements \OCP\Files\FileInfo, \ArrayAccess {
 	 * @return bool
 	 */
 	public function isReadable() {
-		return $this->checkPermissions(\OCP\PERMISSION_READ);
+		return $this->checkPermissions(\OCP\Constants::PERMISSION_READ);
 	}
 
 	/**
 	 * @return bool
 	 */
 	public function isUpdateable() {
-		return $this->checkPermissions(\OCP\PERMISSION_UPDATE);
+		return $this->checkPermissions(\OCP\Constants::PERMISSION_UPDATE);
+	}
+
+	/**
+	 * Check whether new files or folders can be created inside this folder
+	 *
+	 * @return bool
+	 */
+	public function isCreatable() {
+		return $this->checkPermissions(\OCP\Constants::PERMISSION_CREATE);
 	}
 
 	/**
 	 * @return bool
 	 */
 	public function isDeletable() {
-		return $this->checkPermissions(\OCP\PERMISSION_DELETE);
+		return $this->checkPermissions(\OCP\Constants::PERMISSION_DELETE);
 	}
 
 	/**
 	 * @return bool
 	 */
 	public function isShareable() {
-		return $this->checkPermissions(\OCP\PERMISSION_SHARE);
+		return $this->checkPermissions(\OCP\Constants::PERMISSION_SHARE);
 	}
 
 	/**
 	 * Check if a file or folder is shared
+	 *
 	 * @return bool
 	 */
 	public function isShared() {
@@ -219,5 +238,14 @@ class FileInfo implements \OCP\Files\FileInfo, \ArrayAccess {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Get the mountpoint the file belongs to
+	 *
+	 * @return \OCP\Files\Mount\IMountPoint
+	 */
+	public function getMountPoint() {
+		return $this->mount;
 	}
 }

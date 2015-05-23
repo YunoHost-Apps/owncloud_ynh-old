@@ -11,8 +11,8 @@ $params = array('uid' => \OCP\User::getUser(),
 				'password' => $_POST['password']);
 
 $view = new OC\Files\View('/');
-$util = new \OCA\Encryption\Util($view, \OCP\User::getUser());
-$l = \OC_L10N::get('settings');
+$util = new \OCA\Files_Encryption\Util($view, \OCP\User::getUser());
+$l = \OC::$server->getL10N('settings');
 
 $result = $util->initEncryption($params);
 

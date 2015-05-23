@@ -76,7 +76,7 @@
 								<?php endif; ?>
 							<?php endif; ?>
 						<?php endforeach; ?>
-						<?php if (isset($_['backends'][$mount['class']]['custom']) && !in_array('files_external/js/'.$_['backends'][$mount['class']]['custom'], \OC_Util::$scripts)): ?>
+						<?php if (isset($_['backends'][$mount['class']]['custom'])): ?>
 							<?php OCP\Util::addScript('files_external', $_['backends'][$mount['class']]['custom']); ?>
 						<?php endif; ?>
 					<?php endif; ?>
@@ -88,31 +88,8 @@
 													print_unescaped(json_encode($mount['applicable']['groups'])); ?>'
 					data-applicable-users='<?php if (isset($mount['applicable']['users']))
 													print_unescaped(json_encode($mount['applicable']['users'])); ?>'>
-						<select class="chzn-select"
-							multiple style="width:20em;"
-							data-placeholder="<?php p($l->t('No user or group')); ?>">
-							<option value="all"
-								<?php if (empty($mount['class']) || (isset($mount['applicable']['users']) && in_array('all', $mount['applicable']['users']))) print_unescaped('selected="selected"');?> >
-								<?php p($l->t('All Users')); ?>
-							</option>
-							<optgroup label="<?php p($l->t('Groups')); ?>">
-							<?php foreach ($_['groups'] as $group): ?>
-								<option value="<?php p($group); ?>(group)"
-								<?php if (isset($mount['applicable']['groups']) && in_array($group, $mount['applicable']['groups'])): ?>
-										selected="selected"
-								<?php endif; ?>><?php p($group); ?></option>
-							<?php endforeach; ?>
-							</optgroup>
-							<optgroup label="<?php p($l->t('Users')); ?>">
-							<?php foreach ($_['users'] as $user): ?>
-								<option value="<?php p($user); ?>"
-								<?php if (isset($mount['applicable']['users']) && in_array($user, $mount['applicable']['users'])): ?>
-										selected="selected"
-								<?php endif; ?>><?php p($_['userDisplayNames'][$user]); ?></option>
-							<?php endforeach; ?>
-							</optgroup>
-						</select>
-					</td>
+					<input type="hidden" class="applicableUsers" style="width:20em;" value=""/>
+				</td>
 				<?php endif; ?>
 				<td <?php if (isset($mount['mountpoint'])): ?>class="remove"
 					<?php else: ?>style="visibility:hidden;"
@@ -142,30 +119,3 @@
 		</p>
 	<?php endif; ?>
 </form>
-
-<?php if ( ! $_['isAdminPage']):  ?>
-<form id="files_external" class="section"
-	  method="post"
-	  enctype="multipart/form-data"
-	  action="<?php p(OCP\Util::linkTo('files_external', 'ajax/addRootCertificate.php')); ?>">
-		<h2><?php p($l->t('SSL root certificates'));?></h2>
-		<table id="sslCertificate" data-admin='<?php print_unescaped(json_encode($_['isAdminPage'])); ?>'>
-			<tbody>
-			<?php foreach ($_['certs'] as $rootCert): ?>
-			<tr id="<?php p($rootCert) ?>">
-			<td class="rootCert"><?php p($rootCert) ?></td>
-			<td <?php if ($rootCert != ''): ?>class="remove"
-				<?php else: ?>style="visibility:hidden;"
-				<?php endif; ?>><img alt="<?php p($l->t('Delete')); ?>"
-									 title="<?php p($l->t('Delete')); ?>"
-									 class="svg action"
-									 src="<?php print_unescaped(image_path('core', 'actions/delete.svg')); ?>" /></td>
-			</tr>
-			<?php endforeach; ?>
-			</tbody>
-		</table>
-		<input type="hidden" name="requesttoken" value="<?php p($_['requesttoken']); ?>">
-		<input type="file" id="rootcert_import" name="rootcert_import">
-		<input type="submit" name="cert_import" value="<?php p($l->t('Import Root Certificate')); ?>" />
-</form>
-<?php endif; ?>

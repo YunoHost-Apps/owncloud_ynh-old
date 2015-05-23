@@ -35,6 +35,7 @@ if (isset($_POST['action']) && isset($_POST['itemType']) && isset($_POST['itemSo
 					if ($shareType === OCP\Share::SHARE_TYPE_LINK && $shareWith == '') {
 						$shareWith = null;
 					}
+ 					$itemSourceName=(isset($_POST['itemSourceName'])) ? $_POST['itemSourceName']:'';
 
 					$token = OCP\Share::shareItem(
 						$_POST['itemType'],
@@ -72,9 +73,9 @@ if (isset($_POST['action']) && isset($_POST['itemType']) && isset($_POST['itemSo
 				$return = OCP\Share::setPermissions(
 					$_POST['itemType'],
 					$_POST['itemSource'],
-					$_POST['shareType'],
+					(int)$_POST['shareType'],
 					$_POST['shareWith'],
-					$_POST['permissions']
+					(int)$_POST['permissions']
 				);
 				($return) ? OC_JSON::success() : OC_JSON::error();
 			}
@@ -90,7 +91,7 @@ if (isset($_POST['action']) && isset($_POST['itemType']) && isset($_POST['itemSo
 			}
 			break;
 		case 'informRecipients':
-			$l = OC_L10N::get('core');
+			$l = \OC::$server->getL10N('core');
 			$shareType = (int) $_POST['shareType'];
 			$itemType = $_POST['itemType'];
 			$itemSource = $_POST['itemSource'];
@@ -104,7 +105,7 @@ if (isset($_POST['action']) && isset($_POST['itemType']) && isset($_POST['itemSo
 			// don't send a mail to the user who shared the file
 			$recipientList = array_diff($recipientList, array(\OCP\User::getUser()));
 
-			$mailNotification = new OC\Share\MailNotifications();
+			$mailNotification = new OC\Share\MailNotifications(\OCP\User::getUser());
 			$result = $mailNotification->sendInternalShareMail($recipientList, $itemSource, $itemType);
 
 			\OCP\Share::setSendMailStatus($itemType, $itemSource, $shareType, $recipient, true);
@@ -136,7 +137,7 @@ if (isset($_POST['action']) && isset($_POST['itemType']) && isset($_POST['itemSo
 			$file = $_POST['file'];
 			$to_address = $_POST['toaddress'];
 
-			$mailNotification = new \OC\Share\MailNotifications();
+			$mailNotification = new \OC\Share\MailNotifications(\OCP\User::getUser());
 
 			$expiration = null;
 			if (isset($_POST['expiration']) && $_POST['expiration'] !== '') {
@@ -153,7 +154,7 @@ if (isset($_POST['action']) && isset($_POST['itemType']) && isset($_POST['itemSo
 			if(empty($result)) {
 				\OCP\JSON::success();
 			} else {
-				$l = OC_L10N::get('core');
+				$l = \OC::$server->getL10N('core');
 				OCP\JSON::error(array(
 					'data' => array(
 						'message' => $l->t("Couldn't send mail to following users: %s ",
@@ -235,23 +236,6 @@ if (isset($_POST['action']) && isset($_POST['itemType']) && isset($_POST['itemSo
 			if (isset($_GET['search'])) {
 				$shareWithinGroupOnly = OC\Share\Share::shareWithGroupMembersOnly();
 				$shareWith = array();
-// 				if (OC_App::isEnabled('contacts')) {
-// 					// TODO Add function to contacts to only get the 'fullname' column to improve performance
-// 					$ids = OC_Contacts_Addressbook::activeIds();
-// 					foreach ($ids as $id) {
-// 						$vcards = OC_Contacts_VCard::all($id);
-// 						foreach ($vcards as $vcard) {
-// 							$contact = $vcard['fullname'];
-// 							if (stripos($contact, $_GET['search']) !== false
-// 								&& (!isset($_GET['itemShares'])
-// 								|| !isset($_GET['itemShares'][OCP\Share::SHARE_TYPE_CONTACT])
-// 								|| !is_array($_GET['itemShares'][OCP\Share::SHARE_TYPE_CONTACT])
-// 								|| !in_array($contact, $_GET['itemShares'][OCP\Share::SHARE_TYPE_CONTACT]))) {
-// 								$shareWith[] = array('label' => $contact, 'value' => array('shareType' => 5, 'shareWith' => $vcard['id']));
-// 							}
-// 						}
-// 					}
-// 				}
 				$groups = OC_Group::getGroups($_GET['search']);
 				if ($shareWithinGroupOnly) {
 					$usergroups = OC_Group::getUserGroups(OC_User::getUser());
@@ -287,7 +271,7 @@ if (isset($_POST['action']) && isset($_POST['itemType']) && isset($_POST['itemSo
 				$count = 0;
 
 				// enable l10n support
-				$l = OC_L10N::get('core');
+				$l = \OC::$server->getL10N('core');
 
 				foreach ($groups as $group) {
 					if ($count < 15) {
@@ -308,6 +292,21 @@ if (isset($_POST['action']) && isset($_POST['itemType']) && isset($_POST['itemSo
 						break;
 					}
 				}
+
+				// allow user to add unknown remote addresses for server-to-server share
+				$backend = \OCP\Share::getBackend($_GET['itemType']);
+				if ($backend->isShareTypeAllowed(\OCP\Share::SHARE_TYPE_REMOTE)) {
+					if (substr_count($_GET['search'], '@') === 1) {
+						$shareWith[] = array(
+							'label' => $_GET['search'],
+							'value' => array(
+								'shareType' => \OCP\Share::SHARE_TYPE_REMOTE,
+								'shareWith' => $_GET['search']
+							)
+						);
+					}
+				}
+
 				$sorter = new \OC\Share\SearchResultSorter($_GET['search'],
 														   'label',
 														   new \OC\Log());

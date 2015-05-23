@@ -2,9 +2,6 @@
 
 namespace OCA\Files_Sharing;
 
-use OC_Config;
-use PasswordHash;
-
 class Helper {
 
 	public static function registerHooks() {
@@ -19,6 +16,8 @@ class Helper {
 		\OCP\Util::connectHook('OCP\Share', 'post_shared', '\OC\Files\Cache\Shared_Updater', 'postShareHook');
 		\OCP\Util::connectHook('OCP\Share', 'post_unshare', '\OC\Files\Cache\Shared_Updater', 'postUnshareHook');
 		\OCP\Util::connectHook('OCP\Share', 'post_unshareFromSelf', '\OC\Files\Cache\Shared_Updater', 'postUnshareFromSelfHook');
+
+		\OCP\Util::connectHook('OC_User', 'post_deleteUser', '\OCA\Files_Sharing\Hooks', 'deleteUser');
 	}
 
 	/**
@@ -66,7 +65,7 @@ class Helper {
 			exit();
 		}
 
-		if (isset($linkItem['share_with'])) {
+		if (isset($linkItem['share_with']) && (int)$linkItem['share_type'] === \OCP\Share::SHARE_TYPE_LINK) {
 			if (!self::authenticate($linkItem, $password)) {
 				\OC_Response::setStatus(403);
 				\OCP\JSON::error(array('success' => false));
@@ -95,18 +94,32 @@ class Helper {
 	 *
 	 * @return boolean true if authorized, false otherwise
 	 */
-	public static function authenticate($linkItem, $password) {
+	public static function authenticate($linkItem, $password = null) {
 		if ($password !== null) {
 			if ($linkItem['share_type'] == \OCP\Share::SHARE_TYPE_LINK) {
 				// Check Password
-				$forcePortable = (CRYPT_BLOWFISH != 1);
-				$hasher = new PasswordHash(8, $forcePortable);
-				if (!($hasher->CheckPassword($password.OC_Config::getValue('passwordsalt', ''),
-											 $linkItem['share_with']))) {
-					return false;
-				} else {
+				$newHash = '';
+				if(\OC::$server->getHasher()->verify($password, $linkItem['share_with'], $newHash)) {
 					// Save item id in session for future requests
-					\OC::$session->set('public_link_authenticated', $linkItem['id']);
+					\OC::$server->getSession()->set('public_link_authenticated', $linkItem['id']);
+
+					/**
+					 * FIXME: Migrate old hashes to new hash format
+					 * Due to the fact that there is no reasonable functionality to update the password
+					 * of an existing share no migration is yet performed there.
+					 * The only possibility is to update the existing share which will result in a new
+					 * share ID and is a major hack.
+					 *
+					 * In the future the migration should be performed once there is a proper method
+					 * to update the share's password. (for example `$share->updatePassword($password)`
+					 *
+					 * @link https://github.com/owncloud/core/issues/10671
+					 */
+					if(!empty($newHash)) {
+
+					}
+				} else {
+					return false;
 				}
 			} else {
 				\OCP\Util::writeLog('share', 'Unknown share type '.$linkItem['share_type']
@@ -117,8 +130,8 @@ class Helper {
 		}
 		else {
 			// not authenticated ?
-			if ( ! \OC::$session->exists('public_link_authenticated')
-				|| \OC::$session->get('public_link_authenticated') !== $linkItem['id']) {
+			if ( ! \OC::$server->getSession()->exists('public_link_authenticated')
+				|| \OC::$server->getSession()->get('public_link_authenticated') !== $linkItem['id']) {
 				return false;
 			}
 		}
@@ -243,9 +256,22 @@ class Helper {
 	 * @return string
 	 */
 	public static function getShareFolder() {
-		$shareFolder = \OCP\Config::getSystemValue('share_folder', '/');
+		$shareFolder = \OC::$server->getConfig()->getSystemValue('share_folder', '/');
+		$shareFolder = \OC\Files\Filesystem::normalizePath($shareFolder);
 
-		return \OC\Files\Filesystem::normalizePath($shareFolder);
+		if (!\OC\Files\Filesystem::file_exists($shareFolder)) {
+			$dir = '';
+			$subdirs = explode('/', $shareFolder);
+			foreach ($subdirs as $subdir) {
+				$dir = $dir . '/' . $subdir;
+				if (!\OC\Files\Filesystem::is_dir($dir)) {
+					\OC\Files\Filesystem::mkdir($dir);
+				}
+			}
+		}
+
+		return $shareFolder;
+
 	}
 
 	/**
@@ -254,7 +280,7 @@ class Helper {
 	 * @param string $shareFolder
 	 */
 	public static function setShareFolder($shareFolder) {
-		\OCP\Config::setSystemValue('share_folder', $shareFolder);
+		\OC::$server->getConfig()->setSystemValue('share_folder', $shareFolder);
 	}
 
 }

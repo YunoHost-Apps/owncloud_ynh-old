@@ -21,6 +21,7 @@ class Storage {
 
 	/**
 	 * @param \OC\Files\Storage\Storage|string $storage
+	 * @throws \RuntimeException
 	 */
 	public function __construct($storage) {
 		if ($storage instanceof \OC\Files\Storage\Storage) {
@@ -28,19 +29,38 @@ class Storage {
 		} else {
 			$this->storageId = $storage;
 		}
-		if (strlen($this->storageId) > 64) {
-			$this->storageId = md5($this->storageId);
-		}
+		$this->storageId = self::adjustStorageId($this->storageId);
 
 		$sql = 'SELECT `numeric_id` FROM `*PREFIX*storages` WHERE `id` = ?';
 		$result = \OC_DB::executeAudited($sql, array($this->storageId));
 		if ($row = $result->fetchRow()) {
 			$this->numericId = $row['numeric_id'];
 		} else {
-			$sql = 'INSERT INTO `*PREFIX*storages` (`id`) VALUES(?)';
-			\OC_DB::executeAudited($sql, array($this->storageId));
-			$this->numericId = \OC_DB::insertid('*PREFIX*storages');
+			$connection = \OC_DB::getConnection();
+			if ($connection->insertIfNotExist('*PREFIX*storages', ['id' => $this->storageId])) {
+				$this->numericId = \OC_DB::insertid('*PREFIX*storages');
+			} else {
+				$result = \OC_DB::executeAudited($sql, array($this->storageId));
+				if ($row = $result->fetchRow()) {
+					$this->numericId = $row['numeric_id'];
+				} else {
+					throw new \RuntimeException('Storage could neither be inserted nor be selected from the database');
+				}
+			}
 		}
+	}
+
+	/**
+	 * Adjusts the storage id to use md5 if too long
+	 * @param string $storageId storage id
+	 * @return unchanged $storageId if its length is less than 64 characters,
+	 * else returns the md5 of $storageId
+	 */
+	public static function adjustStorageId($storageId) {
+		if (strlen($storageId) > 64) {
+			return md5($storageId);
+		}
+		return $storageId;
 	}
 
 	/**
@@ -68,9 +88,7 @@ class Storage {
 	 * @return string|null
 	 */
 	public static function getNumericStorageId($storageId) {
-		if (strlen($storageId) > 64) {
-			$storageId = md5($storageId);
-		}
+		$storageId = self::adjustStorageId($storageId);
 
 		$sql = 'SELECT `numeric_id` FROM `*PREFIX*storages` WHERE `id` = ?';
 		$result = \OC_DB::executeAudited($sql, array($storageId));
@@ -95,13 +113,11 @@ class Storage {
 	 * @param string $storageId
 	 */
 	public static function remove($storageId) {
-		if (strlen($storageId) > 64) {
-			$storageId = md5($storageId);
-		}
+		$storageId = self::adjustStorageId($storageId);
+		$numericId = self::getNumericStorageId($storageId);
 		$sql = 'DELETE FROM `*PREFIX*storages` WHERE `id` = ?';
 		\OC_DB::executeAudited($sql, array($storageId));
 
-		$numericId = self::getNumericStorageId($storageId);
 		if (!is_null($numericId)) {
 			$sql = 'DELETE FROM `*PREFIX*filecache` WHERE `storage` = ?';
 			\OC_DB::executeAudited($sql, array($numericId));

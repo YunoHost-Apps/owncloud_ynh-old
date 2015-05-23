@@ -25,10 +25,78 @@
  * Collection of useful functions
  */
 class OC_Helper {
-	private static $tmpFiles = array();
 	private static $mimetypeIcons = array();
 	private static $mimetypeDetector;
 	private static $templateManager;
+	/** @var string[] */
+	private static $mimeTypeAlias = array(
+		'application/octet-stream' => 'file', // use file icon as fallback
+
+		'application/illustrator' => 'image/vector',
+		'application/postscript' => 'image/vector',
+		'image/svg+xml' => 'image/vector',
+
+		'application/coreldraw' => 'image',
+		'application/x-gimp' => 'image',
+		'application/x-photoshop' => 'image',
+
+		'application/x-font-ttf' => 'font',
+		'application/font-woff' => 'font',
+		'application/vnd.ms-fontobject' => 'font',
+
+		'application/json' => 'text/code',
+		'application/x-perl' => 'text/code',
+		'application/x-php' => 'text/code',
+		'text/x-shellscript' => 'text/code',
+		'application/xml' => 'text/html',
+		'text/css' => 'text/code',
+		'application/x-tex' => 'text',
+
+		'application/x-compressed' => 'package/x-generic',
+		'application/x-7z-compressed' => 'package/x-generic',
+		'application/x-deb' => 'package/x-generic',
+		'application/x-gzip' => 'package/x-generic',
+		'application/x-rar-compressed' => 'package/x-generic',
+		'application/x-tar' => 'package/x-generic',
+		'application/vnd.android.package-archive' => 'package/x-generic',
+		'application/zip' => 'package/x-generic',
+
+		'application/msword' => 'x-office/document',
+		'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'x-office/document',
+		'application/vnd.openxmlformats-officedocument.wordprocessingml.template' => 'x-office/document',
+		'application/vnd.ms-word.document.macroEnabled.12' => 'x-office/document',
+		'application/vnd.ms-word.template.macroEnabled.12' => 'x-office/document',
+		'application/vnd.oasis.opendocument.text' => 'x-office/document',
+		'application/vnd.oasis.opendocument.text-template' => 'x-office/document',
+		'application/vnd.oasis.opendocument.text-web' => 'x-office/document',
+		'application/vnd.oasis.opendocument.text-master' => 'x-office/document',
+
+		'application/mspowerpoint' => 'x-office/presentation',
+		'application/vnd.ms-powerpoint' => 'x-office/presentation',
+		'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'x-office/presentation',
+		'application/vnd.openxmlformats-officedocument.presentationml.template' => 'x-office/presentation',
+		'application/vnd.openxmlformats-officedocument.presentationml.slideshow' => 'x-office/presentation',
+		'application/vnd.ms-powerpoint.addin.macroEnabled.12' => 'x-office/presentation',
+		'application/vnd.ms-powerpoint.presentation.macroEnabled.12' => 'x-office/presentation',
+		'application/vnd.ms-powerpoint.template.macroEnabled.12' => 'x-office/presentation',
+		'application/vnd.ms-powerpoint.slideshow.macroEnabled.12' => 'x-office/presentation',
+		'application/vnd.oasis.opendocument.presentation' => 'x-office/presentation',
+		'application/vnd.oasis.opendocument.presentation-template' => 'x-office/presentation',
+
+		'application/msexcel' => 'x-office/spreadsheet',
+		'application/vnd.ms-excel' => 'x-office/spreadsheet',
+		'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'x-office/spreadsheet',
+		'application/vnd.openxmlformats-officedocument.spreadsheetml.template' => 'x-office/spreadsheet',
+		'application/vnd.ms-excel.sheet.macroEnabled.12' => 'x-office/spreadsheet',
+		'application/vnd.ms-excel.template.macroEnabled.12' => 'x-office/spreadsheet',
+		'application/vnd.ms-excel.addin.macroEnabled.12' => 'x-office/spreadsheet',
+		'application/vnd.ms-excel.sheet.binary.macroEnabled.12' => 'x-office/spreadsheet',
+		'application/vnd.oasis.opendocument.spreadsheet' => 'x-office/spreadsheet',
+		'application/vnd.oasis.opendocument.spreadsheet-template' => 'x-office/spreadsheet',
+		'text/csv' => 'x-office/spreadsheet',
+
+		'application/msaccess' => 'database',
+	);
 
 	/**
 	 * Creates an url using a defined route
@@ -59,12 +127,11 @@ class OC_Helper {
 	}
 
 	/**
-	 * @param $key
+	 * @param string $key
 	 * @return string url to the online documentation
 	 */
 	public static function linkToDocs($key) {
-		$theme = new OC_Defaults();
-		return $theme->buildDocLinkToKey($key);
+		return OC::$server->getURLGenerator()->linkToDocs($key);
 	}
 
 	/**
@@ -129,12 +196,12 @@ class OC_Helper {
 	 * Returns a absolute url to the given service.
 	 */
 	public static function linkToPublic($service, $add_slash = false) {
-		return OC::$server->getURLGenerator()->getAbsoluteURL(
-			self::linkTo(
-				'', 'public.php') . '?service=' . $service
-				. (($add_slash && $service[strlen($service) - 1] != '/') ? '/' : ''
-			)
-		);
+		if ($service === 'files') {
+			$url = OC::$server->getURLGenerator()->getAbsoluteURL('/s');
+		} else {
+			$url = OC::$server->getURLGenerator()->getAbsoluteURL(self::linkTo('', 'public.php').'?service='.$service);
+		}
+		return $url . (($add_slash && $service[strlen($service) - 1] != '/') ? '/' : '');
 	}
 
 	/**
@@ -157,73 +224,9 @@ class OC_Helper {
 	 * Returns the path to the image of this file type.
 	 */
 	public static function mimetypeIcon($mimetype) {
-		$alias = array(
-			'application/octet-stream' => 'file', // use file icon as fallback
 
-			'application/illustrator' => 'image',
-			'application/coreldraw' => 'image',
-			'application/x-gimp' => 'image',
-			'application/x-photoshop' => 'image',
-
-			'application/x-font-ttf' => 'font',
-			'application/font-woff' => 'font',
-			'application/vnd.ms-fontobject' => 'font',
-
-			'application/json' => 'text/code',
-			'application/x-perl' => 'text/code',
-			'application/x-php' => 'text/code',
-			'text/x-shellscript' => 'text/code',
-			'application/xml' => 'text/html',
-			'text/css' => 'text/code',
-			'application/x-tex' => 'text',
-
-			'application/x-compressed' => 'package/x-generic',
-			'application/x-7z-compressed' => 'package/x-generic',
-			'application/x-deb' => 'package/x-generic',
-			'application/x-gzip' => 'package/x-generic',
-			'application/x-rar-compressed' => 'package/x-generic',
-			'application/x-tar' => 'package/x-generic',
-			'application/zip' => 'package/x-generic',
-
-			'application/msword' => 'x-office/document',
-			'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'x-office/document',
-			'application/vnd.openxmlformats-officedocument.wordprocessingml.template' => 'x-office/document',
-			'application/vnd.ms-word.document.macroEnabled.12' => 'x-office/document',
-			'application/vnd.ms-word.template.macroEnabled.12' => 'x-office/document',
-			'application/vnd.oasis.opendocument.text' => 'x-office/document',
-			'application/vnd.oasis.opendocument.text-template' => 'x-office/document',
-			'application/vnd.oasis.opendocument.text-web' => 'x-office/document',
-			'application/vnd.oasis.opendocument.text-master' => 'x-office/document',
-
-			'application/mspowerpoint' => 'x-office/presentation',
-			'application/vnd.ms-powerpoint' => 'x-office/presentation',
-			'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'x-office/presentation',
-			'application/vnd.openxmlformats-officedocument.presentationml.template' => 'x-office/presentation',
-			'application/vnd.openxmlformats-officedocument.presentationml.slideshow' => 'x-office/presentation',
-			'application/vnd.ms-powerpoint.addin.macroEnabled.12' => 'x-office/presentation',
-			'application/vnd.ms-powerpoint.presentation.macroEnabled.12' => 'x-office/presentation',
-			'application/vnd.ms-powerpoint.template.macroEnabled.12' => 'x-office/presentation',
-			'application/vnd.ms-powerpoint.slideshow.macroEnabled.12' => 'x-office/presentation',
-			'application/vnd.oasis.opendocument.presentation' => 'x-office/presentation',
-			'application/vnd.oasis.opendocument.presentation-template' => 'x-office/presentation',
-
-			'application/msexcel' => 'x-office/spreadsheet',
-			'application/vnd.ms-excel' => 'x-office/spreadsheet',
-			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'x-office/spreadsheet',
-			'application/vnd.openxmlformats-officedocument.spreadsheetml.template' => 'x-office/spreadsheet',
-			'application/vnd.ms-excel.sheet.macroEnabled.12' => 'x-office/spreadsheet',
-			'application/vnd.ms-excel.template.macroEnabled.12' => 'x-office/spreadsheet',
-			'application/vnd.ms-excel.addin.macroEnabled.12' => 'x-office/spreadsheet',
-			'application/vnd.ms-excel.sheet.binary.macroEnabled.12' => 'x-office/spreadsheet',
-			'application/vnd.oasis.opendocument.spreadsheet' => 'x-office/spreadsheet',
-			'application/vnd.oasis.opendocument.spreadsheet-template' => 'x-office/spreadsheet',
-			'text/csv' => 'x-office/spreadsheet',
-
-			'application/msaccess' => 'database',
-		);
-
-		if (isset($alias[$mimetype])) {
-			$mimetype = $alias[$mimetype];
+		if (isset(self::$mimeTypeAlias[$mimetype])) {
+			$mimetype = self::$mimeTypeAlias[$mimetype];
 		}
 		if (isset(self::$mimetypeIcons[$mimetype])) {
 			return self::$mimetypeIcons[$mimetype];
@@ -276,6 +279,21 @@ class OC_Helper {
 
 	public static function publicPreviewIcon( $path, $token ) {
 		return self::linkToRoute( 'core_ajax_public_preview', array('x' => 36, 'y' => 36, 'file' => $path, 't' => $token));
+	}
+
+	/**
+	 * shows whether the user has an avatar
+	 * @param string $user username
+	 * @return bool avatar set or not
+	**/
+	public static function userAvatarSet($user) {
+		$avatar = new \OC_Avatar($user);
+		$image = $avatar->get(1);
+		if ($image instanceof \OC_Image) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -401,9 +419,10 @@ class OC_Helper {
 	/**
 	 * Recursive deletion of folders
 	 * @param string $dir path to the folder
+	 * @param bool $deleteSelf if set to false only the content of the folder will be deleted
 	 * @return bool
 	 */
-	static function rmdirr($dir) {
+	static function rmdirr($dir, $deleteSelf = true) {
 		if (is_dir($dir)) {
 			$files = new RecursiveIteratorIterator(
 				new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
@@ -418,15 +437,19 @@ class OC_Helper {
 					unlink($fileInfo->getRealPath());
 				}
 			}
-			rmdir($dir);
+			if ($deleteSelf) {
+				rmdir($dir);
+			}
 		} elseif (file_exists($dir)) {
-			unlink($dir);
+			if ($deleteSelf) {
+				unlink($dir);
+			}
 		}
-		if (file_exists($dir)) {
-			return false;
-		} else {
+		if (!$deleteSelf) {
 			return true;
 		}
+
+		return !file_exists($dir);
 	}
 
 	/**
@@ -555,13 +578,23 @@ class OC_Helper {
 		if (!$source or !$target) {
 			return array(0, false);
 		}
+		$bufSize = 8192;
 		$result = true;
 		$count = 0;
 		while (!feof($source)) {
-			if (($c = fwrite($target, fread($source, 8192))) === false) {
+			$buf = fread($source, $bufSize);
+			$bytesWritten = fwrite($target, $buf);
+			if ($bytesWritten !== false) {
+				$count += $bytesWritten;
+			}
+			// note: strlen is expensive so only use it when necessary,
+			// on the last block
+			if ($bytesWritten === false
+				|| ($bytesWritten < $bufSize && $bytesWritten < strlen($buf))
+			) {
+				// write error, could be disk full ?
 				$result = false;
-			} else {
-				$count += $c;
+				break;
 			}
 		}
 		return array($count, $result);
@@ -572,106 +605,24 @@ class OC_Helper {
 	 *
 	 * @param string $postfix
 	 * @return string
+	 * @deprecated Use the TempManager instead
 	 *
 	 * temporary files are automatically cleaned up after the script is finished
 	 */
 	public static function tmpFile($postfix = '') {
-		$file = get_temp_dir() . '/' . md5(time() . rand()) . $postfix;
-		$fh = fopen($file, 'w');
-		fclose($fh);
-		self::$tmpFiles[] = $file;
-		return $file;
-	}
-
-	/**
-	 * move a file to oc-noclean temp dir
-	 *
-	 * @param string $filename
-	 * @return mixed
-	 *
-	 */
-	public static function moveToNoClean($filename = '') {
-		if ($filename == '') {
-			return false;
-		}
-		$tmpDirNoClean = get_temp_dir() . '/oc-noclean/';
-		if (!file_exists($tmpDirNoClean) || !is_dir($tmpDirNoClean)) {
-			if (file_exists($tmpDirNoClean)) {
-				unlink($tmpDirNoClean);
-			}
-			mkdir($tmpDirNoClean);
-		}
-		$newname = $tmpDirNoClean . basename($filename);
-		if (rename($filename, $newname)) {
-			return $newname;
-		} else {
-			return false;
-		}
+		return \OC::$server->getTempManager()->getTemporaryFile($postfix);
 	}
 
 	/**
 	 * create a temporary folder with an unique filename
 	 *
 	 * @return string
+	 * @deprecated Use the TempManager instead
 	 *
 	 * temporary files are automatically cleaned up after the script is finished
 	 */
 	public static function tmpFolder() {
-		$path = get_temp_dir() . '/' . md5(time() . rand());
-		mkdir($path);
-		self::$tmpFiles[] = $path;
-		return $path . '/';
-	}
-
-	/**
-	 * remove all files created by self::tmpFile
-	 */
-	public static function cleanTmp() {
-		$leftoversFile = get_temp_dir() . '/oc-not-deleted';
-		if (file_exists($leftoversFile)) {
-			$leftovers = file($leftoversFile);
-			foreach ($leftovers as $file) {
-				self::rmdirr($file);
-			}
-			unlink($leftoversFile);
-		}
-
-		foreach (self::$tmpFiles as $file) {
-			if (file_exists($file)) {
-				if (!self::rmdirr($file)) {
-					file_put_contents($leftoversFile, $file . "\n", FILE_APPEND);
-				}
-			}
-		}
-	}
-
-	/**
-	 * remove all files in PHP /oc-noclean temp dir
-	 */
-	public static function cleanTmpNoClean() {
-		$tmpDirNoCleanName=get_temp_dir() . '/oc-noclean/';
-		if(file_exists($tmpDirNoCleanName) && is_dir($tmpDirNoCleanName)) {
-			$files=scandir($tmpDirNoCleanName);
-			foreach($files as $file) {
-				$fileName = $tmpDirNoCleanName . $file;
-				if (!\OC\Files\Filesystem::isIgnoredDir($file) && filemtime($fileName) + 600 < time()) {
-					unlink($fileName);
-				}
-			}
-			// if oc-noclean is empty delete it
-			$isTmpDirNoCleanEmpty = true;
-			$tmpDirNoClean = opendir($tmpDirNoCleanName);
-			if(is_resource($tmpDirNoClean)) {
-				while (false !== ($file = readdir($tmpDirNoClean))) {
-					if (!\OC\Files\Filesystem::isIgnoredDir($file)) {
-						$isTmpDirNoCleanEmpty = false;
-					}
-				}
-			}
-			if ($isTmpDirNoCleanEmpty) {
-				rmdir($tmpDirNoCleanName);
-			}
-		}
+		return \OC::$server->getTempManager()->getTemporaryFolder();
 	}
 
 	/**
@@ -886,7 +837,7 @@ class OC_Helper {
 	 */
 	public static function freeSpace($dir) {
 		$freeSpace = \OC\Files\Filesystem::free_space($dir);
-		if ($freeSpace !== \OC\Files\SPACE_UNKNOWN) {
+		if ($freeSpace !== \OCP\Files\FileInfo::SPACE_UNKNOWN) {
 			$freeSpace = max($freeSpace, 0);
 			return $freeSpace;
 		} else {
@@ -935,6 +886,29 @@ class OC_Helper {
 	}
 
 	/**
+	 * Try to find a program
+	 * Note: currently windows is not supported
+	 *
+	 * @param string $program
+	 * @return null|string
+	 */
+	public static function findBinaryPath($program) {
+		$memcache = \OC::$server->getMemCacheFactory()->create('findBinaryPath');
+		if ($memcache->hasKey($program)) {
+			return $memcache->get($program);
+		}
+		$result = null;
+		if (!\OC_Util::runningOnWindows() && self::is_function_enabled('exec')) {
+			exec('command -v ' . escapeshellarg($program) . ' 2> /dev/null', $output, $returnCode);
+			if ($returnCode === 0 && count($output) > 0) {
+				$result = escapeshellcmd($output[0]);
+			}
+		}
+		$memcache->set($program, $result, 3600);
+		return $result;
+	}
+
+	/**
 	 * Calculate the disc space for the given path
 	 *
 	 * @param string $path
@@ -948,6 +922,9 @@ class OC_Helper {
 		if (!$rootInfo) {
 			$rootInfo = \OC\Files\Filesystem::getFileInfo($path, false);
 		}
+		if (!$rootInfo instanceof \OCP\Files\FileInfo) {
+			throw new \OCP\Files\NotFoundException();
+		}
 		$used = $rootInfo->getSize();
 		if ($used < 0) {
 			$used = 0;
@@ -959,7 +936,7 @@ class OC_Helper {
 		}
 		if ($includeExtStorage) {
 			$quota = OC_Util::getUserQuota(\OCP\User::getUser());
-			if ($quota !== \OC\Files\SPACE_UNLIMITED) {
+			if ($quota !== \OCP\Files\FileInfo::SPACE_UNLIMITED) {
 				// always get free space / total space from root + mount points
 				$path = '';
 				return self::getGlobalStorageInfo();
@@ -1018,5 +995,13 @@ class OC_Helper {
 
 		return array('free' => $free, 'used' => $used, 'total' => $total, 'relative' => $relative);
 
+	}
+
+	/**
+	 * Returns whether the config file is set manually to read-only
+	 * @return bool
+	 */
+	public static function isReadOnlyConfigEnabled() {
+		return \OC::$server->getConfig()->getSystemValue('config_is_read_only', false);
 	}
 }

@@ -3,10 +3,12 @@
 /**
  * ownCloud
  *
- * @author Sam Tuke, Frank Karlitschek, Robin Appelman
- * @copyright 2012 Sam Tuke samtuke@owncloud.com,
- * Robin Appelman icewind@owncloud.com, Frank Karlitschek
- * frank@owncloud.org
+ * @copyright (C) 2014 ownCloud, Inc.
+ *
+ * @author Bjoern Schiessle <schiessle@owncloud.com>
+ * @author Sam Tuke <samtuke@owncloud.com>
+ * @author Frank Karlitschek <frank@owncloud.com>
+ * @author Robin Appelman <icewind@owncloud.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
@@ -23,9 +25,7 @@
  *
  */
 
-namespace OCA\Encryption;
-
-require_once __DIR__ . '/../3rdparty/Crypt_Blowfish/Blowfish.php';
+namespace OCA\Files_Encryption;
 
 /**
  * Class for common cryptography functionality
@@ -133,7 +133,7 @@ class Crypt {
 	 * Check if a file's contents contains an IV and is symmetrically encrypted
 	 * @param string $content
 	 * @return boolean
-	 * @note see also OCA\Encryption\Util->isEncryptedPath()
+	 * @note see also \OCA\Files_Encryption\Util->isEncryptedPath()
 	 */
 	public static function isCatfileContent($content) {
 
@@ -147,9 +147,6 @@ class Crypt {
 
 		// Fetch encryption metadata from end of file
 		$meta = substr($noPadding, -22);
-
-		// Fetch IV from end of file
-		$iv = substr($meta, -16);
 
 		// Fetch identifier from start of metadata
 		$identifier = substr($meta, 0, 6);
@@ -184,43 +181,13 @@ class Crypt {
 	}
 
 	/**
-	 * Check if a file is encrypted via legacy system
-	 * @param boolean $isCatFileContent
-	 * @param string $relPath The path of the file, relative to user/data;
-	 *        e.g. filename or /Docs/filename, NOT admin/files/filename
-	 * @return boolean
-	 */
-	public static function isLegacyEncryptedContent($isCatFileContent, $relPath) {
-
-		// Fetch all file metadata from DB
-		$metadata = \OC\Files\Filesystem::getFileInfo($relPath, '');
-
-		// If a file is flagged with encryption in DB, but isn't a
-		// valid content + IV combination, it's probably using the
-		// legacy encryption system
-		if (isset($metadata['encrypted'])
-			&& $metadata['encrypted'] === true
-			&& $isCatFileContent === false
-		) {
-
-			return true;
-
-		} else {
-
-			return false;
-
-		}
-
-	}
-
-	/**
 	 * Symmetrically encrypt a string
 	 * @param string $plainContent
 	 * @param string $iv
 	 * @param string $passphrase
 	 * @param string $cypher used for encryption, currently we support AES-128-CFB and AES-256-CFB
 	 * @return string encrypted file content
-	 * @throws \OCA\Encryption\Exceptions\EncryptionException
+	 * @throws \OCA\Files_Encryption\Exception\EncryptionException
 	 */
 	private static function encrypt($plainContent, $iv, $passphrase = '', $cipher = Crypt::DEFAULT_CIPHER) {
 
@@ -229,7 +196,7 @@ class Crypt {
 		if (!$encryptedContent) {
 			$error = "Encryption (symmetric) of content failed: " . openssl_error_string();
 			\OCP\Util::writeLog('Encryption library', $error, \OCP\Util::ERROR);
-			throw new Exceptions\EncryptionException($error, 50);
+			throw new Exception\EncryptionException($error, Exception\EncryptionException::ENCRYPTION_FAILED);
 		}
 
 		return $encryptedContent;
@@ -321,9 +288,9 @@ class Crypt {
 			$padded = self::addPadding($catfile);
 
 			return $padded;
-		} catch (OCA\Encryption\Exceptions\EncryptionException $e) {
-			$message = 'Could not encrypt file content (code: ' . $e->getCode . '): ';
-			\OCP\Util::writeLog('files_encryption', $message . $e->getMessage, \OCP\Util::ERROR);
+		} catch (Exception\EncryptionException $e) {
+			$message = 'Could not encrypt file content (code: ' . $e->getCode() . '): ';
+			\OCP\Util::writeLog('files_encryption', $message . $e->getMessage(), \OCP\Util::ERROR);
 			return false;
 		}
 
@@ -409,7 +376,7 @@ class Crypt {
 	 * @param string $plainContent content to be encrypted
 	 * @param array $publicKeys array keys must be the userId of corresponding user
 	 * @return array keys: keys (array, key = userId), data
-	 * @throws \OCA\Encryption\Exceptions\\MultiKeyEncryptException if encryption failed
+	 * @throws \OCA\Files_Encryption\Exception\MultiKeyEncryptException if encryption failed
 	 * @note symmetricDecryptFileContent() can decrypt files created using this method
 	 */
 	public static function multiKeyEncrypt($plainContent, array $publicKeys) {
@@ -417,7 +384,7 @@ class Crypt {
 		// openssl_seal returns false without errors if $plainContent
 		// is empty, so trigger our own error
 		if (empty($plainContent)) {
-			throw new Exceptions\MultiKeyEncryptException('Cannot mutliKeyEncrypt empty plain content', 10);
+			throw new Exception\MultiKeyEncryptException('Cannot multiKeyEncrypt empty plain content', Exception\MultiKeyEncryptException::EMPTY_DATA);
 		}
 
 		// Set empty vars to be set by openssl by reference
@@ -444,7 +411,8 @@ class Crypt {
 			);
 
 		} else {
-			throw new Exceptions\MultiKeyEncryptException('multi key encryption failed: ' . openssl_error_string(), 20);
+			throw new Exception\MultiKeyEncryptException('multi key encryption failed: ' . openssl_error_string(),
+					Exception\MultiKeyEncryptException::OPENSSL_SEAL_FAILED);
 		}
 
 	}
@@ -454,7 +422,7 @@ class Crypt {
 	 * @param string $encryptedContent
 	 * @param string $shareKey
 	 * @param mixed $privateKey
-	 * @throws \OCA\Encryption\Exceptions\\MultiKeyDecryptException if decryption failed
+	 * @throws \OCA\Files_Encryption\Exception\MultiKeyDecryptException if decryption failed
 	 * @internal param string $plainContent contains decrypted content
 	 * @return string $plainContent decrypted string
 	 * @note symmetricDecryptFileContent() can be used to decrypt files created using this method
@@ -464,7 +432,8 @@ class Crypt {
 	public static function multiKeyDecrypt($encryptedContent, $shareKey, $privateKey) {
 
 		if (!$encryptedContent) {
-			throw new Exceptions\MultiKeyDecryptException('Cannot mutliKeyDecrypt empty plain content', 10);
+			throw new Exception\MultiKeyDecryptException('Cannot mutliKeyDecrypt empty plain content',
+					Exception\MultiKeyDecryptException::EMPTY_DATA);
 		}
 
 		if (openssl_open($encryptedContent, $plainContent, $shareKey, $privateKey)) {
@@ -472,7 +441,8 @@ class Crypt {
 			return $plainContent;
 
 		} else {
-			throw new Exceptions\MultiKeyDecryptException('multiKeyDecrypt with share-key' . $shareKey . 'failed: ' . openssl_error_string(), 20);
+			throw new Exception\MultiKeyDecryptException('multiKeyDecrypt with share-key' . $shareKey . 'failed: ' . openssl_error_string(),
+					Exception\MultiKeyDecryptException::OPENSSL_OPEN_FAILED);
 		}
 
 	}
@@ -533,64 +503,6 @@ class Crypt {
 	}
 
 	/**
-	 * Get the blowfish encryption handler for a key
-	 * @param string $key (optional)
-	 * @return \Crypt_Blowfish blowfish object
-	 *
-	 * if the key is left out, the default handler will be used
-	 */
-	private static function getBlowfish($key = '') {
-
-		if ($key) {
-
-			return new \Legacy_Crypt_Blowfish($key);
-
-		} else {
-
-			return false;
-
-		}
-
-	}
-
-	/**
-	 * decrypts content using legacy blowfish system
-	 * @param string $content the cleartext message you want to decrypt
-	 * @param string $passphrase
-	 * @return string cleartext content
-	 *
-	 * This function decrypts an content
-	 */
-	public static function legacyDecrypt($content, $passphrase = '') {
-
-		$bf = self::getBlowfish($passphrase);
-
-		$decrypted = $bf->decrypt($content);
-
-		return $decrypted;
-	}
-
-	/**
-	 * @param string $data
-	 * @param string $key
-	 * @param int $maxLength
-	 * @return string
-	 */
-	public static function legacyBlockDecrypt($data, $key = '', $maxLength = 0) {
-
-		$result = '';
-		while (strlen($data)) {
-			$result .= self::legacyDecrypt(substr($data, 0, 8192), $key);
-			$data = substr($data, 8192);
-		}
-		if ($maxLength > 0) {
-			return substr($result, 0, $maxLength);
-		} else {
-			return rtrim($result, "\0");
-		}
-	}
-
-	/**
 	 * read header into array
 	 *
 	 * @param string $data
@@ -639,14 +551,15 @@ class Crypt {
 	 * get chiper from header
 	 *
 	 * @param array $header
-	 * @throws \OCA\Encryption\Exceptions\EncryptionException
+	 * @throws \OCA\Files_Encryption\Exception\EncryptionException
 	 */
 	public static function getCipher($header) {
 		$cipher = isset($header['cipher']) ? $header['cipher'] : 'AES-128-CFB';
 
 		if ($cipher !== 'AES-256-CFB' && $cipher !== 'AES-128-CFB') {
 
-			throw new \OCA\Encryption\Exceptions\EncryptionException('file header broken, no supported cipher defined', 40);
+			throw new Exception\EncryptionException('file header broken, no supported cipher defined',
+					Exception\EncryptionException::UNKNOWN_CIPHER);
 		}
 
 		return $cipher;

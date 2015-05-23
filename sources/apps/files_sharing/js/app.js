@@ -9,8 +9,14 @@
  */
 
 if (!OCA.Sharing) {
+	/**
+	 * @namespace OCA.Sharing
+	 */
 	OCA.Sharing = {};
 }
+/**
+ * @namespace
+ */
 OCA.Sharing.App = {
 
 	_inFileList: null,
@@ -24,6 +30,7 @@ OCA.Sharing.App = {
 		this._inFileList = new OCA.Sharing.FileList(
 			$el,
 			{
+				id: 'shares.self',
 				scrollContainer: $('#app-content'),
 				sharedWithUser: true,
 				fileActions: this._createFileActions()
@@ -32,7 +39,9 @@ OCA.Sharing.App = {
 
 		this._extendFileList(this._inFileList);
 		this._inFileList.appName = t('files_sharing', 'Shared with you');
-		this._inFileList.$el.find('#emptycontent').text(t('files_sharing', 'No files have been shared with you yet.'));
+		this._inFileList.$el.find('#emptycontent').html('<div class="icon-share"></div>' +
+			'<h2>' + t('files_sharing', 'Nothing shared with you yet') + '</h2>' +
+			'<p>' + t('files_sharing', 'Files and folders others share with you will show up here') + '</p>');
 		return this._inFileList;
 	},
 
@@ -43,6 +52,7 @@ OCA.Sharing.App = {
 		this._outFileList = new OCA.Sharing.FileList(
 			$el,
 			{
+				id: 'shares.others',
 				scrollContainer: $('#app-content'),
 				sharedWithUser: false,
 				fileActions: this._createFileActions()
@@ -51,7 +61,9 @@ OCA.Sharing.App = {
 
 		this._extendFileList(this._outFileList);
 		this._outFileList.appName = t('files_sharing', 'Shared with others');
-		this._outFileList.$el.find('#emptycontent').text(t('files_sharing', 'You haven\'t shared any files yet.'));
+		this._outFileList.$el.find('#emptycontent').html('<div class="icon-share"></div>' +
+			'<h2>' + t('files_sharing', 'Nothing shared yet') + '</h2>' +
+			'<p>' + t('files_sharing', 'Files and folders you share will show up here') + '</p>');
 		return this._outFileList;
 	},
 
@@ -62,6 +74,7 @@ OCA.Sharing.App = {
 		this._linkFileList = new OCA.Sharing.FileList(
 			$el,
 			{
+				id: 'shares.link',
 				scrollContainer: $('#app-content'),
 				linksOnly: true,
 				fileActions: this._createFileActions()
@@ -70,7 +83,9 @@ OCA.Sharing.App = {
 
 		this._extendFileList(this._linkFileList);
 		this._linkFileList.appName = t('files_sharing', 'Shared by link');
-		this._linkFileList.$el.find('#emptycontent').text(t('files_sharing', 'You haven\'t shared any files by link yet.'));
+		this._linkFileList.$el.find('#emptycontent').html('<div class="icon-public"></div>' +
+			'<h2>' + t('files_sharing', 'No shared links') + '</h2>' +
+			'<p>' + t('files_sharing', 'Files and folders you share by link will show up here') + '</p>');
 		return this._linkFileList;
 	},
 

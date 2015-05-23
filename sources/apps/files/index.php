@@ -20,6 +20,7 @@
  * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+use OCA\Files\Appinfo\Application;
 
 // Check if we are a user
 OCP\User::checkLoggedIn();
@@ -36,8 +37,17 @@ OCP\Util::addscript('files', 'jquery-visibility');
 OCP\Util::addscript('files', 'filesummary');
 OCP\Util::addscript('files', 'breadcrumb');
 OCP\Util::addscript('files', 'filelist');
+OCP\Util::addscript('files', 'search');
+
+\OCP\Util::addScript('files', 'favoritesfilelist');
+\OCP\Util::addScript('files', 'tagsplugin');
+\OCP\Util::addScript('files', 'favoritesplugin');
+
+\OC_Util::addVendorScript('core', 'handlebars/handlebars');
 
 OCP\App::setActiveNavigationEntry('files_index');
+
+$l = \OC::$server->getL10N('files');
 
 $isIE8 = false;
 preg_match('/MSIE (.*?);/', $_SERVER['HTTP_USER_AGENT'], $matches);
@@ -68,7 +78,7 @@ $storageInfo=OC_Helper::getStorageInfo('/', $dirInfo);
 // if the encryption app is disabled, than everything is fine (INIT_SUCCESSFUL status code)
 $encryptionInitStatus = 2;
 if (OC_App::isEnabled('files_encryption')) {
-	$session = new \OCA\Encryption\Session(new \OC\Files\View('/'));
+	$session = new \OCA\Files_Encryption\Session(new \OC\Files\View('/'));
 	$encryptionInitStatus = $session->getInitialized();
 }
 
@@ -77,6 +87,16 @@ $nav = new OCP\Template('files', 'appnavigation', '');
 function sortNavigationItems($item1, $item2) {
 	return $item1['order'] - $item2['order'];
 }
+
+\OCA\Files\App::getNavigationManager()->add(
+	array(
+		'id' => 'favorites',
+		'appname' => 'files',
+		'script' => 'simplelist.php',
+		'order' => 5,
+		'name' => $l->t('Favorites')
+	)
+);
 
 $navItems = \OCA\Files\App::getNavigationManager()->getAll();
 usort($navItems, 'sortNavigationItems');
@@ -119,6 +139,7 @@ $tmpl->assign('usedSpacePercent', (int)$storageInfo['relative']);
 $tmpl->assign('isPublic', false);
 $tmpl->assign("encryptedFiles", \OCP\Util::encryptedFiles());
 $tmpl->assign("mailNotificationEnabled", $config->getAppValue('core', 'shareapi_allow_mail_notification', 'no'));
+$tmpl->assign("mailPublicNotificationEnabled", $config->getAppValue('core', 'shareapi_allow_public_notification', 'no'));
 $tmpl->assign("allowShareWithLink", $config->getAppValue('core', 'shareapi_allow_links', 'yes'));
 $tmpl->assign("encryptionInitStatus", $encryptionInitStatus);
 $tmpl->assign('appNavigation', $nav);

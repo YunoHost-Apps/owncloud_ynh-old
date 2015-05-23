@@ -35,6 +35,14 @@ namespace OCP;
  */
 interface IConfig {
 	/**
+	 * Sets and deletes system wide values
+	 *
+	 * @param array $configs Associative array with `key => value` pairs
+	 *                       If value is null, the config key will be deleted
+	 */
+	public function setSystemValues(array $configs);
+
+	/**
 	 * Sets a new system wide value
 	 *
 	 * @param string $key the key of the value, under which will be saved
@@ -46,11 +54,25 @@ interface IConfig {
 	 * Looks up a system wide defined value
 	 *
 	 * @param string $key the key of the value, under which it was saved
-	 * @param string $default the default value to be returned if the value isn't set
-	 * @return string the saved value
+	 * @param mixed $default the default value to be returned if the value isn't set
+	 * @return mixed the value or $default
 	 */
 	public function getSystemValue($key, $default = '');
 
+	/**
+	 * Delete a system wide defined value
+	 *
+	 * @param string $key the key of the value, under which it was saved
+	 */
+	public function deleteSystemValue($key);
+
+	/**
+	 * Get all keys stored for an app
+	 *
+	 * @param string $appName the appName that we stored the value under
+	 * @return string[] the keys stored for the app
+	 */
+	public function getAppKeys($appName);
 
 	/**
 	 * Writes a new app wide value
@@ -72,6 +94,20 @@ interface IConfig {
 	 */
 	public function getAppValue($appName, $key, $default = '');
 
+	/**
+	 * Delete an app wide defined value
+	 *
+	 * @param string $appName the appName that we stored the value under
+	 * @param string $key the key of the value, under which it was saved
+	 */
+	public function deleteAppValue($appName, $key);
+
+	/**
+	 * Removes all keys in appconfig belonging to the app
+	 *
+	 * @param string $appName the appName the configs are stored under
+	 */
+	public function deleteAppValues($appName);
 
 	/**
 	 * Set a user defined value
@@ -80,9 +116,10 @@ interface IConfig {
 	 * @param string $appName the appName that we want to store the value under
 	 * @param string $key the key under which the value is being stored
 	 * @param string $value the value that you want to store
-	 * @return void
+	 * @param string $preCondition only update if the config value was previously the value passed as $preCondition
+	 * @throws \OCP\PreConditionNotMetException if a precondition is specified and is not met
 	 */
-	public function setUserValue($userId, $appName, $key, $value);
+	public function setUserValue($userId, $appName, $key, $value, $preCondition = null);
 
 	/**
 	 * Shortcut for getting a user defined value
@@ -94,4 +131,56 @@ interface IConfig {
 	 * @return string
 	 */
 	public function getUserValue($userId, $appName, $key, $default = '');
+
+	/**
+	 * Fetches a mapped list of userId -> value, for a specified app and key and a list of user IDs.
+	 *
+	 * @param string $appName app to get the value for
+	 * @param string $key the key to get the value for
+	 * @param array $userIds the user IDs to fetch the values for
+	 * @return array Mapped values: userId => value
+	 */
+	public function getUserValueForUsers($appName, $key, $userIds);
+
+	/**
+	 * Get the keys of all stored by an app for the user
+	 *
+	 * @param string $userId the userId of the user that we want to store the value under
+	 * @param string $appName the appName that we stored the value under
+	 * @return string[]
+	 */
+	public function getUserKeys($userId, $appName);
+
+	/**
+	 * Delete a user value
+	 *
+	 * @param string $userId the userId of the user that we want to store the value under
+	 * @param string $appName the appName that we stored the value under
+	 * @param string $key the key under which the value is being stored
+	 */
+	public function deleteUserValue($userId, $appName, $key);
+
+	/**
+	 * Delete all user values
+	 *
+	 * @param string $userId the userId of the user that we want to remove all values from
+	 */
+	public function deleteAllUserValues($userId);
+
+	/**
+	 * Delete all user related values of one app
+	 *
+	 * @param string $appName the appName of the app that we want to remove all values from
+	 */
+	public function deleteAppFromAllUsers($appName);
+
+	/**
+	 * Determines the users that have the given value set for a specific app-key-pair
+	 *
+	 * @param string $appName the app to get the user for
+	 * @param string $key the key to get the user for
+	 * @param string $value the value to get the user for
+	 * @return array of user IDs
+	 */
+	public function getUsersForUserValue($appName, $key, $value);
 }

@@ -43,6 +43,14 @@ interface IURLGenerator {
 	public function linkToRoute($routeName, $arguments = array());
 
 	/**
+	 * Returns the absolute URL for a route
+	 * @param string $routeName the name of the route
+	 * @param array $arguments an array with arguments which will be filled into the url
+	 * @return string the absolute url
+	 */
+	public function linkToRouteAbsolute($routeName, $arguments = array());
+
+	/**
 	 * Returns an URL for an image or file
 	 * @param string $appName the name of the app
 	 * @param string $file the name of the file
@@ -61,8 +69,14 @@ interface IURLGenerator {
 
 	/**
 	 * Makes an URL absolute
-	 * @param string $url the url in the owncloud host
+	 * @param string $url the url in the ownCloud host
 	 * @return string the absolute version of the url
 	 */
 	public function getAbsoluteURL($url);
+
+	/**
+	 * @param string $key
+	 * @return string url to the online documentation
+	 */
+	public function linkToDocs($key);
 }

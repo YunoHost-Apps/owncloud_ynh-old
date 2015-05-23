@@ -15,15 +15,38 @@
 (function() {
 
 	if (!OCA.Files) {
+		/**
+		 * Namespace for the files app
+		 * @namespace OCA.Files
+		 */
 		OCA.Files = {};
 	}
 
-	var App = {
+	/**
+	 * @namespace OCA.Files.App
+	 */
+	OCA.Files.App = {
+		/**
+		 * Navigation control
+		 *
+		 * @member {OCA.Files.Navigation}
+		 */
 		navigation: null,
 
+		/**
+		 * File list for the "All files" section.
+		 *
+		 * @member {OCA.Files.FileList}
+		 */
+		fileList: null,
+
+		/**
+		 * Initializes the files app
+		 */
 		initialize: function() {
 			this.navigation = new OCA.Files.Navigation($('#app-navigation'));
 
+			var urlParams = OC.Util.History.parseUrlQuery();
 			var fileActions = new OCA.Files.FileActions();
 			// default actions
 			fileActions.registerDefaultActions();
@@ -47,7 +70,8 @@
 					dragOptions: dragOptions,
 					folderDropOptions: folderDropOptions,
 					fileActions: fileActions,
-					allowLegacyActions: true
+					allowLegacyActions: true,
+					scrollTo: urlParams.scrollto
 				}
 			);
 			this.files.initialize();
@@ -56,9 +80,11 @@
 			// refer to the one of the "files" view
 			window.FileList = this.fileList;
 
+			OC.Plugins.attach('OCA.Files.App', this);
+
 			this._setupEvents();
 			// trigger URL change event handlers
-			this._onPopState(OC.Util.History.parseUrlQuery());
+			this._onPopState(urlParams);
 		},
 
 		/**
@@ -189,7 +215,6 @@
 			OC.Util.History.pushState(params);
 		}
 	};
-	OCA.Files.App = App;
 })();
 
 $(document).ready(function() {

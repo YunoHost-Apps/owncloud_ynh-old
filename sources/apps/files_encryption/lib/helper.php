@@ -3,8 +3,10 @@
 /**
  * ownCloud
  *
- * @author Florin Peter
- * @copyright 2013 Florin Peter <owncloud@florin-peter.de>
+ * @copyright (C) 2014 ownCloud, Inc.
+ *
+ * @author Florin Peter <owncloud@florin-peter.de>
+ * @author Bjoern Schiessle <schiessle@owncloud.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
@@ -21,11 +23,11 @@
  *
  */
 
-namespace OCA\Encryption;
+namespace OCA\Files_Encryption;
 
 /**
  * Class to manage registration of hooks an various helper methods
- * @package OCA\Encryption
+ * @package OCA\Files_Encryption
  */
 class Helper {
 
@@ -37,9 +39,9 @@ class Helper {
 	 */
 	public static function registerShareHooks() {
 
-		\OCP\Util::connectHook('OCP\Share', 'pre_shared', 'OCA\Encryption\Hooks', 'preShared');
-		\OCP\Util::connectHook('OCP\Share', 'post_shared', 'OCA\Encryption\Hooks', 'postShared');
-		\OCP\Util::connectHook('OCP\Share', 'post_unshare', 'OCA\Encryption\Hooks', 'postUnshare');
+		\OCP\Util::connectHook('OCP\Share', 'pre_shared', 'OCA\Files_Encryption\Hooks', 'preShared');
+		\OCP\Util::connectHook('OCP\Share', 'post_shared', 'OCA\Files_Encryption\Hooks', 'postShared');
+		\OCP\Util::connectHook('OCP\Share', 'post_unshare', 'OCA\Files_Encryption\Hooks', 'postUnshare');
 	}
 
 	/**
@@ -48,12 +50,12 @@ class Helper {
 	 */
 	public static function registerUserHooks() {
 
-		\OCP\Util::connectHook('OC_User', 'post_login', 'OCA\Encryption\Hooks', 'login');
-		\OCP\Util::connectHook('OC_User', 'logout', 'OCA\Encryption\Hooks', 'logout');
-		\OCP\Util::connectHook('OC_User', 'post_setPassword', 'OCA\Encryption\Hooks', 'setPassphrase');
-		\OCP\Util::connectHook('OC_User', 'pre_setPassword', 'OCA\Encryption\Hooks', 'preSetPassphrase');
-		\OCP\Util::connectHook('OC_User', 'post_createUser', 'OCA\Encryption\Hooks', 'postCreateUser');
-		\OCP\Util::connectHook('OC_User', 'post_deleteUser', 'OCA\Encryption\Hooks', 'postDeleteUser');
+		\OCP\Util::connectHook('OC_User', 'post_login', 'OCA\Files_Encryption\Hooks', 'login');
+		\OCP\Util::connectHook('OC_User', 'logout', 'OCA\Files_Encryption\Hooks', 'logout');
+		\OCP\Util::connectHook('OC_User', 'post_setPassword', 'OCA\Files_Encryption\Hooks', 'setPassphrase');
+		\OCP\Util::connectHook('OC_User', 'pre_setPassword', 'OCA\Files_Encryption\Hooks', 'preSetPassphrase');
+		\OCP\Util::connectHook('OC_User', 'post_createUser', 'OCA\Files_Encryption\Hooks', 'postCreateUser');
+		\OCP\Util::connectHook('OC_User', 'post_deleteUser', 'OCA\Files_Encryption\Hooks', 'postDeleteUser');
 	}
 
 	/**
@@ -62,14 +64,15 @@ class Helper {
 	 */
 	public static function registerFilesystemHooks() {
 
-		\OCP\Util::connectHook('OC_Filesystem', 'rename', 'OCA\Encryption\Hooks', 'preRename');
-		\OCP\Util::connectHook('OC_Filesystem', 'post_rename', 'OCA\Encryption\Hooks', 'postRenameOrCopy');
-		\OCP\Util::connectHook('OC_Filesystem', 'copy', 'OCA\Encryption\Hooks', 'preCopy');
-		\OCP\Util::connectHook('OC_Filesystem', 'post_copy', 'OCA\Encryption\Hooks', 'postRenameOrCopy');
-		\OCP\Util::connectHook('OC_Filesystem', 'post_delete', 'OCA\Encryption\Hooks', 'postDelete');
-		\OCP\Util::connectHook('OC_Filesystem', 'delete', 'OCA\Encryption\Hooks', 'preDelete');
-		\OCP\Util::connectHook('OC_Filesystem', 'post_umount', 'OCA\Encryption\Hooks', 'postUmount');
-		\OCP\Util::connectHook('OC_Filesystem', 'umount', 'OCA\Encryption\Hooks', 'preUmount');
+		\OCP\Util::connectHook('OC_Filesystem', 'rename', 'OCA\Files_Encryption\Hooks', 'preRename');
+		\OCP\Util::connectHook('OC_Filesystem', 'post_rename', 'OCA\Files_Encryption\Hooks', 'postRenameOrCopy');
+		\OCP\Util::connectHook('OC_Filesystem', 'copy', 'OCA\Files_Encryption\Hooks', 'preCopy');
+		\OCP\Util::connectHook('OC_Filesystem', 'post_copy', 'OCA\Files_Encryption\Hooks', 'postRenameOrCopy');
+		\OCP\Util::connectHook('OC_Filesystem', 'post_delete', 'OCA\Files_Encryption\Hooks', 'postDelete');
+		\OCP\Util::connectHook('OC_Filesystem', 'delete', 'OCA\Files_Encryption\Hooks', 'preDelete');
+		\OCP\Util::connectHook('\OC\Core\LostPassword\Controller\LostController', 'post_passwordReset', 'OCA\Files_Encryption\Hooks', 'postPasswordReset');
+		\OCP\Util::connectHook('OC_Filesystem', 'post_umount', 'OCA\Files_Encryption\Hooks', 'postUnmount');
+		\OCP\Util::connectHook('OC_Filesystem', 'umount', 'OCA\Files_Encryption\Hooks', 'preUnmount');
 	}
 
 	/**
@@ -78,8 +81,8 @@ class Helper {
 	 */
 	public static function registerAppHooks() {
 
-		\OCP\Util::connectHook('OC_App', 'pre_disable', 'OCA\Encryption\Hooks', 'preDisable');
-		\OCP\Util::connectHook('OC_App', 'post_disable', 'OCA\Encryption\Hooks', 'postEnable');
+		\OCP\Util::connectHook('OC_App', 'pre_disable', 'OCA\Files_Encryption\Hooks', 'preDisable');
+		\OCP\Util::connectHook('OC_App', 'post_disable', 'OCA\Files_Encryption\Hooks', 'postEnable');
 	}
 
 	/**
@@ -89,7 +92,7 @@ class Helper {
 	 * @param string $password
 	 * @return bool
 	 */
-	public static function setupUser($util, $password) {
+	public static function setupUser(Util $util, $password) {
 		// Check files_encryption infrastructure is ready for action
 		if (!$util->ready()) {
 
@@ -105,12 +108,29 @@ class Helper {
 	}
 
 	/**
+	 * get recovery key id
+	 *
+	 * @return string|bool recovery key ID or false
+	 */
+	public static function getRecoveryKeyId() {
+		$appConfig = \OC::$server->getAppConfig();
+		$key = $appConfig->getValue('files_encryption', 'recoveryKeyId');
+
+		return ($key === null) ? false : $key;
+	}
+
+	public static function getPublicShareKeyId() {
+		$appConfig = \OC::$server->getAppConfig();
+		$key = $appConfig->getValue('files_encryption', 'publicShareKeyId');
+
+		return ($key === null) ? false : $key;
+	}
+
+	/**
 	 * enable recovery
 	 *
 	 * @param string $recoveryKeyId
 	 * @param string $recoveryPassword
-	 * @internal param \OCA\Encryption\Util $util
-	 * @internal param string $password
 	 * @return bool
 	 */
 	public static function adminEnableRecovery($recoveryKeyId, $recoveryPassword) {
@@ -123,40 +143,24 @@ class Helper {
 			$appConfig->setValue('files_encryption', 'recoveryKeyId', $recoveryKeyId);
 		}
 
-		if (!$view->is_dir('/owncloud_private_key')) {
-			$view->mkdir('/owncloud_private_key');
-		}
+		if (!Keymanager::recoveryKeyExists($view)) {
 
-		if (
-			(!$view->file_exists("/public-keys/" . $recoveryKeyId . ".public.key")
-			 || !$view->file_exists("/owncloud_private_key/" . $recoveryKeyId . ".private.key"))
-		) {
-
-			$keypair = \OCA\Encryption\Crypt::createKeypair();
-
-			\OC_FileProxy::$enabled = false;
+			$keypair = Crypt::createKeypair();
 
 			// Save public key
+			Keymanager::setPublicKey($keypair['publicKey'], $recoveryKeyId);
 
-			if (!$view->is_dir('/public-keys')) {
-				$view->mkdir('/public-keys');
-			}
-
-			$view->file_put_contents('/public-keys/' . $recoveryKeyId . '.public.key', $keypair['publicKey']);
-
-			$cipher = \OCA\Encryption\Helper::getCipher();
-			$encryptedKey = \OCA\Encryption\Crypt::symmetricEncryptFileContent($keypair['privateKey'], $recoveryPassword, $cipher);
+			$cipher = Helper::getCipher();
+			$encryptedKey = Crypt::symmetricEncryptFileContent($keypair['privateKey'], $recoveryPassword, $cipher);
 			if ($encryptedKey) {
-				Keymanager::setPrivateSystemKey($encryptedKey, $recoveryKeyId . '.private.key');
+				Keymanager::setPrivateSystemKey($encryptedKey, $recoveryKeyId);
 				// Set recoveryAdmin as enabled
 				$appConfig->setValue('files_encryption', 'recoveryAdminEnabled', 1);
 				$return = true;
 			}
 
-			\OC_FileProxy::$enabled = true;
-
 		} else { // get recovery key and check the password
-			$util = new \OCA\Encryption\Util(new \OC\Files\View('/'), \OCP\User::getUser());
+			$util = new Util(new \OC\Files\View('/'), \OCP\User::getUser());
 			$return = $util->checkRecoveryPassword($recoveryPassword);
 			if ($return) {
 				$appConfig->setValue('files_encryption', 'recoveryAdminEnabled', 1);
@@ -246,15 +250,14 @@ class Helper {
 	 * @return string e.g. turns '/admin/files/test.txt' into 'test.txt'
 	 */
 	public static function stripUserFilesPath($path) {
-		$trimmed = ltrim($path, '/');
-		$split = explode('/', $trimmed);
+		$split = self::splitPath($path);
 
 		// it is not a file relative to data/user/files
-		if (count($split) < 3 || $split[1] !== 'files') {
+		if (count($split) < 4 || $split[2] !== 'files') {
 			return false;
 		}
 
-		$sliced = array_slice($split, 2);
+		$sliced = array_slice($split, 3);
 		$relPath = implode('/', $sliced);
 
 		return $relPath;
@@ -263,7 +266,7 @@ class Helper {
 	/**
 	 * try to get the user from the path if no user is logged in
 	 * @param string $path
-	 * @return mixed user or false if we couldn't determine a user
+	 * @return string user
 	 */
 	public static function getUser($path) {
 
@@ -277,65 +280,85 @@ class Helper {
 
 		// if no user is logged in we try to access a publicly shared files.
 		// In this case we need to try to get the user from the path
+		return self::getUserFromPath($path);
+	}
 
-		$trimmed = ltrim($path, '/');
-		$split = explode('/', $trimmed);
+	/**
+	 * extract user from path
+	 *
+	 * @param string $path
+	 * @return string user id
+	 * @throws Exception\EncryptionException
+	 */
+	public static function getUserFromPath($path) {
+		$split = self::splitPath($path);
 
-		// it is not a file relative to data/user/files
-		if (count($split) < 2 || ($split[1] !== 'files' && $split[1] !== 'cache')) {
-			return false;
+		if (count($split) > 2 && (
+			$split[2] === 'files' || $split[2] === 'files_versions' || $split[2] === 'cache' || $split[2] === 'files_trashbin')) {
+
+			$user = $split[1];
+
+			if (\OCP\User::userExists($user)) {
+				return $user;
+			}
 		}
 
-		$user = $split[0];
-
-		if (\OCP\User::userExists($user)) {
-			return $user;
-		}
-
-		return false;
+		throw new Exception\EncryptionException('Could not determine user', Exception\EncryptionException::GENERIC);
 	}
 
 	/**
 	 * get path to the corresponding file in data/user/files if path points
-	 *        to a version or to a file in cache
-	 * @param string $path path to a version or a file in the trash
+	 * to a file in cache
+	 *
+	 * @param string $path path to a file in cache
 	 * @return string path to corresponding file relative to data/user/files
+	 * @throws Exception\EncryptionException
 	 */
-	public static function getPathToRealFile($path) {
-		$trimmed = ltrim($path, '/');
-		$split = explode('/', $trimmed);
-		$result = false;
+	public static function getPathFromCachedFile($path) {
+		$split = self::splitPath($path);
 
-		if (count($split) >= 3 && ($split[1] === "files_versions" || $split[1] === 'cache')) {
-			$sliced = array_slice($split, 2);
-			$result = implode('/', $sliced);
-			if ($split[1] === "files_versions") {
-				// we skip user/files
-				$sliced = array_slice($split, 2);
-				$relPath = implode('/', $sliced);
-				//remove the last .v
-				$result = substr($relPath, 0, strrpos($relPath, '.v'));
-			}
-			if ($split[1] === "cache") {
-				// we skip /user/cache/transactionId
-				$sliced = array_slice($split, 3);
-				$result = implode('/', $sliced);
-				//prepare the folders
-				self::mkdirr($path, new \OC\Files\View('/'));
-			}
+		if (count($split) < 5) {
+			throw new Exception\EncryptionException('no valid cache file path', Exception\EncryptionException::GENERIC);
 		}
 
-		return $result;
+		// we skip /user/cache/transactionId
+		$sliced = array_slice($split, 4);
+
+		return implode('/', $sliced);
+	}
+
+
+	/**
+	 * get path to the corresponding file in data/user/files for a version
+	 *
+	 * @param string $path path to a version
+	 * @return string path to corresponding file relative to data/user/files
+	 * @throws Exception\EncryptionException
+	 */
+	public static function getPathFromVersion($path) {
+		$split = self::splitPath($path);
+
+		if (count($split) < 4) {
+			throw new Exception\EncryptionException('no valid path to a version', Exception\EncryptionException::GENERIC);
+		}
+
+		// we skip user/files_versions
+		$sliced = array_slice($split, 3);
+		$relPath = implode('/', $sliced);
+		//remove the last .v
+		$realPath = substr($relPath, 0, strrpos($relPath, '.v'));
+
+		return $realPath;
 	}
 
 	/**
 	 * create directory recursively
+	 *
 	 * @param string $path
 	 * @param \OC\Files\View $view
 	 */
-	public static function mkdirr($path, $view) {
-		$dirname = \OC\Files\Filesystem::normalizePath(dirname($path));
-		$dirParts = explode('/', $dirname);
+	public static function mkdirr($path, \OC\Files\View $view) {
+		$dirParts = self::splitPath(dirname($path));
 		$dir = "";
 		foreach ($dirParts as $part) {
 			$dir = $dir . '/' . $part;
@@ -348,20 +371,22 @@ class Helper {
 	/**
 	 * redirect to a error page
 	 * @param Session $session
+	 * @param int|null $errorCode
+	 * @throws \Exception
 	 */
-	public static function redirectToErrorPage($session, $errorCode = null) {
+	public static function redirectToErrorPage(Session $session, $errorCode = null) {
 
 		if ($errorCode === null) {
 			$init = $session->getInitialized();
 			switch ($init) {
-				case \OCA\Encryption\Session::INIT_EXECUTED:
-					$errorCode = \OCA\Encryption\Crypt::ENCRYPTION_PRIVATE_KEY_NOT_VALID_ERROR;
+				case Session::INIT_EXECUTED:
+					$errorCode = Crypt::ENCRYPTION_PRIVATE_KEY_NOT_VALID_ERROR;
 					break;
-				case \OCA\Encryption\Session::NOT_INITIALIZED:
-					$errorCode = \OCA\Encryption\Crypt::ENCRYPTION_NOT_INITIALIZED_ERROR;
+				case Session::NOT_INITIALIZED:
+					$errorCode = Crypt::ENCRYPTION_NOT_INITIALIZED_ERROR;
 					break;
 				default:
-					$errorCode = \OCA\Encryption\Crypt::ENCRYPTION_UNKNOWN_ERROR;
+					$errorCode = Crypt::ENCRYPTION_UNKNOWN_ERROR;
 			}
 		}
 
@@ -384,14 +409,10 @@ class Helper {
 	 * @return bool true if requirements are met
 	 */
 	public static function checkRequirements() {
-		$result = true;
 
 		//openssl extension needs to be loaded
-		$result &= extension_loaded("openssl");
-		// we need php >= 5.3.3
-		$result &= version_compare(phpversion(), '5.3.3', '>=');
+		return extension_loaded("openssl");
 
-		return (bool) $result;
 	}
 
 	/**
@@ -425,33 +446,8 @@ class Helper {
 	 */
 	public static function getOpenSSLConfig() {
 		$config = array('private_key_bits' => 4096);
-		$config = array_merge(\OCP\Config::getSystemValue('openssl', array()), $config);
+		$config = array_merge(\OC::$server->getConfig()->getSystemValue('openssl', array()), $config);
 		return $config;
-	}
-
-	/**
-	 * find all share keys for a given file
-	 * @param string $path to the file
-	 * @param \OC\Files\View $view view, relative to data/
-	 * @return array list of files, path relative to data/
-	 */
-	public static function findShareKeys($path, $view) {
-		$result = array();
-		$pathinfo = pathinfo($path);
-		$dirContent = $view->opendir($pathinfo['dirname']);
-
-		if (is_resource($dirContent)) {
-			while (($file = readdir($dirContent)) !== false) {
-				if (!\OC\Files\Filesystem::isIgnoredDir($file)) {
-					if (preg_match("/" . $pathinfo['filename'] . ".(.*).shareKey/", $file)) {
-						$result[] = $pathinfo['dirname'] . '/' . $file;
-					}
-				}
-			}
-			closedir($dirContent);
-		}
-
-		return $result;
 	}
 
 	/**
@@ -477,13 +473,39 @@ class Helper {
 	}
 
 	/**
+	 * detect file type, encryption can read/write regular files, versions
+	 * and cached files
+	 *
+	 * @param string $path
+	 * @return int
+	 * @throws Exception\EncryptionException
+	 */
+	public static function detectFileType($path) {
+	    $parts = self::splitPath($path);
+
+		if (count($parts) > 2) {
+			switch ($parts[2]) {
+				case 'files':
+					return Util::FILE_TYPE_FILE;
+				case 'files_versions':
+					return Util::FILE_TYPE_VERSION;
+				case 'cache':
+					return Util::FILE_TYPE_CACHE;
+			}
+		}
+
+		// thow exception if we couldn't detect a valid file type
+		throw new Exception\EncryptionException('Could not detect file type', Exception\EncryptionException::GENERIC);
+	}
+
+	/**
 	 * read the cipher used for encryption from the config.php
 	 *
 	 * @return string
 	 */
 	public static function getCipher() {
 
-		$cipher = \OCP\Config::getSystemValue('cipher', Crypt::DEFAULT_CIPHER);
+		$cipher = \OC::$server->getConfig()->getSystemValue('cipher', Crypt::DEFAULT_CIPHER);
 
 		if ($cipher !== 'AES-256-CFB' && $cipher !== 'AES-128-CFB') {
 			\OCP\Util::writeLog('files_encryption',
@@ -495,5 +517,11 @@ class Helper {
 
 		return $cipher;
 	}
+
+	public static function splitPath($path) {
+		$normalized = \OC\Files\Filesystem::normalizePath($path);
+		return explode('/', $normalized);
+	}
+
 }
 

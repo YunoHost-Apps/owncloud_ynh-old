@@ -9,15 +9,27 @@
 namespace OC\Preview;
 
 class Image extends Provider {
-
+	/**
+	 * {@inheritDoc}
+	 */
 	public function getMimeType() {
-		return '/image\/.*/';
+		return '/image\/(?!tiff$)(?!svg.*).*/';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function getThumbnail($path, $maxX, $maxY, $scalingup, $fileview) {
 		//get fileinfo
 		$fileInfo = $fileview->getFileInfo($path);
 		if(!$fileInfo) {
+			return false;
+		}
+
+		$maxSizeForImages = \OC::$server->getConfig()->getSystemValue('preview_max_filesize_image', 50);
+		$size = $fileInfo->getSize();
+
+		if ($maxSizeForImages !== -1 && $size > ($maxSizeForImages * 1024 * 1024)) {
 			return false;
 		}
 
@@ -29,10 +41,9 @@ class Image extends Provider {
 			$fileName = $fileview->getLocalFile($path);
 		}
 		$image->loadFromFile($fileName);
+		$image->fixOrientation();
 
 		return $image->valid() ? $image : false;
 	}
 
 }
-
-\OC\Preview::registerProvider('OC\Preview\Image');

@@ -44,6 +44,7 @@ class Dropbox extends \OC\Files\Storage\Common {
 			$this->id = 'dropbox::'.$params['app_key'] . $params['token']. '/' . $this->root;
 			$oauth = new \Dropbox_OAuth_Curl($params['app_key'], $params['app_secret']);
 			$oauth->setToken($params['token'], $params['token_secret']);
+			// note: Dropbox_API connection is lazy
 			$this->dropbox = new \Dropbox_API($oauth, 'auto');
 		} else {
 			throw new \Exception('Creating \OC\Files\Storage\Dropbox storage failed');
@@ -99,7 +100,12 @@ class Dropbox extends \OC\Files\Storage\Common {
 				return $contents;
 			} else {
 				try {
-					$response = $this->dropbox->getMetaData($path, 'false');
+					$requestPath = $path;
+					if ($path === '.') {
+						$requestPath = '';
+					}
+
+					$response = $this->dropbox->getMetaData($requestPath, 'false');
 					if (!isset($response['is_deleted']) || !$response['is_deleted']) {
 						$this->metaData[$path] = $response;
 						return $response;

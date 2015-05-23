@@ -38,7 +38,7 @@ abstract class Common implements \OC\Files\Storage\Storage {
 	}
 
 	/**
-	 * Remove a file of folder
+	 * Remove a file or folder
 	 *
 	 * @param string $path
 	 * @return bool
@@ -54,11 +54,11 @@ abstract class Common implements \OC\Files\Storage\Storage {
 	}
 
 	public function is_dir($path) {
-		return $this->filetype($path) == 'dir';
+		return $this->filetype($path) === 'dir';
 	}
 
 	public function is_file($path) {
-		return $this->filetype($path) == 'file';
+		return $this->filetype($path) === 'file';
 	}
 
 	public function filesize($path) {
@@ -95,7 +95,11 @@ abstract class Common implements \OC\Files\Storage\Storage {
 	}
 
 	public function isDeletable($path) {
-		return $this->isUpdatable($path);
+		if ($path === '' || $path === '/') {
+			return false;
+		}
+		$parent = dirname($path);
+		return $this->isUpdatable($parent) && $this->isUpdatable($path);
 	}
 
 	public function isSharable($path) {
@@ -109,26 +113,26 @@ abstract class Common implements \OC\Files\Storage\Storage {
 	public function getPermissions($path) {
 		$permissions = 0;
 		if ($this->isCreatable($path)) {
-			$permissions |= \OCP\PERMISSION_CREATE;
+			$permissions |= \OCP\Constants::PERMISSION_CREATE;
 		}
 		if ($this->isReadable($path)) {
-			$permissions |= \OCP\PERMISSION_READ;
+			$permissions |= \OCP\Constants::PERMISSION_READ;
 		}
 		if ($this->isUpdatable($path)) {
-			$permissions |= \OCP\PERMISSION_UPDATE;
+			$permissions |= \OCP\Constants::PERMISSION_UPDATE;
 		}
 		if ($this->isDeletable($path)) {
-			$permissions |= \OCP\PERMISSION_DELETE;
+			$permissions |= \OCP\Constants::PERMISSION_DELETE;
 		}
 		if ($this->isSharable($path)) {
-			$permissions |= \OCP\PERMISSION_SHARE;
+			$permissions |= \OCP\Constants::PERMISSION_SHARE;
 		}
 		return $permissions;
 	}
 
 	public function filemtime($path) {
 		$stat = $this->stat($path);
-		if (isset($stat['mtime'])) {
+		if (isset($stat['mtime']) && $stat['mtime'] > 0) {
 			return $stat['mtime'];
 		} else {
 			return 0;
@@ -226,6 +230,7 @@ abstract class Common implements \OC\Files\Storage\Storage {
 		$tmpFile = \OC_Helper::tmpFile($extension);
 		$target = fopen($tmpFile, 'w');
 		\OC_Helper::streamCopy($source, $target);
+		fclose($target);
 		return $tmpFile;
 	}
 
@@ -273,6 +278,7 @@ abstract class Common implements \OC\Files\Storage\Storage {
 				}
 			}
 		}
+		closedir($dh);
 		return $files;
 	}
 
@@ -397,7 +403,7 @@ abstract class Common implements \OC\Files\Storage\Storage {
 	 * @return int
 	 */
 	public function free_space($path) {
-		return \OC\Files\SPACE_UNKNOWN;
+		return \OCP\Files\FileInfo::SPACE_UNKNOWN;
 	}
 
 	/**
@@ -432,4 +438,17 @@ abstract class Common implements \OC\Files\Storage\Storage {
 	public function instanceOfStorage($class) {
 		return is_a($this, $class);
 	}
+
+	/**
+	 * A custom storage implementation can return an url for direct download of a give file.
+	 *
+	 * For now the returned array can hold the parameter url - in future more attributes might follow.
+	 *
+	 * @param string $path
+	 * @return array
+	 */
+	public function getDirectDownload($path) {
+		return [];
+	}
+
 }

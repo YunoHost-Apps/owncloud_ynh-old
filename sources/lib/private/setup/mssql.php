@@ -5,7 +5,7 @@ namespace OC\Setup;
 class MSSQL extends AbstractDatabase {
 	public $dbprettyname = 'MS SQL Server';
 
-	public function setupDatabase() {
+	public function setupDatabase($username) {
 		//check if the database user has admin right
 		$masterConnectionInfo = array( "Database" => "master", "UID" => $this->dbuser, "PWD" => $this->dbpassword);
 
@@ -17,12 +17,14 @@ class MSSQL extends AbstractDatabase {
 			} else {
 				$entry = '';
 			}
-			throw new \DatabaseSetupException($this->trans->t('MS SQL username and/or password not valid: %s', array($entry)),
+			throw new \OC\DatabaseSetupException($this->trans->t('MS SQL username and/or password not valid: %s', array($entry)),
 					$this->trans->t('You need to enter either an existing account or the administrator.'));
 		}
 
-		\OC_Config::setValue('dbuser', $this->dbuser);
-		\OC_Config::setValue('dbpassword', $this->dbpassword);
+		\OC_Config::setValues([
+			'dbuser'		=> $this->dbuser,
+			'dbpassword'	=> $this->dbpassword,
+		]);
 
 		$this->createDBLogin($masterConnection);
 

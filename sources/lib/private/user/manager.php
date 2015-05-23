@@ -11,6 +11,7 @@ namespace OC\User;
 
 use OC\Hooks\PublicEmitter;
 use OCP\IUserManager;
+use OCP\IConfig;
 
 /**
  * Class Manager
@@ -27,7 +28,7 @@ use OCP\IUserManager;
  */
 class Manager extends PublicEmitter implements IUserManager {
 	/**
-	 * @var \OC_User_Interface[] $backends
+	 * @var \OCP\UserInterface [] $backends
 	 */
 	private $backends = array();
 
@@ -37,34 +38,42 @@ class Manager extends PublicEmitter implements IUserManager {
 	private $cachedUsers = array();
 
 	/**
-	 * @var \OC\AllConfig $config
+	 * @var \OCP\IConfig $config
 	 */
 	private $config;
 
 	/**
-	 * @param \OC\AllConfig $config
+	 * @param \OCP\IConfig $config
 	 */
-	public function __construct($config = null) {
+	public function __construct(IConfig $config = null) {
 		$this->config = $config;
-		$cachedUsers = $this->cachedUsers;
+		$cachedUsers = &$this->cachedUsers;
 		$this->listen('\OC\User', 'postDelete', function ($user) use (&$cachedUsers) {
-			$i = array_search($user, $cachedUsers);
-			if ($i !== false) {
-				unset($cachedUsers[$i]);
-			}
+			/** @var \OC\User\User $user */
+			unset($cachedUsers[$user->getUID()]);
 		});
 		$this->listen('\OC\User', 'postLogin', function ($user) {
+			/** @var \OC\User\User $user */
 			$user->updateLastLoginTimestamp();
 		});
 		$this->listen('\OC\User', 'postRememberedLogin', function ($user) {
+			/** @var \OC\User\User $user */
 			$user->updateLastLoginTimestamp();
 		});
 	}
 
 	/**
+	 * Get the active backends
+	 * @return \OCP\UserInterface[]
+	 */
+	public function getBackends() {
+		return $this->backends;
+	}
+
+	/**
 	 * register a user backend
 	 *
-	 * @param \OC_User_Interface $backend
+	 * @param \OCP\UserInterface $backend
 	 */
 	public function registerBackend($backend) {
 		$this->backends[] = $backend;
@@ -73,7 +82,7 @@ class Manager extends PublicEmitter implements IUserManager {
 	/**
 	 * remove a user backend
 	 *
-	 * @param \OC_User_Interface $backend
+	 * @param \OCP\UserInterface $backend
 	 */
 	public function removeBackend($backend) {
 		$this->cachedUsers = array();
@@ -112,7 +121,7 @@ class Manager extends PublicEmitter implements IUserManager {
 	 * get or construct the user object
 	 *
 	 * @param string $uid
-	 * @param \OC_User_Interface $backend
+	 * @param \OCP\UserInterface $backend
 	 * @return \OC\User\User
 	 */
 	protected function getUserObject($uid, $backend) {
@@ -135,20 +144,6 @@ class Manager extends PublicEmitter implements IUserManager {
 	}
 
 	/**
-	 * remove deleted user from cache
-	 *
-	 * @param string $uid
-	 * @return bool
-	 */
-	public function delete($uid) {
-		if (isset($this->cachedUsers[$uid])) {
-			unset($this->cachedUsers[$uid]);
-			return true;
-		}
-		return false;
-	}
-
-	/**
 	 * Check if the password is valid for the user
 	 *
 	 * @param string $loginname
@@ -156,8 +151,11 @@ class Manager extends PublicEmitter implements IUserManager {
 	 * @return mixed the User object on success, false otherwise
 	 */
 	public function checkPassword($loginname, $password) {
+		$loginname = str_replace("\0", '', $loginname);
+		$password = str_replace("\0", '', $password);
+		
 		foreach ($this->backends as $backend) {
-			if ($backend->implementsActions(\OC_USER_BACKEND_CHECK_PASSWORD)) {
+			if ($backend->implementsActions(\OC_User_Backend::CHECK_PASSWORD)) {
 				$uid = $backend->checkPassword($loginname, $password);
 				if ($uid !== false) {
 					return $this->getUserObject($uid, $backend);
@@ -234,10 +232,10 @@ class Manager extends PublicEmitter implements IUserManager {
 	 * @param string $uid
 	 * @param string $password
 	 * @throws \Exception
-	 * @return bool|\OC\User\User the created user of false
+	 * @return bool|\OC\User\User the created user or false
 	 */
 	public function createUser($uid, $password) {
-		$l = \OC_L10N::get('lib');
+		$l = \OC::$server->getL10N('lib');
 		// Check the name for bad characters
 		// Allowed are: "a-z", "A-Z", "0-9" and "_.@-"
 		if (preg_match('/[^a-zA-Z0-9 _\.@\-]/', $uid)) {
@@ -260,7 +258,7 @@ class Manager extends PublicEmitter implements IUserManager {
 
 		$this->emit('\OC\User', 'preCreateUser', array($uid, $password));
 		foreach ($this->backends as $backend) {
-			if ($backend->implementsActions(\OC_USER_BACKEND_CREATE_USER)) {
+			if ($backend->implementsActions(\OC_User_Backend::CREATE_USER)) {
 				$backend->createUser($uid, $password);
 				$user = $this->getUserObject($uid, $backend);
 				$this->emit('\OC\User', 'postCreateUser', array($user, $password));
@@ -278,13 +276,18 @@ class Manager extends PublicEmitter implements IUserManager {
 	public function countUsers() {
 		$userCountStatistics = array();
 		foreach ($this->backends as $backend) {
-			if ($backend->implementsActions(\OC_USER_BACKEND_COUNT_USERS)) {
+			if ($backend->implementsActions(\OC_User_Backend::COUNT_USERS)) {
 				$backendusers = $backend->countUsers();
 				if($backendusers !== false) {
-					if(isset($userCountStatistics[get_class($backend)])) {
-						$userCountStatistics[get_class($backend)] += $backendusers;
+					if($backend instanceof \OCP\IUserBackend) {
+						$name = $backend->getBackendName();
 					} else {
-						$userCountStatistics[get_class($backend)] = $backendusers;
+						$name = get_class($backend);
+					}
+					if(isset($userCountStatistics[$name])) {
+						$userCountStatistics[$name] += $backendusers;
+					} else {
+						$userCountStatistics[$name] = $backendusers;
 					}
 				}
 			}

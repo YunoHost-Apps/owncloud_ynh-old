@@ -72,7 +72,7 @@ class OC_Connector_Sabre_QuotaPlugin extends \Sabre\DAV\ServerPlugin {
 				$length -= $chunkHandler->getCurrentSize();
 			}
 			$freeSpace = $this->getFreeSpace($parentUri);
-			if ($freeSpace !== \OC\Files\SPACE_UNKNOWN && $length > $freeSpace) {
+			if ($freeSpace !== \OCP\Files\FileInfo::SPACE_UNKNOWN && $length > $freeSpace) {
 				if (isset($chunkHandler)) {
 					$chunkHandler->cleanup();
 				}
@@ -102,7 +102,11 @@ class OC_Connector_Sabre_QuotaPlugin extends \Sabre\DAV\ServerPlugin {
 	 * @return mixed
 	 */
 	public function getFreeSpace($parentUri) {
-		$freeSpace = $this->view->free_space($parentUri);
-		return $freeSpace;
+		try {
+			$freeSpace = $this->view->free_space($parentUri);
+			return $freeSpace;
+		} catch (\OCP\Files\StorageNotAvailableException $e) {
+			throw new \Sabre\DAV\Exception\ServiceUnavailable($e->getMessage());
+		}
 	}
 }

@@ -24,7 +24,7 @@ class Factory implements ICacheFactory {
 	}
 
 	/**
-	 * get a cache instance, will return null if no backend is available
+	 * get a cache instance, or Null backend if no backend available
 	 *
 	 * @param string $prefix
 	 * @return \OC\Memcache\Cache
@@ -37,10 +37,12 @@ class Factory implements ICacheFactory {
 			return new APCu($prefix);
 		} elseif (APC::isAvailable()) {
 			return new APC($prefix);
+		} elseif (Redis::isAvailable()) {
+			return new Redis($prefix);
 		} elseif (Memcached::isAvailable()) {
 			return new Memcached($prefix);
 		} else {
-			return null;
+			return new Null($prefix);
 		}
 	}
 
@@ -50,7 +52,7 @@ class Factory implements ICacheFactory {
 	 * @return bool
 	 */
 	public function isAvailable() {
-		return XCache::isAvailable() || APCu::isAvailable() || APC::isAvailable() || Memcached::isAvailable();
+		return XCache::isAvailable() || APCu::isAvailable() || APC::isAvailable() || Redis::isAvailable() || Memcached::isAvailable();
 	}
 
 	/**

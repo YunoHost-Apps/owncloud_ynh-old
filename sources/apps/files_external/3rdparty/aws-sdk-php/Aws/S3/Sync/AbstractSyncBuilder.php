@@ -18,7 +18,6 @@ namespace Aws\S3\Sync;
 
 use Aws\Common\Exception\RuntimeException;
 use Aws\Common\Exception\UnexpectedValueException;
-use Aws\Common\Model\MultipartUpload\AbstractTransfer;
 use Aws\Common\Model\MultipartUpload\TransferInterface;
 use Aws\S3\S3Client;
 use Aws\S3\Iterator\OpendirIterator;
@@ -66,7 +65,7 @@ abstract class AbstractSyncBuilder
     protected $debug;
 
     /**
-     * @return self
+     * @return static
      */
     public static function getInstance()
     {
@@ -78,7 +77,7 @@ abstract class AbstractSyncBuilder
      *
      * @param string $bucket Amazon S3 bucket name
      *
-     * @return self
+     * @return $this
      */
     public function setBucket($bucket)
     {
@@ -92,7 +91,7 @@ abstract class AbstractSyncBuilder
      *
      * @param S3Client $client Amazon S3 client
      *
-     * @return self
+     * @return $this
      */
     public function setClient(S3Client $client)
     {
@@ -106,7 +105,7 @@ abstract class AbstractSyncBuilder
      *
      * @param \Iterator $iterator
      *
-     * @return self
+     * @return $this
      */
     public function setSourceIterator(\Iterator $iterator)
     {
@@ -120,7 +119,7 @@ abstract class AbstractSyncBuilder
      *
      * @param FileNameConverterInterface $converter Filename to object key provider
      *
-     * @return self
+     * @return $this
      */
     public function setSourceFilenameConverter(FilenameConverterInterface $converter)
     {
@@ -134,7 +133,7 @@ abstract class AbstractSyncBuilder
      *
      * @param FileNameConverterInterface $converter Filename to object key provider
      *
-     * @return self
+     * @return $this
      */
     public function setTargetFilenameConverter(FilenameConverterInterface $converter)
     {
@@ -149,7 +148,7 @@ abstract class AbstractSyncBuilder
      *
      * @param string $baseDir Base directory, which will be deleted from each uploaded object key
      *
-     * @return self
+     * @return $this
      */
     public function setBaseDir($baseDir)
     {
@@ -165,11 +164,12 @@ abstract class AbstractSyncBuilder
      *
      * @param string $keyPrefix Prefix for each uploaded key
      *
-     * @return self
+     * @return $this
      */
     public function setKeyPrefix($keyPrefix)
     {
-        $this->keyPrefix = $keyPrefix;
+        // Removing leading slash
+        $this->keyPrefix = ltrim($keyPrefix, '/');
 
         return $this;
     }
@@ -179,7 +179,7 @@ abstract class AbstractSyncBuilder
      *
      * @param string $delimiter Delimiter to use to separate paths
      *
-     * @return self
+     * @return $this
      */
     public function setDelimiter($delimiter)
     {
@@ -193,7 +193,7 @@ abstract class AbstractSyncBuilder
      *
      * @param array $params Associative array of PutObject (upload) GetObject (download) parameters
      *
-     * @return self
+     * @return $this
      */
     public function setOperationParams(array $params)
     {
@@ -207,7 +207,7 @@ abstract class AbstractSyncBuilder
      *
      * @param int $concurrency Number of concurrent transfers
      *
-     * @return self
+     * @return $this
      */
     public function setConcurrency($concurrency)
     {
@@ -221,7 +221,7 @@ abstract class AbstractSyncBuilder
      *
      * @param bool $force Set to true to force transfers without checking if it has changed
      *
-     * @return self
+     * @return $this
      */
     public function force($force = false)
     {
@@ -235,7 +235,7 @@ abstract class AbstractSyncBuilder
      *
      * @param bool|resource $enabledOrResource Set to true or false to enable or disable debug output. Pass an opened
      *                                         fopen resource to write to instead of writing to standard out.
-     * @return self
+     * @return $this
      */
     public function enableDebugOutput($enabledOrResource = true)
     {
@@ -249,7 +249,7 @@ abstract class AbstractSyncBuilder
      *
      * @param string $search Regular expression search (in preg_match format). Any filename that matches this regex
      *                       will not be transferred.
-     * @return self
+     * @return $this
      */
     public function addRegexFilter($search)
     {
@@ -275,6 +275,7 @@ abstract class AbstractSyncBuilder
 
         // Only wrap the source iterator in a changed files iterator if we are not forcing the transfers
         if (!$this->forcing) {
+            $this->sourceIterator->rewind();
             $this->sourceIterator = new ChangedFilesIterator(
                 new \NoRewindIterator($this->sourceIterator),
                 $this->getTargetIterator(),
@@ -300,7 +301,7 @@ abstract class AbstractSyncBuilder
     /**
      * Hook to implement in subclasses
      *
-     * @return self
+     * @return AbstractSync
      */
     abstract protected function specificBuild();
 
@@ -391,11 +392,6 @@ abstract class AbstractSyncBuilder
             function (Event $e) use ($params) {
                 if ($e['command'] instanceof CommandInterface) {
                     $e['command']->overwriteWith($params);
-                } elseif ($e['command'] instanceof TransferInterface) {
-                    // Multipart upload transfer object
-                    foreach ($params as $k => $v) {
-                        $e['command']->setOption($k, $v);
-                    }
                 }
             }
         );
@@ -410,12 +406,30 @@ abstract class AbstractSyncBuilder
     {
         // Ensure that the stream wrapper is registered
         $this->client->registerStreamWrapper();
-        // Calculate the opendir() bucket and optional key prefix location
-        // Remove the delimiter as it is not needed for this
-        $dir = rtrim('s3://' . $this->bucket . ($this->keyPrefix ? ('/' . $this->keyPrefix) : ''), '/');
-        // Use opendir so that we can pass stream context to the iterator
-        $dh = opendir($dir, stream_context_create(array('s3' => array('delimiter' => ''))));
 
-        return $this->filterIterator(new \NoRewindIterator(new OpendirIterator($dh, $dir . '/')));
+        // Calculate the opendir() bucket and optional key prefix location
+        $dir = "s3://{$this->bucket}";
+        if ($this->keyPrefix) {
+            $dir .= '/' . ltrim($this->keyPrefix, '/ ');
+        }
+
+        // Use opendir so that we can pass stream context to the iterator
+        $dh = opendir($dir, stream_context_create(array(
+            's3' => array(
+                'delimiter'  => '',
+                'listFilter' => function ($obj) {
+                    // Ensure that we do not try to download a glacier object.
+                    return !isset($obj['StorageClass']) ||
+                        $obj['StorageClass'] != 'GLACIER';
+                }
+            )
+        )));
+
+        // Add the trailing slash for the OpendirIterator concatenation
+        if (!$this->keyPrefix) {
+            $dir .= '/';
+        }
+
+        return $this->filterIterator(new \NoRewindIterator(new OpendirIterator($dh, $dir)));
     }
 }

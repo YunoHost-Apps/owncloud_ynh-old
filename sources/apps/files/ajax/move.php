@@ -2,14 +2,14 @@
 
 OCP\JSON::checkLoggedIn();
 OCP\JSON::callCheck();
-\OC::$session->close();
+\OC::$server->getSession()->close();
 
 // Get data
-$dir = stripslashes($_POST["dir"]);
-$file = stripslashes($_POST["file"]);
-$target = stripslashes(rawurldecode($_POST["target"]));
+$dir = isset($_POST['dir']) ? $_POST['dir'] : '';
+$file = isset($_POST['file']) ? $_POST['file'] : '';
+$target = isset($_POST['target']) ? rawurldecode($_POST['target']) : '';
 
-$l = OC_L10N::get('files');
+$l = \OC::$server->getL10N('files');
 
 if(\OC\Files\Filesystem::file_exists($target . '/' . $file)) {
 	OCP\JSON::error(array("data" => array( "message" => $l->t("Could not move %s - File with this name already exists", array($file)) )));
@@ -19,10 +19,16 @@ if(\OC\Files\Filesystem::file_exists($target . '/' . $file)) {
 if ($target != '' || strtolower($file) != 'shared') {
 	$targetFile = \OC\Files\Filesystem::normalizePath($target . '/' . $file);
 	$sourceFile = \OC\Files\Filesystem::normalizePath($dir . '/' . $file);
-	if(\OC\Files\Filesystem::rename($sourceFile, $targetFile)) {
-		OCP\JSON::success(array("data" => array( "dir" => $dir, "files" => $file )));
-	} else {
-		OCP\JSON::error(array("data" => array( "message" => $l->t("Could not move %s", array($file)) )));
+	try {
+		if(\OC\Files\Filesystem::rename($sourceFile, $targetFile)) {
+			OCP\JSON::success(array("data" => array( "dir" => $dir, "files" => $file )));
+		} else {
+			OCP\JSON::error(array("data" => array( "message" => $l->t("Could not move %s", array($file)) )));
+		}
+	} catch (\OCP\Files\NotPermittedException $e) {
+		OCP\JSON::error(array("data" => array( "message" => $l->t("Permission denied") )));
+	} catch (\Exception $e) {
+		OCP\JSON::error(array("data" => array( "message" => $e->getMessage())));
 	}
 }else{
 	OCP\JSON::error(array("data" => array( "message" => $l->t("Could not move %s", array($file)) )));

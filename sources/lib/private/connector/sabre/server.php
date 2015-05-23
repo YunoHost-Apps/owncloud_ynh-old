@@ -38,6 +38,14 @@ class OC_Connector_Sabre_Server extends Sabre\DAV\Server {
 	 */
 	private $ignoreRangeHeader = false;
 
+	/**
+	 * @see \Sabre\DAV\Server
+	 */
+	public function __construct($treeOrNode = null) {
+		parent::__construct($treeOrNode);
+		self::$exposeVersion = false;
+	}
+
 	public function getRequestUri() {
 
 		if (!is_null($this->overLoadedUri)) {
@@ -135,6 +143,13 @@ class OC_Connector_Sabre_Server extends Sabre\DAV\Server {
 		//	if ($depth!=0) $depth = 1;
 
 		$path = rtrim($path,'/');
+
+		// This event allows people to intercept these requests early on in the
+		// process.
+		//
+		// We're not doing anything with the result, but this can be helpful to
+		// pre-fetch certain expensive live properties.
+		$this->broadCastEvent('beforeGetPropertiesForPath', array($path, $propertyNames, $depth));
 
 		$returnPropertyList = array();
 

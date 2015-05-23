@@ -81,9 +81,10 @@ interface IServerContainer {
 	/**
 	 * Returns a view to ownCloud's files folder
 	 *
+	 * @param string $userId user ID
 	 * @return \OCP\Files\Folder
 	 */
-	function getUserFolder();
+	function getUserFolder($userId = null);
 
 	/**
 	 * Returns an app-specific view in ownClouds data directory
@@ -127,6 +128,19 @@ interface IServerContainer {
 	 */
 	function getConfig();
 
+	/**
+	 * Returns a Crypto instance
+	 *
+	 * @return \OCP\Security\ICrypto
+	 */
+	function getCrypto();
+
+	/**
+	 * Returns a Hasher instance
+	 *
+	 * @return \OCP\Security\IHasher
+	 */
+	function getHasher();
 
 	/**
 	 * Returns an instance of the db facade
@@ -145,9 +159,10 @@ interface IServerContainer {
 	/**
 	 * get an L10N instance
 	 * @param string $app appid
+	 * @param string $lang
 	 * @return \OCP\IL10N
 	 */
-	function getL10N($app);
+	function getL10N($app, $lang = null);
 
 	/**
 	 * Returns the URL generator
@@ -213,6 +228,13 @@ interface IServerContainer {
 	function getJobList();
 
 	/**
+	 * Returns a logger instance
+	 *
+	 * @return \OCP\ILogger
+	 */
+	function getLogger();
+
+	/**
 	 * Returns a router for generating and matching urls
 	 *
 	 * @return \OCP\Route\IRouter
@@ -226,4 +248,73 @@ interface IServerContainer {
 	 */
 	function getSearch();
 
+	/**
+	 * Get the certificate manager for the user
+	 *
+	 * @param \OCP\IUser $user (optional) if not specified the current loggedin user is used
+	 * @return \OCP\ICertificateManager
+	 */
+	function getCertificateManager($user = null);
+	
+	/**
+	 * Create a new event source
+	 *
+	 * @return \OCP\IEventSource
+	 */
+	function createEventSource();
+
+	/**
+	 * Returns an instance of the HTTP helper class
+	 * @return \OC\HTTPHelper
+	 */
+	function getHTTPHelper();
+
+	/**
+	 * Get the active event logger
+	 *
+	 * @return \OCP\Diagnostics\IEventLogger
+	 */
+	function getEventLogger();
+
+	/**
+	 * Get the active query logger
+	 *
+	 * The returned logger only logs data when debug mode is enabled
+	 *
+	 * @return \OCP\Diagnostics\IQueryLogger
+	 */
+	function getQueryLogger();
+
+	/**
+	 * Get the manager for temporary files and folders
+	 *
+	 * @return \OCP\ITempManager
+	 */
+	function getTempManager();
+
+	/**
+	 * Get the app manager
+	 *
+	 * @return \OCP\App\IAppManager
+	 */
+	function getAppManager();
+
+	/**
+	 * Get the webroot
+	 *
+	 * @return string
+	 */
+	function getWebRoot();
+
+	/**
+	 * @return \OCP\Files\Config\IMountProviderCollection
+	 */
+	function getMountProviderCollection();
+
+	/**
+	 * Get the IniWrapper
+	 *
+	 * @return \bantu\IniGetWrapper\IniGetWrapper
+	 */
+	 function getIniWrapper();
 }

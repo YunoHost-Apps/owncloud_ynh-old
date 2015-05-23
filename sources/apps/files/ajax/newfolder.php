@@ -5,13 +5,13 @@
 
 OCP\JSON::checkLoggedIn();
 OCP\JSON::callCheck();
-\OC::$session->close();
+\OC::$server->getSession()->close();
 
 // Get the params
-$dir = isset( $_POST['dir'] ) ? stripslashes($_POST['dir']) : '';
-$foldername = isset( $_POST['foldername'] ) ? stripslashes($_POST['foldername']) : '';
+$dir = isset($_POST['dir']) ? $_POST['dir'] : '';
+$foldername = isset($_POST['foldername']) ? $_POST['foldername'] : '';
 
-$l10n = \OC_L10n::get('files');
+$l10n = \OC::$server->getL10N('files');
 
 $result = array(
 	'success' 	=> false,
@@ -39,8 +39,7 @@ if (!\OC\Files\Filesystem::file_exists($dir . '/')) {
 	exit();
 }
 
-//TODO why is stripslashes used on foldername here but not in newfile.php?
-$target = $dir . '/' . stripslashes($foldername);
+$target = $dir . '/' . $foldername;
 		
 if (\OC\Files\Filesystem::file_exists($target)) {
 	$result['data'] = array('message' => $l10n->t(

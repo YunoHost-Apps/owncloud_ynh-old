@@ -72,7 +72,7 @@ class ObjectStoreStorage extends \OC\Files\Storage\Common {
 			'size' => 0,
 			'mtime' => $mTime,
 			'storage_mtime' => $mTime,
-			'permissions' => \OCP\PERMISSION_ALL,
+			'permissions' => \OCP\Constants::PERMISSION_ALL,
 		);
 
 		if ($dirName === '' && !$parentExists) {
@@ -82,7 +82,7 @@ class ObjectStoreStorage extends \OC\Files\Storage\Common {
 			$parentExists = true;
 
 			// we are done when the root folder was meant to be created
-			if  ($dirName === $path) {
+			if ($dirName === $path) {
 				return true;
 			}
 		}
@@ -290,38 +290,10 @@ class ObjectStoreStorage extends \OC\Files\Storage\Common {
 	public function rename($source, $target) {
 		$source = $this->normalizePath($source);
 		$target = $this->normalizePath($target);
-		$stat1 = $this->stat($source);
-		if (isset($stat1['mimetype']) && $stat1['mimetype'] === 'httpd/unix-directory') {
-			$this->remove($target);
-			$dir = $this->opendir($source);
-			$this->mkdir($target);
-			while ($file = readdir($dir)) {
-				if (!Filesystem::isIgnoredDir($file)) {
-					if (!$this->rename($source . '/' . $file, $target . '/' . $file)) {
-						return false;
-					}
-				}
-			}
-			closedir($dir);
-			$this->remove($source);
-			return true;
-		} else {
-			if (is_array($stat1)) {
-				$parent = $this->stat(dirname($target));
-				if (is_array($parent)) {
-					$this->remove($target);
-					$stat1['parent'] = $parent['fileid'];
-					$stat1['path'] = $target;
-					$stat1['path_hash'] = md5($target);
-					$stat1['name'] = \OC_Util::basename($target);
-					$stat1['mtime'] = time();
-					$stat1['etag'] = $this->getETag($target);
-					$this->getCache()->update($stat1['fileid'], $stat1);
-					return true;
-				}
-			}
-		}
-		return false;
+		$this->remove($target);
+		$this->getCache()->move($source, $target);
+		$this->touch(dirname($target));
+		return true;
 	}
 
 	public function getMimeType($path) {
@@ -360,7 +332,7 @@ class ObjectStoreStorage extends \OC\Files\Storage\Common {
 				'size' => 0,
 				'mtime' => $mtime,
 				'storage_mtime' => $mtime,
-				'permissions' => \OCP\PERMISSION_ALL,
+				'permissions' => \OCP\Constants::PERMISSION_ALL,
 			);
 			$fileId = $this->getCache()->put($path, $stat);
 			try {
@@ -377,7 +349,7 @@ class ObjectStoreStorage extends \OC\Files\Storage\Common {
 
 	public function writeBack($tmpFile) {
 		if (!isset(self::$tmpFiles[$tmpFile])) {
-			return false;
+			return;
 		}
 
 		$path = self::$tmpFiles[$tmpFile];
@@ -385,7 +357,7 @@ class ObjectStoreStorage extends \OC\Files\Storage\Common {
 		if (empty($stat)) {
 			// create new file
 			$stat = array(
-				'permissions' => \OCP\PERMISSION_ALL,
+				'permissions' => \OCP\Constants::PERMISSION_ALL,
 			);
 		}
 		// update stat with new data
@@ -403,9 +375,8 @@ class ObjectStoreStorage extends \OC\Files\Storage\Common {
 		} catch (\Exception $ex) {
 			$this->getCache()->remove($path);
 			\OCP\Util::writeLog('objectstore', 'Could not create object: ' . $ex->getMessage(), \OCP\Util::ERROR);
-			return false;
+			throw $ex; // make this bubble up
 		}
-		return true;
 	}
 
 	/**

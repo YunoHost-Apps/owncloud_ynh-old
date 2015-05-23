@@ -8,6 +8,9 @@
 
 namespace OC\Files\Node;
 
+use OC\Files\Filesystem;
+use OCP\Files\FileInfo;
+use OCP\Files\InvalidPathException;
 use OCP\Files\NotFoundException;
 use OCP\Files\NotPermittedException;
 
@@ -28,6 +31,11 @@ class Node implements \OCP\Files\Node {
 	protected $path;
 
 	/**
+	 * @var \OCP\Files\FileInfo
+	 */
+	protected $fileInfo;
+
+	/**
 	 * @param \OC\Files\View $view
 	 * @param \OC\Files\Node\Root $root
 	 * @param string $path
@@ -36,6 +44,28 @@ class Node implements \OCP\Files\Node {
 		$this->view = $view;
 		$this->root = $root;
 		$this->path = $path;
+	}
+
+	/**
+	 * Returns the matching file info
+	 *
+	 * @return FileInfo
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
+	 */
+	public function getFileInfo() {
+		if (!Filesystem::isValidPath($this->path)) {
+			throw new InvalidPathException();
+		}
+		if (!$this->fileInfo) {
+			$fileInfo = $this->view->getFileInfo($this->path);
+			if ($fileInfo instanceof FileInfo) {
+				$this->fileInfo = $fileInfo;
+			} else {
+				throw new NotFoundException();
+			}
+		}
+		return $this->fileInfo;
 	}
 
 	/**
@@ -81,10 +111,16 @@ class Node implements \OCP\Files\Node {
 	 * @throws \OCP\Files\NotPermittedException
 	 */
 	public function touch($mtime = null) {
-		if ($this->checkPermissions(\OCP\PERMISSION_UPDATE)) {
+		if ($this->checkPermissions(\OCP\Constants::PERMISSION_UPDATE)) {
 			$this->sendHooks(array('preTouch'));
 			$this->view->touch($this->path, $mtime);
 			$this->sendHooks(array('postTouch'));
+			if ($this->fileInfo) {
+				if (is_null($mtime)) {
+					$mtime = time();
+				}
+				$this->fileInfo['mtime'] = $mtime;
+			}
 		} else {
 			throw new NotPermittedException();
 		}
@@ -116,10 +152,11 @@ class Node implements \OCP\Files\Node {
 
 	/**
 	 * @return int
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function getId() {
-		$info = $this->view->getFileInfo($this->path);
-		return $info['fileid'];
+		return $this->getFileInfo()->getId();
 	}
 
 	/**
@@ -131,60 +168,83 @@ class Node implements \OCP\Files\Node {
 
 	/**
 	 * @return int
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function getMTime() {
-		return $this->view->filemtime($this->path);
+		return $this->getFileInfo()->getMTime();
 	}
 
 	/**
 	 * @return int
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function getSize() {
-		return $this->view->filesize($this->path);
+		return $this->getFileInfo()->getSize();
 	}
 
 	/**
 	 * @return string
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function getEtag() {
-		$info = $this->view->getFileInfo($this->path);
-		return $info['etag'];
+		return $this->getFileInfo()->getEtag();
 	}
 
 	/**
 	 * @return int
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function getPermissions() {
-		$info = $this->view->getFileInfo($this->path);
-		return $info['permissions'];
+		return $this->getFileInfo()->getPermissions();
 	}
 
 	/**
 	 * @return bool
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function isReadable() {
-		return $this->checkPermissions(\OCP\PERMISSION_READ);
+		return $this->getFileInfo()->isReadable();
 	}
 
 	/**
 	 * @return bool
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function isUpdateable() {
-		return $this->checkPermissions(\OCP\PERMISSION_UPDATE);
+		return $this->getFileInfo()->isUpdateable();
 	}
 
 	/**
 	 * @return bool
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function isDeletable() {
-		return $this->checkPermissions(\OCP\PERMISSION_DELETE);
+		return $this->getFileInfo()->isDeletable();
 	}
 
 	/**
 	 * @return bool
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function isShareable() {
-		return $this->checkPermissions(\OCP\PERMISSION_SHARE);
+		return $this->getFileInfo()->isShareable();
+	}
+
+	/**
+	 * @return bool
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
+	 */
+	public function isCreatable() {
+		return $this->getFileInfo()->isCreatable();
 	}
 
 	/**
@@ -239,5 +299,33 @@ class Node implements \OCP\Files\Node {
 			return false;
 		}
 		return true;
+	}
+
+	public function isMounted() {
+		return $this->getFileInfo()->isMounted();
+	}
+
+	public function isShared() {
+		return $this->getFileInfo()->isShared();
+	}
+
+	public function getMimeType() {
+		return $this->getFileInfo()->getMimetype();
+	}
+
+	public function getMimePart() {
+		return $this->getFileInfo()->getMimePart();
+	}
+
+	public function getType() {
+		return $this->getFileInfo()->getType();
+	}
+
+	public function isEncrypted() {
+		return $this->getFileInfo()->isEncrypted();
+	}
+
+	public function getMountPoint() {
+		return $this->getFileInfo()->getMountPoint();
 	}
 }

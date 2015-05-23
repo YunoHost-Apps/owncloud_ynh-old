@@ -8,6 +8,8 @@
 
 namespace OCA\Files;
 
+use OCP\Files\FileInfo;
+
 /**
  * Helper class for manipulating file information
  */
@@ -31,7 +33,7 @@ class Helper
 	/**
 	 * Determine icon for a given file
 	 *
-	 * @param \OC\Files\FileInfo $file file info
+	 * @param \OCP\Files\FileInfo $file file info
 	 * @return string icon URL
 	 */
 	public static function determineIcon($file) {
@@ -58,7 +60,7 @@ class Helper
 	 * @param \OCP\Files\FileInfo $b file
 	 * @return int -1 if $a must come before $b, 1 otherwise
 	 */
-	public static function compareFileNames($a, $b) {
+	public static function compareFileNames(FileInfo $a, FileInfo $b) {
 		$aType = $a->getType();
 		$bType = $b->getType();
 		if ($aType === 'dir' and $bType !== 'dir') {
@@ -66,7 +68,7 @@ class Helper
 		} elseif ($aType !== 'dir' and $bType === 'dir') {
 			return 1;
 		} else {
-			return strnatcasecmp($a->getName(), $b->getName());
+			return \OCP\Util::naturalSortCompare($a->getName(), $b->getName());
 		}
 	}
 
@@ -77,10 +79,10 @@ class Helper
 	 * @param \OCP\Files\FileInfo $b file
 	 * @return int -1 if $a must come before $b, 1 otherwise
 	 */
-	public static function compareTimestamp($a, $b) {
+	public static function compareTimestamp(FileInfo $a, FileInfo $b) {
 		$aTime = $a->getMTime();
 		$bTime = $b->getMTime();
-		return $aTime - $bTime;
+		return ($aTime < $bTime) ? -1 : 1;
 	}
 
 	/**
@@ -90,10 +92,10 @@ class Helper
 	 * @param \OCP\Files\FileInfo $b file
 	 * @return int -1 if $a must come before $b, 1 otherwise
 	 */
-	public static function compareSize($a, $b) {
+	public static function compareSize(FileInfo $a, FileInfo $b) {
 		$aSize = $a->getSize();
 		$bSize = $b->getSize();
-		return $aSize - $bSize;
+		return ($aSize < $bSize) ? -1 : 1;
 	}
 
 	/**
@@ -102,7 +104,7 @@ class Helper
 	 * @param \OCP\Files\FileInfo $i
 	 * @return array formatted file info
 	 */
-	public static function formatFileInfo($i) {
+	public static function formatFileInfo(FileInfo $i) {
 		$entry = array();
 
 		$entry['id'] = $i['fileid'];
@@ -111,7 +113,7 @@ class Helper
 		$entry['mtime'] = $i['mtime'] * 1000;
 		// only pick out the needed attributes
 		$entry['icon'] = \OCA\Files\Helper::determineIcon($i);
-		if (\OC::$server->getPreviewManager()->isMimeSupported($i['mimetype'])) {
+		if (\OC::$server->getPreviewManager()->isAvailable($i)) {
 			$entry['isPreviewAvailable'] = true;
 		}
 		$entry['name'] = $i->getName();
@@ -120,6 +122,9 @@ class Helper
 		$entry['size'] = $i['size'];
 		$entry['type'] = $i['type'];
 		$entry['etag'] = $i['etag'];
+		if (isset($i['tags'])) {
+			$entry['tags'] = $i['tags'];
+		}
 		if (isset($i['displayname_owner'])) {
 			$entry['shareOwner'] = $i['displayname_owner'];
 		}
@@ -138,12 +143,16 @@ class Helper
 			}
 			$entry['mountType'] = $mountType;
 		}
+		if (isset($i['extraData'])) {
+			$entry['extraData'] = $i['extraData'];
+		}
 		return $entry;
 	}
 
 	/**
 	 * Format file info for JSON
 	 * @param \OCP\Files\FileInfo[] $fileInfos file infos
+	 * @return array
 	 */
 	public static function formatFileInfos($fileInfos) {
 		$files = array();
@@ -167,6 +176,27 @@ class Helper
 		$content = \OC\Files\Filesystem::getDirectoryContent($dir);
 
 		return self::sortFiles($content, $sortAttribute, $sortDescending);
+	}
+
+	/**
+	 * Populate the result set with file tags
+	 *
+	 * @param array $fileList
+	 * @return array file list populated with tags
+	 */
+	public static function populateTags(array $fileList) {
+		$filesById = array();
+		foreach ($fileList as $fileData) {
+			$filesById[$fileData['fileid']] = $fileData;
+		}
+		$tagger = \OC::$server->getTagManager()->load('files');
+		$tags = $tagger->getTagsForObjects(array_keys($filesById));
+		if ($tags) {
+			foreach ($tags as $fileId => $fileTags) {
+				$filesById[$fileId]['tags'] = $fileTags;
+			}
+		}
+		return $fileList;
 	}
 
 	/**

@@ -8,23 +8,26 @@
 namespace OC\Preview;
 
 class TXT extends Provider {
-
+	/**
+	 * {@inheritDoc}
+	 */
 	public function getMimeType() {
 		return '/text\/plain/';
 	}
 
 	/**
-	 * @param string $path
-	 * @param int $maxX
-	 * @param int $maxY
-	 * @param boolean $scalingup
-	 * @param \OC\Files\View $fileview
-	 * @return bool|\OC_Image
+	 * {@inheritDoc}
+	 */
+	public function isAvailable($file) {
+		return $file->getSize() > 5;
+	}
+
+	/**
+	 * {@inheritDoc}
 	 */
 	public function getThumbnail($path, $maxX, $maxY, $scalingup, $fileview) {
-
 		$content = $fileview->fopen($path, 'r');
-		$content = stream_get_contents($content);
+		$content = stream_get_contents($content,3000);
 
 		//don't create previews of empty text files
 		if(trim($content) === '') {
@@ -69,15 +72,3 @@ class TXT extends Provider {
 		return $image->valid() ? $image : false;
 	}
 }
-
-\OC\Preview::registerProvider('OC\Preview\TXT');
-
-class MarkDown extends TXT {
-
-	public function getMimeType() {
-		return '/text\/(x-)?markdown/';
-	}
-
-}
-
-\OC\Preview::registerProvider('OC\Preview\MarkDown');

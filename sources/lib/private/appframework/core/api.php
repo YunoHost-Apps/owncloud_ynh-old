@@ -32,6 +32,7 @@ use OCP\AppFramework\IApi;
  *
  * Should you find yourself in need for more methods, simply inherit from this
  * class and add your methods
+ * @deprecated
  */
 class API implements IApi{
 
@@ -49,6 +50,7 @@ class API implements IApi{
 	/**
 	 * Gets the userid of the current user
 	 * @return string the user id of the current user
+	 * @deprecated Use \OC::$server->getUserSession()->getUser()->getUID()
 	 */
 	public function getUserId(){
 		return \OCP\User::getUser();
@@ -57,6 +59,7 @@ class API implements IApi{
 
 	/**
 	 * Adds a new javascript file
+	 * @deprecated include javascript and css in template files
 	 * @param string $scriptName the name of the javascript in js/ without the suffix
 	 * @param string $appName the name of the app, defaults to the current one
 	 */
@@ -70,6 +73,7 @@ class API implements IApi{
 
 	/**
 	 * Adds a new css file
+	 * @deprecated include javascript and css in template files
 	 * @param string $styleName the name of the css file in css/without the suffix
 	 * @param string $appName the name of the app, defaults to the current one
 	 */
@@ -82,6 +86,7 @@ class API implements IApi{
 
 
 	/**
+	 * @deprecated include javascript and css in template files
 	 * shorthand for addScript for files in the 3rdparty directory
 	 * @param string $name the name of the file without the suffix
 	 */
@@ -91,6 +96,7 @@ class API implements IApi{
 
 
 	/**
+	 * @deprecated include javascript and css in template files
 	 * shorthand for addStyle for files in the 3rdparty directory
 	 * @param string $name the name of the file without the suffix
 	 */
@@ -100,7 +106,10 @@ class API implements IApi{
 
 
 	/**
+	 * @deprecated communication between apps should happen over built in
+	 * callbacks or interfaces (check the contacts and calendar managers)
 	 * Checks if an app is enabled
+	 * also use \OC::$server->getAppManager()->isEnabledForUser($appName)
 	 * @param string $appName the name of an app
 	 * @return bool true if app is enabled
 	 */
@@ -110,15 +119,16 @@ class API implements IApi{
 
 
 	/**
-	 * used to return and open a new eventsource
-	 * @return \OC_EventSource a new open EventSource class
+	 * used to return and open a new event source
+	 * @return \OCP\IEventSource a new open EventSource class
+	 * @deprecated Use \OC::$server->createEventSource();
 	 */
 	public function openEventSource(){
-		# TODO: use public api
-		return new \OC_EventSource();
+		return \OC::$server->createEventSource();
 	}
 
 	/**
+	 * @deprecated register hooks directly for class that build in hook interfaces
 	 * connects a function to a hook
 	 * @param string $signalClass class name of emitter
 	 * @param string $signalName name of signal
@@ -133,6 +143,7 @@ class API implements IApi{
 	}
 
 	/**
+	 * @deprecated implement the emitter interface instead
 	 * Emits a signal. To get data from the slot use references!
 	 * @param string $signalClass class name of emitter
 	 * @param string $signalName name of signal
@@ -145,6 +156,7 @@ class API implements IApi{
 
 	/**
 	 * clear hooks
+	 * @deprecated clear hooks directly for class that build in hook interfaces
 	 * @param string $signalClass
 	 * @param string $signalName
 	 */
@@ -160,6 +172,7 @@ class API implements IApi{
 	 * @param string $className full namespace and class name of the class
 	 * @param string $methodName the name of the static method that should be
 	 * called
+	 * @deprecated Use \OC::$server->getJobList()->add();
 	 */
 	public function addRegularTask($className, $methodName) {
 		\OCP\Backgroundjob::addRegularTask($className, $methodName);

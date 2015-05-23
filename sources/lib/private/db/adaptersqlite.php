@@ -11,50 +11,46 @@ namespace OC\DB;
 
 class AdapterSqlite extends Adapter {
 	public function fixupStatement($statement) {
+		$statement = preg_replace('/`(\w+)` ILIKE \?/', 'LOWER($1) LIKE LOWER(?)', $statement);
 		$statement = str_replace( '`', '"', $statement );
 		$statement = str_ireplace( 'NOW()', 'datetime(\'now\')', $statement );
 		$statement = str_ireplace( 'UNIX_TIMESTAMP()', 'strftime(\'%s\',\'now\')', $statement );
 		return $statement;
 	}
 
-	public function insertIfNotExist($table, $input) {
-		// NOTE: For SQLite we have to use this clumsy approach
-		// otherwise all fieldnames used must have a unique key.
-		$query = 'SELECT COUNT(*) FROM `' . $table . '` WHERE ';
-		foreach($input as $key => $value) {
-			$query .= '`' . $key . '` = ? AND ';
+	/**
+	 * Insert a row if the matching row does not exists.
+	 *
+	 * @param string $table The table name (will replace *PREFIX* with the actual prefix)
+	 * @param array $input data that should be inserted into the table  (column name => value)
+	 * @param array|null $compare List of values that should be checked for "if not exists"
+	 *				If this is null or an empty array, all keys of $input will be compared
+	 *				Please note: text fields (clob) must not be used in the compare array
+	 * @return int number of inserted rows
+	 * @throws \Doctrine\DBAL\DBALException
+	 */
+	public function insertIfNotExist($table, $input, array $compare = null) {
+		if (empty($compare)) {
+			$compare = array_keys($input);
+		}
+		$fieldList = '`' . implode('`,`', array_keys($input)) . '`';
+		$query = "INSERT INTO `$table` ($fieldList) SELECT "
+			. str_repeat('?,', count($input)-1).'? '
+			. " WHERE NOT EXISTS (SELECT 1 FROM `$table` WHERE ";
+
+		$inserts = array_values($input);
+		foreach($compare as $key) {
+			$query .= '`' . $key . '`';
+			if (is_null($input[$key])) {
+				$query .= ' IS NULL AND ';
+			} else {
+				$inserts[] = $input[$key];
+				$query .= ' = ? AND ';
+			}
 		}
 		$query = substr($query, 0, strlen($query) - 5);
-		try {
-			$stmt = $this->conn->prepare($query);
-			$result = $stmt->execute(array_values($input));
-		} catch(\Doctrine\DBAL\DBALException $e) {
-			$entry = 'DB Error: "'.$e->getMessage() . '"<br />';
-			$entry .= 'Offending command was: ' . $query . '<br />';
-			\OC_Log::write('core', $entry, \OC_Log::FATAL);
-			error_log('DB error: '.$entry);
-			\OC_Template::printErrorPage( $entry );
-		}
+		$query .= ')';
 
-		if ($stmt->fetchColumn() === '0') {
-			$query = 'INSERT INTO `' . $table . '` (`'
-				. implode('`,`', array_keys($input)) . '`) VALUES('
-				. str_repeat('?,', count($input)-1).'? ' . ')';
-		} else {
-			return 0; //no rows updated
-		}
-
-		try {
-			$statement = $this->conn->prepare($query);
-			$result = $statement->execute(array_values($input));
-		} catch(\Doctrine\DBAL\DBALException $e) {
-			$entry = 'DB Error: "'.$e->getMessage() . '"<br />';
-			$entry .= 'Offending command was: ' . $query.'<br />';
-			\OC_Log::write('core', $entry, \OC_Log::FATAL);
-			error_log('DB error: ' . $entry);
-			\OC_Template::printErrorPage( $entry );
-		}
-
-		return $result;
+		return $this->conn->executeUpdate($query, $inserts);
 	}
 }

@@ -2,11 +2,11 @@
 
 OCP\JSON::checkLoggedIn();
 OCP\JSON::callCheck();
-\OC::$session->close();
+\OC::$server->getSession()->close();
 
 
 // Get data
-$dir = stripslashes($_POST["dir"]);
+$dir = isset($_POST['dir']) ? $_POST['dir'] : '';
 $allFiles = isset($_POST["allfiles"]) ? $_POST["allfiles"] : false;
 
 // delete all files in dir ?
@@ -27,7 +27,9 @@ $success = true;
 //Now delete
 foreach ($files as $file) {
 	if (\OC\Files\Filesystem::file_exists($dir . '/' . $file) &&
-			!\OC\Files\Filesystem::unlink($dir . '/' . $file)) {
+		!(\OC\Files\Filesystem::isDeletable($dir . '/' . $file) &&
+			\OC\Files\Filesystem::unlink($dir . '/' . $file))
+	) {
 		$filesWithError .= $file . "\n";
 		$success = false;
 	}

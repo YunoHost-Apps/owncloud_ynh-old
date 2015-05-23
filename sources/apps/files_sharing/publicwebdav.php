@@ -41,7 +41,7 @@ $server->addPlugin(new OC_Connector_Sabre_ExceptionLoggerPlugin('webdav'));
 $server->subscribeEvent('beforeMethod', function () use ($server, $objectTree, $authBackend) {
 	$share = $authBackend->getShare();
 	$owner = $share['uid_owner'];
-	$isWritable = $share['permissions'] & (\OCP\PERMISSION_UPDATE | \OCP\PERMISSION_CREATE);
+	$isWritable = $share['permissions'] & (\OCP\Constants::PERMISSION_UPDATE | \OCP\Constants::PERMISSION_CREATE);
 	$fileId = $share['file_source'];
 
 	if (!$isWritable) {
@@ -53,7 +53,6 @@ $server->subscribeEvent('beforeMethod', function () use ($server, $objectTree, $
 	OC_Util::setupFS($owner);
 	$ownerView = \OC\Files\Filesystem::getView();
 	$path = $ownerView->getPath($fileId);
-
 
 	$view = new \OC\Files\View($ownerView->getAbsolutePath($path));
 	$rootInfo = $view->getFileInfo('');

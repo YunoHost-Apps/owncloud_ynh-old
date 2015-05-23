@@ -38,6 +38,18 @@ class Scan extends Command {
 				'will rescan all files of the given user(s)'
 			)
 			->addOption(
+				'path',
+				'p',
+				InputArgument::OPTIONAL,
+				'limit rescan to this path, eg. --path="/alice/files/Music", the user_id is determined by the path and the user_id parameter and --all are ignored'
+			)
+			->addOption(
+				'quiet',
+				'q',
+				InputOption::VALUE_NONE,
+				'suppress output'
+			)
+			->addOption(
 				'all',
 				null,
 				InputOption::VALUE_NONE,
@@ -45,16 +57,18 @@ class Scan extends Command {
 			);
 	}
 
-	protected function scanFiles($user, OutputInterface $output) {
-		$scanner = new \OC\Files\Utils\Scanner($user);
-		$scanner->listen('\OC\Files\Utils\Scanner', 'scanFile', function ($path) use ($output) {
-			$output->writeln("Scanning <info>$path</info>");
-		});
-		$scanner->listen('\OC\Files\Utils\Scanner', 'scanFolder', function ($path) use ($output) {
-			$output->writeln("Scanning <info>$path</info>");
-		});
+	protected function scanFiles($user, $path, $quiet, OutputInterface $output) {
+		$scanner = new \OC\Files\Utils\Scanner($user, \OC::$server->getDatabaseConnection());
+		if (!$quiet) {
+			$scanner->listen('\OC\Files\Utils\Scanner', 'scanFile', function ($path) use ($output) {
+				$output->writeln("Scanning file   <info>$path</info>");
+			});
+			$scanner->listen('\OC\Files\Utils\Scanner', 'scanFolder', function ($path) use ($output) {
+				$output->writeln("Scanning folder <info>$path</info>");
+			});
+		}
 		try {
-			$scanner->scan('');
+			$scanner->scan($path);
 		} catch (ForbiddenException $e) {
 			$output->writeln("<error>Home storage for user $user not writable</error>");
 			$output->writeln("Make sure you're running the scan command only as the user the web server runs as");
@@ -62,14 +76,21 @@ class Scan extends Command {
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		if ($input->getOption('all')) {
+		$path = $input->getOption('path');
+		if ($path) {
+			$path = '/'.trim($path, '/');
+			list (, $user, ) = explode('/', $path, 3);
+			$users = array($user);
+		} else if ($input->getOption('all')) {
 			$users = $this->userManager->search('');
 		} else {
 			$users = $input->getArgument('user_id');
 		}
+		$quiet = $input->getOption('quiet');
+
 
 		if (count($users) === 0) {
-			$output->writeln("<error>Please specify the user id to scan or \"--all\" to scan for all users</error>");
+			$output->writeln("<error>Please specify the user id to scan, \"--all\" to scan for all users or \"--path=...\"</error>");
 			return;
 		}
 
@@ -77,7 +98,11 @@ class Scan extends Command {
 			if (is_object($user)) {
 				$user = $user->getUID();
 			}
-			$this->scanFiles($user, $output);
+			if ($this->userManager->userExists($user)) {
+				$this->scanFiles($user, $path, $quiet, $output);
+			} else {
+				$output->writeln("<error>Unknown user $user</error>");
+			}
 		}
 	}
 }

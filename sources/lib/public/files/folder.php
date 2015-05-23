@@ -117,6 +117,15 @@ interface Folder extends Node {
 	public function searchByMime($mimetype);
 
 	/**
+	 * search for files by tag
+	 *
+	 * @param string|int $tag tag name or tag id
+	 * @param string $userId owner of the tags
+	 * @return \OCP\Files\Node[]
+	 */
+	public function searchByTag($tag, $userId);
+
+	/**
 	 * get a file or folder inside the folder by it's internal id
 	 *
 	 * @param int $id
@@ -137,4 +146,13 @@ interface Folder extends Node {
 	 * @return bool
 	 */
 	public function isCreatable();
+
+	/**
+	 * Add a suffix to the name in case the file exists
+	 *
+	 * @param string $name
+	 * @return string
+	 * @throws NotPermittedException
+	 */
+	public function getNonExistingName($name);
 }

@@ -6,14 +6,12 @@
  * See the COPYING-README file.
  */
 
-require_once __DIR__ . '/../lib/helper.php';
-
 use OCA\Files;
 
 /**
  * Class Test_Files_Helper
  */
-class Test_Files_Helper extends \PHPUnit_Framework_TestCase {
+class Test_Files_Helper extends \Test\TestCase {
 
 	private function makeFileInfo($name, $size, $mtime, $isDir = false) {
 		return new \OC\Files\FileInfo(
@@ -26,7 +24,8 @@ class Test_Files_Helper extends \PHPUnit_Framework_TestCase {
 				'mtime' => $mtime,
 				'type' => $isDir ? 'dir' : 'file',
 				'mimetype' => $isDir ? 'httpd/unix-directory' : 'application/octet-stream'
-			)	
+			),
+			null
 		);
 	}
 
@@ -35,10 +34,10 @@ class Test_Files_Helper extends \PHPUnit_Framework_TestCase {
 	 */
 	private function getTestFileList() {
 		return array(
-			self::makeFileInfo('a.txt', 4, 1000),
+			self::makeFileInfo('a.txt', 4, 2.3 * pow(10, 9)),
 			self::makeFileInfo('q.txt', 5, 150),
 			self::makeFileInfo('subdir2', 87, 128, true),
-			self::makeFileInfo('b.txt', 166, 800),
+			self::makeFileInfo('b.txt', 2.2 * pow(10, 9), 800),
 			self::makeFileInfo('o.txt', 12, 100),
 			self::makeFileInfo('subdir', 88, 125, true),
 		);
@@ -92,7 +91,7 @@ class Test_Files_Helper extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals(
 			$expectedOrder,
 			$fileNames
-		);	
+		);
 	}
 
 }

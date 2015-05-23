@@ -64,8 +64,11 @@ $files = \OCA\Files\Helper::getFiles($dir, $sortAttribute, $sortDirection);
 $formattedFiles = array();
 foreach ($files as $file) {
 	$entry = \OCA\Files\Helper::formatFileInfo($file);
-	unset($entry['directory']); // for now
-	$entry['permissions'] = \OCP\PERMISSION_READ;
+	// for now
+	unset($entry['directory']);
+	// do not disclose share owner
+	unset($entry['shareOwner']);
+	$entry['permissions'] = \OCP\Constants::PERMISSION_READ;
 	$formattedFiles[] = $entry;
 }
 
@@ -76,9 +79,9 @@ $data['dirToken'] = $linkItem['token'];
 $permissions = $linkItem['permissions'];
 
 // if globally disabled
-if (OC_Appconfig::getValue('core', 'shareapi_allow_public_upload', 'yes') === 'no') {
+if (\OC::$server->getAppConfig()->getValue('core', 'shareapi_allow_public_upload', 'yes') === 'no') {
 	// only allow reading
-	$permissions = \OCP\PERMISSION_READ;
+	$permissions = \OCP\Constants::PERMISSION_READ;
 }
 
 $data['permissions'] = $permissions;

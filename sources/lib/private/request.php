@@ -12,8 +12,47 @@ class OC_Request {
 	// Android Chrome user agent: https://developers.google.com/chrome/mobile/docs/user-agent
 	const USER_AGENT_ANDROID_MOBILE_CHROME = '#Android.*Chrome/[.0-9]*#';
 	const USER_AGENT_FREEBOX = '#^Mozilla/5\.0$#';
+	const REGEX_LOCALHOST = '/^(127\.0\.0\.1|localhost)$/';
+	static protected $reqId;
 
-	const REGEX_LOCALHOST = '/^(127\.0\.0\.1|localhost)(:[0-9]+|)$/';
+	/**
+	 * Returns the remote address, if the connection came from a trusted proxy and `forwarded_for_headers` has been configured
+	 * then the IP address specified in this header will be returned instead.
+	 * Do always use this instead of $_SERVER['REMOTE_ADDR']
+	 * @return string IP address
+	 */
+	public static function getRemoteAddress() {
+		$remoteAddress = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
+		$trustedProxies = \OC::$server->getConfig()->getSystemValue('trusted_proxies', array());
+
+		if(is_array($trustedProxies) && in_array($remoteAddress, $trustedProxies)) {
+			$forwardedForHeaders = \OC::$server->getConfig()->getSystemValue('forwarded_for_headers', array());
+
+			foreach($forwardedForHeaders as $header) {
+				if (array_key_exists($header, $_SERVER) === true) {
+					foreach (explode(',', $_SERVER[$header]) as $IP) {
+						$IP = trim($IP);
+						if (filter_var($IP, FILTER_VALIDATE_IP) !== false) {
+							return $IP;
+						}
+					}
+				}
+			}
+		}
+
+		return $remoteAddress;
+	}
+
+	/**
+	 * Returns an ID for the request, value is not guaranteed to be unique and is mostly meant for logging
+	 * @return string
+	 */
+	public static function getRequestID() {
+		if(self::$reqId === null) {
+			self::$reqId = hash('md5', microtime().\OC::$server->getSecureRandom()->getLowStrengthGenerator()->generate(20));
+		}
+		return self::$reqId;
+	}
 
 	/**
 	 * Check overwrite condition
@@ -27,22 +66,50 @@ class OC_Request {
 	}
 
 	/**
+	 * Strips a potential port from a domain (in format domain:port)
+	 * @param $host
+	 * @return string $host without appended port
+	 */
+	public static function getDomainWithoutPort($host) {
+		$pos = strrpos($host, ':');
+		if ($pos !== false) {
+			$port = substr($host, $pos + 1);
+			if (is_numeric($port)) {
+				$host = substr($host, 0, $pos);
+			}
+		}
+		return $host;
+	}
+
+	/**
 	 * Checks whether a domain is considered as trusted from the list
 	 * of trusted domains. If no trusted domains have been configured, returns
 	 * true.
 	 * This is used to prevent Host Header Poisoning.
-	 * @param string $domain
+	 * @param string $domainWithPort
 	 * @return bool true if the given domain is trusted or if no trusted domains
 	 * have been configured
 	 */
-	public static function isTrustedDomain($domain) {
-		$trustedList = \OC_Config::getValue('trusted_domains', array());
+	public static function isTrustedDomain($domainWithPort) {
+		// Extract port from domain if needed
+		$domain = self::getDomainWithoutPort($domainWithPort);
+
+		// FIXME: Empty config array defaults to true for now. - Deprecate this behaviour with ownCloud 8.
+		$trustedList = \OC::$server->getConfig()->getSystemValue('trusted_domains', array());
 		if (empty($trustedList)) {
 			return true;
 		}
+
+		// FIXME: Workaround for older instances still with port applied. Remove for ownCloud 9.
+		if(in_array($domainWithPort, $trustedList)) {
+			return true;
+		}
+
+		// Always allow access from localhost
 		if (preg_match(self::REGEX_LOCALHOST, $domain) === 1) {
 			return true;
 		}
+
 		return in_array($domain, $trustedList);
 	}
 
@@ -205,11 +272,13 @@ class OC_Request {
 	 * @return string Path info or false when not found
 	 */
 	public static function getRawPathInfo() {
-		$requestUri = $_SERVER['REQUEST_URI'];
+		$requestUri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
 		// remove too many leading slashes - can be caused by reverse proxy configuration
 		if (strpos($requestUri, '/') === 0) {
 			$requestUri = '/' . ltrim($requestUri, '/');
 		}
+
+		$requestUri = preg_replace('%/{2,}%', '/', $requestUri);
 
 		// Remove the query string from REQUEST_URI
 		if ($pos = strpos($requestUri, '?')) {

@@ -28,10 +28,11 @@ class OC_Mail {
 	 * @param string $ccaddress
 	 * @param string $ccname
 	 * @param string $bcc
+	 * @param string $replyTo
 	 * @throws Exception
 	 */
 	public static function send($toaddress, $toname, $subject, $mailtext, $fromaddress, $fromname,
-		$html=0, $altbody='', $ccaddress='', $ccname='', $bcc='') {
+		$html=0, $altbody='', $ccaddress='', $ccname='', $bcc='', $replyTo='') {
 
 		$SMTPMODE = OC_Config::getValue( 'mail_smtpmode', 'sendmail' );
 		$SMTPHOST = OC_Config::getValue( 'mail_smtphost', '127.0.0.1' );
@@ -61,6 +62,7 @@ class OC_Mail {
 		$mailo->Port = $SMTPPORT;
 		$mailo->SMTPAuth = $SMTPAUTH;
 		$mailo->SMTPDebug = $SMTPDEBUG;
+		$mailo->Debugoutput = 'error_log';
 		$mailo->SMTPSecure = $SMTPSECURE;
 		$mailo->AuthType = $SMTPAUTHTYPE;
 		$mailo->Username = $SMTPUSERNAME;
@@ -70,20 +72,23 @@ class OC_Mail {
 		$mailo->From = $fromaddress;
 		$mailo->FromName = $fromname;;
 		$mailo->Sender = $fromaddress;
+		$mailo->XMailer = ' ';
 		try {
 			$toaddress = self::buildAsciiEmail($toaddress);
 			$mailo->AddAddress($toaddress, $toname);
 
-			if($ccaddress<>'') $mailo->AddCC($ccaddress, $ccname);
-			if($bcc<>'') $mailo->AddBCC($bcc);
+			if($ccaddress != '') $mailo->AddCC($ccaddress, $ccname);
+			if($bcc != '') $mailo->AddBCC($bcc);
 
-			$mailo->AddReplyTo($fromaddress, $fromname);
+			if($replyTo !== '') {
+				$mailo->addReplyTo($replyTo);
+			}
 
-			$mailo->WordWrap = 50;
-			if($html==1) $mailo->IsHTML(true); else $mailo->IsHTML(false);
+			$mailo->WordWrap = 78;
+			$mailo->IsHTML($html == 1);
 
 			$mailo->Subject = $subject;
-			if($altbody=='') {
+			if($altbody == '') {
 				$mailo->Body    = $mailtext.OC_MAIL::getfooter();
 				$mailo->AltBody = '';
 			}else{
@@ -124,6 +129,9 @@ class OC_Mail {
 	 * @return bool
 	 */
 	public static function validateAddress($emailAddress) {
+		if (strpos($emailAddress, '@') === false) {
+			return false;
+		}
 		$emailAddress = self::buildAsciiEmail($emailAddress);
 		return PHPMailer::ValidateAddress($emailAddress);
 	}

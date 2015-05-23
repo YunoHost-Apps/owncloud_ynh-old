@@ -26,10 +26,13 @@ namespace OCA\user_ldap\lib;
 //magic properties (incomplete)
 /**
  * responsible for LDAP connections in context with the provided configuration
+ *
  * @property string ldapUserFilter
  * @property string ldapUserDisplayName
  * @property boolean hasPagedResultSupport
-*/
+ * @property string[] ldapBaseUsers
+ * @property int|string ldapPagingSize holds an integer
+ */
 class Connection extends LDAPUtility {
 	private $ldapConnectionRes = null;
 	private $configPrefix;
@@ -70,8 +73,9 @@ class Connection extends LDAPUtility {
 		}
 		$this->hasPagedResultSupport =
 			$this->ldap->hasPagedResultSupport();
+		$helper = new Helper();
 		$this->doNotValidate = !in_array($this->configPrefix,
-			Helper::getServerConfigurationPrefixes());
+			$helper->getServerConfigurationPrefixes());
 	}
 
 	public function __destruct() {
@@ -505,7 +509,7 @@ class Connection extends LDAPUtility {
 				if(putenv('LDAPTLS_REQCERT=never')) {
 					\OCP\Util::writeLog('user_ldap',
 						'Turned off SSL certificate validation successfully.',
-						\OCP\Util::WARN);
+						\OCP\Util::DEBUG);
 				} else {
 					\OCP\Util::writeLog('user_ldap',
 										'Could not turn off SSL certificate validation.',

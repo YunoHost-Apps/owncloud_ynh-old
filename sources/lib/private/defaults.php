@@ -1,9 +1,5 @@
 <?php
 
-if (file_exists(OC::$SERVERROOT . '/themes/' . OC_Util::getTheme() . '/defaults.php')) {
-	require_once 'themes/' . OC_Util::getTheme() . '/defaults.php';
-}
-
 /**
  * Default strings and values which differ between the enterprise and the
  * community edition. Use the get methods to always get the right strings.
@@ -19,6 +15,7 @@ class OC_Defaults {
 	private $defaultBaseUrl;
 	private $defaultSyncClientUrl;
 	private $defaultiOSClientUrl;
+	private $defaultiTunesAppId;
 	private $defaultAndroidClientUrl;
 	private $defaultDocBaseUrl;
 	private $defaultDocVersion;
@@ -27,7 +24,7 @@ class OC_Defaults {
 	private $defaultMailHeaderColor;
 
 	function __construct() {
-		$this->l = OC_L10N::get('lib');
+		$this->l = \OC::$server->getL10N('lib');
 		$version = OC_Util::getVersion();
 
 		$this->defaultEntity = 'ownCloud'; /* e.g. company name, used for footers and copyright notices */
@@ -36,6 +33,7 @@ class OC_Defaults {
 		$this->defaultBaseUrl = 'https://owncloud.org';
 		$this->defaultSyncClientUrl = 'https://owncloud.org/sync-clients/';
 		$this->defaultiOSClientUrl = 'https://itunes.apple.com/us/app/owncloud/id543672169?mt=8';
+		$this->defaultiTunesAppId = '543672169';
 		$this->defaultAndroidClientUrl = 'https://play.google.com/store/apps/details?id=com.owncloud.android';
 		$this->defaultDocBaseUrl = 'http://doc.owncloud.org';
 		$this->defaultDocVersion = $version[0] . '.0'; // used to generate doc links
@@ -43,7 +41,11 @@ class OC_Defaults {
 		$this->defaultLogoClaim = '';
 		$this->defaultMailHeaderColor = '#1d2d44'; /* header color of mail notifications */
 
-		if (class_exists('OC_Theme')) {
+		if (file_exists(OC::$SERVERROOT . '/themes/' . OC_Util::getTheme() . '/defaults.php')) {
+			// prevent defaults.php from printing output
+			ob_start();
+			require_once 'themes/' . OC_Util::getTheme() . '/defaults.php';
+			ob_end_clean();
 			$this->theme = new OC_Theme();
 		}
 	}
@@ -95,6 +97,18 @@ class OC_Defaults {
 	}
 
 	/**
+	 * Returns the AppId for the App Store for the iOS Client
+	 * @return string AppId
+	 */
+	public function getiTunesAppId() {
+		if ($this->themeExist('getiTunesAppId')) {
+			return $this->theme->getiTunesAppId();
+		} else {
+			return $this->defaultiTunesAppId;
+		}
+	}
+
+	/**
 	 * Returns the URL to Google Play for the Android Client
 	 * @return string URL
 	 */
@@ -137,6 +151,18 @@ class OC_Defaults {
 	public function getName() {
 		if ($this->themeExist('getName')) {
 			return $this->theme->getName();
+		} else {
+			return $this->defaultName;
+		}
+	}
+
+	/**
+	 * Returns the short name of the software containing HTML strings
+	 * @return string title
+	 */
+	public function getHTMLName() {
+		if ($this->themeExist('getHTMLName')) {
+			return $this->theme->getHTMLName();
 		} else {
 			return $this->defaultName;
 		}

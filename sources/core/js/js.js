@@ -5,6 +5,7 @@
  * To the end of config/config.php to enable debug mode.
  * The undefined checks fix the broken ie8 console
  */
+
 var oc_debug;
 var oc_webroot;
 
@@ -37,121 +38,6 @@ if (
 	}
 }
 
-function initL10N(app) {
-	if (!( t.cache[app] )) {
-		$.ajax(OC.filePath('core', 'ajax', 'translations.php'), {
-			// TODO a proper solution for this without sync ajax calls
-			async: false,
-			data: {'app': app},
-			type: 'POST',
-			success: function (jsondata) {
-				t.cache[app] = jsondata.data;
-				t.plural_form = jsondata.plural_form;
-			}
-		});
-
-		// Bad answer ...
-		if (!( t.cache[app] )) {
-			t.cache[app] = [];
-		}
-	}
-	if (typeof t.plural_function[app] === 'undefined') {
-		t.plural_function[app] = function (n) {
-			var p = (n !== 1) ? 1 : 0;
-			return { 'nplural' : 2, 'plural' : p };
-		};
-
-		/**
-		 * code below has been taken from jsgettext - which is LGPL licensed
-		 * https://developer.berlios.de/projects/jsgettext/
-		 * http://cvs.berlios.de/cgi-bin/viewcvs.cgi/jsgettext/jsgettext/lib/Gettext.js
-		 */
-		var pf_re = new RegExp('^(\\s*nplurals\\s*=\\s*[0-9]+\\s*;\\s*plural\\s*=\\s*(?:\\s|[-\\?\\|&=!<>+*/%:;a-zA-Z0-9_\\(\\)])+)', 'm');
-		if (pf_re.test(t.plural_form)) {
-			//ex english: "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-			//pf = "nplurals=2; plural=(n != 1);";
-			//ex russian: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10< =4 && (n%100<10 or n%100>=20) ? 1 : 2)
-			//pf = "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)";
-			var pf = t.plural_form;
-			if (! /;\s*$/.test(pf)) {
-				pf = pf.concat(';');
-			}
-			/* We used to use eval, but it seems IE has issues with it.
-			 * We now use "new Function", though it carries a slightly
-			 * bigger performance hit.
-			var code = 'function (n) { var plural; var nplurals; '+pf+' return { "nplural" : nplurals, "plural" : (plural === true ? 1 : plural ? plural : 0) }; };';
-			Gettext._locale_data[domain].head.plural_func = eval("("+code+")");
-			 */
-			var code = 'var plural; var nplurals; '+pf+' return { "nplural" : nplurals, "plural" : (plural === true ? 1 : plural ? plural : 0) };';
-			t.plural_function[app] = new Function("n", code);
-		} else {
-			console.log("Syntax error in language file. Plural-Forms header is invalid ["+t.plural_forms+"]");
-		}
-	}
-}
-/**
- * translate a string
- * @param {string} app the id of the app for which to translate the string
- * @param {string} text the string to translate
- * @param [vars] FIXME
- * @param {number} [count] number to replace %n with
- * @return {string}
- */
-function t(app, text, vars, count){
-	initL10N(app);
-	var _build = function (text, vars, count) {
-		return text.replace(/%n/g, count).replace(/{([^{}]*)}/g,
-			function (a, b) {
-				var r = vars[b];
-				return typeof r === 'string' || typeof r === 'number' ? r : a;
-			}
-		);
-	};
-	var translation = text;
-	if( typeof( t.cache[app][text] ) !== 'undefined' ){
-		translation = t.cache[app][text];
-	}
-
-	if(typeof vars === 'object' || count !== undefined ) {
-		return _build(translation, vars, count);
-	} else {
-		return translation;
-	}
-}
-t.cache = {};
-// different apps might or might not redefine the nplurals function correctly
-// this is to make sure that a "broken" app doesn't mess up with the
-// other app's plural function
-t.plural_function = {};
-
-/**
- * translate a string
- * @param {string} app the id of the app for which to translate the string
- * @param {string} text_singular the string to translate for exactly one object
- * @param {string} text_plural the string to translate for n objects
- * @param {number} count number to determine whether to use singular or plural
- * @param [vars] FIXME
- * @return {string} Translated string
- */
-function n(app, text_singular, text_plural, count, vars) {
-	initL10N(app);
-	var identifier = '_' + text_singular + '_::_' + text_plural + '_';
-	if( typeof( t.cache[app][identifier] ) !== 'undefined' ){
-		var translation = t.cache[app][identifier];
-		if ($.isArray(translation)) {
-			var plural = t.plural_function[app](count);
-			return t(app, translation[plural.plural], vars, count);
-		}
-	}
-
-	if(count === 1) {
-		return t(app, text_singular, vars, count);
-	}
-	else{
-		return t(app, text_plural, vars, count);
-	}
-}
-
 /**
 * Sanitizes a HTML string by replacing all potential dangerous characters with HTML entities
 * @param {string} s String to sanitize
@@ -172,6 +58,7 @@ function fileDownloadPath(dir, file) {
 	return OC.filePath('files', 'ajax', 'download.php')+'?files='+encodeURIComponent(file)+'&dir='+encodeURIComponent(dir);
 }
 
+/** @namespace */
 var OC={
 	PERMISSION_CREATE:4,
 	PERMISSION_READ:1,
@@ -179,6 +66,7 @@ var OC={
 	PERMISSION_DELETE:8,
 	PERMISSION_SHARE:16,
 	PERMISSION_ALL:31,
+	TAG_FAVORITE: '_$!<Favorite>!$_',
 	/* jshint camelcase: false */
 	webroot:oc_webroot,
 	appswebroots:(typeof oc_appswebroots !== 'undefined') ? oc_appswebroots:false,
@@ -186,7 +74,7 @@ var OC={
 	config: window.oc_config,
 	appConfig: window.oc_appconfig || {},
 	theme: window.oc_defaults || {},
-	coreApps:['', 'admin','log','search','settings','core','3rdparty'],
+	coreApps:['', 'admin','log','core/search','settings','core','3rdparty'],
 	menuSpeed: 100,
 
 	/**
@@ -198,7 +86,7 @@ var OC={
 	linkTo:function(app,file){
 		return OC.filePath(app,'',file);
 	},
-	
+
 	/**
 	 * Creates a relative url for remote use
 	 * @param {string} service id
@@ -234,6 +122,7 @@ var OC={
 	 */
 	generateUrl: function(url, params) {
 		var _build = function (text, vars) {
+			var vars = vars || [];
 			return text.replace(/{([^{}]*)}/g,
 				function (a, b) {
 					var r = vars[b];
@@ -245,6 +134,7 @@ var OC={
 			url = '/' + url;
 
 		}
+		// TODO save somewhere whether the webserver is able to skip the index.php to have shorter links (e.g. for sharing)
 		return OC.webroot + '/index.php' + _build(url, params);
 	},
 
@@ -254,11 +144,12 @@ var OC={
 	 * @param {string} type the type of the file to link to (e.g. css,img,ajax.template)
 	 * @param {string} file the filename
 	 * @return {string} Absolute URL for a file in an app
+	 * @deprecated use OC.generateUrl() instead
 	 */
 	filePath:function(app,type,file){
 		var isCore=OC.coreApps.indexOf(app)!==-1,
 			link=OC.webroot;
-		if((file.substring(file.length-3) === 'php' || file.substring(file.length-3) === 'css') && !isCore){
+		if(file.substring(file.length-3) === 'php' && !isCore){
 			link+='/index.php/apps/' + app;
 			if (file != 'index.php') {
 				link+='/';
@@ -297,7 +188,7 @@ var OC={
 		}
 		return link;
 	},
-	
+
 	/**
 	 * Redirect to the target URL, can also be used for downloads.
 	 * @param {string} targetURL URL to redirect to
@@ -305,10 +196,10 @@ var OC={
 	redirect: function(targetURL) {
 		window.location = targetURL;
 	},
-	
+
 	/**
 	 * get the absolute path to an image file
-	 * if no extension is given for the image, it will automatically decide 
+	 * if no extension is given for the image, it will automatically decide
 	 * between .png and .svg based on what the browser supports
 	 * @param {string} app the app id to which the image belongs
 	 * @param {string} file the name of the image file
@@ -320,9 +211,27 @@ var OC={
 		}
 		return OC.filePath(app,'img',file);
 	},
-	
+
 	/**
-	 * Load a script for the server and load it. If the script is already loaded, 
+	 * URI-Encodes a file path but keep the path slashes.
+	 *
+	 * @param path path
+	 * @return encoded path
+	 */
+	encodePath: function(path) {
+		if (!path) {
+			return path;
+		}
+		var parts = path.split('/');
+		var result = [];
+		for (var i = 0; i < parts.length; i++) {
+			result.push(encodeURIComponent(parts[i]));
+		}
+		return result.join('/');
+	},
+
+	/**
+	 * Load a script for the server and load it. If the script is already loaded,
 	 * the event handler will be called directly
 	 * @param {string} app the app id to which the script belongs
 	 * @param {string} script the filename of the script
@@ -361,45 +270,57 @@ var OC={
 			}
 		}
 	},
-	
+
 	/**
-	 * @todo Write the documentation
+	 * Loads translations for the given app asynchronously.
+	 *
+	 * @param {String} app app name
+	 * @param {Function} callback callback to call after loading
+	 * @return {Promise}
+	 */
+	addTranslations: function(app, callback) {
+		return OC.L10N.load(app, callback);
+	},
+
+	/**
+	 * Returns the base name of the given path.
+	 * For example for "/abc/somefile.txt" it will return "somefile.txt"
+	 *
+	 * @param {String} path
+	 * @return {String} base name
 	 */
 	basename: function(path) {
 		return path.replace(/\\/g,'/').replace( /.*\//, '' );
 	},
-	
+
 	/**
-	 *  @todo Write the documentation
+	 * Returns the dir name of the given path.
+	 * For example for "/abc/somefile.txt" it will return "/abc"
+	 *
+	 * @param {String} path
+	 * @return {String} dir name
 	 */
 	dirname: function(path) {
 		return path.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
 	},
-	
+
 	/**
 	 * Do a search query and display the results
 	 * @param {string} query the search query
 	 */
-	search: _.debounce(function(query){
-		if(query){
-			OC.addStyle('search','results');
-			$.getJSON(OC.filePath('search','ajax','search.php')+'?query='+encodeURIComponent(query), function(results){
-				OC.search.lastResults=results;
-				OC.search.showResults(results);
-			});
-		}
-	}, 500),
-	dialogs:OCdialogs,
-	mtime2date:function(mtime) {
-		mtime = parseInt(mtime,10);
-		var date = new Date(1000*mtime);
-		return date.getDate()+'.'+(date.getMonth()+1)+'.'+date.getFullYear()+', '+date.getHours()+':'+date.getMinutes();
+	search: function (query) {
+		OC.Search.search(query, null, 0, 30);
 	},
-	
+	/**
+	 * Dialog helper for jquery dialogs.
+	 *
+	 * @namespace OC.dialogs
+	 */
+	dialogs:OCdialogs,
 	/**
 	 * Parses a URL query string into a JS map
 	 * @param {string} queryString query string in the format param1=1234&param2=abcde&param3=xyz
-	 * @return map containing key/values matching the URL parameters
+	 * @return {Object.<string, string>} map containing key/values matching the URL parameters
 	 */
 	parseQueryString:function(queryString){
 		var parts,
@@ -451,7 +372,7 @@ var OC={
 
 	/**
 	 * Builds a URL query from a JS map.
-	 * @param params parameter map
+	 * @param {Object.<string, string>} params map containing key/values matching the URL parameters
 	 * @return {string} String containing a URL query (without question) mark
 	 */
 	buildQueryString: function(params) {
@@ -571,27 +492,115 @@ var OC={
 	 *
 	 * This is makes it possible for unit tests to
 	 * stub matchMedia (which doesn't work in PhantomJS)
-	 * @todo Write documentation
+	 * @private
 	 */
 	_matchMedia: function(media) {
 		if (window.matchMedia) {
 			return window.matchMedia(media);
 		}
 		return false;
+	},
+
+	/**
+	 * Returns the user's locale
+	 *
+	 * @return {String} locale string
+	 */
+	getLocale: function() {
+		return $('html').prop('lang');
 	}
 };
 
-OC.search.customResults={};
-OC.search.currentResult=-1;
-OC.search.lastQuery='';
-OC.search.lastResults={};
-//translations for result type ids, can be extended by apps
-OC.search.resultTypes={
-	file: t('core','File'),
-	folder: t('core','Folder'),
-	image: t('core','Image'),
-	audio: t('core','Audio')
+/**
+ * @namespace OC.Plugins
+ */
+OC.Plugins = {
+	/**
+	 * @type Array.<OC.Plugin>
+	 */
+	_plugins: {},
+
+	/**
+	 * Register plugin
+	 *
+	 * @param {String} targetName app name / class name to hook into
+	 * @param {OC.Plugin} plugin
+	 */
+	register: function(targetName, plugin) {
+		var plugins = this._plugins[targetName];
+		if (!plugins) {
+			plugins = this._plugins[targetName] = [];
+		}
+		plugins.push(plugin);
+	},
+
+	/**
+	 * Returns all plugin registered to the given target
+	 * name / app name / class name.
+	 *
+	 * @param {String} targetName app name / class name to hook into
+	 * @return {Array.<OC.Plugin>} array of plugins
+	 */
+	getPlugins: function(targetName) {
+		return this._plugins[targetName] || [];
+	},
+
+	/**
+	 * Call attach() on all plugins registered to the given target name.
+	 *
+	 * @param {String} targetName app name / class name
+	 * @param {Object} object to be extended
+	 * @param {Object} [options] options
+	 */
+	attach: function(targetName, targetObject, options) {
+		var plugins = this.getPlugins(targetName);
+		for (var i = 0; i < plugins.length; i++) {
+			if (plugins[i].attach) {
+				plugins[i].attach(targetObject, options);
+			}
+		}
+	},
+
+	/**
+	 * Call detach() on all plugins registered to the given target name.
+	 *
+	 * @param {String} targetName app name / class name
+	 * @param {Object} object to be extended
+	 * @param {Object} [options] options
+	 */
+	detach: function(targetName, targetObject, options) {
+		var plugins = this.getPlugins(targetName);
+		for (var i = 0; i < plugins.length; i++) {
+			if (plugins[i].detach) {
+				plugins[i].detach(targetObject, options);
+			}
+		}
+	},
+
+	/**
+	 * Plugin
+	 *
+	 * @todo make this a real class in the future
+	 * @typedef {Object} OC.Plugin
+	 *
+	 * @property {String} name plugin name
+	 * @property {Function} attach function that will be called when the
+	 * plugin is attached
+	 * @property {Function} [detach] function that will be called when the
+	 * plugin is detached
+	 */
+
 };
+
+/**
+ * @namespace OC.search
+ */
+OC.search.customResults = {};
+/**
+ * @deprecated use get/setFormatter() instead
+ */
+OC.search.resultTypes = {};
+
 OC.addStyle.loaded=[];
 OC.addScript.loaded=[];
 
@@ -606,7 +615,7 @@ OC.msg={
 	startSaving:function(selector){
 		OC.msg.startAction(selector, t('core', 'Saving...'));
 	},
-	
+
 	/**
 	 * @param selector
 	 * @param data
@@ -615,7 +624,7 @@ OC.msg={
 	finishedSaving:function(selector, data){
 		OC.msg.finishedAction(selector, data);
 	},
-	
+
 	/**
 	 * @param selector
 	 * @param {string} message Message to display
@@ -629,7 +638,7 @@ OC.msg={
 			.stop(true, true)
 			.show();
 	},
-	
+
 	/**
 	 * @param selector
 	 * @param data
@@ -638,23 +647,30 @@ OC.msg={
 	finishedAction:function(selector, data){
 		if( data.status === "success" ){
 			$(selector).html( data.data.message )
-				.addClass('success')
-				.stop(true, true)
-				.delay(3000)
-				.fadeOut(900);
+					.addClass('success')
+					.removeClass('error')
+					.stop(true, true)
+					.delay(3000)
+					.fadeOut(900)
+					.show();
 		}else{
-			$(selector).html( data.data.message ).addClass('error');
+			$(selector).html( data.data.message )
+					.addClass('error')
+					.removeClass('success')
+					.show();
 		}
 	}
 };
 
 /**
  * @todo Write documentation
+ * @namespace
  */
 OC.Notification={
 	queuedNotifications: [],
 	getDefaultNotificationFunction: null,
-	
+	notificationTimer: 0,
+
 	/**
 	 * @param callback
 	 * @todo Write documentation
@@ -662,7 +678,7 @@ OC.Notification={
 	setDefault: function(callback) {
 		OC.Notification.getDefaultNotificationFunction = callback;
 	},
-	
+
 	/**
 	 * Hides a notification
 	 * @param callback
@@ -685,7 +701,7 @@ OC.Notification={
 			}
 		});
 	},
-	
+
 	/**
 	 * Shows a notification as HTML without being sanitized before.
 	 * If you pass unsanitized user input this may lead to a XSS vulnerability.
@@ -701,7 +717,7 @@ OC.Notification={
 			OC.Notification.queuedNotifications.push(html);
 		}
 	},
-	
+
 	/**
 	 * Shows a sanitized notification
 	 * @param {string} text Message to display
@@ -715,9 +731,45 @@ OC.Notification={
 			OC.Notification.queuedNotifications.push($('<div/>').text(text).html());
 		}
 	},
-	
+
+
 	/**
-	 * Returns whether a notification is hidden. 
+	 * Shows a notification that disappears after x seconds, default is
+	 * 7 seconds
+	 * @param {string} text Message to show
+	 * @param {array} [options] options array
+	 * @param {int} [options.timeout=7] timeout in seconds, if this is 0 it will show the message permanently
+	 * @param {boolean} [options.isHTML=false] an indicator for HTML notifications (true) or text (false)
+	 */
+	showTemporary: function(text, options) {
+		var defaults = {
+				isHTML: false,
+				timeout: 7
+			},
+			options = options || {};
+		// merge defaults with passed in options
+		_.defaults(options, defaults);
+
+		// clear previous notifications
+		OC.Notification.hide();
+		if(OC.Notification.notificationTimer) {
+			clearTimeout(OC.Notification.notificationTimer);
+		}
+
+		if(options.isHTML) {
+			OC.Notification.showHtml(text);
+		} else {
+			OC.Notification.show(text);
+		}
+
+		if(options.timeout > 0) {
+			// register timeout to vanish notification
+			OC.Notification.notificationTimer = setTimeout(OC.Notification.hide, (options.timeout * 1000));
+		}
+	},
+
+	/**
+	 * Returns whether a notification is hidden.
 	 * @return {boolean}
 	 */
 	isHidden: function() {
@@ -726,7 +778,12 @@ OC.Notification={
 };
 
 /**
- * @todo Write documentation
+ * Breadcrumb class
+ *
+ * @namespace
+ *
+ * @deprecated will be replaced by the breadcrumb implementation
+ * of the files app in the future
  */
 OC.Breadcrumb={
 	container:null,
@@ -781,7 +838,7 @@ OC.Breadcrumb={
 			this._push(container, leafname, leaflink);
 		}
 	},
-	
+
 	/**
 	 * @todo Write documentation
 	 * @param {string} name
@@ -811,7 +868,7 @@ OC.Breadcrumb={
 		}
 		return crumb;
 	},
-	
+
 	/**
 	 * @todo Write documentation
 	 */
@@ -822,7 +879,7 @@ OC.Breadcrumb={
 		this.container.find('div.crumb').last().remove();
 		this.container.find('div.crumb').last().addClass('last');
 	},
-	
+
 	/**
 	 * @todo Write documentation
 	 */
@@ -840,10 +897,11 @@ OC.Breadcrumb={
 if(typeof localStorage !=='undefined' && localStorage !== null){
 	/**
 	 * User and instance aware localstorage
+	 * @namespace
 	 */
 	OC.localStorage={
 		namespace:'oc_'+OC.currentUser+'_'+OC.webroot+'_',
-		
+
 		/**
 		 * Whether the storage contains items
 		 * @param {string} name
@@ -852,7 +910,7 @@ if(typeof localStorage !=='undefined' && localStorage !== null){
 		hasItem:function(name){
 			return OC.localStorage.getItem(name)!==null;
 		},
-		
+
 		/**
 		 * Add an item to the storage
 		 * @param {string} name
@@ -861,7 +919,7 @@ if(typeof localStorage !=='undefined' && localStorage !== null){
 		setItem:function(name,item){
 			return localStorage.setItem(OC.localStorage.namespace+name,JSON.stringify(item));
 		},
-		
+
 		/**
 		 * Removes an item from the storage
 		 * @param {string} name
@@ -870,7 +928,7 @@ if(typeof localStorage !=='undefined' && localStorage !== null){
 		removeItem:function(name,item){
 			return localStorage.removeItem(OC.localStorage.namespace+name);
 		},
-		
+
 		/**
 		 * Get an item from the storage
 		 * @param {string} name
@@ -964,6 +1022,12 @@ function object(o) {
 function initCore() {
 
 	/**
+	 * Set users locale to moment.js as soon as possible
+	 */
+	moment.locale(OC.getLocale());
+
+
+	/**
 	 * Calls the server periodically to ensure that session doesn't
 	 * time out
 	 */
@@ -1000,77 +1064,6 @@ function initCore() {
 	}else{
 		SVGSupport.checkMimeType();
 	}
-	$('form.searchbox').submit(function(event){
-		event.preventDefault();
-	});
-	$('#searchbox').keyup(function(event){
-		if(event.keyCode===13){//enter
-			if(OC.search.currentResult>-1){
-				var result=$('#searchresults tr.result a')[OC.search.currentResult];
-				window.location = $(result).attr('href');
-			}
-		}else if(event.keyCode===38){//up
-			if(OC.search.currentResult>0){
-				OC.search.currentResult--;
-				OC.search.renderCurrent();
-			}
-		}else if(event.keyCode===40){//down
-			if(OC.search.lastResults.length>OC.search.currentResult+1){
-				OC.search.currentResult++;
-				OC.search.renderCurrent();
-			}
-		}else if(event.keyCode===27){//esc
-			OC.search.hide();
-			if (FileList && typeof FileList.unfilter === 'function') { //TODO add hook system
-				FileList.unfilter();
-			}
-		}else{
-			var query=$('#searchbox').val();
-			if(OC.search.lastQuery!==query){
-				OC.search.lastQuery=query;
-				OC.search.currentResult=-1;
-				if (FileList && typeof FileList.filter === 'function') { //TODO add hook system
-						FileList.filter(query);
-				}
-				if(query.length>2){
-					OC.search(query);
-				}else{
-					if(OC.search.hide){
-						OC.search.hide();
-					}
-				}
-			}
-		}
-	});
-
-	var setShowPassword = function(input, label) {
-		input.showPassword().keyup();
-	};
-	setShowPassword($('#adminpass'), $('label[for=show]'));
-	setShowPassword($('#pass2'), $('label[for=personal-show]'));
-	setShowPassword($('#dbpass'), $('label[for=dbpassword]'));
-
-	var checkShowCredentials = function() {
-		var empty = false;
-		$('input#user, input#password').each(function() {
-			if ($(this).val() === '') {
-				empty = true;
-			}
-		});
-		if(empty) {
-			$('#submit').fadeOut();
-			$('#remember_login').hide();
-			$('#remember_login+label').fadeOut();
-		} else {
-			$('#submit').fadeIn();
-			$('#remember_login').show();
-			$('#remember_login+label').fadeIn();
-		}
-	};
-	// hide log in button etc. when form fields not filled
-	// commented out due to some browsers having issues with it
-	// checkShowCredentials();
-	// $('input#user, input#password').keyup(checkShowCredentials);
 
 	// user menu
 	$('#settings #expand').keydown(function(event) {
@@ -1100,6 +1093,7 @@ function initCore() {
 	$('td .modified').tipsy({gravity:'s', fade:true, live:true});
 	$('td.lastLogin').tipsy({gravity:'s', fade:true, html:true});
 	$('input').tipsy({gravity:'w', fade:true});
+	$('.extra-data').tipsy({gravity:'w', fade:true, live:true});
 
 	// toggle for menus
 	$(document).on('mouseup.closemenus', function(event) {
@@ -1219,7 +1213,7 @@ $.fn.filterAttr = function(attr_name, attr_value) {
 function humanFileSize(size, skipSmallSizes) {
 	var humanList = ['B', 'kB', 'MB', 'GB', 'TB'];
 	// Calculate Log with base 1024: size = 1024 ** order
-	var order = size?Math.floor(Math.log(size) / Math.log(1024)):0;
+	var order = size > 0 ? Math.floor(Math.log(size) / Math.log(1024)) : 0;
 	// Stay in range of the byte sizes that are defined
 	order = Math.min(humanList.length - 1, order);
 	var readableFormat = humanList[order];
@@ -1242,17 +1236,14 @@ function humanFileSize(size, skipSmallSizes) {
 
 /**
  * Format an UNIX timestamp to a human understandable format
- * @param {number} date UNIX timestamp
+ * @param {number} timestamp UNIX timestamp
  * @return {string} Human readable format
  */
-function formatDate(date){
-	if(typeof date=='number'){
-		date=new Date(date);
-	}
-	return $.datepicker.formatDate(datepickerFormatDate, date)+' '+date.getHours()+':'+((date.getMinutes()<10)?'0':'')+date.getMinutes();
+function formatDate(timestamp){
+	return OC.Util.formatDate(timestamp);
 }
 
-// 
+//
 /**
  * Get the value of a URL parameter
  * @link http://stackoverflow.com/questions/1403888/get-url-parameter-with-jquery
@@ -1270,30 +1261,38 @@ function getURLParameter(name) {
  * @param {number} timestamp A Unix timestamp
  */
 function relative_modified_date(timestamp) {
-	var timeDiff = Math.round((new Date()).getTime() / 1000) - timestamp;
-	var diffMinutes = Math.round(timeDiff/60);
-	var diffHours = Math.round(diffMinutes/60);
-	var diffDays = Math.round(diffHours/24);
-	var diffMonths = Math.round(diffDays/31);
-	if(timeDiff < 60) { return t('core','seconds ago'); }
-	else if(timeDiff < 3600) { return n('core','%n minute ago', '%n minutes ago', diffMinutes); }
-	else if(timeDiff < 86400) { return n('core', '%n hour ago', '%n hours ago', diffHours); }
-	else if(timeDiff < 86400) { return t('core','today'); }
-	else if(timeDiff < 172800) { return t('core','yesterday'); }
-	else if(timeDiff < 2678400) { return n('core', '%n day ago', '%n days ago', diffDays); }
-	else if(timeDiff < 5184000) { return t('core','last month'); }
-	else if(timeDiff < 31556926) { return n('core', '%n month ago', '%n months ago', diffMonths); }
-	else if(timeDiff < 63113852) { return t('core','last year'); }
-	else { return t('core','years ago'); }
+	/*
+	 Were multiplying by 1000 to bring the timestamp back to its original value
+	 per https://github.com/owncloud/core/pull/10647#discussion_r16790315
+	  */
+	return OC.Util.relativeModifiedDate(timestamp * 1000);
 }
 
 /**
  * Utility functions
+ * @namespace
  */
 OC.Util = {
 	// TODO: remove original functions from global namespace
 	humanFileSize: humanFileSize,
-	formatDate: formatDate,
+
+	/**
+	 * @param timestamp
+	 * @param format
+	 * @returns {string} timestamp formatted as requested
+	 */
+	formatDate: function (timestamp, format) {
+		format = format || "MMMM D, YYYY h:mm";
+		return moment(timestamp).format(format);
+	},
+
+	/**
+	 * @param timestamp
+	 * @returns {string} human readable difference from now
+	 */
+	relativeModifiedDate: function (timestamp) {
+		return moment(timestamp).fromNow();
+	},
 	/**
 	 * Returns whether the browser supports SVG
 	 * @return {boolean} true if the browser supports SVG, false otherwise
@@ -1365,13 +1364,65 @@ OC.Util = {
 		// FIXME: likely to break when crossing DST
 		// would be better to use a library like momentJS
 		return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+	},
+
+	_chunkify: function(t) {
+		// Adapted from http://my.opera.com/GreyWyvern/blog/show.dml/1671288
+		var tz = [], x = 0, y = -1, n = 0, code, c;
+
+		while (x < t.length) {
+			c = t.charAt(x);
+			// only include the dot in strings
+			var m = ((!n && c === '.') || (c >= '0' && c <= '9'));
+			if (m !== n) {
+				// next chunk
+				y++;
+				tz[y] = '';
+				n = m;
+			}
+			tz[y] += c;
+			x++;
+		}
+		return tz;
+	},
+	/**
+	 * Compare two strings to provide a natural sort
+	 * @param a first string to compare
+	 * @param b second string to compare
+	 * @return -1 if b comes before a, 1 if a comes before b
+	 * or 0 if the strings are identical
+	 */
+	naturalSortCompare: function(a, b) {
+		var x;
+		var aa = OC.Util._chunkify(a);
+		var bb = OC.Util._chunkify(b);
+
+		for (x = 0; aa[x] && bb[x]; x++) {
+			if (aa[x] !== bb[x]) {
+				var aNum = Number(aa[x]), bNum = Number(bb[x]);
+				// note: == is correct here
+				if (aNum == aa[x] && bNum == bb[x]) {
+					return aNum - bNum;
+				} else {
+					// Forcing 'en' locale to match the server-side locale which is
+					// always 'en'.
+					//
+					// Note: This setting isn't supported by all browsers but for the ones
+					// that do there will be more consistency between client-server sorting
+					return aa[x].localeCompare(bb[x], 'en');
+				}
+			}
+		}
+		return aa.length - bb.length;
 	}
-};
+}
 
 /**
  * Utility class for the history API,
  * includes fallback to using the URL hash when
  * the browser doesn't support the history API.
+ *
+ * @namespace
  */
 OC.Util.History = {
 	_handlers: [],
@@ -1531,6 +1582,7 @@ OC.set=function(name, value) {
 
 /**
  * Namespace for apps
+ * @namespace OCA
  */
 window.OCA = {};
 

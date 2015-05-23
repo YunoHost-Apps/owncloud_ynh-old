@@ -45,7 +45,7 @@ class Helper {
 	 * except the default (first) server shall be connected to.
 	 *
 	 */
-	static public function getServerConfigurationPrefixes($activeConfigurations = false) {
+	public function getServerConfigurationPrefixes($activeConfigurations = false) {
 		$referenceConfigkey = 'ldap_configuration_active';
 
 		$sql = '
@@ -83,7 +83,7 @@ class Helper {
 	 * @return array an array with configprefix as keys
 	 *
 	 */
-	static public function getServerConfigurationHosts() {
+	public function getServerConfigurationHosts() {
 		$referenceConfigkey = 'ldap_host';
 
 		$query = '
@@ -110,10 +110,7 @@ class Helper {
 	 * @param string $prefix the configuration prefix of the config to delete
 	 * @return bool true on success, false otherwise
 	 */
-	static public function deleteServerConfiguration($prefix) {
-		//just to be on the safe side
-		\OCP\User::checkAdminUser();
-
+	public function deleteServerConfiguration($prefix) {
 		if(!in_array($prefix, self::getServerConfigurationPrefixes())) {
 			return false;
 		}
@@ -145,43 +142,27 @@ class Helper {
 	}
 
 	/**
-	 * Truncate's the given mapping table
-	 *
-	 * @param string $mapping either 'user' or 'group'
-	 * @return bool true on success, false otherwise
+	 * checks whether there is one or more disabled LDAP configurations
+	 * @throws \Exception
+	 * @return bool
 	 */
-	static public function clearMapping($mapping) {
-		if($mapping === 'user') {
-			$table = '`*PREFIX*ldap_user_mapping`';
-		} else if ($mapping === 'group') {
-			$table = '`*PREFIX*ldap_group_mapping`';
-		} else {
-			return false;
+	public function haveDisabledConfigurations() {
+		$all = $this->getServerConfigurationPrefixes(false);
+		$active = $this->getServerConfigurationPrefixes(true);
+
+		if(!is_array($all) || !is_array($active)) {
+			throw new \Exception('Unexpected Return Value');
 		}
 
-		$dbtype = \OCP\Config::getSystemValue('dbtype');
-		if(strpos($dbtype, 'sqlite') !== false || $dbtype === 'oci') {
-			$query = \OCP\DB::prepare('DELETE FROM '.$table);
-		} else {
-			$query = \OCP\DB::prepare('TRUNCATE '.$table);
-		}
-
-
-		$res = $query->execute();
-
-		if(\OCP\DB::isError($res)) {
-			return false;
-		}
-
-		return true;
+		return count($all) !== count($active) || count($all) === 0;
 	}
 
 	/**
-	 * extractsthe domain from a given URL
+	 * extracts the domain from a given URL
 	 * @param string $url the URL
 	 * @return string|false domain as string on success, false otherwise
 	 */
-	static public function getDomainFromURL($url) {
+	public function getDomainFromURL($url) {
 		$uinfo = parse_url($url);
 		if(!is_array($uinfo)) {
 			return false;

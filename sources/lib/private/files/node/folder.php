@@ -180,7 +180,7 @@ class Folder extends Node implements \OCP\Files\Folder {
 	 * @throws \OCP\Files\NotPermittedException
 	 */
 	public function newFolder($path) {
-		if ($this->checkPermissions(\OCP\PERMISSION_CREATE)) {
+		if ($this->checkPermissions(\OCP\Constants::PERMISSION_CREATE)) {
 			$fullPath = $this->getFullPath($path);
 			$nonExisting = new NonExistingFolder($this->root, $this->view, $fullPath);
 			$this->root->emit('\OC\Files', 'preWrite', array($nonExisting));
@@ -201,7 +201,7 @@ class Folder extends Node implements \OCP\Files\Folder {
 	 * @throws \OCP\Files\NotPermittedException
 	 */
 	public function newFile($path) {
-		if ($this->checkPermissions(\OCP\PERMISSION_CREATE)) {
+		if ($this->checkPermissions(\OCP\Constants::PERMISSION_CREATE)) {
 			$fullPath = $this->getFullPath($path);
 			$nonExisting = new NonExistingFile($this->root, $this->view, $fullPath);
 			$this->root->emit('\OC\Files', 'preWrite', array($nonExisting));
@@ -223,7 +223,7 @@ class Folder extends Node implements \OCP\Files\Folder {
 	 * @return \OC\Files\Node\Node[]
 	 */
 	public function search($query) {
-		return $this->searchCommon('%' . $query . '%', 'search');
+		return $this->searchCommon('search', array('%' . $query . '%'));
 	}
 
 	/**
@@ -233,26 +233,38 @@ class Folder extends Node implements \OCP\Files\Folder {
 	 * @return Node[]
 	 */
 	public function searchByMime($mimetype) {
-		return $this->searchCommon($mimetype, 'searchByMime');
+		return $this->searchCommon('searchByMime', array($mimetype));
 	}
 
 	/**
-	 * @param string $query
-	 * @param string $method
+	 * search for files by tag
+	 *
+	 * @param string|int $tag name or tag id
+	 * @param string $userId owner of the tags
+	 * @return Node[]
+	 */
+	public function searchByTag($tag, $userId) {
+		return $this->searchCommon('searchByTag', array($tag, $userId));
+	}
+
+	/**
+	 * @param string $method cache method
+	 * @param array $args call args
 	 * @return \OC\Files\Node\Node[]
 	 */
-	private function searchCommon($query, $method) {
+	private function searchCommon($method, $args) {
 		$files = array();
 		$rootLength = strlen($this->path);
 		/**
 		 * @var \OC\Files\Storage\Storage $storage
 		 */
 		list($storage, $internalPath) = $this->view->resolvePath($this->path);
+		$internalPath = rtrim($internalPath, '/') . '/';
 		$internalRootLength = strlen($internalPath);
 
 		$cache = $storage->getCache('');
 
-		$results = $cache->$method($query);
+		$results = call_user_func_array(array($cache, $method), $args);
 		foreach ($results as $result) {
 			if ($internalRootLength === 0 or substr($result['path'], 0, $internalRootLength) === $internalPath) {
 				$result['internalPath'] = $result['path'];
@@ -269,7 +281,7 @@ class Folder extends Node implements \OCP\Files\Folder {
 				$cache = $storage->getCache('');
 
 				$relativeMountPoint = substr($mount->getMountPoint(), $rootLength);
-				$results = $cache->$method($query);
+				$results = call_user_func_array(array($cache, $method), $args);
 				foreach ($results as $result) {
 					$result['internalPath'] = $result['path'];
 					$result['path'] = $relativeMountPoint . $result['path'];
@@ -301,7 +313,7 @@ class Folder extends Node implements \OCP\Files\Folder {
 		$nodes = array();
 		foreach ($mounts as $mount) {
 			/**
-			 * @var \OC\Files\Mount\Mount $mount
+			 * @var \OC\Files\Mount\MountPoint $mount
 			 */
 			if ($mount->getStorage()) {
 				$cache = $mount->getStorage()->getCache();
@@ -321,15 +333,8 @@ class Folder extends Node implements \OCP\Files\Folder {
 		return $this->view->free_space($this->path);
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function isCreatable() {
-		return $this->checkPermissions(\OCP\PERMISSION_CREATE);
-	}
-
 	public function delete() {
-		if ($this->checkPermissions(\OCP\PERMISSION_DELETE)) {
+		if ($this->checkPermissions(\OCP\Constants::PERMISSION_DELETE)) {
 			$this->sendHooks(array('preDelete'));
 			$this->view->rmdir($this->path);
 			$nonExisting = new NonExistingFolder($this->root, $this->view, $this->path);
@@ -383,5 +388,17 @@ class Folder extends Node implements \OCP\Files\Folder {
 		} else {
 			throw new NotPermittedException();
 		}
+	}
+
+	/**
+	 * Add a suffix to the name in case the file exists
+	 *
+	 * @param string $name
+	 * @return string
+	 * @throws NotPermittedException
+	 */
+	public function getNonExistingName($name) {
+		$uniqueName = \OC_Helper::buildNotExistingFileNameForView($this->getPath(), $name, $this->view);
+		return trim($this->getRelativePath($uniqueName), '/');
 	}
 }
