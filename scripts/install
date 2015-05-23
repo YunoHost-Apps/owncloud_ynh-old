@@ -20,7 +20,9 @@ if [[ ! $? -eq 0 ]]; then
 fi
 
 # Remove trailing "/" for next commands
-path=${path%/}
+if [[ ! "$path" == "/" ]]; then
+    path=${path%/}
+fi
 
 # Install dependencies
 sudo apt-get install acl smbclient -y -qq
