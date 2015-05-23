@@ -1,23 +1,20 @@
 #!/bin/bash
 
+set -e
+
 # Retrieve arguments
 domain=$1
 path=$2
 user=$3
 
 # Check user parameter
-sudo yunohost user list --json | grep -qi "\"username\": \"$user\""
-if [[ ! $? -eq 0 ]]; then
-    echo "Wrong user"
-    exit 1
-fi
+sudo yunohost user list --json | grep -qi "\"username\": \"$user\"" \
+	|| echo "Wrong user" && exit 1
 sudo yunohost app setting owncloud admin_user -v $user
 
 # Check domain/path availability
-sudo yunohost app checkurl $domain$path -a owncloud
-if [[ ! $? -eq 0 ]]; then
-    exit 1
-fi
+sudo yunohost app checkurl $domain$path -a owncloud \
+	|| echo "Path not available: $domain$path" && exit 1
 
 # Remove trailing "/" for next commands
 if [[ ! "$path" == "/" ]]; then
@@ -25,6 +22,7 @@ if [[ ! "$path" == "/" ]]; then
 fi
 
 # Install dependencies
+sudo apt-get update -qq
 sudo apt-get install acl smbclient -y -qq
 
 # Generate random password
@@ -54,7 +52,8 @@ sudo chown -hR owncloud:www-data $data_path
 sudo chown owncloud:www-data /home/yunohost.app/owncloud
 sudo chmod 755 /home/yunohost.app
 sudo chmod 664 -R $final_path
-sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775
+sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775 \
+	|| echo "No file to modify"
 sudo chmod -R 770 $data_path
 
 # Change variables in Owncloud configuration
@@ -69,7 +68,8 @@ do
     sudo yunohost user list --json | grep -q "\"username\": \"$i\""
     if [[ $? -eq 0 ]];
     then
-        sudo setfacl -m g:owncloud:rwx /home/$i
+        sudo setfacl -m g:owncloud:rwx /home/$i \
+			|| echo "ACL not available"
         sudo mkdir $data_path/$i
     fi
 done
@@ -85,23 +85,20 @@ sudo yunohost app ssowatconf
 curl -kL -H "Host: $domain" -X POST https://127.0.0.1$path/index.php --data "install=true&adminlogin=admin&adminpass=$db_pwd&directory=/home/yunohost.app/owncloud/data&dbtype=mysql&dbuser=$db_user&dbpass=$db_pwd&dbname=$db_user&dbhost=localhost" > /dev/null 2>&1
 
 # Check if the Mysql database is initialized & running
-mysql -u $db_user -p$db_pwd $db_user -e "select * from oc_appconfig;" > /dev/null 2>&1
-result=$?
 loop_number=1
-while [ $result != 0 ] && [ $loop_number -lt 5 ];
+while [ $loop_number -lt 5 ];
 do
     sleep 5
-    mysql -u $db_user -p$db_pwd $db_user -e "select * from oc_appconfig;" > /dev/null 2>&1
-    let result=$?
-    if [ $loop_number -eq 4 ];
+    mysql -u $db_user -p$db_pwd $db_user -e "select * from oc_appconfig;" > /dev/null 2>&1 && break \
+		|| let loop_number++
+    if [ $loop_number -eq 5 ];
     then
         echo "Web installation failed"
         exit 1
     fi
-    let loop_number++
 done
 
-# Configure LDAP plugin
+# Enable and configure LDAP and external storage plugin
 mysql -u $db_user -p$db_pwd $db_user < ../conf/ldap_config.sql
 
 sudo chown -hR owncloud:owncloud $final_path
@@ -113,5 +110,3 @@ sudo chmod -R 770 $data_path
 
 # Make an LDAP user as admin
 mysql -u $db_user -p$db_pwd $db_user -e "INSERT INTO oc_group_user VALUES ('admin','$user');"
-
-sudo yunohost app ssowatconf

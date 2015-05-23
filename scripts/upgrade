@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Retrieve arguments
 domain=$(sudo yunohost app setting owncloud domain)
 path=$(sudo yunohost app setting owncloud path)
@@ -30,7 +32,8 @@ sudo chown -hR owncloud:www-data $final_path
 sudo chown -hR owncloud:www-data $data_path
 sudo chmod 755 /home/yunohost.app
 sudo chmod 664 -R $final_path
-sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775
+sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775 \
+	|| echo "No file to modify"
 sudo chmod -R 770 $data_path
 
 # Change variables in Owncloud configuration
@@ -47,16 +50,12 @@ sudo yunohost app setting owncloud unprotected_uris -v "/"
 sudo yunohost app setting owncloud skipped_uris -d
 sudo yunohost app ssowatconf
 
-# Optionnal DB upgrade here
-
-# Configure LDAP plugin
-mysql -u $db_user -p$db_pwd $db_user < ../conf/ldap_config.sql
+# Enable and configure LDAP plugin
+mysql -u $db_user -p$db_pwd $db_user < ../conf/ldap_config.sql \
+	|| echo "LDAP plugin already configured"
 
 sudo chown -hR owncloud:owncloud $final_path
 sudo chown -hR owncloud:owncloud $data_path
 sudo chmod 755 /home/yunohost.app
 sudo chmod -R 770 $data_path
 sudo chmod -R 775 $final_path
-
-# Unprotect URIs
-sudo yunohost app ssowatconf
