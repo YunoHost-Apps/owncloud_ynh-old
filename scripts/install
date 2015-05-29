@@ -34,12 +34,13 @@ sudo yunohost app initdb $db_user -p $db_pwd
 sudo yunohost app setting owncloud mysqlpwd -v $db_pwd
 
 # Delete db and user if exit with an error
-function exit_properly 
+function exit_properly
 {
+    set +e
     root_pwd=$(sudo cat /etc/yunohost/mysql)
     mysql -u root -p$root_pwd -e "DROP DATABASE owncloud ; DROP USER owncloud@localhost ;"
-    sudo rm /etc/php5/fpm/pool.d/owncloud*conf
-    
+    sudo rm -f /etc/php5/fpm/pool.d/owncloud.conf
+
     sudo killall php5-fpm
     sudo service php5-fpm start
     sudo userdel owncloud
