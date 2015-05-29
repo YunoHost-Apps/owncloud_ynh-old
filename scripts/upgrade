@@ -15,7 +15,7 @@ sudo apt-get install acl smbclient php5-cli -y -qq
 # Remove trailing "/" for next commands
 path=${path%/}
 
-# Use 'owncloud' as database name and user
+# Use 'owncloud' as database name and user \
 db_user=owncloud
 
 # Copy files to the right place
@@ -25,7 +25,9 @@ sudo mkdir -p $final_path
 sudo mkdir -p $data_path
 old_pwd=$(pwd)
 cd $final_path
-sudo mv apps old_apps
+sudo mkdir -p old_apps
+sudo mv apps/* old_apps \
+    || echo "No app to backup"
 shopt -s extglob
 sudo rm -Rf !(old_apps|data|config|themes)
 shopt -u extglob
@@ -49,7 +51,7 @@ sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775 \
 sudo chmod -R 770 $data_path
 
 # Needed for Jessie/PHP5.6 compatibility
-sed -i "s/;always_populate_raw/always_populate_raw/" /etc/php5/cli/php.ini
+sudo sed -i "s/;always_populate_raw/always_populate_raw/" /etc/php5/cli/php.ini
 
 # Change variables in Owncloud configuration
 if [[ "$path" == "" ]]; then
