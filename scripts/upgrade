@@ -27,7 +27,7 @@ old_pwd=$(pwd)
 cd $final_path
 sudo mv apps old_apps
 shopt -s extglob
-sudo rm -Rf !(old_apps|data|config|themes) 
+sudo rm -Rf !(old_apps|data|config|themes)
 shopt -u extglob
 cd $old_pwd
 sudo cp -a ../sources/* $final_path
@@ -46,6 +46,9 @@ sudo chmod 664 -R $final_path
 sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775 \
 	|| echo "No file to modify"
 sudo chmod -R 770 $data_path
+
+# Needed for Jessie/PHP5.6 compatibility
+sed -i "s/;always_populate_raw/always_populate_raw/" /etc/php5/cli/php.ini
 
 # Change variables in Owncloud configuration
 if [[ "$path" == "" ]]; then

@@ -71,6 +71,9 @@ sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775 \
 	|| echo "No file to modify"
 sudo chmod -R 770 $data_path
 
+# Needed for Jessie/PHP5.6 compatibility
+sudo sed -i "s/;always_populate_raw/always_populate_raw/" /etc/php5/cli/php.ini
+
 # Change variables in Owncloud configuration
 if [[ "$path" == "" ]]; then
     sudo sed -i "s@LOCATIONTOCHANGE@/@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
@@ -109,18 +112,9 @@ cd $old_pwd
 
 
 # Check if the Mysql database is initialized & running
-loop_number=1
-while [ $loop_number -lt 5 ];
-do
-    sleep 5
-    mysql -u $db_user -p$db_pwd $db_user -e "select * from oc_appconfig;" > /dev/null 2>&1 && break \
-		|| let loop_number++
-    if [ $loop_number -eq 5 ];
-    then
-        echo "Web installation failed"
-        exit_properly 
-    fi
-done
+sleep 2
+mysql -u $db_user -p$db_pwd $db_user -e "select * from oc_appconfig;" > /dev/null 2>&1 \
+    || (echo "Owncloud is not properly installed" && exit_properly)
 
 # Enable plugins
 old_pwd=$(pwd)
