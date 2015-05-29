@@ -34,7 +34,8 @@ sudo cp -a ../sources/* $final_path
 cd $final_path/old_apps
 sudo rm -Rf $(ls $final_path/apps)
 cd $old_pwd
-sudo cp -a $final_path/old_apps/* $final_path/apps/
+sudo cp -a $final_path/old_apps/* $final_path/apps/ \
+    || echo "No app to restore"
 
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo cp ../conf/php-fpm.conf /etc/php5/fpm/pool.d/owncloud.conf
