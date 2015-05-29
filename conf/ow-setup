@@ -1,0 +1,52 @@
+#!/usr/bin/env php
+<?php
+/**
+ * This file is licensed under the Affero General Public License version 3 or
+ * later.
+ * See the COPYING-README file.
+ */
+
+//$argv = $_SERVER['argv'];
+use Symfony\Component\Console\Application;
+
+try {
+	require_once 'lib/base.php';
+
+	// set to run indefinitely if needed
+	set_time_limit(0);
+    
+    if (version_compare(PHP_VERSION, '5.4.0') === -1) {
+        echo 'This version of ownCloud requires at least PHP 5.4.0<br/>';
+        echo 'You are currently running ' . PHP_VERSION . '. Please update your PHP version.';
+        return;
+    }
+    
+	if (!OC::$CLI) {
+		echo "This script can be run from the command line only" . PHP_EOL;
+		exit(0);
+	}
+    
+	if (!\OC::$server->getConfig()->getSystemValue('installed', false)) {
+        $controller = new OC\Core\Setup\Controller(\OC::$server->getConfig(), \OC::$server->getIniWrapper(), \OC::$server->getL10N('core'), new \OC_Defaults());
+        $longopts  = array(
+            "adminlogin:",
+            "adminpass:",
+            "directory:",
+            "dbtype:",
+            "dbuser:",
+            "dbpass:",
+            "dbname:",
+            "dbhost:",
+            "trusted_domain:"
+        );
+        $params = getopt("", $longopts);
+        $params['install']='true';
+        $params['trusted_domains']=array($params['trusted_domain']);
+        $controller->run($params);
+        exit();
+    }
+
+} catch (Exception $ex) {
+	echo "An unhandled exception has been thrown:" . PHP_EOL;
+	echo $ex;
+}
