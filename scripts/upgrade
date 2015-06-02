@@ -84,7 +84,7 @@ sudo chmod -R u=rwX,g=rwX,o= $data_path
 cd $final_path
 
 sudo su -c "php occ app:disable gallery -n -q --no-ansi" owncloud
-sudo su -c "php occ upgrade -n -q --no-ansi" owncloud
+sudo su -c "php occ upgrade -n -q --no-ansi || echo 'Owncloud upgrade already done'" owncloud
 
 # Configure LDAP plugin
 sudo su -c "php occ ldap:set-config '' ldapBase dc=yunohost,dc=org -n -q --no-ansi" owncloud
