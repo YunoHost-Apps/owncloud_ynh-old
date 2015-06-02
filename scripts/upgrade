@@ -24,6 +24,8 @@ data_path=/home/yunohost.app/owncloud/data
 sudo mkdir -p $final_path
 sudo mkdir -p $data_path
 old_pwd=$(pwd)
+sudo chmod -R u=rwX,g=rwX,o=rX $final_path
+sudo chmod -R u=rwX,g=rwX,o= $data_path
 cd $final_path
 sudo mkdir -p old_apps
 sudo mv apps/* old_apps \
@@ -45,9 +47,8 @@ sudo cp ../conf/mount.json $data_path
 sudo chown -hR owncloud:www-data $final_path
 sudo chown -hR owncloud:www-data $data_path
 sudo chmod 755 /home/yunohost.app
-sudo chmod 665 -R $final_path
-sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775 \
-	|| echo "No file to modify"
+sudo chmod -R u=rwX,g=rwX,o=rX $final_path
+sudo chmod -R u=rwX,g=rwX,o= $data_path
 sudo chmod -R 770 $data_path
 
 # Needed for Jessie/PHP5.6 compatibility
@@ -76,10 +77,8 @@ sudo yunohost app ssowatconf
 sudo chown -hR owncloud:owncloud $final_path
 sudo chown -hR owncloud:owncloud $data_path
 sudo chmod 755 /home/yunohost.app
-sudo chmod -R 770 $data_path
-sudo chmod -R 665 $final_path
-sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775 \
-	|| echo "No file to modify"
+sudo chmod -R u=rwX,g=rwX,o=rX $final_path
+sudo chmod -R u=rwX,g=rwX,o= $data_path
 
 #Run owncloud upgrade script to avoid to have to do this in the browser
 cd $final_path

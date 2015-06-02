@@ -67,10 +67,8 @@ sudo chown -hR owncloud:www-data $final_path
 sudo chown -hR owncloud:www-data $data_path
 sudo chown owncloud:www-data /home/yunohost.app/owncloud
 sudo chmod 755 /home/yunohost.app
-sudo chmod 665 -R $final_path
-sudo find $final_path -type d -print0 | xargs -0 sudo chmod 775 \
-	|| echo "No file to modify"
-sudo chmod -R 770 $data_path
+sudo chmod -R u=rwX,g=rwX,o=rX $final_path
+sudo chmod -R u=rwX,g=rwX,o= $data_path
 
 # Needed for Jessie/PHP5.6 compatibility
 sudo sed -i "s/;always_populate_raw/always_populate_raw/" /etc/php5/cli/php.ini
