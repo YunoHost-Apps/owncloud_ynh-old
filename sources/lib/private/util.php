@@ -1,7 +1,55 @@
 <?php
-
 /**
- * Class for utility functions
+ * @author Adam Williamson <awilliam@redhat.com>
+ * @author Andreas Fischer <bantu@owncloud.com>
+ * @author Arthur Schiwon <blizzz@owncloud.com>
+ * @author Bart Visscher <bartv@thisnet.nl>
+ * @author Bernhard Posselt <dev@bernhard-posselt.com>
+ * @author Birk Borkason <daniel.niccoli@gmail.com>
+ * @author Björn Schießle <schiessle@owncloud.com>
+ * @author Brice Maron <brice@bmaron.net>
+ * @author Christian Reiner <github@christian-reiner.info>
+ * @author Christopher Schäpers <kondou@ts.unde.re>
+ * @author Clark Tomlinson <fallen013@gmail.com>
+ * @author cmeh <cmeh@users.noreply.github.com>
+ * @author Florin Peter <github@florin-peter.de>
+ * @author Frank Karlitschek <frank@owncloud.org>
+ * @author Georg Ehrke <georg@owncloud.com>
+ * @author helix84 <helix84@centrum.sk>
+ * @author Jakob Sack <mail@jakobsack.de>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Markus Goetz <markus@woboq.com>
+ * @author Marvin Thomas Rabe <mrabe@marvinrabe.de>
+ * @author Michael Gapczynski <GapczynskiM@gmail.com>
+ * @author Michael Göhler <somebody.here@gmx.de>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @author Scrutinizer Auto-Fixer <auto-fixer@scrutinizer-ci.com>
+ * @author Stefan Rado <owncloud@sradonia.net>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Thomas Schmidt <tschmidt@suse.de>
+ * @author Thomas Tanghus <thomas@tanghus.net>
+ * @author Victor Dubiniuk <dubiniuk@owncloud.com>
+ * @author Vincent Petry <pvince81@owncloud.com>
+ * @author Volkan Gezer <volkangezer@gmail.com>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
 class OC_Util {
@@ -11,11 +59,15 @@ class OC_Util {
 	private static $rootMounted = false;
 	private static $fsSetup = false;
 
+	protected static function getAppManager() {
+		return \OC::$server->getAppManager();
+	}
+
 	private static function initLocalStorageRootFS() {
 		// mount local file backend as root
 		$configDataDirectory = OC_Config::getValue("datadirectory", OC::$SERVERROOT . "/data");
 		//first set up the local "root" storage
-		\OC\Files\Filesystem::initMounts();
+		\OC\Files\Filesystem::initMountManager();
 		if (!self::$rootMounted) {
 			\OC\Files\Filesystem::mount('\OC\Files\Storage\Local', array('datadir' => $configDataDirectory), '/');
 			self::$rootMounted = true;
@@ -44,7 +96,7 @@ class OC_Util {
 		$config['class'] = '\OC\Files\ObjectStore\ObjectStoreStorage';
 
 		// mount object storage as root
-		\OC\Files\Filesystem::initMounts();
+		\OC\Files\Filesystem::initMountManager();
 		if (!self::$rootMounted) {
 			\OC\Files\Filesystem::mount($config['class'], $config['arguments'], '/');
 			self::$rootMounted = true;
@@ -81,6 +133,41 @@ class OC_Util {
 			self::$fsSetup = true;
 		}
 
+		\OC\Files\Filesystem::initMountManager();
+
+		\OC\Files\Filesystem::addStorageWrapper('mount_options', function ($mountPoint, \OCP\Files\Storage $storage, \OCP\Files\Mount\IMountPoint $mount) {
+			if ($storage->instanceOfStorage('\OC\Files\Storage\Common')) {
+				/** @var \OC\Files\Storage\Common $storage */
+				$storage->setMountOptions($mount->getOptions());
+			}
+			return $storage;
+		});
+
+		\OC\Files\Filesystem::addStorageWrapper('oc_quota', function ($mountPoint, $storage) {
+			// set up quota for home storages, even for other users
+			// which can happen when using sharing
+
+			/**
+			 * @var \OC\Files\Storage\Storage $storage
+			 */
+			if ($storage->instanceOfStorage('\OC\Files\Storage\Home')
+				|| $storage->instanceOfStorage('\OC\Files\ObjectStore\HomeObjectStoreStorage')
+			) {
+				/** @var \OC\Files\Storage\Home $storage */
+				if (is_object($storage->getUser())) {
+					$user = $storage->getUser()->getUID();
+					$quota = OC_Util::getUserQuota($user);
+					if ($quota !== \OCP\Files\FileInfo::SPACE_UNLIMITED) {
+						return new \OC\Files\Storage\Wrapper\Quota(array('storage' => $storage, 'quota' => $quota, 'root' => 'files'));
+					}
+				}
+			}
+
+			return $storage;
+		});
+
+		OC_Hook::emit('OC_Filesystem', 'preSetup', array('user' => $user));
+
 		//check if we are using an object storage
 		$objectStore = OC_Config::getValue('objectstore');
 		if (isset($objectStore)) {
@@ -96,38 +183,11 @@ class OC_Util {
 
 		//if we aren't logged in, there is no use to set up the filesystem
 		if ($user != "") {
-			\OC\Files\Filesystem::addStorageWrapper('oc_quota', function ($mountPoint, $storage) {
-				// set up quota for home storages, even for other users
-				// which can happen when using sharing
-
-				/**
-				 * @var \OC\Files\Storage\Storage $storage
-				 */
-				if ($storage->instanceOfStorage('\OC\Files\Storage\Home')
-					|| $storage->instanceOfStorage('\OC\Files\ObjectStore\HomeObjectStoreStorage')
-				) {
-					if (is_object($storage->getUser())) {
-						$user = $storage->getUser()->getUID();
-						$quota = OC_Util::getUserQuota($user);
-						if ($quota !== \OCP\Files\FileInfo::SPACE_UNLIMITED) {
-							return new \OC\Files\Storage\Wrapper\Quota(array('storage' => $storage, 'quota' => $quota, 'root' => 'files'));
-						}
-					}
-				}
-
-				return $storage;
-			});
 
 			$userDir = '/' . $user . '/files';
 
 			//jail the user into his "home" directory
 			\OC\Files\Filesystem::init($user, $userDir);
-
-			$fileOperationProxy = new OC_FileProxy_FileOperations();
-			OC_FileProxy::register($fileOperationProxy);
-
-			//trigger creation of user home and /files folder
-			\OC::$server->getUserFolder($user);
 
 			OC_Hook::emit('OC_Filesystem', 'setup', array('user' => $user, 'user_dir' => $userDir));
 		}
@@ -325,10 +385,24 @@ class OC_Util {
 			$session->set('OC_Version', $OC_Version);
 			/** @var $OC_VersionString string */
 			$session->set('OC_VersionString', $OC_VersionString);
-			/** @var $OC_Channel string */
-			$session->set('OC_Channel', $OC_Channel);
 			/** @var $OC_Build string */
 			$session->set('OC_Build', $OC_Build);
+			
+			// Allow overriding update channel
+			
+			if (\OC::$server->getSystemConfig()->getValue('installed', false)) {
+				$channel = \OC::$server->getAppConfig()->getValue('core', 'OC_Channel');
+			} else {
+				/** @var $OC_Channel string */
+				$channel = $OC_Channel;
+			}
+			
+			if (!is_null($channel)) {
+				$session->set('OC_Channel', $channel);
+			} else {
+				/** @var $OC_Channel string */
+				$session->set('OC_Channel', $OC_Channel);
+			}
 		}
 	}
 
@@ -392,8 +466,7 @@ class OC_Util {
 	 */
 	public static function addTranslations($application, $languageCode = null) {
 		if (is_null($languageCode)) {
-			$l = new \OC_L10N($application);
-			$languageCode = $l->getLanguageCode($application);
+			$languageCode = \OC_L10N::findLanguage($application);
 		}
 		if (!empty($application)) {
 			$path = "$application/l10n/$languageCode";
@@ -494,7 +567,7 @@ class OC_Util {
 		}
 
 		$webServerRestart = false;
-		$setup = new OC_Setup($config);
+		$setup = new \OC\Setup($config, \OC::$server->getIniWrapper(), \OC::$server->getL10N('lib'), new \OC_Defaults());
 		$availableDatabases = $setup->getSupportedDatabases();
 		if (empty($availableDatabases)) {
 			$errors[] = array(
@@ -502,6 +575,19 @@ class OC_Util {
 				'hint' => '' //TODO: sane hint
 			);
 			$webServerRestart = true;
+		}
+
+		// Check if server running on Windows platform
+		if(OC_Util::runningOnWindows()) {
+			$errors[] = [
+				'error' => $l->t('Microsoft Windows Platform is not supported'),
+				'hint' => $l->t('Running ownCloud Server on the Microsoft Windows platform is not supported. We suggest you ' .
+					'use a Linux server in a virtual machine if you have no option for migrating the server itself. ' .
+					'Find Linux packages as well as easy to deploy virtual machine images on <a href="%s">%s</a>. ' .
+					'For migrating existing installations to Linux you can find some tips and a migration script ' .
+					'in <a href="%s">our documentation</a>.',
+					['https://owncloud.org/install/', 'owncloud.org/install/', 'https://owncloud.org/?p=8045'])
+			];
 		}
 
 		// Check if config folder is writable.
@@ -570,7 +656,10 @@ class OC_Util {
 		// classes = class_exists
 		// functions = function_exists
 		// defined = defined
+		// ini = ini_get
 		// If the dependency is not found the missing module name is shown to the EndUser
+		// When adding new checks always verify that they pass on Travis as well
+		// for ini settings, see https://github.com/owncloud/administration/blob/master/travis-ci/custom.ini
 		$dependencies = array(
 			'classes' => array(
 				'ZipArchive' => 'zip',
@@ -587,27 +676,58 @@ class OC_Util {
 				'iconv' => 'iconv',
 				'simplexml_load_string' => 'SimpleXML',
 				'hash' => 'HASH Message Digest Framework',
+				'curl_init' => 'cURL',
 			],
 			'defined' => array(
 				'PDO::ATTR_DRIVER_NAME' => 'PDO'
-			)
+			),
+			'ini' => [
+				'default_charset' => 'UTF-8',
+			],
 		);
 		$missingDependencies = array();
+		$invalidIniSettings = [];
 		$moduleHint = $l->t('Please ask your server administrator to install the module.');
 
-		foreach ($dependencies['classes'] as $class => $module) {
-			if (!class_exists($class)) {
-				$missingDependencies[] = $module;
+		/**
+		 * FIXME: The dependency check does not work properly on HHVM on the moment
+		 *        and prevents installation. Once HHVM is more compatible with our
+		 *        approach to check for these values we should re-enable those
+		 *        checks.
+		 */
+		$iniWrapper = \OC::$server->getIniWrapper();
+		if (!self::runningOnHhvm()) {
+			foreach ($dependencies['classes'] as $class => $module) {
+				if (!class_exists($class)) {
+					$missingDependencies[] = $module;
+				}
 			}
-		}
-		foreach ($dependencies['functions'] as $function => $module) {
-			if (!function_exists($function)) {
-				$missingDependencies[] = $module;
+			foreach ($dependencies['functions'] as $function => $module) {
+				if (!function_exists($function)) {
+					$missingDependencies[] = $module;
+				}
 			}
-		}
-		foreach ($dependencies['defined'] as $defined => $module) {
-			if (!defined($defined)) {
-				$missingDependencies[] = $module;
+			foreach ($dependencies['defined'] as $defined => $module) {
+				if (!defined($defined)) {
+					$missingDependencies[] = $module;
+				}
+			}
+			foreach ($dependencies['ini'] as $setting => $expected) {
+				if (is_bool($expected)) {
+					if ($iniWrapper->getBool($setting) !== $expected) {
+						$invalidIniSettings[] = [$setting, $expected];
+					}
+				}
+				if (is_int($expected)) {
+					if ($iniWrapper->getNumeric($setting) !== $expected) {
+						$invalidIniSettings[] = [$setting, $expected];
+					}
+				}
+				if (is_string($expected)) {
+					if (strtolower($iniWrapper->getString($setting)) !== strtolower($expected)) {
+						$invalidIniSettings[] = [$setting, $expected];
+					}
+				}
 			}
 		}
 
@@ -618,43 +738,41 @@ class OC_Util {
 			);
 			$webServerRestart = true;
 		}
-
-		if (version_compare(phpversion(), '5.4.0', '<')) {
-			$errors[] = array(
-				'error' => $l->t('PHP %s or higher is required.', '5.4.0'),
-				'hint' => $l->t('Please ask your server administrator to update PHP to the latest version.'
-					. ' Your PHP version is no longer supported by ownCloud and the PHP community.')
-			);
+		foreach($invalidIniSettings as $setting) {
+			if(is_bool($setting[1])) {
+				$setting[1] = ($setting[1]) ? 'on' : 'off';
+			}
+			$errors[] = [
+				'error' => $l->t('PHP setting "%s" is not set to "%s".', [$setting[0], var_export($setting[1], true)]),
+				'hint' =>  $l->t('Adjusting this setting in php.ini will make ownCloud run again')
+			];
 			$webServerRestart = true;
 		}
 
 		/**
-		 * PHP 5.6 ships with a PHP setting which throws notices by default for a
-		 * lot of endpoints. Thus we need to ensure that the value is set to -1
+		 * The mbstring.func_overload check can only be performed if the mbstring
+		 * module is installed as it will return null if the checking setting is
+		 * not available and thus a check on the boolean value fails.
 		 *
-		 * FIXME: Due to https://github.com/owncloud/core/pull/13593#issuecomment-71178078
-		 * this check is disabled for HHVM at the moment. This should get re-evaluated
-		 * at a later point.
-		 *
-		 * @link https://github.com/owncloud/core/issues/13592
+		 * TODO: Should probably be implemented in the above generic dependency
+		 *       check somehow in the long-term.
 		 */
-		if(version_compare(phpversion(), '5.6.0', '>=') &&
-			!self::runningOnHhvm() &&
-			\OC::$server->getIniWrapper()->getNumeric('always_populate_raw_post_data') !== -1) {
+		if($iniWrapper->getBool('mbstring.func_overload') !== null &&
+			$iniWrapper->getBool('mbstring.func_overload') === true) {
 			$errors[] = array(
-				'error' => $l->t('PHP is configured to populate raw post data. Since PHP 5.6 this will lead to PHP throwing notices for perfectly valid code.'),
-				'hint' => $l->t('To fix this issue set <code>always_populate_raw_post_data</code> to <code>-1</code> in your php.ini')
+				'error' => $l->t('mbstring.func_overload is set to "%s" instead of the expected value "0"', [$iniWrapper->getString('mbstring.func_overload')]),
+				'hint' => $l->t('To fix this issue set <code>mbstring.func_overload</code> to <code>0</code> in your php.ini')
 			);
 		}
 
 		if (!self::isAnnotationsWorking()) {
 			$errors[] = array(
-				'error' => $l->t('PHP is apparently setup to strip inline doc blocks. This will make several core apps inaccessible.'),
+				'error' => $l->t('PHP is apparently set up to strip inline doc blocks. This will make several core apps inaccessible.'),
 				'hint' => $l->t('This is probably caused by a cache/accelerator such as Zend OPcache or eAccelerator.')
 			);
 		}
 
-		if ($webServerRestart) {
+		if (!\OC::$CLI && $webServerRestart) {
 			$errors[] = array(
 				'error' => $l->t('PHP modules have been installed, but they are still listed as missing?'),
 				'hint' => $l->t('Please ask your server administrator to restart the web server.')
@@ -704,51 +822,6 @@ class OC_Util {
 		return $errors;
 	}
 
-
-	/**
-	 * check if there are still some encrypted files stored
-	 *
-	 * @return boolean
-	 */
-	public static function encryptedFiles() {
-		//check if encryption was enabled in the past
-		$encryptedFiles = false;
-		if (OC_App::isEnabled('files_encryption') === false) {
-			$view = new OC\Files\View('/' . OCP\User::getUser());
-			$keysPath = '/files_encryption/keys';
-			if ($view->is_dir($keysPath)) {
-				$dircontent = $view->getDirectoryContent($keysPath);
-				if (!empty($dircontent)) {
-					$encryptedFiles = true;
-				}
-			}
-		}
-
-		return $encryptedFiles;
-	}
-
-	/**
-	 * check if a backup from the encryption keys exists
-	 *
-	 * @return boolean
-	 */
-	public static function backupKeysExists() {
-		//check if encryption was enabled in the past
-		$backupExists = false;
-		if (OC_App::isEnabled('files_encryption') === false) {
-			$view = new OC\Files\View('/' . OCP\User::getUser());
-			$backupPath = '/files_encryption/backup.decryptAll';
-			if ($view->is_dir($backupPath)) {
-				$dircontent = $view->getDirectoryContent($backupPath);
-				if (!empty($dircontent)) {
-					$backupExists = true;
-				}
-			}
-		}
-
-		return $backupExists;
-	}
-
 	/**
 	 * Check for correct file permissions of data directory
 	 *
@@ -784,17 +857,23 @@ class OC_Util {
 	 * checking the existence of the ".ocdata" file.
 	 *
 	 * @param string $dataDirectory data directory path
-	 * @return bool true if the data directory is valid, false otherwise
+	 * @return array errors found
 	 */
 	public static function checkDataDirectoryValidity($dataDirectory) {
 		$l = \OC::$server->getL10N('lib');
-		$errors = array();
+		$errors = [];
+		if (!self::runningOnWindows() && $dataDirectory[0] !== '/') {
+			$errors[] = [
+				'error' => $l->t('Data directory (%s) must be an absolute path', [$dataDirectory]),
+				'hint' => $l->t('Check the value of "datadirectory" in your configuration')
+			];
+		}
 		if (!file_exists($dataDirectory . '/.ocdata')) {
-			$errors[] = array(
-				'error' => $l->t('Data directory (%s) is invalid', array($dataDirectory)),
+			$errors[] = [
+				'error' => $l->t('Data directory (%s) is invalid', [$dataDirectory]),
 				'hint' => $l->t('Please check that the data directory contains a file' .
 					' ".ocdata" in its root.')
-			);
+			];
 		}
 		return $errors;
 	}
@@ -817,8 +896,7 @@ class OC_Util {
 			$parameters['user_autofocus'] = true;
 		}
 		if (isset($_REQUEST['redirect_url'])) {
-			$redirectUrl = $_REQUEST['redirect_url'];
-			$parameters['redirect_url'] = urlencode($redirectUrl);
+			$parameters['redirect_url'] = $_REQUEST['redirect_url'];
 		}
 
 		$parameters['alt_login'] = OC_App::getAlternativeLogIns();
@@ -850,8 +928,11 @@ class OC_Util {
 		// Check if we are a user
 		if (!OC_User::isLoggedIn()) {
 			header('Location: ' . OC_Helper::linkToAbsolute('', 'index.php',
-					array('redirect_url' => OC_Request::requestUri())
-				));
+					[
+						'redirect_url' => \OC::$server->getRequest()->getRequestUri()
+					]
+				)
+			);
 			exit();
 		}
 	}
@@ -927,7 +1008,7 @@ class OC_Util {
 				// find the first app that is enabled for the current user
 				foreach ($defaultApps as $defaultApp) {
 					$defaultApp = OC_App::cleanAppId(strip_tags($defaultApp));
-					if (OC_App::isEnabled($defaultApp)) {
+					if (static::getAppManager()->isEnabledForUser($defaultApp)) {
 						$appId = $defaultApp;
 						break;
 					}
@@ -1045,14 +1126,13 @@ class OC_Util {
 
 	/**
 	 * Check if the .htaccess file is working
-	 *
-	 * @throws OC\HintException If the testfile can't get written.
+	 * @param \OCP\IConfig $config
 	 * @return bool
-	 * @description Check if the .htaccess file is working by creating a test
-	 * file in the data directory and trying to access via http
+	 * @throws Exception
+	 * @throws \OC\HintException If the test file can't get written.
 	 */
-	public static function isHtaccessWorking() {
-		if (\OC::$CLI || !OC::$server->getConfig()->getSystemValue('check_for_working_htaccess', true)) {
+	public function isHtaccessWorking(\OCP\IConfig $config) {
+		if (\OC::$CLI || !$config->getSystemValue('check_for_working_htaccess', true)) {
 			return true;
 		}
 
@@ -1066,7 +1146,7 @@ class OC_Util {
 		$testContent = 'testcontent';
 
 		// creating a test file
-		$testFile = OC::$server->getConfig()->getSystemValue('datadirectory', OC::$SERVERROOT . '/data') . '/' . $fileName;
+		$testFile = $config->getSystemValue('datadirectory', OC::$SERVERROOT . '/data') . '/' . $fileName;
 
 		if (file_exists($testFile)) {// already running this test, possible recursive call
 			return false;
@@ -1135,48 +1215,6 @@ class OC_Util {
 	}
 
 	/**
-	 * Check if the ownCloud server can connect to the internet
-	 *
-	 * @return bool
-	 */
-	public static function isInternetConnectionWorking() {
-		// in case there is no internet connection on purpose return false
-		if (self::isInternetConnectionEnabled() === false) {
-			return false;
-		}
-
-		// in case the connection is via proxy return true to avoid connecting to owncloud.org
-		if (OC_Config::getValue('proxy', '') != '') {
-			return true;
-		}
-
-		// try to connect to owncloud.org to see if http connections to the internet are possible.
-		$connected = @fsockopen("www.owncloud.org", 80);
-		if ($connected) {
-			fclose($connected);
-			return true;
-		} else {
-			// second try in case one server is down
-			$connected = @fsockopen("apps.owncloud.com", 80);
-			if ($connected) {
-				fclose($connected);
-				return true;
-			} else {
-				return false;
-			}
-		}
-	}
-
-	/**
-	 * Check if the connection to the internet is disabled on purpose
-	 *
-	 * @return string
-	 */
-	public static function isInternetConnectionEnabled() {
-		return \OC_Config::getValue("has_internet_connection", true);
-	}
-
-	/**
 	 * clear all levels of output buffering
 	 *
 	 * @return void
@@ -1197,16 +1235,6 @@ class OC_Util {
 	 */
 	public static function generateRandomBytes($length = 30) {
 		return \OC::$server->getSecureRandom()->getMediumStrengthGenerator()->generate($length, \OCP\Security\ISecureRandom::CHAR_LOWER.\OCP\Security\ISecureRandom::CHAR_DIGITS);
-	}
-
-	/**
-	 * Checks if a secure random number generator is available
-	 *
-	 * @return true
-	 * @deprecated Function will be removed in the future and does only return true.
-	 */
-	public static function secureRNGAvailable() {
-		return true;
 	}
 
 	/**
@@ -1272,6 +1300,32 @@ class OC_Util {
 	}
 
 	/**
+	 * Clear a single file from the opcode cache
+	 * This is useful for writing to the config file
+	 * in case the opcode cache does not re-validate files
+	 * Returns true if successful, false if unsuccessful:
+	 * caller should fall back on clearing the entire cache
+	 * with clearOpcodeCache() if unsuccessful
+	 *
+	 * @param string $path the path of the file to clear from the cache
+	 * @return bool true if underlying function returns true, otherwise false
+	 */
+	public static function deleteFromOpcodeCache($path) {
+		$ret = false;
+		if ($path) {
+			// APC >= 3.1.1
+			if (function_exists('apc_delete_file')) {
+				$ret = @apc_delete_file($path);
+			}
+			// Zend OpCache >= 7.0.0, PHP >= 5.5.0
+			if (function_exists('opcache_invalidate')) {
+				$ret = opcache_invalidate($path);
+			}
+		}
+		return $ret;
+	}
+
+	/**
 	 * Clear the opcode cache if one exists
 	 * This is necessary for writing to the config file
 	 * in case the opcode cache does not re-validate files
@@ -1292,7 +1346,7 @@ class OC_Util {
 			if (ini_get('xcache.admin.enable_auth')) {
 				OC_Log::write('core', 'XCache opcode cache will not be cleared because "xcache.admin.enable_auth" is enabled.', \OC_Log::WARN);
 			} else {
-				xcache_clear_cache(XC_TYPE_PHP, 0);
+				@xcache_clear_cache(XC_TYPE_PHP, 0);
 			}
 		}
 		// Opcache (PHP >= 5.5)
@@ -1350,6 +1404,7 @@ class OC_Util {
 	 *
 	 * @param string $file file name to check
 	 * @return bool true if the file name is valid, false otherwise
+	 * @deprecated use \OC\Files\View::verifyPath()
 	 */
 	public static function isValidFileName($file) {
 		$trimmed = trim($file);
@@ -1396,15 +1451,6 @@ class OC_Util {
 		} else {
 			return false;
 		}
-	}
-
-	/**
-	 * Check if PhpCharset config is UTF-8
-	 *
-	 * @return string
-	 */
-	public static function isPhpCharSetUtf8() {
-		return strtoupper(ini_get('default_charset')) === 'UTF-8';
 	}
 
 }

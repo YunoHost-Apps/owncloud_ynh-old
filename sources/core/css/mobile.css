@@ -21,12 +21,9 @@
 	box-align: center;
 }
 
-/* on mobile, show logo-icon instead of logo-wide */
-#header .logo-wide {
-	background-image: url(../img/logo-icon.svg);
-	background-repeat: no-repeat;
-	width: 62px;
-	height: 34px;
+/* on mobile public share, show only the icon of the logo, hide the text */
+#body-public #header .header-appname-container {
+	display: none;
 }
 
 /* compress search box on mobile, expand when focused */
@@ -39,6 +36,8 @@
 	-moz-transition: all 100ms;
 	-o-transition: all 100ms;
 	transition: all 100ms;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=70)";
+	opacity: .7;
 }
 .searchbox input[type="search"]:focus,
 .searchbox input[type="search"]:active {
@@ -47,11 +46,17 @@
 	cursor: text;
 	background-color: #fff;
 	background-image: url('../img/actions/search.svg');
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+	opacity: 1;
 }
 
 /* do not show display name on mobile when profile picture is present */
 #header .avatardiv.avatardiv-shown + #expandDisplayName {
 	display: none;
+}
+#header #expand {
+	display: block;
+	padding: 7px 30px 6px 7px;
 }
 
 /* do not show update notification on mobile */
@@ -114,14 +119,10 @@
 	z-index: 149;
 	background-color: rgba(255, 255, 255, .7);
 	cursor: pointer;
-	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
-	filter: alpha(opacity=60);
 	opacity: .6;
 }
 #app-navigation-toggle:hover,
 #app-navigation-toggle:focus {
-	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
-	filter: alpha(opacity=100);
 	opacity: 1;
 }
 

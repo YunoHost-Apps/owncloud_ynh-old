@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Upgrading Your ownCloud Server &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>Upgrading Your ownCloud Server &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
     <link rel="up" title="Maintenance" href="index.html" />
     <link rel="next" title="Upgrading ownCloud with the Updater App" href="update.html" />
     <link rel="prev" title="Backing up ownCloud" href="backup.html" />
@@ -114,9 +114,9 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
@@ -145,9 +145,10 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Custom and Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
 </ul>
 
 								</ul>
@@ -167,6 +168,19 @@ point releases and major releases without skipping any of them, as skipping rele
 increases the risk of errors. Major releases are 6.0, 7.0, and 8.0, and point releases
 are intermediate releases for each major release. For example, 8.0.1 and 8.0.2 are point
 releases.</p>
+<p>Version numbering changed with ownCloud 8.0. Major releases are now indicated
+by the second number, so 8.0. 8.1, and 8.2 are major releases. The third number
+indicates an intermediate release, e.g. 8.0.5.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you are using the Encryption app and upgrading from older
+versions of ownCloud to ownCloud 8.0, you must manually migrate your
+encryption keys with the <em>occ</em> command after the upgrade is complete, like
+this example for CentOS:
+<em>sudo -u apache php occ encryption:migrate-keys</em>
+You must run <em>occ</em> as your HTTP user. See
+<a class="reference internal" href="../configuration_server/occ_command.html"><em>Using the occ Command</em></a> to learn more about <em>occ</em></p>
+</div>
 <p>There are multiple ways to keep your ownCloud server upgraded: with the Updater
 App (Server Edition only), with your Linux package manager, and by manually
 upgrading. In this chapter you will learn how to keep your ownCloud installation
@@ -249,8 +263,18 @@ is in your <tt class="docutils literal"><span class="pre">owncloud/</span></tt> 
 example is for Debian/Ubuntu:</p>
 <div class="highlight-python"><pre>$ sudo -u www-data php occ upgrade</pre>
 </div>
+<p>Before completing the upgrade, ownCloud first runs a simulation by copying all
+database tables to a temporary directory and then performing the upgrade on
+them, to ensure that the upgrade will complete correctly. This takes twice as
+much time, which on large installations can be many hours, so you can omit this
+step with the <tt class="docutils literal"><span class="pre">--skip-migration-test</span></tt> option:</p>
+<div class="highlight-python"><pre>$ sudo -u www-data php occ upgrade --skip-migration-test</pre>
+</div>
 <p>This example is for Fedora, CentOS, and Red Hat Linux:</p>
 <div class="highlight-python"><pre>$ sudo -u apache php occ upgrade</pre>
+</div>
+<p>Or:</p>
+<div class="highlight-python"><pre>$ sudo -u apache php occ upgrade -skip-migration-test</pre>
 </div>
 <ul class="simple">
 <li>The HTTP user and group in Debian/Ubuntu is <tt class="docutils literal"><span class="pre">www-data</span></tt>.</li>
@@ -297,7 +321,7 @@ installed in <tt class="docutils literal"><span class="pre">/var/www/owncloud/</
 <tt class="docutils literal"><span class="pre">/var/www/owncloud2/</span></tt></li>
 <li>Stop your web server.</li>
 </ol>
-<p>Apache 2 is the recommended server for ownCloud (see <a class="reference internal" href="../release_notes.html"><em>ownCloud 8.1 Release Notes</em></a>
+<p>Apache 2 is the recommended server for ownCloud (see <a class="reference internal" href="../release_notes.html"><em>ownCloud 8.2 Release Notes</em></a>
 for recommended setups and supported platforms.)</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -435,6 +459,25 @@ section of <a class="reference internal" href="../installation/installation_wiza
 </div>
 <div class="section" id="troubleshooting">
 <h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h2>
+<p>When upgrading ownCloud and you are running MySQL or MariaDB with binary logging
+enabled, your upgrade may fail with these errors in your MySQL/MariaDB log:</p>
+<div class="highlight-python"><pre>An unhandled exception has been thrown:
+exception 'PDOException' with message 'SQLSTATE[HY000]: General error: 1665
+Cannot execute statement: impossible to write to binary log since
+BINLOG_FORMAT = STATEMENT and at least one table uses a storage engine limited
+to row-based logging. InnoDB is limited to row-logging when transaction
+isolation level is READ COMMITTED or READ UNCOMMITTED.'</pre>
+</div>
+<p>There are two solutions. One is to disable binary logging. Binary logging
+records all changes to your database, and how long each change took. The
+purpose of binary logging is to enable replication and to support backup
+operations.</p>
+<p>The other is to change the BINLOG_FORMAT = STATEMENT in your database
+configuration file, or possibly in your database startup script, to
+BINLOG_FORMAT = MIXED. See <a class="reference external" href="https://mariadb.com/kb/en/mariadb/overview-of-the-binary-log/">Overview of the Binary
+Log</a> and <a class="reference external" href="https://dev.mysql.com/doc/refman/5.6/en/binary-log.html">The
+Binary Log</a> for
+detailed information.</p>
 <p>Occasionally, <em>files do not show up after a upgrade</em>. A rescan of the files can help:</p>
 <div class="highlight-python"><pre>$ sudo -u www-data php console.php files:scan --all</pre>
 </div>

@@ -56,7 +56,9 @@
 	background-image: url('../img/actions/confirm.svg');
 }
 
-.icon-delete {
+.icon-delete,
+.icon-delete.no-permission:hover,
+.icon-delete.no-permission:focus {
 	background-image: url('../img/actions/delete.svg');
 }
 .icon-delete:hover,
@@ -78,6 +80,9 @@
 
 .icon-info {
 	background-image: url('../img/actions/info.svg');
+}
+.icon-info-white {
+	background-image: url('../img/actions/info-white.svg');
 }
 
 .icon-logout {

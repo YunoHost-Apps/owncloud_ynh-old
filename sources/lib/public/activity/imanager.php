@@ -1,22 +1,24 @@
 <?php
 /**
- * ownCloud
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
  *
- * @author Thomas Müller
- * @copyright 2013 Thomas Müller deepdiver@owncloud.com
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
 
@@ -29,6 +31,12 @@
 // This means that they should be used by apps instead of the internal ownCloud classes
 namespace OCP\Activity;
 
+/**
+ * Interface IManager
+ *
+ * @package OCP\Activity
+ * @since 6.0.0
+ */
 interface IManager {
 
 	/**
@@ -43,6 +51,7 @@ interface IManager {
 	 * @param $type
 	 * @param $priority
 	 * @return mixed
+	 * @since 6.0.0
 	 */
 	function publishActivity($app, $subject, $subjectParams, $message, $messageParams, $file, $link, $affectedUser, $type, $priority);
 
@@ -54,6 +63,7 @@ interface IManager {
 	 *
 	 * @param \Closure $callable
 	 * @return void
+	 * @since 6.0.0
 	 */
 	function registerConsumer(\Closure $callable);
 
@@ -65,6 +75,7 @@ interface IManager {
 	 *
 	 * @param \Closure $callable
 	 * @return void
+	 * @since 8.0.0
 	 */
 	function registerExtension(\Closure $callable);
 
@@ -72,21 +83,23 @@ interface IManager {
 	 * Will return additional notification types as specified by other apps
 	 * @param string $languageCode
 	 * @return array
+	 * @since 8.0.0
 	 */
 	function getNotificationTypes($languageCode);
 
 	/**
-	 * @param array $types
-	 * @param string $filter
-	 * @return array
-	 */
-	function filterNotificationTypes($types, $filter);
-
-	/**
 	 * @param string $method
 	 * @return array
+	 * @since 8.0.0
 	 */
 	function getDefaultTypes($method);
+
+	/**
+	 * @param string $type
+	 * @return string
+	 * @since 8.0.0
+	 */
+	function getTypeIcon($type);
 
 	/**
 	 * @param string $app
@@ -96,6 +109,7 @@ interface IManager {
 	 * @param boolean $highlightParams
 	 * @param string $languageCode
 	 * @return string|false
+	 * @since 8.0.0
 	 */
 	function translate($app, $text, $params, $stripPath, $highlightParams, $languageCode);
 
@@ -103,35 +117,53 @@ interface IManager {
 	 * @param string $app
 	 * @param string $text
 	 * @return array|false
+	 * @since 8.0.0
 	 */
 	function getSpecialParameterList($app, $text);
 
 	/**
-	 * @param string $type
-	 * @return string
-	 */
-	function getTypeIcon($type);
-
-	/**
 	 * @param array $activity
 	 * @return integer|false
+	 * @since 8.0.0
 	 */
 	function getGroupParameter($activity);
 
 	/**
 	 * @return array
+	 * @since 8.0.0
 	 */
 	function getNavigation();
 
 	/**
 	 * @param string $filterValue
 	 * @return boolean
+	 * @since 8.0.0
 	 */
 	function isFilterValid($filterValue);
 
 	/**
+	 * @param array $types
 	 * @param string $filter
 	 * @return array
+	 * @since 8.0.0
+	 */
+	function filterNotificationTypes($types, $filter);
+
+	/**
+	 * @param string $filter
+	 * @return array
+	 * @since 8.0.0
 	 */
 	function getQueryForFilter($filter);
+
+	/**
+	 * Get the user we need to use
+	 *
+	 * Either the user is logged in, or we try to get it from the token
+	 *
+	 * @return string
+	 * @throws \UnexpectedValueException If the token is invalid, does not exist or is not unique
+	 * @since 8.1.0
+	 */
+	public function getCurrentUserId();
 }

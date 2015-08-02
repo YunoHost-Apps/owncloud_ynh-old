@@ -1,0 +1,204 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Publishing Your New Branded iOS App &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/style.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/style.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '8.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap.js"></script>
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="up" title="Creating Branded iOS Apps (ES only)" href="index.html" />
+    <link rel="next" title="External Storage (ES only)" href="../enterprise_external_storage/index.html" />
+    <link rel="prev" title="Testing Your New Branded iOS App" href="publishing_ios_app_8.html" />
+<script type="text/javascript">
+(function () {
+  /**
+   * Patch TOC list.
+   *
+   * Will mutate the underlying span to have a correct ul for nav.
+   *
+   * @param $span: Span containing nested UL's to mutate.
+   * @param minLevel: Starting level for nested lists. (1: global, 2: local).
+   */
+  var patchToc = function ($ul, minLevel) {
+    var findA;
+
+    // Find all a "internal" tags, traversing recursively.
+    findA = function ($elem, level) {
+      var level = level || 0,
+        $items = $elem.find("> li > a.internal, > ul, > li > ul");
+
+      // Iterate everything in order.
+      $items.each(function (index, item) {
+        var $item = $(item),
+          tag = item.tagName.toLowerCase(),
+          pad = 15 + ((level - minLevel) * 10);
+
+        if (tag === 'a' && level >= minLevel) {
+          // Add to existing padding.
+          $item.css('padding-left', pad + "px");
+          console.log(level, $item, 'padding-left', pad + "px");
+        } else if (tag === 'ul') {
+          // Recurse.
+          findA($item, level + 1);
+        }
+      });
+    };
+
+    console.log("HERE");
+    findA($ul);
+  };
+
+  $(document).ready(function () {
+    // Add styling, structure to TOC's.
+    $(".dropdown-menu").each(function () {
+      $(this).find("ul").each(function (index, item){
+        var $item = $(item);
+        $item.addClass('unstyled');
+      });
+      $(this).find("li").each(function () {
+        $(this).parent().append(this);
+      });
+    });
+
+    // Patch in level.
+    patchToc($("ul.globaltoc"), 2);
+    patchToc($("ul.localtoc"), 2);
+
+    // Enable dropdown.
+    $('.dropdown-toggle').dropdown();
+  });
+}());
+</script>
+
+  </head>
+  <body>
+  
+
+<div class="container">
+  <div class="content">
+    <div class="page-header">
+      <h1><a href="../contents.html">ownCloud Server Administration Manual</a></h1>
+
+    </div>
+    
+			<div class="row">
+				<div class="span3">
+					<div class="sidebar">
+						<div class="well">
+							<div class="menu-support-container">
+								<ul id="menu-support" class="menu">
+									<ul>
+										
+<li><a href="../contents.html">Table of Contents</a></li>
+									</ul>
+                  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_server/index.html">ownCloud Server Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../enterprise_clients/creating_branded_apps.html">Creating Branded Client Apps (Enterprise Only)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../enterprise_clients/custom_client_repos.html">Custom Client Download Repositories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../enterprise_clients/publishing_android_app.html">Distributing Your Branded Android App (Enterprise Only)</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Creating Branded iOS Apps (ES only)</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="publishing_ios_app.html">Building and Distributing Your Branded iOS App</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishing_ios_app_2.html">Create Certificate Signing Request</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishing_ios_app_3.html">Create Bundle IDs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishing_ios_app_4.html">Setting up Testing Devices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishing_ios_app_5.html">Create Provisioning Profiles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishing_ios_app_6.html">Creating a P12 Certificate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishing_ios_app_7.html">Building Your iOS App With ownBrander</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishing_ios_app_8.html">Testing Your New Branded iOS App</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Publishing Your New Branded iOS App</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
+</ul>
+
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+        
+
+				<div class="span9">
+					<div class="page-content">
+						
+  <div class="section" id="publishing-your-new-branded-ios-app">
+<h1>Publishing Your New Branded iOS App<a class="headerlink" href="#publishing-your-new-branded-ios-app" title="Permalink to this headline">¶</a></h1>
+<p>At last, after following all the previous steps and passing beta testing, your
+branded iOS app is ready to publish for general distribution on iTunes. You need
+a Mac computer with Xcode installed (Xcode is a free download), and you need
+the three provisioning profiles and p12 file that you created copied to the
+same computer that you are using to upload your app to iTunes.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Apple must review and approve your app, and the approval process can
+take several days to several weeks.</p>
+</div>
+<p>Download your <tt class="file docutils literal"><span class="pre">xcarchive.zip</span></tt> file from your account on
+<a class="reference external" href="https://customer.owncloud.com">https://customer.owncloud.com</a>. Your friendly Mac will automatically unpack
+it and change the name to something like Owncloud iOs Client 29-05-15
+13.35.xcarchive. Double-click on this file to automatically install it into
+Xcode. Go to Xcode and you will see it in the Archives listing.</p>
+<p>Click <strong>Submit to App Store</strong>. If you have not already entered your
+Developer.apple.com login in Xcode you will be prompted to do it now. Click the
+<strong>Add</strong> button.</p>
+<p>On the next screen enter your account login.</p>
+<p>After your login is confirmed Xcode opens the Accounts screen. You can close
+this and go to the next step, where you must choose which developer account to
+use. Even if you have only one you must select it.</p>
+<p>Now you should be at your account screen. This shows you any apps that you have
+already successfully submitted to iTunes, and any pending apps.</p>
+<p>Click the plus sign (top right) to start the process for adding your new
+branded iOS app.</p>
+<p>&#8211;TODO final steps &amp; images&#8211;</p>
+</div>
+
+
+					</div>
+				</div>
+			</div>
+    
+  </div>
+</div>
+  </body>
+</html>

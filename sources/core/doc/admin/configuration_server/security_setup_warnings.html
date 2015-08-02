@@ -1,0 +1,224 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Warnings on Admin Page &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/style.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/style.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '8.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap.js"></script>
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="up" title="ownCloud Server Configuration" href="index.html" />
+    <link rel="next" title="Using the occ Command" href="occ_command.html" />
+    <link rel="prev" title="ownCloud Server Configuration" href="index.html" />
+<script type="text/javascript">
+(function () {
+  /**
+   * Patch TOC list.
+   *
+   * Will mutate the underlying span to have a correct ul for nav.
+   *
+   * @param $span: Span containing nested UL's to mutate.
+   * @param minLevel: Starting level for nested lists. (1: global, 2: local).
+   */
+  var patchToc = function ($ul, minLevel) {
+    var findA;
+
+    // Find all a "internal" tags, traversing recursively.
+    findA = function ($elem, level) {
+      var level = level || 0,
+        $items = $elem.find("> li > a.internal, > ul, > li > ul");
+
+      // Iterate everything in order.
+      $items.each(function (index, item) {
+        var $item = $(item),
+          tag = item.tagName.toLowerCase(),
+          pad = 15 + ((level - minLevel) * 10);
+
+        if (tag === 'a' && level >= minLevel) {
+          // Add to existing padding.
+          $item.css('padding-left', pad + "px");
+          console.log(level, $item, 'padding-left', pad + "px");
+        } else if (tag === 'ul') {
+          // Recurse.
+          findA($item, level + 1);
+        }
+      });
+    };
+
+    console.log("HERE");
+    findA($ul);
+  };
+
+  $(document).ready(function () {
+    // Add styling, structure to TOC's.
+    $(".dropdown-menu").each(function () {
+      $(this).find("ul").each(function (index, item){
+        var $item = $(item);
+        $item.addClass('unstyled');
+      });
+      $(this).find("li").each(function () {
+        $(this).parent().append(this);
+      });
+    });
+
+    // Patch in level.
+    patchToc($("ul.globaltoc"), 2);
+    patchToc($("ul.localtoc"), 2);
+
+    // Enable dropdown.
+    $('.dropdown-toggle').dropdown();
+  });
+}());
+</script>
+
+  </head>
+  <body>
+  
+
+<div class="container">
+  <div class="content">
+    <div class="page-header">
+      <h1><a href="../contents.html">ownCloud Server Administration Manual</a></h1>
+
+    </div>
+    
+			<div class="row">
+				<div class="span3">
+					<div class="sidebar">
+						<div class="well">
+							<div class="menu-support-container">
+								<ul id="menu-support" class="menu">
+									<ul>
+										
+<li><a href="../contents.html">Table of Contents</a></li>
+									</ul>
+                  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">ownCloud Server Configuration</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="">Warnings on Admin Page</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cache-warnings">Cache Warnings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#you-are-accessing-this-site-via-http">You are accessing this site via HTTP</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="occ_command.html">Using the occ Command</a></li>
+<li class="toctree-l2"><a class="reference internal" href="activity_configuration.html">Configuring the Activity App</a></li>
+<li class="toctree-l2"><a class="reference internal" href="antivirus_configuration.html">Configuring the ClamAV Antivirus Scanner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="automatic_configuration.html">Automatic Configuration Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="background_jobs_configuration.html">Defining Background Jobs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_sample_php_parameters.html">Config.php Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="email_configuration.html">Email Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="external_sites.html">Linking External Sites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="js_css_asset_management_configuration.html">JavaScript and CSS Asset Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="knowledgebase_configuration.html">Knowledge Base Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="language_configuration.html">Language Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging_configuration.html">Logging Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="harden_server.html">Hardening and Security Guidance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html">Server Tuning &amp; Performance Tips</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reverse_proxy_configuration.html">Reverse Proxy Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="search_configuration.html">Enabling Full-Text Search</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thirdparty_php_configuration.html">Using Third Party PHP Components</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
+</ul>
+
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+        
+
+				<div class="span9">
+					<div class="page-content">
+						
+  <div class="section" id="warnings-on-admin-page">
+<h1>Warnings on Admin Page<a class="headerlink" href="#warnings-on-admin-page" title="Permalink to this headline">¶</a></h1>
+<p>Your ownCloud server has a built-in configuration checker, and it reports its
+findings at the top of your Admin page. These are some of the warnings you
+might see, and what to do about them.</p>
+<div class="figure">
+<img alt="../_images/security-setup-warning-1.png" src="../_images/security-setup-warning-1.png" />
+</div>
+<div class="section" id="cache-warnings">
+<h2>Cache Warnings<a class="headerlink" href="#cache-warnings" title="Permalink to this headline">¶</a></h2>
+<p>&#8220;No memory cache has been configured. To enhance your performance please
+configure a memcache if available.&#8221; ownCloud supports multiple php caching
+extentions:</p>
+<ul class="simple">
+<li>APC</li>
+<li>APCu (minimum required php extension version: 4.0.6)</li>
+<li>Memcached</li>
+<li>Redis (minimum required php extension version: 2.2.5)</li>
+<li>Xcache</li>
+</ul>
+<p>You will see this warning if you have no caches installed or if your cache
+does not have the required minimum version installed; older versions are
+disabled because of performance problems.</p>
+<p>If you see &#8220;<em>{Cache}</em> below version <em>{Version}</em> is installed. for stability and
+performance reasons we recommend to update to a newer <em>{Cache}</em> version&#8221; then
+you need to upgrade, or, if you&#8217;re not using it, remove it.</p>
+<p>It is not required to use any caches, but caches improve server performance. See
+<a class="reference internal" href="performance_tuning.html"><em>Server Tuning &amp; Performance Tips</em></a> for more information on installing and using caches.</p>
+</div>
+<div class="section" id="you-are-accessing-this-site-via-http">
+<h2>You are accessing this site via HTTP<a class="headerlink" href="#you-are-accessing-this-site-via-http" title="Permalink to this headline">¶</a></h2>
+<p>&#8220;You are accessing this site via HTTP. We strongly suggest you configure your
+server to require using HTTPS instead.&#8221; Please take this warning seriously;
+using HTTPS is a fundamental security measure. You must configure your Web
+server to support it, and then there are some settings in the <strong>Security</strong>
+section of your ownCloud Admin page to enable. The following manual pages
+describe how to enable HTTPS on the Apache and Nginx Web servers.</p>
+<p><a class="reference external" href="https://doc.owncloud.org/server/8.1/admin_manual/installation/source_installation.html#enabling-ssl">Enabling SSL (on Apache)</a></p>
+<p><a class="reference external" href="https://doc.owncloud.org/server/8.1/admin_manual/configuration_server/harden_server.html#use-https">Use HTTPS</a></p>
+<p><a class="reference external" href="https://doc.owncloud.org/server/8.1/admin_manual/installation/nginx_configuration.html">Nginx
+Configuration</a></p>
+</div>
+</div>
+
+
+					</div>
+				</div>
+			</div>
+    
+  </div>
+</div>
+  </body>
+</html>

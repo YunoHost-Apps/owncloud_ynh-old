@@ -22,37 +22,73 @@
 
 namespace OCA\Activity\Tests;
 
+use OC\ActivityManager;
+use OCA\Activity\Tests\Mock\Extension;
+
 class ParameterHelperTest extends TestCase {
 	/** @var string */
 	protected $originalWEBROOT;
 	/** @var \OCA\Activity\ParameterHelper */
 	protected $parameterHelper;
-	/** @var \OC\Files\View */
+	/** @var \PHPUnit_Framework_MockObject_MockObject */
 	protected $view;
 	/** @var \PHPUnit_Framework_MockObject_MockObject */
+
+	/** @var \PHPUnit_Framework_MockObject_MockObject */
 	protected $config;
+
+	/** @var \PHPUnit_Framework_MockObject_MockObject */
+	protected $userManager;
 
 	protected function setUp() {
 		parent::setUp();
 
 		$this->originalWEBROOT =\OC::$WEBROOT;
 		\OC::$WEBROOT = '';
+		$this->view = $view = $this->getMockBuilder('\OC\Files\View')
+			->disableOriginalConstructor()
+			->getMock();
 		$this->config = $this->getMockBuilder('\OCP\IConfig')
 			->disableOriginalConstructor()
 			->getMock();
-
-		$l = \OCP\Util::getL10N('activity');
-		$this->view = new \OC\Files\View('');
-		$manager = $this->getMock('\OCP\Activity\IManager');
-		$manager->expects($this->any())
-			->method('getSpecialParameterList')
-			->will($this->returnValue(false));
-		$this->parameterHelper = new \OCA\Activity\ParameterHelper(
-			$manager,
-			$this->view,
-			$this->config,
-			$l
+		$activityLanguage = \OCP\Util::getL10N('activity', 'en');
+		$activityManager = new ActivityManager(
+			$this->getMock('OCP\IRequest'),
+			$this->getMock('OCP\IUserSession'),
+			$this->getMock('OCP\IConfig')
 		);
+		$activityManager->registerExtension(function() use ($activityLanguage) {
+			return new Extension($activityLanguage, $this->getMock('\OCP\IURLGenerator'));
+		});
+		$this->userManager = $this->getMock('OCP\IUserManager');
+		$this->userManager->expects($this->any())
+			->method('get')
+			->willReturnMap([
+				['user1', $this->getUserMockDisplayName('user1', 'User One')],
+				['user2', $this->getUserMockDisplayName('user1', 'User Two')],
+				['user<HTML>', $this->getUserMockDisplayName('user<HTML>', 'User <HTML>')],
+			]);
+
+		/** @var \OC\Files\View $view */
+		$this->parameterHelper = new \OCA\Activity\ParameterHelper(
+			$activityManager,
+			$this->userManager,
+			$view,
+			$this->config,
+			$activityLanguage,
+			'test'
+		);
+	}
+
+	protected function getUserMockDisplayName($uid, $displayName) {
+		$mock = $this->getMock('OCP\IUser');
+		$mock->expects($this->any())
+			->method('getUID')
+			->willReturn($uid);
+		$mock->expects($this->any())
+			->method('getDisplayName')
+			->willReturn($displayName);
+		return $mock;
 	}
 
 	protected function tearDown() {
@@ -105,12 +141,13 @@ class ParameterHelperTest extends TestCase {
 				'<strong>UserA</strong>',
 				'<strong>/foo/bar.file</strong>',
 			)),
-			array(array('UserA', '/foo/bar.file'), array(0 => 'username'), true, true, array(
-				'<div class="avatar" data-user="UserA"></div><strong>UserA</strong>',
+			array(array('user1', '/foo/bar.file'), array(0 => 'username'), true, true, array(
+				'<div class="avatar" data-user="user1"></div><strong>User One</strong>',
 				'<strong>/foo/bar.file</strong>',
 			)),
-			array(array('U<ser>A', '/foo/bar.file'), array(0 => 'username'), true, true, array(
-				'<div class="avatar" data-user="U&lt;ser&gt;A"></div><strong>U&lt;ser&gt;A</strong>',
+			// Test HTML escape
+			array(array('user<HTML>', '/foo/bar.file'), array(0 => 'username'), true, true, array(
+				'<div class="avatar" data-user="user&lt;HTML&gt;"></div><strong>User &lt;HTML&gt;</strong>',
 				'<strong>/foo/bar.file</strong>',
 			)),
 			array(array('', '/foo/bar.file'), array(0 => 'username'), true, true, array(
@@ -122,15 +159,14 @@ class ParameterHelperTest extends TestCase {
 				'/foo/bar.file',
 			)),
 
-			array(array('UserA', '/foo/bar.file'), array(0 => 'username', 1 => 'file'), true, true, array(
-				'<div class="avatar" data-user="UserA"></div><strong>UserA</strong>',
+			array(array('user1', '/foo/bar.file'), array(0 => 'username', 1 => 'file'), true, true, array(
+				'<div class="avatar" data-user="user1"></div><strong>User One</strong>',
 				'<a class="filename tooltip" href="/index.php/apps/files?dir=%2Ffoo&scrollto=bar.file" title="in foo">bar.file</a>',
 			)),
-			array(array('UserA', '/tmp/test'), array(0 => 'username', 1 => 'file'), true, true, array(
-				'<div class="avatar" data-user="UserA"></div><strong>UserA</strong>',
+			array(array('user1', '/tmp/test'), array(0 => 'username', 1 => 'file'), true, true, array(
+				'<div class="avatar" data-user="user1"></div><strong>User One</strong>',
 				'<a class="filename tooltip" href="/index.php/apps/files?dir=%2Ftmp%2Ftest" title="in tmp">test</a>',
-
-			), '/tmp/test'),
+			), '/test/files/tmp/test'),
 
 			// Disabled avatars #256
 			array(array('NoAvatar'), array(0 => 'username'), true, true, array(
@@ -144,7 +180,10 @@ class ParameterHelperTest extends TestCase {
 	 */
 	public function testPrepareParameters($params, $filePosition, $stripPath, $highlightParams, $expected, $createFolder = '', $enableAvatars = true) {
 		if ($createFolder !== '') {
-			$this->view->mkdir('/' . \OCP\User::getUser() . '/files/' . $createFolder);
+			$this->view->expects($this->any())
+				->method('is_dir')
+				->with($createFolder)
+				->willReturn(true);
 		}
 
 		$this->config->expects($this->any())
@@ -159,17 +198,60 @@ class ParameterHelperTest extends TestCase {
 	}
 
 	public function prepareArrayParametersData() {
+		$en = \OCP\Util::getL10N('activity', 'en');
+		$de = \OCP\Util::getL10N('activity', 'de');
 		return array(
-			array(array(), 'file', true, true, ''),
-			array(array('A/B.txt', 'C/D.txt'), 'file', true, false, 'B.txt and D.txt'),
-			array(array('A/B.txt', 'C/D.txt'), '', true, false, 'A/B.txt and C/D.txt'),
+			array(array(), 'file', true, true, null, ''),
+			array(array('A/B.txt', 'C/D.txt'), 'file', true, false, null, (string) $en->t('%s and %s', ['B.txt', 'D.txt'])),
+			array(array('A/B.txt', 'C/D.txt'), 'file', true, false, $de, (string) $de->t('%s and %s', ['B.txt', 'D.txt'])),
+			array(array('user1', 'user2'), 'username', true, false, null, (string) $en->t('%s and %s', ['User One', 'User Two'])),
+			array(array('user1', 'user2'), 'username', true, false, $de, (string) $de->t('%s and %s', ['User One', 'User Two'])),
+			array(array('A/B.txt', 'C/D.txt'), '', true, false, null, (string) $en->t('%s and %s', ['A/B.txt', 'C/D.txt'])),
+			array(array('A/B.txt', 'C/D.txt'), '', true, false, $de, (string) $de->t('%s and %s', ['A/B.txt', 'C/D.txt'])),
+			array(
+				array('A/B.txt', 'C/D.txt', 'E/F.txt', 'G/H.txt', 'I/J.txt', 'K/L.txt', 'M/N.txt'), 'file', true, false, null,
+				(string) $en->n('%s and %n more', '%s and %n more', 4, [implode((string) $en->t(', '), ['B.txt', 'D.txt', 'F.txt'])])
+			),
+			array(
+				array('A/B.txt', 'C/D.txt', 'E/F.txt', 'G/H.txt', 'I/J.txt', 'K/L.txt', 'M/N.txt'), 'file', true, true, null,
+				(string) $en->n(
+					'%s and <strong class="tooltip" title="%s">%n more</strong>',
+					'%s and <strong class="tooltip" title="%s">%n more</strong>',
+					4,
+					[
+						implode((string) $en->t(', '), [
+							'<a class="filename tooltip" href="/index.php/apps/files?dir=%2FA&scrollto=B.txt" title="in A">B.txt</a>',
+							'<a class="filename tooltip" href="/index.php/apps/files?dir=%2FC&scrollto=D.txt" title="in C">D.txt</a>',
+							'<a class="filename tooltip" href="/index.php/apps/files?dir=%2FE&scrollto=F.txt" title="in E">F.txt</a>',
+						]),
+						'G/H.txt, I/J.txt, K/L.txt, M/N.txt',
+					])
+			),
+			array(
+				array('A"><h1>/B.txt"><h1>', 'C"><h1>/D.txt"><h1>', 'E"><h1>/F.txt"><h1>', 'G"><h1>/H.txt"><h1>', 'I"><h1>/J.txt"><h1>', 'K"><h1>/L.txt"><h1>', 'M"><h1>/N.txt"><h1>'), 'file', true, true, null,
+				(string) $en->n(
+					'%s and <strong class="tooltip" title="%s">%n more</strong>',
+					'%s and <strong class="tooltip" title="%s">%n more</strong>',
+					4,
+					[
+						implode((string) $en->t(', '), [
+							'<a class="filename tooltip" href="/index.php/apps/files?dir=%2FA%22%3E%3Ch1%3E&scrollto=B.txt%22%3E%3Ch1%3E" title="in A&quot;&gt;&lt;h1&gt;">B.txt&quot;&gt;&lt;h1&gt;</a>',
+							'<a class="filename tooltip" href="/index.php/apps/files?dir=%2FC%22%3E%3Ch1%3E&scrollto=D.txt%22%3E%3Ch1%3E" title="in C&quot;&gt;&lt;h1&gt;">D.txt&quot;&gt;&lt;h1&gt;</a>',
+							'<a class="filename tooltip" href="/index.php/apps/files?dir=%2FE%22%3E%3Ch1%3E&scrollto=F.txt%22%3E%3Ch1%3E" title="in E&quot;&gt;&lt;h1&gt;">F.txt&quot;&gt;&lt;h1&gt;</a>',
+						]),
+						'G&quot;&gt;&lt;h1&gt;/H.txt&quot;&gt;&lt;h1&gt;, I&quot;&gt;&lt;h1&gt;/J.txt&quot;&gt;&lt;h1&gt;, K&quot;&gt;&lt;h1&gt;/L.txt&quot;&gt;&lt;h1&gt;, M&quot;&gt;&lt;h1&gt;/N.txt&quot;&gt;&lt;h1&gt;',
+					])
+			),
 		);
 	}
 
 	/**
 	 * @dataProvider prepareArrayParametersData
 	 */
-	public function testPrepareArrayParameters($params, $paramType, $stripPath, $highlightParams, $expected) {
+	public function testPrepareArrayParameters($params, $paramType, $stripPath, $highlightParams, $l, $expected) {
+		if ($l) {
+			$this->parameterHelper->setL10n($l);
+		}
 		$this->assertEquals(
 			$expected,
 			(string) $this->parameterHelper->prepareArrayParameter($params, $paramType, $stripPath, $highlightParams)
@@ -178,9 +260,9 @@ class ParameterHelperTest extends TestCase {
 
 	public function getSpecialParameterListData() {
 		return array(
-			array('files', 'shared_group_self', array(0 => 'file')),
-			array('files', 'shared_group', array(0 => 'file', 1 => 'username')),
-			array('files', '', array(0 => 'file', 1 => 'username')),
+			array('app1', 'subject1', array(0 => 'file')),
+			array('app1', 'subject2', array(0 => 'file', 1 => 'username')),
+			array('app1', '', array()),
 			array('calendar', 'shared_group', array()),
 			array('calendar', '', array()),
 		);

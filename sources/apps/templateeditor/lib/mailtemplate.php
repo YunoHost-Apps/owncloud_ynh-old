@@ -29,11 +29,22 @@ use OCA\TemplateEditor\Http\MailTemplateResponse;
 
 class MailTemplate extends \OC_Template {
 
+	/** @var string */
 	private $path;
+
+	/** @var string */
 	private $theme;
+
+	/** @var array */
 	private $editableThemes;
+
+	/** @var array */
 	private $editableTemplates;
 
+	/**
+	 * @param string string $theme
+	 * @param string string $path
+	 */
 	public function __construct($theme, $path) {
 		$this->theme = $theme;
 		$this->path = $path;
@@ -124,15 +135,22 @@ class MailTemplate extends \OC_Template {
 	 * @return array with available themes. consists of core and subfolders in the themes folder
 	 */
 	public static function getEditableThemes() {
-		$themes = array(
-			'default' => true
-		);
+		$themes = [];
+		$theme = \OC::$server->getConfig()->getSystemValue('theme', null);
+		if (!empty($theme)) {
+			$themes[$theme] = true;
+		}
+
 		if ($handle = opendir(\OC::$SERVERROOT.'/themes')) {
 			while (false !== ($entry = readdir($handle))) {
-				if ($entry != '.' && $entry != '..' && $entry != 'default') {
-					if (is_dir(\OC::$SERVERROOT.'/themes/'.$entry)) {
-						$themes[$entry] = true;
-					}
+				if ($entry === '.' || $entry === '..') {
+					continue;
+				}
+				if (!is_null($theme) && $entry === $theme) {
+					continue;
+				}
+				if (is_dir(\OC::$SERVERROOT.'/themes/'.$entry)) {
+					$themes[$entry] = true;
 				}
 			}
 			closedir($handle);

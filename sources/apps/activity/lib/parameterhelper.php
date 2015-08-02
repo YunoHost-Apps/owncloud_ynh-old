@@ -26,6 +26,7 @@ namespace OCA\Activity;
 use OCP\Activity\IManager;
 use OCP\IConfig;
 use OCP\IL10N;
+use OCP\IUserManager;
 use OCP\User;
 use OCP\Util;
 use OC\Files\View;
@@ -34,25 +35,49 @@ class ParameterHelper {
 	/** @var \OCP\Activity\IManager */
 	protected $activityManager;
 
+	/** @var \OCP\IUserManager */
+	protected $userManager;
+
 	/** @var \OC\Files\View */
 	protected $rootView;
 
-	/** @var \OC_L10N */
+	/** @var \OCP\IL10N */
 	protected $l;
 
 	/** @var \OCP\IConfig */
 	protected $config;
 
+	/** @var string */
+	protected $user;
+
 	/**
 	 * @param IManager $activityManager
+	 * @param IUserManager $userManager
 	 * @param View $rootView
 	 * @param IConfig $config
-	 * @param \OC_L10N $l
+	 * @param IL10N $l
+	 * @param string $user
 	 */
-	public function __construct(IManager $activityManager, View $rootView, IConfig $config, \OC_L10N $l) {
+	public function __construct(IManager $activityManager, IUserManager $userManager, View $rootView, IConfig $config, IL10N $l, $user) {
 		$this->activityManager = $activityManager;
+		$this->userManager = $userManager;
 		$this->rootView = $rootView;
 		$this->config = $config;
+		$this->l = $l;
+		$this->user = $user;
+	}
+
+	/**
+	 * @param string $user
+	 */
+	public function setUser($user) {
+		$this->user = (string) $user;
+	}
+
+	/**
+	 * @param IL10N $l
+	 */
+	public function setL10n(IL10N $l) {
 		$this->l = $l;
 	}
 
@@ -68,7 +93,7 @@ class ParameterHelper {
 		$preparedParams = array();
 		foreach ($params as $i => $param) {
 			if (is_array($param)) {
-				$preparedParams[] = $this->prepareArrayParameter($param, $paramTypes[$i], $stripPath, $highlightParams);
+				$preparedParams[] = $this->prepareArrayParameter($param, isset($paramTypes[$i]) ? $paramTypes[$i] : '', $stripPath, $highlightParams);
 			} else {
 				$preparedParams[] = $this->prepareStringParameter($param, isset($paramTypes[$i]) ? $paramTypes[$i] : '', $stripPath, $highlightParams);
 			}
@@ -106,13 +131,8 @@ class ParameterHelper {
 	public function prepareArrayParameter($params, $paramType, $stripPath, $highlightParams) {
 		$parameterList = $plainParameterList = array();
 		foreach ($params as $parameter) {
-			if ($paramType === 'file') {
-				$parameterList[] = $this->prepareFileParam($parameter, $stripPath, $highlightParams);
-				$plainParameterList[] = $this->prepareFileParam($parameter, false, false);
-			} else {
-				$parameterList[] = $this->prepareParam($parameter, $highlightParams);
-				$plainParameterList[] = $this->prepareParam($parameter, false);
-			}
+			$parameterList[] = $this->prepareStringParameter($parameter, $paramType, $stripPath, $highlightParams);
+			$plainParameterList[] = $this->prepareStringParameter($parameter, $paramType, false, false);
 		}
 		return $this->joinParameterList($parameterList, $plainParameterList, $highlightParams);
 	}
@@ -152,7 +172,8 @@ class ParameterHelper {
 			}
 		}
 
-		$displayName = User::getDisplayName($param);
+		$user = $this->userManager->get($param);
+		$displayName = ($user) ? $user->getDisplayName() : $param;
 		$param = Util::sanitizeHTML($param);
 		$displayName = Util::sanitizeHTML($displayName);
 
@@ -179,12 +200,12 @@ class ParameterHelper {
 	 */
 	protected function prepareFileParam($param, $stripPath, $highlightParams) {
 		$param = $this->fixLegacyFilename($param);
-		$is_dir = $this->rootView->is_dir('/' . User::getUser() . '/files' . $param);
+		$is_dir = $this->rootView->is_dir('/' . $this->user . '/files' . $param);
 
 		if ($is_dir) {
 			$fileLink = Util::linkTo('files', 'index.php', array('dir' => $param));
 		} else {
-			$parentDir = (substr_count($param, '/') == 1) ? '/' : dirname($param);
+			$parentDir = (substr_count($param, '/') === 1) ? '/' : dirname($param);
 			$fileName = basename($param);
 			$fileLink = Util::linkTo('files', 'index.php', array(
 				'dir' => $parentDir,
@@ -260,11 +281,11 @@ class ParameterHelper {
 		$count = sizeof($parameterList);
 		$lastItem = array_pop($parameterList);
 
-		if ($count == 1)
+		if ($count === 1)
 		{
 			return $lastItem;
 		}
-		else if ($count == 2)
+		else if ($count === 2)
 		{
 			$firstItem = array_pop($parameterList);
 			return $this->l->t('%s and %s', array($firstItem, $lastItem));
@@ -284,7 +305,7 @@ class ParameterHelper {
 				'%s and <strong class="tooltip" title="%s">%n more</strong>',
 				'%s and <strong class="tooltip" title="%s">%n more</strong>',
 				$count - 3,
-				array($firstList, $trimmedList));
+				array($firstList, Util::sanitizeHTML($trimmedList)));
 		}
 		return $this->l->n('%s and %n more', '%s and %n more', $count - 3, array($firstList));
 	}
@@ -297,13 +318,6 @@ class ParameterHelper {
 	 * @return array
 	 */
 	public function getSpecialParameterList($app, $text) {
-		if ($app === 'files' && $text === 'shared_group_self') {
-			return array(0 => 'file');
-		}
-		else if ($app === 'files') {
-			return array(0 => 'file', 1 => 'username');
-		}
-
 		$specialParameters = $this->activityManager->getSpecialParameterList($app, $text);
 
 		if ($specialParameters !== false) {

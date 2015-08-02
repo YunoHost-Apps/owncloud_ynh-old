@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ownCloud 8.1 Release Notes &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>ownCloud 8.2 Release Notes &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="_static/style.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,9 +27,9 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="index.html" />
-    <link rel="next" title="What’s New for Admins in ownCloud 8" href="whats_new_admin.html" />
-    <link rel="prev" title="ownCloud 8.1 Server Administration Manual Introduction" href="index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="index.html" />
+    <link rel="next" title="What’s New for Admins in ownCloud 8.1" href="whats_new_admin.html" />
+    <link rel="prev" title="ownCloud 8.2 Server Administration Manual Introduction" href="index.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -113,19 +113,17 @@
 <li><a href="contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">ownCloud 8.1 Release Notes</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">ownCloud 8.2 Release Notes</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#recommended-setup-for-running-owncloud">Recommended Setup for Running ownCloud</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#supported-platforms">Supported Platforms</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#older-desktop-clients-not-allowed-to-connect-and-sync">Older Desktop Clients Not Allowed to Connect and Sync</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#windows-not-supported">Windows Not Supported</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#enterprise-8-1-only">Enterprise 8.1 Only</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#sharepoint-drive-ssl-not-verified">Sharepoint Drive SSL Not Verified</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#supported-platforms">Supported Platforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#changes-in-8-1">Changes in 8.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#enterprise-8-1-only">Enterprise 8.1 Only</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#owncloud-8-0">ownCloud 8.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#manual-ldap-port-configuration">Manual LDAP Port Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#no-preview-icon-on-text-files">No Preview Icon on Text Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#remote-federated-cloud-share-cannot-be-reshared-with-local-users">Remote Federated Cloud Share Cannot be Reshared With Local Users</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#manually-migrate-encryption-keys-after-upgrade">Manually Migrate Encryption Keys after Upgrade</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#windows-server-not-supported">Windows Server Not Supported</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#php-5-3-support-dropped">PHP 5.3 Support Dropped</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#disable-apache-multiviews">Disable Apache Multiviews</a></li>
@@ -137,7 +135,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#enterprise-8-0-only">Enterprise 8.0 Only</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id1">Sharepoint Drive SSL Not Verified</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sharepoint-drive-ssl-not-verified">Sharepoint Drive SSL Not Verified</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#no-federated-cloud-sharing-with-shibboleth">No Federated Cloud Sharing with Shibboleth</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#direct-uploads-to-swift-do-not-appear-in-owncloud">Direct Uploads to SWIFT do not Appear in ownCloud</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#swift-objectstore-incompatible-with-encryption-app">SWIFT Objectstore Incompatible with Encryption App</a></li>
@@ -145,6 +143,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#owncloud-7-release-notes">ownCloud 7 Release Notes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Manual LDAP Port Configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ldap-search-performance-improved">LDAP Search Performance Improved</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#protecting-owncloud-on-iis-from-data-loss">Protecting ownCloud on IIS from Data Loss</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#antivirus-app-modes">Antivirus App Modes</a></li>
@@ -168,7 +167,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_files/index.html">File Sharing and Management</a></li>
@@ -181,9 +180,10 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="enterprise_clients/index.html">Creating Custom and Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="enterprise_user_management/index.html">User Management (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
 </ul>
 
 								</ul>
@@ -197,7 +197,7 @@
 					<div class="page-content">
 						
   <div class="section" id="owncloud-version-release-notes">
-<h1>ownCloud 8.1 Release Notes<a class="headerlink" href="#owncloud-version-release-notes" title="Permalink to this headline">¶</a></h1>
+<h1>ownCloud 8.2 Release Notes<a class="headerlink" href="#owncloud-version-release-notes" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="recommended-setup-for-running-owncloud">
 <h2>Recommended Setup for Running ownCloud<a class="headerlink" href="#recommended-setup-for-running-owncloud" title="Permalink to this headline">¶</a></h2>
 <p>For best performance, stability, support, and full functionality we recommend:</p>
@@ -222,29 +222,73 @@ Red Hat Enterprise Linux/Centos 6.5 and 7, Ubuntu 12.04 LTS, 14.04 LTS,
 only), Linux (CentOS 6.5, 7, Ubuntu 12.04 LTS, 14.04 LTS, 14.10, Fedora 20,
 21, openSUSE 12.3, 13)</li>
 <li>Mobile apps: iOS 7+, Android 4+</li>
-<li>Web browser: IE8+, Firefox 14+, Chrome 18+, Safari 5+</li>
+<li>Web browser: IE8+ (but not compatibility mode), Firefox 14+, Chrome 18+,
+Safari 5+</li>
 </ul>
-<div class="section" id="older-desktop-clients-not-allowed-to-connect-and-sync">
-<h3>Older Desktop Clients Not Allowed to Connect and Sync<a class="headerlink" href="#older-desktop-clients-not-allowed-to-connect-and-sync" title="Permalink to this headline">¶</a></h3>
-<p>Because of various technical issues, desktop sync clients older than 1.7 are
-not allowed to connect and sync with the ownCloud server.</p>
 </div>
-<div class="section" id="windows-not-supported">
-<h3>Windows Not Supported<a class="headerlink" href="#windows-not-supported" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="changes-in-8-1">
+<h2>Changes in 8.1<a class="headerlink" href="#changes-in-8-1" title="Permalink to this headline">¶</a></h2>
+<p>&#8220;Download from link&#8221; feature has been removed.</p>
+<p>The <tt class="docutils literal"><span class="pre">.htaccess</span></tt> and <tt class="docutils literal"><span class="pre">index.html</span></tt> files in the <tt class="docutils literal"><span class="pre">data/</span></tt> directory are now
+updated after every update. If you make any modifications to these files they
+will be lost after updates.</p>
+<p>The SabreDAV browser at <tt class="docutils literal"><span class="pre">/remote.php/webdav</span></tt> has been removed.</p>
+<p>Using ownCloud without a <tt class="docutils literal"><span class="pre">trusted_domain</span></tt> configuration will not work anymore.</p>
+<p>The logging format for failed logins has changed and considers now the proxy
+configuration in <tt class="docutils literal"><span class="pre">config.php</span></tt>.</p>
+<p>A default set of security and privacy HTTP headers have been added to the
+ownCloud <tt class="docutils literal"><span class="pre">.htaccess</span></tt> file, and ownCloud administrators may now customize which
+headers are sent.</p>
+<p>The persistent file-based cache (e.g. used by LDAP integration) has been dropped and
+replaced with a memory-only cache, which must be explicitly configured. See
+<a class="reference internal" href="configuration_user/user_auth_ldap.html"><em>User Authentication with LDAP</em></a>. Memory cache configuration for the
+ownCloud server is no longer automatic, requiring configuration in
+<tt class="docutils literal"><span class="pre">config.php``</span></tt> with the keys memcache.local`` and/or
+<tt class="docutils literal"><span class="pre">memcache.distributed</span></tt>; see <a class="reference internal" href="configuration_server/performance_tuning.html#caching"><em>Caching</em></a>.</p>
+<p>The OC_User_HTTP backend has been removed. Administrators are encouraged to use
+the <tt class="docutils literal"><span class="pre">user_webdavauth</span></tt> application instead.</p>
+<p>ownCloud ships now with its own root certificate bundle derived from the
+Mozilla. The system root certificate bundle will not be used anymore for most
+requests.</p>
+<p>When you upgrade from ownCloud 8.0, with encryption enabled, to 8.1, you must
+enable the new encryption backend and migrate your encryption keys. See
+<a class="reference internal" href="configuration_files/encryption_configuration.html"><em>Encryption Configuration</em></a></p>
+<p>Due to various technical issues, by default desktop sync clients older than
+1.7 are not allowed to connect and sync with the ownCloud server. This is
+configurable via the <tt class="docutils literal"><span class="pre">minimum.supported.desktop.version</span></tt> switch in
+<tt class="docutils literal"><span class="pre">config.php</span></tt>.</p>
 <p>The ownCloud 8 server is not supported on any version of Windows.</p>
-</div>
 </div>
 <div class="section" id="enterprise-8-1-only">
 <h2>Enterprise 8.1 Only<a class="headerlink" href="#enterprise-8-1-only" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="sharepoint-drive-ssl-not-verified">
-<h3>Sharepoint Drive SSL Not Verified<a class="headerlink" href="#sharepoint-drive-ssl-not-verified" title="Permalink to this headline">¶</a></h3>
 <p>The SharePoint Drive app does not verify the SSL certificate of the SharePoint
 server or the ownCloud server, as it is expected that both devices are in the
 same trusted environment.</p>
 </div>
-</div>
 <div class="section" id="owncloud-8-0">
 <h2>ownCloud 8.0<a class="headerlink" href="#owncloud-8-0" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="manual-ldap-port-configuration">
+<h3>Manual LDAP Port Configuration<a class="headerlink" href="#manual-ldap-port-configuration" title="Permalink to this headline">¶</a></h3>
+<p>When you are configuring the LDAP user and group backend application, ownCloud
+may not auto-detect the LDAP server&#8217;s port number, so you will need to enter it
+manually.</p>
+</div>
+<div class="section" id="no-preview-icon-on-text-files">
+<h3>No Preview Icon on Text Files<a class="headerlink" href="#no-preview-icon-on-text-files" title="Permalink to this headline">¶</a></h3>
+<p>There is no preview icon displayed for text files when the file contains fewer than six characters.</p>
+</div>
+<div class="section" id="remote-federated-cloud-share-cannot-be-reshared-with-local-users">
+<h3>Remote Federated Cloud Share Cannot be Reshared With Local Users<a class="headerlink" href="#remote-federated-cloud-share-cannot-be-reshared-with-local-users" title="Permalink to this headline">¶</a></h3>
+<p>When you mount a Federated Cloud share from a remote ownCloud server, you cannot re-share it with your local ownCloud users. (See <a class="reference internal" href="configuration_files/federated_cloud_sharing_configuration.html"><em>Configuring Federated Cloud Sharing</em></a> to learn more about federated cloud sharing)</p>
+</div>
+<div class="section" id="manually-migrate-encryption-keys-after-upgrade">
+<h3>Manually Migrate Encryption Keys after Upgrade<a class="headerlink" href="#manually-migrate-encryption-keys-after-upgrade" title="Permalink to this headline">¶</a></h3>
+<p>If you are using the Encryption app and upgrading from older versions of
+ownCloud to ownCloud 8.0, you must manually migrate your encryption keys with
+the <em>occ</em> command after the upgrade is complete, like this example for CentOS:
+<em>sudo -u apache php occ encryption:migrate-keys</em> You must run <em>occ</em> as your HTTP
+user. See <a class="reference internal" href="configuration_server/occ_command.html"><em>Using the occ Command</em></a> to learn more about <em>occ</em></p>
+</div>
 <div class="section" id="windows-server-not-supported">
 <h3>Windows Server Not Supported<a class="headerlink" href="#windows-server-not-supported" title="Permalink to this headline">¶</a></h3>
 <p>Windows Server is not supported in ownCloud 8.</p>
@@ -295,8 +339,8 @@ on your ownCloud server.</p>
 </div>
 <div class="section" id="enterprise-8-0-only">
 <h2>Enterprise 8.0 Only<a class="headerlink" href="#enterprise-8-0-only" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id1">
-<h3>Sharepoint Drive SSL Not Verified<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="sharepoint-drive-ssl-not-verified">
+<h3>Sharepoint Drive SSL Not Verified<a class="headerlink" href="#sharepoint-drive-ssl-not-verified" title="Permalink to this headline">¶</a></h3>
 <p>The SharePoint Drive app does not verify the SSL certificate of the SharePoint
 server or the ownCloud server, as it is expected that both devices are in the
 same trusted environment.</p>
@@ -327,6 +371,12 @@ are not supported.</p>
 </div>
 <div class="section" id="owncloud-7-release-notes">
 <h2>ownCloud 7 Release Notes<a class="headerlink" href="#owncloud-7-release-notes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Manual LDAP Port Configuration<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>When you are configuring the LDAP user and group backend application, ownCloud
+may not auto-detect the LDAP server&#8217;s port number, so you will need to enter it
+manually.</p>
+</div>
 <div class="section" id="ldap-search-performance-improved">
 <h3>LDAP Search Performance Improved<a class="headerlink" href="#ldap-search-performance-improved" title="Permalink to this headline">¶</a></h3>
 <p>Prior to 7.0.4, LDAP searches were substring-based and would match search

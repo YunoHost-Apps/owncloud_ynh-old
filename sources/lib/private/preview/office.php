@@ -1,9 +1,24 @@
 <?php
 /**
- * Copyright (c) 2013 Georg Ehrke georg@ownCloud.com
- * This file is licensed under the Affero General Public License version 3 or
- * later.
- * See the COPYING-README file.
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Olivier Paroz <github@oparoz.com>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 namespace OC\Preview;
 
@@ -15,7 +30,7 @@ abstract class Office extends Provider {
 	 */
 	public function getThumbnail($path, $maxX, $maxY, $scalingup, $fileview) {
 		$this->initCmd();
-		if(is_null($this->cmd)) {
+		if (is_null($this->cmd)) {
 			return false;
 		}
 
@@ -23,7 +38,7 @@ abstract class Office extends Provider {
 
 		$tmpDir = get_temp_dir();
 
-		$defaultParameters = ' -env:UserInstallation=file://' . escapeshellarg($tmpDir . '/owncloud-' . \OC_Util::getInstanceId().'/') . ' --headless --nologo --nofirststartwizard --invisible --norestore --convert-to pdf --outdir ';
+		$defaultParameters = ' -env:UserInstallation=file://' . escapeshellarg($tmpDir . '/owncloud-' . \OC_Util::getInstanceId() . '/') . ' --headless --nologo --nofirststartwizard --invisible --norestore --convert-to pdf --outdir ';
 		$clParameters = \OCP\Config::getSystemValue('preview_office_cl_parameters', $defaultParameters);
 
 		$exec = $this->cmd . $clParameters . escapeshellarg($tmpDir) . ' ' . escapeshellarg($absPath);
@@ -31,12 +46,16 @@ abstract class Office extends Provider {
 		shell_exec($exec);
 
 		//create imagick object from pdf
-		try{
-			$pdf = new \imagick($absPath . '.pdf' . '[0]');
+		$pdfPreview = null;
+		try {
+			list($dirname, , , $filename) = array_values(pathinfo($absPath));
+			$pdfPreview = $dirname . '/' . $filename . '.pdf';
+
+			$pdf = new \imagick($pdfPreview . '[0]');
 			$pdf->setImageFormat('jpg');
 		} catch (\Exception $e) {
 			unlink($absPath);
-			unlink($absPath . '.pdf');
+			unlink($pdfPreview);
 			\OC_Log::write('core', $e->getmessage(), \OC_Log::ERROR);
 			return false;
 		}
@@ -45,29 +64,35 @@ abstract class Office extends Provider {
 		$image->loadFromData($pdf);
 
 		unlink($absPath);
-		unlink($absPath . '.pdf');
+		unlink($pdfPreview);
 
-		return $image->valid() ? $image : false;
+		if ($image->valid()) {
+			$image->scaleDownToFit($maxX, $maxY);
+
+			return $image;
+		}
+		return false;
+
 	}
 
 	private function initCmd() {
 		$cmd = '';
 
-		if(is_string(\OC_Config::getValue('preview_libreoffice_path', null))) {
+		if (is_string(\OC_Config::getValue('preview_libreoffice_path', null))) {
 			$cmd = \OC_Config::getValue('preview_libreoffice_path', null);
 		}
 
 		$whichLibreOffice = shell_exec('command -v libreoffice');
-		if($cmd === '' && !empty($whichLibreOffice)) {
+		if ($cmd === '' && !empty($whichLibreOffice)) {
 			$cmd = 'libreoffice';
 		}
 
 		$whichOpenOffice = shell_exec('command -v openoffice');
-		if($cmd === '' && !empty($whichOpenOffice)) {
+		if ($cmd === '' && !empty($whichOpenOffice)) {
 			$cmd = 'openoffice';
 		}
 
-		if($cmd === '') {
+		if ($cmd === '') {
 			$cmd = null;
 		}
 

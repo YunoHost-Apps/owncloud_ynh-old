@@ -43,9 +43,8 @@
 		show: function(downloadUrl, isFileList) {
 			var self = this;
 			var $iframe;
-
-			var viewer = OC.generateUrl('/apps/files_pdfviewer/?file={file}', {file: encodeURIComponent(downloadUrl)});
-			$iframe = $('<iframe id="pdframe" style="width:100%;height:100%;display:block;position:absolute;top:0;" src="'+viewer+'" sandbox="allow-scripts allow-same-origin" />');
+			var viewer = OC.generateUrl('/apps/files_pdfviewer/?file={file}', {file: downloadUrl});
+			$iframe = $('<iframe id="pdframe" style="width:100%;height:100%;display:block;position:absolute;top:0;" src="'+viewer+'" sandbox="allow-scripts allow-same-origin allow-popups" />');
 
 			if(isFileList === true) {
 				FileList.setViewerMode(true);
@@ -97,9 +96,9 @@
 					if($('#isPublic').val()) {
 						var sharingToken = $('#sharingToken').val();
 						downloadUrl = OC.generateUrl('/s/{token}/download?files={files}&path={path}', {
-							token: encodeURIComponent(sharingToken),
-							files: encodeURIComponent(fileName),
-							path:  encodeURIComponent(context.dir)
+							token: sharingToken,
+							files: fileName,
+							path: context.dir
 						});
 					} else {
 						downloadUrl = Files.getDownloadUrl(fileName, context.dir);
@@ -113,14 +112,20 @@
 
 })(OCA);
 
-OC.Plugins.register('OCA.Files.FileList', OCA.FilesPdfViewer.PreviewPlugin);
+// Doesn't work with IE below 9
+if(!$.browser.msie || ($.browser.msie && $.browser.version >= 9)){
+	OC.Plugins.register('OCA.Files.FileList', OCA.FilesPdfViewer.PreviewPlugin);
+}
 
 // FIXME: Hack for single public file view since it is not attached to the fileslist
 $(document).ready(function(){
-	if ($('#isPublic').val() && $('#mimetype').val() === 'application/pdf') {
-		var sharingToken = $('#sharingToken').val();
-		var downloadUrl = OC.generateUrl('/s/{token}/download', {token: encodeURIComponent(sharingToken)});
-		var viewer = OCA.FilesPdfViewer.PreviewPlugin;
-		viewer.show(downloadUrl, false);
+	// Doesn't work with IE below 9
+	if(!$.browser.msie || ($.browser.msie && $.browser.version >= 9)){
+		if ($('#isPublic').val() && $('#mimetype').val() === 'application/pdf') {
+			var sharingToken = $('#sharingToken').val();
+			var downloadUrl = OC.generateUrl('/s/{token}/download', {token: sharingToken});
+			var viewer = OCA.FilesPdfViewer.PreviewPlugin;
+			viewer.show(downloadUrl, false);
+		}
 	}
 });

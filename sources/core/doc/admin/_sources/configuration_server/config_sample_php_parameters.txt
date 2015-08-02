@@ -1,3 +1,4 @@
+=====================
 Config.php Parameters
 =====================
 ownCloud uses the ``config/config.php`` file to control server operations.
@@ -5,6 +6,14 @@ ownCloud uses the ``config/config.php`` file to control server operations.
 ownCloud. This document provides a more detailed reference. Many options are
 configurable on your Admin page, so it is usually not necessary to edit
 ``config/config.php``.
+
+ownCloud supports loading configuration parameters from multiple files.
+You can add arbitrary files ending with :file:`.config.php` in the :file:`config/`
+directory, for example you could place your email server configuration
+in :file:`email.config.php`. This allows you to easily create and manage
+custom configurations, or to divide a large complex configuration file 
+into a set of smaller files. These custom files are not overwritten by 
+ownCloud, and the values in these files take precedence over :file:`config.php`.
 
 .. Generated content below. Don't change this.
 .. DEFAULT_SECTION_START
@@ -84,7 +93,6 @@ Available:
 	- mysql (MySQL/MariaDB)
 	- pgsql (PostgreSQL)
 	- oci (Oracle - Enterprise Edition Only)
-	- mssql (Microsoft SQL Server - Enterprise Edition Only)
 
 ::
 
@@ -276,7 +284,7 @@ Enabling this sends a "heartbeat" to the server to keep it from timing out.
 
 ::
 
-	'skeletondirectory' => '',
+	'skeletondirectory' => '/path/to/owncloud/core/skeleton',
 
 The directory where the skeleton files are located. These files will be
 copied to the data directory of new users. Leave empty to not copy any
@@ -575,6 +583,28 @@ Warning, 3 = Error. The default value is Warning.
 
 ::
 
+	'log.condition' => [
+		'shared_secret' => '57b58edb6637fe3059b3595cf9c41b9',
+		'users' => ['sample-user'],
+		'apps' => ['files'],
+	],
+
+Log condition for log level increase based on conditions. Once one of these
+conditions is met, the required log level is set to debug. This allows to
+debug specific requests, users or apps
+
+Supported conditions:
+ - ``shared_secret``: if a request parameter with the name `log_secret` is set to
+               this value the condition is met
+ - ``users``:  if the current request is done by one of the specified users,
+               this condition is met
+ - ``apps``:   if the log message is invoked by one of the specified apps,
+               this condition is met
+
+Defaults to an empty array.
+
+::
+
 	'logdateformat' => 'F d, Y H:i:s',
 
 This uses PHP.date formatting; see http://php.net/manual/en/function.date.php
@@ -605,8 +635,8 @@ Log successful cron runs.
 
 Location of the lock file for cron executions can be specified here.
 
-Default is within the tmp directory. The file is named in the following way
-  owncloud-server-$INSTANCEID-cron.lock
+Default is within the tmp directory. The file is named in the following way:
+owncloud-server-$INSTANCEID-cron.lock
 where $INSTANCEID is the string specified in the instanceid field.
 Because the cron lock file is accessed in regular intervals, it may prevent
 enabled disk drives from spinning down. A different location for this file
@@ -928,6 +958,19 @@ The default location for themes is ``owncloud/themes/``.
 The default cipher for encrypting files. Currently AES-128-CFB and
 AES-256-CFB are supported.
 
+::
+
+	'minimum.supported.desktop.version' => '1.7.0',
+
+The minimum ownCloud desktop client version that will be allowed to sync with
+this server instance. All connections made from earlier clients will be denied
+by the server. Defaults to the minimum officially supported ownCloud version at
+the time of release of this server version.
+
+When changing this, note that older unsupported versions of the ownCloud desktop
+client may not function as expected, and could lead to permanent data loss for
+clients or other unexpected results.
+
 Memory caching backend configuration
 ------------------------------------
 
@@ -1092,7 +1135,6 @@ One way to test is applying for a trystack account at http://trystack.org/
 		'mysql',
 		'pgsql',
 		'oci',
-		'mssql'
 	),
 
 Database types that are supported for installation.
@@ -1102,7 +1144,6 @@ Available:
 	- mysql (MySQL)
 	- pgsql (PostgreSQL)
 	- oci (Oracle - Enterprise Edition Only)
-	- mssql (Microsoft SQL Server - Enterprise Edition Only)
 
 All other config options
 ------------------------
@@ -1139,6 +1180,27 @@ If the gif is bigger, it'll show a static preview
 Value represents the maximum filesize in megabytes
 Default is 10
 Set to -1 for no limit
+
+::
+
+	'filelocking.enabled' => false,
+
+Enables transactional file locking.
+
+This is disabled by default as it is still beta.
+
+Prevents concurrent processes to access the same files
+at the same time. Can help prevent side effects that would
+be caused by concurrent operations.
+
+WARNING: BETA quality
+
+::
+
+	'memcache.locking' => '\\OC\\Memcache\\Redis',
+
+Memory caching backend for file locking
+Because most memcache backends can clean values without warning using redis is recommended
 
 ::
 

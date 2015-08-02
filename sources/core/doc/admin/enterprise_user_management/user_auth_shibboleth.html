@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Shibboleth Integration (Enterprise Subscription only) &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>Shibboleth Integration (Enterprise Subscription only) &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,8 +27,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
     <link rel="up" title="User Management (ES only)" href="index.html" />
+    <link rel="next" title="File Firewall" href="file_firewall_configuration.html" />
     <link rel="prev" title="User Management (ES only)" href="index.html" />
 <script type="text/javascript">
 (function () {
@@ -113,9 +114,9 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
@@ -128,13 +129,14 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Custom and Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">User Management (ES only)</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="">Shibboleth Integration (Enterprise Subscription only)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apache-configuration">Apache Configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#application-configuration">Application Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#enabling-the-shibboleth-app">Enabling the Shibboleth App</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#webdav-support">WebDAV Support</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#known-limitations">Known Limitations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#encryption">Encryption</a></li>
@@ -142,8 +144,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#session-timeout">Session Timeout</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="file_firewall_configuration.html">File Firewall</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
 </ul>
 
 								</ul>
@@ -162,14 +166,40 @@
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>The ownCloud Shibboleth user backend application integrates ownCloud with a
 Shibboleth Service Provider (SP) and allows operations in federated and
-single-sign-on infrastructures.</p>
+single-sign-on infrastructures. Setting up Shibboleth has three steps:</p>
+<ol class="arabic simple">
+<li>Create the appropriate Apache configuration</li>
+<li>Enable the Shibboleth app</li>
+<li>Enable Shibboleth on your ownCloud admin page</li>
+</ol>
 <p>Currently supported installations are based on the <a class="reference external" href="https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPApacheConfig">native Apache integration</a>
 . The individual configuration of the service provider is highly dependent on
 the operating system, as well as on the integration with the Identity
-Providers (IdP), and deserve case-by-case analysis and installation.</p>
+Providers (IdP), and require case-by-case analysis and installation.</p>
 <p>The ownCloud Desktop Client and mobile clients can interact with an
 ownCloud instance running inside a Shibboleth Service Provider by using built-in
 browser components for authentication against the IdP.</p>
+<p>The ownCloud desktop sync client and mobile apps store users&#8217; logins, so
+your users only need to enter their logins the first time they set up their
+accounts. These screenshots show what the user sees at account setup. Figure 1
+shows a test Shibboleth login screen from
+<a class="reference external" href="https://www.testshib.org/index.html">Testshib.org</a> on the ownCloud desktop
+sync client.</p>
+<div class="figure">
+<img alt="../_images/shib-gui1.png" src="../_images/shib-gui1.png" />
+<p class="caption"><em>figure 1: First login screen</em></p>
+</div>
+<p>Then after going through the setup wizard, the desktop sync client displays the
+server and login information just like it does for any other ownCloud server
+connections.</p>
+<div class="figure">
+<img alt="../_images/shib-gui4.png" src="../_images/shib-gui4.png" />
+<p class="caption"><em>figure 2: ownCloud client displays server information</em></p>
+</div>
+<p>To your users, it doesn&#8217;t look or behave differently on the desktop sync
+client, Android app, or iOS app from an ordinary ownCloud account setup. The
+only difference is the initial setup screen where they enter their account
+login.</p>
 </div>
 <div class="section" id="apache-configuration">
 <h2>Apache Configuration<a class="headerlink" href="#apache-configuration" title="Permalink to this headline">¶</a></h2>
@@ -275,7 +305,7 @@ LoadModule mod_shib /usr/lib64/shibboleth/mod_shib_22.so
 <h2>Application Configuration<a class="headerlink" href="#application-configuration" title="Permalink to this headline">¶</a></h2>
 <p>After installing and enabling the Shibboleth application there are three
 configuration variables to set up, depending on the data sent back by the
-IdP. The configuration is stored in <tt class="docutils literal"><span class="pre">config.php</span></tt>:</p>
+IdP. The configuration is stored in <tt class="docutils literal"><span class="pre">apps/user_shibboleth</span></tt>.</p>
 <div class="highlight-php"><div class="highlight"><pre><span class="x">namespace OCA\user_shibboleth {</span>
 <span class="x">        const SHIB_SESSION_ID = &#39;Shib-Session-ID&#39;;</span>
 <span class="x">        const SHIB_EPPN = &#39;eppn&#39;;</span>
@@ -312,6 +342,17 @@ variable holding the user&#8217;s display name.</td>
 </tr>
 </tbody>
 </table>
+</div>
+<div class="section" id="enabling-the-shibboleth-app">
+<h2>Enabling the Shibboleth App<a class="headerlink" href="#enabling-the-shibboleth-app" title="Permalink to this headline">¶</a></h2>
+<p>You must enable the Shibboleth app on your Apps page, and then check <strong>Activate
+Shibboleth</strong> and click the <strong>Save</strong> button on your ownCloud Admin page. The
+system information displayed on your Admin page may be useful for
+troubleshooting; for example you can copy and include it on a support ticket.</p>
+<div class="figure">
+<img alt="../_images/shib-gui5.png" src="../_images/shib-gui5.png" />
+<p class="caption"><em>figure 3: Enabling Shibboleth on the Admin page</em></p>
+</div>
 </div>
 <div class="section" id="webdav-support">
 <h2>WebDAV Support<a class="headerlink" href="#webdav-support" title="Permalink to this headline">¶</a></h2>

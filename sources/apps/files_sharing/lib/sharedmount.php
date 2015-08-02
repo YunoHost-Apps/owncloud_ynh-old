@@ -1,15 +1,31 @@
 <?php
 /**
- * Copyright (c) 2014 Robin Appelman <icewind@owncloud.com>
- * This file is licensed under the Affero General Public License version 3 or
- * later.
- * See the COPYING-README file.
+ * @author Björn Schießle <schiessle@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 
 namespace OCA\Files_Sharing;
 
 use OC\Files\Mount\MountPoint;
 use OC\Files\Mount\MoveableMount;
+use OC\Files\View;
 
 /**
  * Shared mount points can be moved by the user
@@ -20,8 +36,14 @@ class SharedMount extends MountPoint implements MoveableMount {
 	 */
 	protected $storage = null;
 
+	/**
+	 * @var \OC\Files\Cache\ChangePropagator
+	 */
+	protected $ownerPropagator;
+
 	public function __construct($storage, $mountpoint, $arguments = null, $loader = null) {
 		// first update the mount point before creating the parent
+		$this->ownerPropagator = $arguments['propagator'];
 		$newMountPoint = $this->verifyMountPoint($arguments['share'], $arguments['user']);
 		$absMountPoint = '/' . $arguments['user'] . '/files' . $newMountPoint;
 		parent::__construct($storage, $absMountPoint, $arguments, $loader);
@@ -34,8 +56,9 @@ class SharedMount extends MountPoint implements MoveableMount {
 
 		$mountPoint = basename($share['file_target']);
 		$parent = dirname($share['file_target']);
+		$view = new View('/' . $user . '/files');
 
-		if (!\OC\Files\Filesystem::is_dir($parent)) {
+		if (!$view->is_dir($parent)) {
 			$parent = Helper::getShareFolder();
 		}
 
@@ -158,5 +181,16 @@ class SharedMount extends MountPoint implements MoveableMount {
 		$mountManager->removeMount($this->mountPoint);
 
 		return $result;
+	}
+
+	public function getShare() {
+		return $this->getStorage()->getShare();
+	}
+
+	/**
+	 * @return \OC\Files\Cache\ChangePropagator
+	 */
+	public function getOwnerPropagator() {
+		return $this->ownerPropagator;
 	}
 }

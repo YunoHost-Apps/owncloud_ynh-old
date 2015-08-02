@@ -23,7 +23,9 @@
 
 namespace OCA\Activity\Controller;
 
+use OC\Files\View;
 use OCA\Activity\Data;
+use OCA\Activity\Display;
 use OCA\Activity\GroupHelper;
 use OCA\Activity\Navigation;
 use OCA\Activity\UserSettings;
@@ -36,6 +38,9 @@ class Activities extends Controller {
 
 	/** @var \OCA\Activity\Data */
 	protected $data;
+
+	/** @var \OCA\Activity\Display */
+	protected $display;
 
 	/** @var \OCA\Activity\GroupHelper */
 	protected $helper;
@@ -55,14 +60,16 @@ class Activities extends Controller {
 	 * @param string $appName
 	 * @param IRequest $request
 	 * @param Data $data
+	 * @param Display $display
 	 * @param GroupHelper $helper
 	 * @param Navigation $navigation
 	 * @param UserSettings $settings
 	 * @param string $user
 	 */
-	public function __construct($appName, IRequest $request, Data $data, GroupHelper $helper, Navigation $navigation, UserSettings $settings, $user) {
+	public function __construct($appName, IRequest $request, Data $data, Display $display, GroupHelper $helper, Navigation $navigation, UserSettings $settings, $user) {
 		parent::__construct($appName, $request);
 		$this->data = $data;
+		$this->display = $display;
 		$this->helper = $helper;
 		$this->navigation = $navigation;
 		$this->settings = $settings;
@@ -79,7 +86,7 @@ class Activities extends Controller {
 	public function showList($filter = 'all') {
 		$filter = $this->data->validateFilter($filter);
 
-		return new TemplateResponse('activity', 'list', [
+		return new TemplateResponse('activity', 'stream.body', [
 			'appNavigation'	=> $this->navigation->getTemplate($filter),
 			'filter'		=> $filter,
 		]);
@@ -96,8 +103,9 @@ class Activities extends Controller {
 		$pageOffset = $page - 1;
 		$filter = $this->data->validateFilter($filter);
 
-		return new TemplateResponse('activity', 'activities.part', [
-			'activity' => $this->data->read($this->helper, $this->settings, $pageOffset * self::DEFAULT_PAGE_SIZE, self::DEFAULT_PAGE_SIZE, $filter)
+		return new TemplateResponse('activity', 'stream.list', [
+			'activity'		=> $this->data->read($this->helper, $this->settings, $pageOffset * self::DEFAULT_PAGE_SIZE, self::DEFAULT_PAGE_SIZE, $filter),
+			'displayHelper'	=> $this->display,
 		], '');
 	}
 }

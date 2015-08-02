@@ -23,7 +23,7 @@ $(document).ready(function() {
 							$(token).val(result.access_token);
 							$(token_secret).val(result.access_token_secret);
 							$(configured).val('true');
-							OC.MountConfig.saveStorage(tr, function(status) {
+							OCA.External.Settings.mountConfig.saveStorageConfig(tr, function(status) {
 								if (status) {
 									$(tr).find('.configuration input').attr('disabled', 'disabled');
 									$(tr).find('.configuration').append('<span id="access" style="padding-left:0.5em;">'+t('files_external', 'Access granted')+'</span>');
@@ -65,7 +65,10 @@ $(document).ready(function() {
 				|| $(tr).find('.chzn-select').val() != null))
 			{
 				if ($(tr).find('.dropbox').length == 0) {
-					$(config).append('<a class="button dropbox">'+t('files_external', 'Grant access')+'</a>');
+					$(config).append($(document.createElement('input'))
+						.addClass('button dropbox')
+						.attr('type', 'button')
+						.attr('value', t('files_external', 'Grant access')));
 				} else {
 					$(tr).find('.dropbox').show();
 				}
@@ -90,7 +93,7 @@ $(document).ready(function() {
 					$(configured).val('false');
 					$(token).val(result.data.request_token);
 					$(token_secret).val(result.data.request_token_secret);
-					OC.MountConfig.saveStorage(tr, function() {
+					OCA.External.Settings.mountConfig.saveStorageConfig(tr, function() {
 						window.location = result.data.url;
 					});
 				} else {

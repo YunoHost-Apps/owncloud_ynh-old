@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Encryption Configuration &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>Encryption Configuration &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,10 +27,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
     <link rel="up" title="File Sharing and Management" href="index.html" />
-    <link rel="next" title="Configuring External Storage (GUI)" href="external_storage_configuration_gui.html" />
-    <link rel="prev" title="Providing Default Files" href="default_files_configuration.html" />
+    <link rel="next" title="Using the Files Locking App" href="files_locking_enabling.html" />
+    <link rel="prev" title="Configuring External Storage (Configuration File)" href="external_storage_configuration.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -114,9 +114,9 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">File Sharing and Management</a><ul class="current">
@@ -124,18 +124,23 @@
 <li class="toctree-l2"><a class="reference internal" href="big_file_upload_configuration.html">Uploading big files &gt; 512MB</a></li>
 <li class="toctree-l2"><a class="reference internal" href="collaborative_documents_configuration.html">Configuring the Collaborative Documents App</a></li>
 <li class="toctree-l2"><a class="reference internal" href="default_files_configuration.html">Providing Default Files</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Encryption Configuration</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#enabling-the-encryption-app">Enabling the Encryption App</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#sharing-encrypted-files">Sharing Encrypted Files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#decrypting-encrypted-files">Decrypting Encrypted Files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#enabling-a-file-recovery-key">Enabling a File Recovery Key</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#files-not-encrypted">Files Not Encrypted</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ldap-and-other-external-user-back-ends">LDAP and Other External User Back-ends</a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="external_storage_configuration_gui.html">Configuring External Storage (GUI)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="external_storage_configuration.html">Configuring External Storage (Configuration File)</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Encryption Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#before-enabling-encryption">Before Enabling Encryption</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#enabling-encryption">Enabling Encryption</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sharing-encrypted-files">Sharing Encrypted Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#encrypting-external-mountpoints">Encrypting External Mountpoints</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#enabling-users-file-recovery-key">Enabling Users&#8217; File Recovery Key</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#occ-encryption-commands">occ Encryption Commands</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#files-not-encrypted">Files Not Encrypted</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ldap-and-other-external-user-back-ends">LDAP and Other External User Back-ends</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#upgrading-from-owncloud-8-0">Upgrading From ownCloud 8.0</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#where-keys-are-stored">Where Keys are Stored</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="files_locking_enabling.html">Using the Files Locking App</a></li>
+<li class="toctree-l2"><a class="reference internal" href="files_locking_experimental.html">Experimental File Locking</a></li>
 <li class="toctree-l2"><a class="reference internal" href="federated_cloud_sharing_configuration.html">Configuring Federated Cloud Sharing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="previews_configuration.html">Previews Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="serving_static_files_configuration.html">Serving Static Files for Better Performance</a></li>
@@ -150,9 +155,10 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Custom and Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
 </ul>
 
 								</ul>
@@ -167,39 +173,47 @@
 						
   <div class="section" id="encryption-configuration">
 <h1>Encryption Configuration<a class="headerlink" href="#encryption-configuration" title="Permalink to this headline">¶</a></h1>
-<p>ownCloud includes a server-side encryption application. The Encryption app
-encrypts all files stored on the ownCloud server, and all files on remote
-storage that is connected to your ownCloud server. Encryption and decryption are
-performed on the ownCloud server. All files sent to remote storage (for example
-Dropbox and Google Drive) will be encrypted by the ownCloud server, and upon
-retrieval, decrypted before serving them to you and anyone you have shared them
-with.</p>
+<p>If you are upgrading from ownCloud 8.0, and have encryption enabled, please see
+<a class="reference internal" href="#upgrading"><em>Upgrading From ownCloud 8.0</em></a> (below) for the correct steps to upgrade your encryption.</p>
+<p>In ownCloud 8.1 the server-side encryption has a number of changes and
+improvements, including:</p>
+<ul class="simple">
+<li>When encryption is enabled, all files are no longer encrypted at user&#8217;s first
+logins because this caused timeouts on large installations. Instead, only
+files that are created or updated after encryption has been enabled are
+encrypted.</li>
+<li>The &#8220;decrypt all&#8221; option in the Personal settings has been removed, also for
+performance reasons.</li>
+<li>A new option for users to enable/disable encryption on a per mount-point
+basis.</li>
+<li>The option to choose from multiple encryption modules.</li>
+</ul>
+<p>ownCloud server-side encryption encrypts files stored on the ownCloud server,
+and files on remote storage that is connected to your ownCloud server.
+Encryption and decryption are performed on the ownCloud server. All files sent
+to remote storage (for example Dropbox and Google Drive) will be encrypted by
+the ownCloud server, and upon retrieval, decrypted before serving them to you
+and anyone you have shared them with.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Encrypting files increases their size by roughly 35%, so you must take
-this into account when you are provisioning storage and setting storage
-quotas. User&#8217;s quotas are based on the unencrypted file size, and not the
-encrypted file size.</p>
+<p class="last">Encrypting files increases their size by roughly 35%, so you must
+take this into account when you are provisioning storage and setting
+storage quotas. User&#8217;s quotas are based on the unencrypted file size, and
+not the encrypted file size.</p>
 </div>
 <p>When files on external storage are encrypted in ownCloud, you cannot share them
 directly from the external storage services, but only through ownCloud sharing
 because the key to decrypt the data never leaves the ownCloud server.</p>
-<p>The main purpose of the Encryption app is to protect users&#8217; files on remote
-storage, and to do it easily and seamlessly from within ownCloud.</p>
-<p>The Encryption app generates a strong encryption key, which is unlocked by
-user&#8217;s passwords. So your users don&#8217;t need to track an extra password, but
-simply log in as they normally do.</p>
-<p>Encryption is applied server-wide; it cannot be applied to selected users or
-files.</p>
-<p>The Encryption app encrypts only the contents of files, and not filenames and
-folder structures.</p>
+<p>The main purpose of the ownCloud server-side encryption is to protect users&#8217;
+files on remote storage, and to do it easily and seamlessly from within
+ownCloud.</p>
+<p>ownCloud&#8217;s server-side encryption generates a strong encryption key, which is
+unlocked by user&#8217;s passwords. So your users don&#8217;t need to track an extra
+password, but simply log in as they normally do. It encrypts only the contents
+of files, and not filenames and directory structures.</p>
 <p>You should regularly backup all encryption keys to prevent permanent data loss.
-The encryption keys are stored in following folders:</p>
+The encryption keys are stored in following directories:</p>
 <dl class="docutils">
-<dt><tt class="docutils literal"><span class="pre">data/owncloud_private_key</span></tt></dt>
-<dd>Recovery key, if enabled, and public share key</dd>
-<dt><tt class="docutils literal"><span class="pre">data/public-keys</span></tt></dt>
-<dd>Public keys for all users</dd>
 <dt><tt class="docutils literal"><span class="pre">data/&lt;user&gt;/files_encryption</span></tt></dt>
 <dd>Users&#8217; private keys and all other keys necessary to decrypt the users&#8217; files</dd>
 <dt><tt class="docutils literal"><span class="pre">data/files_encryption</span></tt></dt>
@@ -216,108 +230,125 @@ would require client-side encryption, which this app does not provide. If
 your ownCloud server is not connected to any external storage services then
 it is better to  use other encryption tools, such as file-level or
 whole-disk encryption. Read
-<a class="reference external" href="https://owncloud.org/blog/how-owncloud-uses-encryption-to-protect-your-data/">How ownCloud uses encryption to protect your data</a>
-for more information.</p>
+<a class="reference external" href="https://owncloud.org/blog/how-owncloud-uses-encryption-to-protect-your-data/">How ownCloud uses encryption to protect your data</a> for more information.</p>
 </div>
-<div class="section" id="enabling-the-encryption-app">
-<h2>Enabling the Encryption App<a class="headerlink" href="#enabling-the-encryption-app" title="Permalink to this headline">¶</a></h2>
-<p>The Encryption app is bundled with ownCloud, so first go to your Apps page to
-enable it.</p>
-<div class="figure">
-<img alt="../_images/encryption1.png" src="../_images/encryption1.png" />
+<div class="section" id="before-enabling-encryption">
+<h2>Before Enabling Encryption<a class="headerlink" href="#before-enabling-encryption" title="Permalink to this headline">¶</a></h2>
+<p>Plan very carefully before enabling encryption because <strong>it is not
+reversible</strong>, and if you lose your encryption keys your files are not
+recoverable. Always have backups of your encryption keys stored in a safe
+location, and consider enabling all recovery options.</p>
 </div>
-<p>After you click the <tt class="docutils literal"><span class="pre">Enable</span></tt> button you must log out, and then log back in.
-If you continue to work without logging out, you&#8217;ll see a yellow banner at
-the top of your Files page that warns you &#8220;Encryption App is enabled but your
-keys are not initialized, please log-out and log-in again.&#8221;</p>
-<div class="figure">
-<img alt="../_images/encryption2.png" src="../_images/encryption2.png" />
-</div>
-<p>When you log out and then log back in, your encryption keys are initialized and
-your files are encrypted. This is a one-time process, and it will take a few
-minutes depending on how many files you have.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The more files you have, the longer the initial encryption will take. It is
-better to activate the encryption app after a new ownCloud installation, to avoid
-possible timeouts.</p>
-</div>
+<div class="section" id="enabling-encryption">
+<span id="enable-encryption"></span><h2>Enabling Encryption<a class="headerlink" href="#enabling-encryption" title="Permalink to this headline">¶</a></h2>
+<p>ownCloud encryption now consists of two parts. The base encryption system is
+enabled and disabled on your Admin page. First you must enable this, and then
+select an encryption module to load. Currently the only available encryption
+module is the ownCloud Default Encryption Module.</p>
+<p>First go to the <strong>Server-side encryption</strong> section of your Admin page and check
+<strong>Enable server-side encryption</strong>. You have one last chance to change your mind.</p>
 <div class="figure">
 <img alt="../_images/encryption3.png" src="../_images/encryption3.png" />
 </div>
-<p>When the encryption process is complete you&#8217;ll be returned to your default
-ownCloud page. Every user will go through this process when they log in after
-you enable encryption, and each user will get unique encryption keys. Users can change
-their passwords whenever they want on their Personal pages, and ownCloud will update
-their encryption keys automatically.</p>
+<p>After clicking the <strong>Enable Encryption</strong> button you see the message &#8220;No
+encryption module loaded, please load a encryption module in the app menu&#8221;, so
+go to your Apps page to enable the ownCloud Default Encryption Module.</p>
+<div class="figure">
+<img alt="../_images/encryption1.png" src="../_images/encryption1.png" />
+</div>
+<p>Return to your Admin page to see the ownCloud Default Encryption
+Module added to the module selector, and automatically selected. Now you must
+log out and then log back in to initialize your encryption keys.</p>
+<div class="figure">
+<img alt="../_images/encryption14.png" src="../_images/encryption14.png" />
+</div>
 </div>
 <div class="section" id="sharing-encrypted-files">
 <h2>Sharing Encrypted Files<a class="headerlink" href="#sharing-encrypted-files" title="Permalink to this headline">¶</a></h2>
-<p>Only users who have private encryption keys have access to shared encrypted files and
-folders. Users who have not yet created their private encryption keys will not have access
-to encrypted shared files; they will see folders and filenames, but will not be able to
-open or download the files. They will see a yellow warning banner that says &#8220;Encryption
-App is enabled but your keys are not initialized, please log-out and log-in again.&#8221;</p>
-<p>Share owners may need to re-share files after encryption is enabled; users trying to
-access the share will see a message advising them to ask the share owner to re-share the
-file with them. For individual shares, un-share and re-share the file. For group shares,
-share with any individuals who can&#8217;t access the share. This updates the encryption, and
-then the share owner can remove the individual shares.</p>
+<p>After encryption is enabled your users must also log out and log back in to
+generate their personal encryption keys. They will see a yellow warning banner
+that says &#8220;Encryption App is enabled but your keys are not initialized, please
+log-out and log-in again.&#8221;</p>
+<p>Share owners may need to re-share files after encryption is enabled; users
+trying to access the share will see a message advising them to ask the share
+owner to re-share the file with them. For individual shares, un-share and
+re-share the file. For group shares, share with any individuals who can&#8217;t access
+the share. This updates the encryption, and then the share owner can remove the
+individual shares.</p>
 <div class="figure">
 <img alt="../_images/encryption9.png" src="../_images/encryption9.png" />
 </div>
 </div>
-<div class="section" id="decrypting-encrypted-files">
-<h2>Decrypting Encrypted Files<a class="headerlink" href="#decrypting-encrypted-files" title="Permalink to this headline">¶</a></h2>
-<p>You have the option of changing your mind and disabling the Encryption app.
-Just click its Disable button on the Apps page, and when you go to your Files
-page you&#8217;ll see the yellow banner warning &#8220;Encryption was disabled but your
-files are still encrypted. Please go to your personal settings to decrypt your
-files&#8221;.</p>
+<div class="section" id="encrypting-external-mountpoints">
+<h2>Encrypting External Mountpoints<a class="headerlink" href="#encrypting-external-mountpoints" title="Permalink to this headline">¶</a></h2>
+<p>You and your users can encrypt individual external mountpoints. You must have
+external storage enabled on your Admin page, and enabled for your users (see
+<a class="reference internal" href="external_storage_configuration_gui.html"><em>Configuring External Storage (GUI)</em></a>).</p>
+<p>After setting up the external storage mountpoint, click the little gear icon at
+the right to expose the encryption menu. Encryption is enabled by default.</p>
 <div class="figure">
-<img alt="../_images/encryption4.png" src="../_images/encryption4.png" />
+<img alt="../_images/encryption13.png" src="../_images/encryption13.png" />
 </div>
-<p>Go to your Personal page and enter your password in the Encryption removal form, and your
-files will all be decrypted.</p>
-<div class="figure">
-<img alt="../_images/encryption5.png" src="../_images/encryption5.png" />
+<p>To disable encryption, click the gear icon and un-check <strong>encryption</strong>. Again,
+consider encrypting an external mountpoint to be permanent.</p>
 </div>
-<p>Your users will also have to follow this step to decrypt their files. If
-something goes wrong with decryption, click the <tt class="docutils literal"><span class="pre">Restore</span> <span class="pre">Encryption</span> <span class="pre">Keys</span></tt>
-button to re-encrypt your files, and then review your logfile to see what
-happened.</p>
-</div>
-<div class="section" id="enabling-a-file-recovery-key">
-<h2>Enabling a File Recovery Key<a class="headerlink" href="#enabling-a-file-recovery-key" title="Permalink to this headline">¶</a></h2>
-<p>If you lose your ownCloud password, then you lose access to your encrypted files. If one
-of your users loses their ownCloud password their files are unrecoverable. You cannot
-reset their password in the normal way; you&#8217;ll see a yellow banner warning &#8220;Please provide
-an admin recovery password, otherwise all user data will be lost&#8221;.</p>
+<div class="section" id="enabling-users-file-recovery-key">
+<h2>Enabling Users&#8217; File Recovery Key<a class="headerlink" href="#enabling-users-file-recovery-key" title="Permalink to this headline">¶</a></h2>
+<p>If you lose your ownCloud password, then you lose access to your encrypted
+files. If one of your users loses their ownCloud password their files are
+unrecoverable. You cannot reset their password in the normal way; you&#8217;ll see a
+yellow banner warning &#8220;Please provide an admin recovery password, otherwise all
+user data will be lost&#8221;.</p>
 <p>To avoid all this, create a Recovery Key. Go to the Encryption section of your
 Admin page and set a recovery key password.</p>
 <div class="figure">
-<img alt="../_images/encryption6.png" src="../_images/encryption6.png" />
+<img alt="../_images/encryption10.png" src="../_images/encryption10.png" />
 </div>
 <p>Then your users have the option of enabling password recovery on their Personal
 pages. If they do not do this, then the Recovery Key won&#8217;t work for them.</p>
 <div class="figure">
 <img alt="../_images/encryption7.png" src="../_images/encryption7.png" />
 </div>
-<p>For users who have enabled password recovery, give them a new password and recover access
-to their encrypted files by supplying the Recovery Key on the Users page.</p>
+<p>For users who have enabled password recovery, give them a new password and
+recover access to their encrypted files by supplying the Recovery Key on the
+Users page.</p>
 <div class="figure">
 <img alt="../_images/encryption8.png" src="../_images/encryption8.png" />
 </div>
+<p>You may change your Recovery Key password.</p>
+<div class="figure">
+<img alt="../_images/encryption12.png" src="../_images/encryption12.png" />
+</div>
+</div>
+<div class="section" id="occ-encryption-commands">
+<h2>occ Encryption Commands<a class="headerlink" href="#occ-encryption-commands" title="Permalink to this headline">¶</a></h2>
+<p>You may also use the <tt class="docutils literal"><span class="pre">occ</span></tt> command to perform encryption operations.</p>
+<p>Get the current status of encryption and loaded encryption module:</p>
+<div class="highlight-python"><pre>occ encryption:status</pre>
+</div>
+<p>This is equivalent to checking <strong>Enable server-side encryption</strong> on your Admin
+page:</p>
+<div class="highlight-python"><pre>occ encryption:enable</pre>
+</div>
+<p>List the available encryption modules:</p>
+<div class="highlight-python"><pre>occ encryption:list-modules</pre>
+</div>
+<p>Select a different default Encryption module:</p>
+<div class="highlight-python"><pre>occ encryption:set-default-module [Module ID].</pre>
+</div>
+<p>The [module ID] is taken from the <tt class="docutils literal"><span class="pre">encryption:list-modules</span></tt> command.</p>
+<p>See <a class="reference internal" href="../configuration_server/occ_command.html"><em>Using the occ Command</em></a> for detailed instructions on
+using <tt class="docutils literal"><span class="pre">occ</span></tt>.</p>
 </div>
 <div class="section" id="files-not-encrypted">
 <h2>Files Not Encrypted<a class="headerlink" href="#files-not-encrypted" title="Permalink to this headline">¶</a></h2>
 <p>Only the data in your files is encrypted, and not the filenames or folder
 structures. These files are never encrypted:</p>
 <ul class="simple">
-<li>Old files in the trash bin.</li>
-<li>Image thumbnails from the Gallery app.</li>
-<li>Previews from the Files app.</li>
-<li>The search index from the full text search app.</li>
+<li>Old files in the trash bin</li>
+<li>Image thumbnails from the Gallery app</li>
+<li>Previews from the Files app</li>
+<li>The search index from the full text search app</li>
 <li>Third-party app data</li>
 </ul>
 <p>There may be other files that are not encrypted; only files that are exposed to
@@ -325,12 +356,101 @@ third-party storage providers are guaranteed to be encrypted.</p>
 </div>
 <div class="section" id="ldap-and-other-external-user-back-ends">
 <h2>LDAP and Other External User Back-ends<a class="headerlink" href="#ldap-and-other-external-user-back-ends" title="Permalink to this headline">¶</a></h2>
-<p>If you use an external user back-end, such as an LDAP or Samba server, and you change a
-user&#8217;s password on the back-end, the user will be prompted to change their ownCloud login
-to match on their next ownCloud login. The user will need both their old and new passwords
-to do this. If you have enabled the Recovery Key then you can change a user&#8217;s password in
-the ownCloud Users panel to match their back-end password, and then, of course, notify the
-user and give them their new password.</p>
+<p>If you use an external user back-end, such as an LDAP or Samba server, and you
+change a user&#8217;s password on the back-end, the user will be prompted to change
+their ownCloud login to match on their next ownCloud login. The user will need
+both their old and new passwords to do this. If you have enabled the Recovery
+Key then you can change a user&#8217;s password in the ownCloud Users panel to match
+their back-end password, and then, of course, notify the user and give them
+their new password.</p>
+</div>
+<div class="section" id="upgrading-from-owncloud-8-0">
+<span id="upgrading"></span><h2>Upgrading From ownCloud 8.0<a class="headerlink" href="#upgrading-from-owncloud-8-0" title="Permalink to this headline">¶</a></h2>
+<p>The encryption backend has changed in ownCloud 8.1, so you must take some
+additional steps to migrate encryption correctly. If you do not follow these
+steps you may not be able to access your files.</p>
+<p>Before you start your upgrade, put your ownCloud server into
+<tt class="docutils literal"><span class="pre">maintenance:singleuser</span></tt> mode (See <a class="reference internal" href="../maintenance/enable_maintenance.html"><em>Maintenance Mode Configuration</em></a>.)
+You must do this to prevent users and sync clients from accessing files before
+you have completed your encryption migration.</p>
+<p>After your upgrade is complete, follow the steps in <a class="reference internal" href="#enable-encryption"><em>Enabling Encryption</em></a> to
+enable the new encryption system. Then click the <strong>Start Migration</strong> button on
+your Admin page to migrate your encryption keys, or use the <tt class="docutils literal"><span class="pre">occ</span></tt> command. We
+strongly recommend using the <tt class="docutils literal"><span class="pre">occ</span></tt> command; the <strong>Start Migration</strong> button is
+for admins who do not have access to the console, for example installations on
+shared hosting. This example is for Debian/Ubuntu Linux:</p>
+<div class="highlight-python"><pre>$ sudo -u www-data php occ encryption:migrate-keys</pre>
+</div>
+<p>This example is for Red Hat/CentOS/Fedora Linux:</p>
+<div class="highlight-python"><pre>$ sudo -u apache php occ encryption:migrate-keys</pre>
+</div>
+<p>You must run <tt class="docutils literal"><span class="pre">occ</span></tt> as your HTTP user; see
+<a class="reference internal" href="../configuration_server/occ_command.html"><em>Using the occ Command</em></a>.</p>
+<p>When you are finished, take your ownCloud server out of
+<tt class="docutils literal"><span class="pre">maintenance:singleuser</span></tt> mode.</p>
+</div>
+<div class="section" id="where-keys-are-stored">
+<h2>Where Keys are Stored<a class="headerlink" href="#where-keys-are-stored" title="Permalink to this headline">¶</a></h2>
+<p>All of your encryption keys are stored in your ownCloud <tt class="file docutils literal"><span class="pre">data/</span></tt>
+directory. When you run the migration command your old keys are backed up in
+your data directory:</p>
+<dl class="docutils">
+<dt>Backup for system-wide keys:</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/encryption_migration_backup_&lt;timestamp&gt;</span></tt></dd>
+<dt>Backup for user-specific keys:</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/&lt;user&gt;/encryption_migration_backup_&lt;timestamp&gt;</span></tt></dd>
+</dl>
+<p>Both backup directories contain the keys in the old file structure. This is the
+old file structure for ownCloud 8.0:</p>
+<dl class="docutils">
+<dt>Private public share key:</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/pubShare_&lt;public-share-key-id&gt;.privateKey</span></tt></dd>
+<dt>Private recovery key:</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/recovery_&lt;recovery-key-id&gt;.privateKey</span></tt></dd>
+<dt>Public keys of all users:</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/public_keys</span></tt></dd>
+<dt>File keys for system-wide mount points:</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/keys/&lt;file_path&gt;/&lt;filename&gt;/fileKey</span></tt></dd>
+<dt>Share keys for files on a system-wide mount point (one key for the owner and one key for each user with access to the file):</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/keys/&lt;file_path&gt;/&lt;filename&gt;/&lt;user&gt;.shareKey</span></tt></dd>
+<dt>Users&#8217; private keys:</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/&lt;user&gt;/files_encryption/&lt;user&gt;.privateKey</span></tt></dd>
+<dt>File keys for files owned by the user:</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/&lt;user&gt;/files_encryption/keys/&lt;file_path&gt;/&lt;filename&gt;/fileKey</span></tt></dd>
+<dt>Share keys for files owned by the user (one key for the owner and one key for each user with access to the file):</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/&lt;user&gt;/files_encryption/keys/&lt;file_path&gt;/&lt;filename&gt;/&lt;user&gt;.shareKey</span></tt></dd>
+</dl>
+<p>This is the new file structure for ownCloud 8.1:</p>
+<dl class="docutils">
+<dt>Private public share key:</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/OC_DEFAULT_MODULE/pubShare_&lt;public-share-key-id&gt;.</span>
+<span class="pre">privateKey</span></tt></dd>
+<dt>Private recovery key:</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/OC_DEFAULT_MODULE/recovery_&lt;recovery-key-id&gt;.</span>
+<span class="pre">privateKey</span></tt></dd>
+<dt>Public public share key:</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/OC_DEFAULT_MODULE/pubShare_&lt;public-share-key-id&gt;.</span>
+<span class="pre">publicKey</span></tt></dd>
+<dt>Public recovery key:</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/OC_DEFAULT_MODULE/recovery_&lt;recovery-key-id&gt;.</span>
+<span class="pre">publicKey</span></tt></dd>
+<dt>File keys for system-wide mount points:</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/keys/&lt;file_path&gt;/&lt;filename&gt;/OC_DEFAULT_MODULE/</span>
+<span class="pre">fileKey</span></tt></dd>
+<dt>Share keys for files on a system-wide mount point (one key for the owner and one key for each user with access to the file):</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/keys/&lt;file_path&gt;/&lt;filename/OC_DEFAULT_MODULE/</span>
+<span class="pre">&lt;user&gt;.shareKey</span></tt></dd>
+<dt>Users&#8217; private keys:</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/&lt;user&gt;/files_encryption/OC_DEFAULT_MODULE/&lt;user&gt;.privateKey</span></tt></dd>
+<dt>Users&#8217; public keys:</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/&lt;user&gt;/files_encryption/OC_DEFAULT_MODULE/&lt;user&gt;.publicKey</span></tt></dd>
+<dt>File keys for files owned by the user:</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/&lt;user&gt;/files_encryption/keys/&lt;file_path&gt;/&lt;filename&gt;/</span>
+<span class="pre">OC_DEFAULT_MODULE/fileKey</span></tt></dd>
+<dt>Share keys for files owned by the user (one key for the owner and one key for each user with access to the file):</dt>
+<dd><tt class="file docutils literal"><span class="pre">data/&lt;user&gt;/files_encryption/keys/&lt;file_path&gt;/&lt;filename/</span>
+<span class="pre">OC_DEFAULT_MODULE/&lt;user&gt;</span> <span class="pre">.shareKey</span></tt></dd>
+</dl>
 </div>
 </div>
 

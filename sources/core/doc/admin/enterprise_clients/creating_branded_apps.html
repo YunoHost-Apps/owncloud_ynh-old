@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Creating Branded iOS and Android Apps (Enterprise Only) &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>Creating Branded Client Apps (Enterprise Only) &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,10 +27,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
-    <link rel="up" title="Creating Custom and Branded ownCloud Clients (ES only)" href="index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="up" title="Creating Branded ownCloud Clients (ES only)" href="index.html" />
     <link rel="next" title="Custom Client Download Repositories" href="custom_client_repos.html" />
-    <link rel="prev" title="Creating Custom and Branded ownCloud Clients (ES only)" href="index.html" />
+    <link rel="prev" title="Creating Branded ownCloud Clients (ES only)" href="index.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -114,9 +114,9 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
@@ -129,19 +129,21 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="index.html">Creating Custom and Branded ownCloud Clients (ES only)</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="">Creating Branded iOS and Android Apps (Enterprise Only)</a><ul>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Creating Branded ownCloud Clients (ES only)</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="">Creating Branded Client Apps (Enterprise Only)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#creating-branded-android-or-desktop-sync-clients">Creating Branded Android or Desktop Sync Clients</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#creating-apps-for-ios">Creating Apps for iOS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#building-a-branded-ios-app">Building a Branded iOS App</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#building-an-android-app-or-desktop-sync-client">Building an Android App or Desktop Sync Client</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="custom_client_repos.html">Custom Client Download Repositories</a></li>
 <li class="toctree-l2"><a class="reference internal" href="publishing_android_app.html">Distributing Your Branded Android App (Enterprise Only)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../enterprise_ios_app/index.html">Creating Branded iOS Apps (ES only)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
 </ul>
 
 								</ul>
@@ -154,34 +156,38 @@
 				<div class="span9">
 					<div class="page-content">
 						
-  <div class="section" id="creating-branded-ios-and-android-apps-enterprise-only">
-<h1>Creating Branded iOS and Android Apps (Enterprise Only)<a class="headerlink" href="#creating-branded-ios-and-android-apps-enterprise-only" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="creating-branded-client-apps-enterprise-only">
+<h1>Creating Branded Client Apps (Enterprise Only)<a class="headerlink" href="#creating-branded-client-apps-enterprise-only" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>ownBrander is an ownCloud build service that is exclusive to Enterprise
-customers, for easily creating your own branded Android and iOS
-ownCloud sync apps, and your own branded ownCloud desktop sync client. Customers
-will access the app through their <a class="reference external" href="https://customer.owncloud.com">customer.owncloud.com</a> accounts.</p>
+customers for creating branded Android and iOS ownCloud sync apps, and branded
+ownCloud desktop sync clients. You build your apps with the
+ownBrander app on your <a class="reference external" href="https://customer.owncloud.com/owncloud/">Customer.owncloud.com</a> accounts, and within 24-48 hours
+they are loaded into your account.</p>
 <img alt="../_images/ownbrander-1.png" src="../_images/ownbrander-1.png" />
-<p>You need to supply your own artwork, and the wizard tells you the required
-dimensions. To build Android and Desktop sync apps you need to supply only your
-own custom branded artwork. Building any iOS app requires custom branded
-artwork plus obtaining and installing a P12 certificate and provisioning
-profile from Apple (see <a class="reference internal" href="#creating-ios-apps"><em>Creating Apps for iOS</em></a>). Then, to create the app, you
-follow a simple graphical wizard.</p>
+</div>
+<div class="section" id="building-a-branded-ios-app">
+<h2>Building a Branded iOS App<a class="headerlink" href="#building-a-branded-ios-app" title="Permalink to this headline">¶</a></h2>
+<p>Building a branded iOS app requires your own artwork, and you must create a
+P12 certificate and three provisioning profiles for digitally signing your
+apps. Apple has strict and specific requirements, so it is a lengthy
+process. See <a class="reference internal" href="../enterprise_ios_app/index.html"><em>Creating Branded iOS Apps (ES only)</em></a> for a complete tutorial.</p>
+</div>
+<div class="section" id="building-an-android-app-or-desktop-sync-client">
+<h2>Building an Android App or Desktop Sync Client<a class="headerlink" href="#building-an-android-app-or-desktop-sync-client" title="Permalink to this headline">¶</a></h2>
+<p>To build Android and Desktop sync apps you need to supply your own artwork,
+and the ownBrander wizard details the required specifications.</p>
 <img alt="../_images/ownbrander-2.png" src="../_images/ownbrander-2.png" />
 <p>When you have completed the wizard, you will either get messages warning you
 of any items that need to be corrected, or a success message:</p>
 <img alt="../_images/ownbrander-3.png" src="../_images/ownbrander-3.png" />
-<p>And then when your new app is built, which may take up to 48 hours, it will
+<p>When your new app is built, which may take up to 48 hours, it will
 appear in your personal folder on the Files page.</p>
 <img alt="../_images/ownbrander-4.png" src="../_images/ownbrander-4.png" />
-</div>
-<div class="section" id="creating-branded-android-or-desktop-sync-clients">
-<h2>Creating Branded Android or Desktop Sync Clients<a class="headerlink" href="#creating-branded-android-or-desktop-sync-clients" title="Permalink to this headline">¶</a></h2>
 <p>You can play around with ownBrander and create some apps for testing and
 learning. The Android and Desktop sync clients are the easiest to use for
-testing, and we&#8217;ll walk through creating an Android app. You need a just a few
+testing, so we&#8217;ll walk through creating an Android app. You need a just a few
 images, and the wizard tells you their required dimensions. They must be the
 exact specified dimensions, preferably in PNG format.</p>
 <p>First, start on the Common tab and enter your application name and the URL to
@@ -218,17 +224,9 @@ and upload an icon.</p>
 <p>Now you are finished. Click the Generate Android App button, and you will
 either see a success message, or an error message telling you what you need to
 fix. When all of your options are entered correctly and you click the Generate
-Android App button, it takes up to 48 hours for your app to appear on your
-Files page.</p>
+Android App button, it takes up to 48 hours for your app to appear in your
+<a class="reference external" href="https://customer.owncloud.com/owncloud/">Customer.owncloud.com</a> account.</p>
 <img alt="../_images/ownbrander-12.png" src="../_images/ownbrander-12.png" />
-</div>
-<div class="section" id="creating-apps-for-ios">
-<span id="creating-ios-apps"></span><h2>Creating Apps for iOS<a class="headerlink" href="#creating-apps-for-ios" title="Permalink to this headline">¶</a></h2>
-<p>You need many more images for creating an iOS app so that your app works on all
-iPhones and iPads in both portrait and landscape modes. You also need an Apple
-developer account, and a <a class="reference external" href="https://developer.apple.com/library/ios/documentation/Security/Conceptual/CertKeyTrustProgGuide/iPhone_Tasks/iPhone_Tasks.html#//apple_ref/doc/uid/TP40001358-CH208-SW13">P12 certificate and provisioning profile</a>. We will install these for you on your
-<a class="reference external" href="https://customer.owncloud.com">customer.owncloud.com</a> account. Contact <a class="reference external" href="mailto:branding&#37;&#52;&#48;owncloud&#46;com">branding<span>&#64;</span>owncloud<span>&#46;</span>com</a> if you
-have any questions.</p>
 </div>
 </div>
 

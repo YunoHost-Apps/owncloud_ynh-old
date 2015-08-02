@@ -84,54 +84,18 @@ class UserSettings {
 	 * @return bool|int
 	 */
 	public function getDefaultSetting($method, $type) {
-		if ($method == 'setting') {
-			if ($type == 'batchtime') {
+		if ($method === 'setting') {
+			if ($type === 'batchtime') {
 				return 3600;
-			} else if ($type == 'self') {
+			} else if ($type === 'self') {
 				return true;
-			} else if ($type == 'selfemail') {
+			} else if ($type === 'selfemail') {
 				return false;
 			}
 		}
 
-		$settings = $this->getDefaultTypes($method);
+		$settings = $this->manager->getDefaultTypes($method);
 		return in_array($type, $settings);
-	}
-
-	/**
-	 * Get the default selection of types for a method
-	 *
-	 * @param string $method Should be one of 'stream' or 'email'
-	 * @return array Array of strings
-	 */
-	public function getDefaultTypes($method) {
-		$settings = array();
-		if ($method === 'stream') {
-			$settings[] = Data::TYPE_SHARE_CREATED;
-			$settings[] = Data::TYPE_SHARE_CHANGED;
-			$settings[] = Data::TYPE_SHARE_DELETED;
-//			$settings[] = Data::TYPE_SHARE_RESHARED;
-			$settings[] = Data::TYPE_SHARE_RESTORED;
-
-//			$settings[] = Data::TYPE_SHARE_DOWNLOADED;
-		}
-
-		if ($method === 'stream' || $method === 'email') {
-			$settings[] = Data::TYPE_SHARED;
-//			$settings[] = Data::TYPE_SHARE_EXPIRED;
-//			$settings[] = Data::TYPE_SHARE_UNSHARED;
-//
-//			$settings[] = Data::TYPE_SHARE_UPLOADED;
-//
-//			$settings[] = Data::TYPE_STORAGE_QUOTA_90;
-//			$settings[] = Data::TYPE_STORAGE_FAILURE;
-		}
-
-		// Allow other apps to add notification types to the default setting
-		$additionalSettings = $this->manager->getDefaultTypes($method);
-		$settings = array_merge($settings, $additionalSettings);
-
-		return $settings;
 	}
 
 	/**
@@ -179,7 +143,7 @@ class UserSettings {
 		}
 
 		// Get the batch time setting from the database
-		if ($method == 'email') {
+		if ($method === 'email') {
 			$potentialUsers = $this->config->getUserValueForUsers('activity', 'notify_setting_batchtime', array_keys($filteredUsers));
 			foreach ($potentialUsers as $user => $value) {
 				$filteredUsers[$user] = $value;
@@ -194,7 +158,7 @@ class UserSettings {
 		// we add all users that didn't set the preference yet.
 		if ($this->getDefaultSetting($method, $type)) {
 			foreach ($users as $user) {
-				if ($method == 'stream') {
+				if ($method === 'stream') {
 					$filteredUsers[$user] = true;
 				} else {
 					$filteredUsers[$user] = $this->getDefaultSetting('setting', 'batchtime');

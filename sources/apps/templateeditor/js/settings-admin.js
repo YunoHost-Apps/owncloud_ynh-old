@@ -1,6 +1,9 @@
 $(document).ready(function() {
 
 	var loadTemplate = function (theme, template) {
+		if (template === '' || theme === '') {
+			return;
+		}
 		//the first time we load a template show the editor
 		$( '#mailTemplateSettings .templateEditor:hidden').show(400);
 		$( '#mailTemplateSettings .templateEditor + .actions:hidden').show(400);

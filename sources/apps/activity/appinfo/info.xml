@@ -19,8 +19,7 @@
 	<types>
 		<filesystem/>
 	</types>
-	<ocsid>166038</ocsid>
 	<dependencies>
-		<owncloud min-version="8" />
+		<owncloud min-version="8.1" />
 	</dependencies>
 </info>

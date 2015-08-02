@@ -1,22 +1,39 @@
 <?php
 /**
- * Copyright (c) 2015 Lukas Reschke <lukas@owncloud.com>
- * This file is licensed under the Affero General Public License version 3 or
- * later.
- * See the COPYING-README file.
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 
 namespace OCA\Files\Controller;
 
 use OC\Files\FileInfo;
 use OCP\AppFramework\Http;
-use OC\Preview;
 use OCP\Files\NotFoundException;
 use OCP\Files\StorageNotAvailableException;
 use Test\TestCase;
 use OCP\IRequest;
 use OCA\Files\Service\TagService;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\IPreview;
+use OCP\Image;
 
 /**
  * Class ApiController
@@ -30,6 +47,8 @@ class ApiControllerTest extends TestCase {
 	private $request;
 	/** @var TagService */
 	private $tagService;
+	/** @var IPreview */
+	private $preview;
 	/** @var ApiController */
 	private $apiController;
 
@@ -40,11 +59,15 @@ class ApiControllerTest extends TestCase {
 		$this->tagService = $this->getMockBuilder('\OCA\Files\Service\TagService')
 			->disableOriginalConstructor()
 			->getMock();
+		$this->preview = $this->getMockBuilder('\OCP\IPreview')
+			->disableOriginalConstructor()
+			->getMock();
 
 		$this->apiController = new ApiController(
 			$this->appName,
 			$this->request,
-			$this->tagService
+			$this->tagService,
+			$this->preview
 		);
 	}
 
@@ -217,7 +240,7 @@ class ApiControllerTest extends TestCase {
 			->with('/path.txt', ['Tag1', 'Tag2'])
 			->will($this->throwException(new NotFoundException('My error message')));
 
-		$expected = new DataResponse('My error message', Http::STATUS_NOT_FOUND);
+		$expected = new DataResponse(['message' => 'My error message'], Http::STATUS_NOT_FOUND);
 		$this->assertEquals($expected, $this->apiController->updateFileTags('/path.txt', ['Tag1', 'Tag2']));
 	}
 
@@ -227,7 +250,7 @@ class ApiControllerTest extends TestCase {
 			->with('/path.txt', ['Tag1', 'Tag2'])
 			->will($this->throwException(new StorageNotAvailableException('My error message')));
 
-		$expected = new DataResponse('My error message', Http::STATUS_SERVICE_UNAVAILABLE);
+		$expected = new DataResponse(['message' => 'My error message'], Http::STATUS_SERVICE_UNAVAILABLE);
 		$this->assertEquals($expected, $this->apiController->updateFileTags('/path.txt', ['Tag1', 'Tag2']));
 	}
 
@@ -237,7 +260,32 @@ class ApiControllerTest extends TestCase {
 			->with('/path.txt', ['Tag1', 'Tag2'])
 			->will($this->throwException(new \Exception('My error message')));
 
-		$expected = new DataResponse('My error message', Http::STATUS_NOT_FOUND);
+		$expected = new DataResponse(['message' => 'My error message'], Http::STATUS_NOT_FOUND);
 		$this->assertEquals($expected, $this->apiController->updateFileTags('/path.txt', ['Tag1', 'Tag2']));
+	}
+
+	public function testGetThumbnailInvalidSize() {
+		$expected = new DataResponse(['message' => 'Requested size must be numeric and a positive value.'], Http::STATUS_BAD_REQUEST);
+		$this->assertEquals($expected, $this->apiController->getThumbnail(0, 0, ''));
+	}
+
+	public function testGetThumbnailInvaidImage() {
+		$this->preview->expects($this->once())
+			->method('createPreview')
+			->with('files/unknown.jpg', 10, 10, true)
+			->willReturn(new Image);
+		$expected = new DataResponse(['message' => 'File not found.'], Http::STATUS_NOT_FOUND);
+		$this->assertEquals($expected, $this->apiController->getThumbnail(10, 10, 'unknown.jpg'));
+	}
+
+	public function testGetThumbnail() {
+		$this->preview->expects($this->once())
+			->method('createPreview')
+			->with('files/known.jpg', 10, 10, true)
+			->willReturn(new Image(\OC::$SERVERROOT.'/tests/data/testimage.jpg'));
+
+		$ret = $this->apiController->getThumbnail(10, 10, 'known.jpg');
+
+		$this->assertEquals(Http::STATUS_OK, $ret->getStatus());
 	}
 }

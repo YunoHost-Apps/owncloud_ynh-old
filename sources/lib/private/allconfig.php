@@ -1,9 +1,27 @@
 <?php
 /**
- * Copyright (c) 2013 Bart Visscher <bartv@thisnet.nl>
- * This file is licensed under the Affero General Public License version 3 or
- * later.
- * See the COPYING-README file.
+ * @author Bart Visscher <bartv@thisnet.nl>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Vincent Petry <pvince81@owncloud.com>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
 
@@ -161,6 +179,7 @@ class AllConfig implements \OCP\IConfig {
 		\OC::$server->getAppConfig()->deleteApp($appName);
 	}
 
+
 	/**
 	 * Set a user defined value
 	 *
@@ -234,7 +253,7 @@ class AllConfig implements \OCP\IConfig {
 	 * @param string $userId the userId of the user that we want to store the value under
 	 * @param string $appName the appName that we stored the value under
 	 * @param string $key the key under which the value is being stored
-	 * @param string $default the default value to be returned if the value isn't set
+	 * @param mixed $default the default value to be returned if the value isn't set
 	 * @return string
 	 */
 	public function getUserValue($userId, $appName, $key, $default = '') {

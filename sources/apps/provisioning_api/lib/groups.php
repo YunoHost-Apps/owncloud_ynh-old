@@ -1,25 +1,23 @@
 <?php
-
 /**
- * ownCloud
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Tom Needham <tom@owncloud.com>
  *
- * @copyright (C) 2014 ownCloud, Inc.
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * @author Tom <tom@owncloud.com>
- * @author Bart Visscher
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
 
@@ -47,14 +45,14 @@ class Groups{
 	public static function getGroup($parameters){
 		// Check the group exists
 		if(!OC_Group::groupExists($parameters['groupid'])){
-			return new OC_OCS_Result(null, \OC_API::RESPOND_NOT_FOUND, 'The requested group could not be found');
+			return new OC_OCS_Result(null, \OCP\API::RESPOND_NOT_FOUND, 'The requested group could not be found');
 		}
 		// Check subadmin has access to this group
 		if(\OC_User::isAdminUser(\OC_User::getUser())
 			|| in_array($parameters['groupid'], \OC_SubAdmin::getSubAdminsGroups(\OC_User::getUser()))){
 			return new OC_OCS_Result(array('users' => OC_Group::usersInGroup($parameters['groupid'])));
 		} else {
-			return new OC_OCS_Result(null, \OC_API::RESPOND_UNAUTHORISED, 'User does not have access to specified group');
+			return new OC_OCS_Result(null, \OCP\API::RESPOND_UNAUTHORISED, 'User does not have access to specified group');
 		}
 	}
 

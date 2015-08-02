@@ -466,11 +466,11 @@
 			var $el = $(e.target).closest('.crumb'),
 				$targetDir = $el.data('dir');
 
-			if ($targetDir !== undefined) {
+			if ($targetDir !== undefined && e.which === 1) {
 				e.preventDefault();
 				this.changeDirectory($targetDir);
+				this.updateSearch();
 			}
-			this.updateSearch();
 		},
 
 		/**
@@ -635,6 +635,8 @@
 		 * @param filesArray array of file data (map)
 		 */
 		setFiles: function(filesArray) {
+			var self = this;
+
 			// detach to make adding multiple rows faster
 			this.files = filesArray;
 
@@ -655,7 +657,10 @@
 			this.updateSelectionSummary();
 			$(window).scrollTop(0);
 
-			this.$fileList.trigger(jQuery.Event("updated"));
+			this.$fileList.trigger(jQuery.Event('updated'));
+			_.defer(function() {
+				self.$el.closest('#app-content').trigger(jQuery.Event('apprendered'));
+			});
 		},
 		/**
 		 * Creates a new table row element using the given file data.
@@ -743,8 +748,12 @@
 			// from here work on the display name
 			name = fileData.displayName || name;
 
+			// show hidden files (starting with a dot) completely in gray
+			if(name.indexOf('.') === 0) {
+				basename = '';
+				extension = name;
 			// split extension from filename for non dirs
-			if (type !== 'dir' && name.indexOf('.') !== -1) {
+			} else if (type !== 'dir' && name.indexOf('.') !== -1) {
 				basename = name.substr(0, name.lastIndexOf('.'));
 				extension = name.substr(name.lastIndexOf('.'));
 			} else {
@@ -941,7 +950,8 @@
 			if (fileData.isPreviewAvailable) {
 				var iconDiv = filenameTd.find('.thumbnail');
 				// lazy load / newly inserted td ?
-				if (options.animate) {
+				// the typeof check ensures that the default value of animate is true
+				if (typeof(options.animate) === 'undefined' || !!options.animate) {
 					this.lazyLoadPreview({
 						path: path + '/' + fileData.name,
 						mime: mime,
@@ -1009,6 +1019,7 @@
 		 * @param changeUrl true to also update the URL, false otherwise (default)
 		 */
 		_setCurrentDir: function(targetDir, changeUrl) {
+			targetDir = targetDir.replace(/\\/g, '/');
 			var previousDir = this.getCurrentDirectory(),
 				baseDir = OC.basename(targetDir);
 
@@ -1112,6 +1123,22 @@
 				return false;
 			}
 
+			// Firewall Blocked request?
+			if (result.status === 403) {
+				// Go home
+				this.changeDirectory('/');
+				OC.Notification.show(t('files', 'This operation is forbidden'));
+				return false;
+			}
+
+			// Did share service die or something else fail?
+			if (result.status === 500) {
+				// Go home
+				this.changeDirectory('/');
+				OC.Notification.show(t('files', 'This directory is unavailable, please check the logs or contact the administrator'));
+				return false;
+			}
+
 			if (result.status === 404) {
 				// go back home
 				this.changeDirectory('/');
@@ -1162,8 +1189,10 @@
 			if (!urlSpec.y) {
 				urlSpec.y = this.$table.data('preview-y') || 36;
 			}
-			urlSpec.y *= window.devicePixelRatio;
 			urlSpec.x *= window.devicePixelRatio;
+			urlSpec.y *= window.devicePixelRatio;
+			urlSpec.x = Math.floor(urlSpec.x);
+			urlSpec.y = Math.floor(urlSpec.y);
 			urlSpec.forceIcon = 0;
 			return OC.generateUrl('/core/preview.png?') + $.param(urlSpec);
 		},
@@ -1613,7 +1642,8 @@
 		updateEmptyContent: function() {
 			var permissions = this.getDirectoryPermissions();
 			var isCreatable = (permissions & OC.PERMISSION_CREATE) !== 0;
-			this.$el.find('#emptycontent').toggleClass('hidden', !isCreatable || !this.isEmpty);
+			this.$el.find('#emptycontent').toggleClass('hidden', !this.isEmpty);
+			this.$el.find('#emptycontent .uploadmessage').toggleClass('hidden', !isCreatable || !this.isEmpty);
 			this.$el.find('#filestable thead th').toggleClass('hidden', this.isEmpty);
 		},
 		/**
@@ -1694,11 +1724,13 @@
 			if (this._filter && this.fileSummary.summary.totalDirs + this.fileSummary.summary.totalFiles === 0) {
 				this.$el.find('#filestable thead th').addClass('hidden');
 				this.$el.find('#emptycontent').addClass('hidden');
+				$('#searchresults').addClass('filter-empty');
 				if ( $('#searchresults').length === 0 || $('#searchresults').hasClass('hidden') ) {
 					this.$el.find('.nofilterresults').removeClass('hidden').
 						find('p').text(t('files', "No entries in this folder match '{filter}'", {filter:this._filter},  null, {'escape': false}));
 				}
 			} else {
+				$('#searchresults').removeClass('filter-empty');
 				this.$el.find('#filestable thead th').toggleClass('hidden', this.isEmpty);
 				if (!this.$el.find('.mask').exists()) {
 					this.$el.find('#emptycontent').toggleClass('hidden', !this.isEmpty);

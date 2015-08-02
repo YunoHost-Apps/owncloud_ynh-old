@@ -1,24 +1,34 @@
 <?php
 /**
- * ownCloud
+ * @author Bart Visscher <bartv@thisnet.nl>
+ * @author Björn Schießle <schiessle@owncloud.com>
+ * @author Frank Karlitschek <frank@owncloud.org>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Michael Gapczynski <GapczynskiM@gmail.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Philipp Kapfer <philipp.kapfer@gmx.at>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Vincent Petry <pvince81@owncloud.com>
  *
- * @author Michael Gapczynski
- * @copyright 2012 Michael Gapczynski mtgap@owncloud.com
- * @copyright 2014 Vincent Petry <pvince81@owncloud.com>
- * @copyright 2014 Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 
 /**
@@ -31,6 +41,10 @@ class OC_Mount_Config {
 	const MOUNT_TYPE_GROUP = 'group';
 	const MOUNT_TYPE_USER = 'user';
 	const MOUNT_TYPE_PERSONAL = 'personal';
+
+	// getBackendStatus return types
+	const STATUS_SUCCESS = 0;
+	const STATUS_ERROR = 1;
 
 	// whether to skip backend test (for unit tests, as this static class is not mockable)
 	public static $skipTest = false;
@@ -142,15 +156,7 @@ class OC_Mount_Config {
 	public static function getAbsoluteMountPoints($user) {
 		$mountPoints = array();
 
-		$datadir = \OC_Config::getValue("datadirectory", \OC::$SERVERROOT . "/data");
-		$mount_file = \OC_Config::getValue("mount_file", $datadir . "/mount.json");
-
 		$backends = self::getBackends();
-
-		//move config file to it's new position
-		if (is_file(\OC::$SERVERROOT . '/config/mount.json')) {
-			rename(\OC::$SERVERROOT . '/config/mount.json', $mount_file);
-		}
 
 		// Load system mount points
 		$mountConfig = self::readData();
@@ -279,12 +285,21 @@ class OC_Mount_Config {
 	/**
 	 * fill in the correct values for $user
 	 *
-	 * @param string $user
-	 * @param string $input
+	 * @param string $user user value
+	 * @param string|array $input
 	 * @return string
 	 */
 	private static function setUserVars($user, $input) {
-		return str_replace('$user', $user, $input);
+		if (is_array($input)) {
+			foreach ($input as &$value) {
+				if (is_string($value)) {
+					$value = str_replace('$user', $user, $value);
+				}
+			}
+		} else {
+			$input = str_replace('$user', $user, $input);
+		}
+		return $input;
 	}
 
 
@@ -354,9 +369,17 @@ class OC_Mount_Config {
 						'backend' => $backends[$mount['class']]['backend'],
 						'priority' => $mount['priority'],
 						'options' => $mount['options'],
-						'applicable' => array('groups' => array($group), 'users' => array()),
-						'status' => self::getBackendStatus($mount['class'], $mount['options'], false)
+						'applicable' => array('groups' => array($group), 'users' => array())
 					);
+					if (isset($mount['id'])) {
+						$config['id'] = (int)$mount['id'];
+					}
+					if (isset($mount['storage_id'])) {
+						$config['storage_id'] = (int)$mount['storage_id'];
+					}
+					if (isset($mount['mountOptions'])) {
+						$config['mountOptions'] = $mount['mountOptions'];
+					}
 					$hash = self::makeConfigHash($config);
 					// If an existing config exists (with same class, mountpoint and options)
 					if (isset($system[$hash])) {
@@ -388,9 +411,17 @@ class OC_Mount_Config {
 						'backend' => $backends[$mount['class']]['backend'],
 						'priority' => $mount['priority'],
 						'options' => $mount['options'],
-						'applicable' => array('groups' => array(), 'users' => array($user)),
-						'status' => self::getBackendStatus($mount['class'], $mount['options'], false)
+						'applicable' => array('groups' => array(), 'users' => array($user))
 					);
+					if (isset($mount['id'])) {
+						$config['id'] = (int)$mount['id'];
+					}
+					if (isset($mount['storage_id'])) {
+						$config['storage_id'] = (int)$mount['storage_id'];
+					}
+					if (isset($mount['mountOptions'])) {
+						$config['mountOptions'] = $mount['mountOptions'];
+					}
 					$hash = self::makeConfigHash($config);
 					// If an existing config exists (with same class, mountpoint and options)
 					if (isset($system[$hash])) {
@@ -424,14 +455,23 @@ class OC_Mount_Config {
 					$mount['class'] = '\OC\Files\Storage\\' . substr($mount['class'], 15);
 				}
 				$mount['options'] = self::decryptPasswords($mount['options']);
-				$personal[] = array(
+				$config = array(
 					'class' => $mount['class'],
 					// Remove '/uid/files/' from mount point
 					'mountpoint' => substr($mountPoint, strlen($uid) + 8),
 					'backend' => $backEnds[$mount['class']]['backend'],
-					'options' => $mount['options'],
-					'status' => self::getBackendStatus($mount['class'], $mount['options'], true)
+					'options' => $mount['options']
 				);
+				if (isset($mount['id'])) {
+					$config['id'] = (int)$mount['id'];
+				}
+				if (isset($mount['storage_id'])) {
+					$config['storage_id'] = (int)$mount['storage_id'];
+				}
+				if (isset($mount['mountOptions'])) {
+					$config['mountOptions'] = $mount['mountOptions'];
+				}
+				$personal[] = $config;
 			}
 		}
 		return $personal;
@@ -442,11 +482,11 @@ class OC_Mount_Config {
 	 *
 	 * @param string $class backend class name
 	 * @param array $options backend configuration options
-	 * @return bool true if the connection succeeded, false otherwise
+	 * @return int see self::STATUS_*
 	 */
-	private static function getBackendStatus($class, $options, $isPersonal) {
+	public static function getBackendStatus($class, $options, $isPersonal) {
 		if (self::$skipTest) {
-			return true;
+			return self::STATUS_SUCCESS;
 		}
 		foreach ($options as &$option) {
 			$option = self::setUserVars(OCP\User::getUser(), $option);
@@ -454,13 +494,14 @@ class OC_Mount_Config {
 		if (class_exists($class)) {
 			try {
 				$storage = new $class($options);
-				return $storage->test($isPersonal);
+				if ($storage->test($isPersonal)) {
+					return self::STATUS_SUCCESS;
+				}
 			} catch (Exception $exception) {
 				\OCP\Util::logException('files_external', $exception);
-				return false;
 			}
 		}
-		return false;
+		return self::STATUS_ERROR;
 	}
 
 	/**
@@ -474,6 +515,8 @@ class OC_Mount_Config {
 	 * @param bool $isPersonal Personal or system mount point i.e. is this being called from the personal or admin page
 	 * @param int|null $priority Mount point priority, null for default
 	 * @return boolean
+	 *
+	 * @deprecated use StoragesService#addStorage() instead
 	 */
 	public static function addMountPoint($mountPoint,
 										 $class,
@@ -537,7 +580,7 @@ class OC_Mount_Config {
 		self::writeData($isPersonal ? OCP\User::getUser() : null, $mountPoints);
 
 		$result = self::getBackendStatus($class, $classOptions, $isPersonal);
-		if ($result && $isNew) {
+		if ($result === self::STATUS_SUCCESS && $isNew) {
 			\OC_Hook::emit(
 				\OC\Files\Filesystem::CLASSNAME,
 				\OC\Files\Filesystem::signal_create_mount,
@@ -558,6 +601,8 @@ class OC_Mount_Config {
 	 * @param string $applicable User or group to remove mount from
 	 * @param bool $isPersonal Personal or system mount point
 	 * @return bool
+	 *
+	 * @deprecated use StoragesService#removeStorage() instead
 	 */
 	public static function removeMountPoint($mountPoint, $mountType, $applicable, $isPersonal = false) {
 		// Verify that the mount point applies for the current user
@@ -622,23 +667,15 @@ class OC_Mount_Config {
 	 * @param string|null $user If not null, personal for $user, otherwise system
 	 * @return array
 	 */
-	private static function readData($user = null) {
-		$parser = new \OC\ArrayParser();
+	public static function readData($user = null) {
 		if (isset($user)) {
-			$phpFile = OC_User::getHome($user) . '/mount.php';
 			$jsonFile = OC_User::getHome($user) . '/mount.json';
 		} else {
-			$phpFile = OC::$SERVERROOT . '/config/mount.php';
 			$datadir = \OC_Config::getValue('datadirectory', \OC::$SERVERROOT . '/data/');
 			$jsonFile = \OC_Config::getValue('mount_file', $datadir . '/mount.json');
 		}
 		if (is_file($jsonFile)) {
 			$mountPoints = json_decode(file_get_contents($jsonFile), true);
-			if (is_array($mountPoints)) {
-				return $mountPoints;
-			}
-		} elseif (is_file($phpFile)) {
-			$mountPoints = $parser->parsePHP(file_get_contents($phpFile));
 			if (is_array($mountPoints)) {
 				return $mountPoints;
 			}
@@ -652,7 +689,7 @@ class OC_Mount_Config {
 	 * @param string|null $user If not null, personal for $user, otherwise system
 	 * @param array $data Mount points
 	 */
-	private static function writeData($user, $data) {
+	public static function writeData($user, $data) {
 		if (isset($user)) {
 			$file = OC_User::getHome($user) . '/mount.json';
 		} else {
@@ -769,7 +806,7 @@ class OC_Mount_Config {
 	 * @param array $options mount options
 	 * @return array updated options
 	 */
-	private static function encryptPasswords($options) {
+	public static function encryptPasswords($options) {
 		if (isset($options['password'])) {
 			$options['password_encrypted'] = self::encryptPassword($options['password']);
 			// do not unset the password, we want to keep the keys order
@@ -785,7 +822,7 @@ class OC_Mount_Config {
 	 * @param array $options mount options
 	 * @return array updated options
 	 */
-	private static function decryptPasswords($options) {
+	public static function decryptPasswords($options) {
 		// note: legacy options might still have the unencrypted password in the "password" field
 		if (isset($options['password_encrypted'])) {
 			$options['password'] = self::decryptPassword($options['password_encrypted']);
@@ -871,12 +908,14 @@ class OC_Mount_Config {
 	 * This is mostly used to find out whether configurations
 	 * are the same.
 	 */
-	private static function makeConfigHash($config) {
+	public static function makeConfigHash($config) {
 		$data = json_encode(
 			array(
 				'c' => $config['class'],
 				'm' => $config['mountpoint'],
-				'o' => $config['options']
+				'o' => $config['options'],
+				'p' => isset($config['priority']) ? $config['priority'] : -1,
+				'mo' => isset($config['mountOptions']) ? $config['mountOptions'] : [],
 			)
 		);
 		return hash('md5', $data);

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Hardening and Security Guidance &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>Hardening and Security Guidance &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
     <link rel="up" title="ownCloud Server Configuration" href="index.html" />
     <link rel="next" title="Server Tuning &amp; Performance Tips" href="performance_tuning.html" />
     <link rel="prev" title="Logging Configuration" href="logging_configuration.html" />
@@ -114,13 +114,14 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">ownCloud Server Configuration</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="security_setup_warnings.html">Warnings on Admin Page</a></li>
 <li class="toctree-l2"><a class="reference internal" href="occ_command.html">Using the occ Command</a></li>
 <li class="toctree-l2"><a class="reference internal" href="activity_configuration.html">Configuring the Activity App</a></li>
 <li class="toctree-l2"><a class="reference internal" href="antivirus_configuration.html">Configuring the ClamAV Antivirus Scanner</a></li>
@@ -128,11 +129,13 @@
 <li class="toctree-l2"><a class="reference internal" href="background_jobs_configuration.html">Defining Background Jobs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="config_sample_php_parameters.html">Config.php Parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="email_configuration.html">Email Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="external_sites.html">Linking External Sites</a></li>
 <li class="toctree-l2"><a class="reference internal" href="js_css_asset_management_configuration.html">JavaScript and CSS Asset Management</a></li>
 <li class="toctree-l2"><a class="reference internal" href="knowledgebase_configuration.html">Knowledge Base Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="language_configuration.html">Language Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="logging_configuration.html">Logging Configuration</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Hardening and Security Guidance</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#limit-on-password-length">Limit on Password Length</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#operating-system">Operating system</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#deployment">Deployment</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#use-https">Use HTTPS</a></li>
@@ -154,9 +157,10 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Custom and Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
 </ul>
 
 								</ul>
@@ -184,6 +188,14 @@ run ownCloud Server on Apache2 on a Linux environment.</p>
 critical security-relevant options are missing. However, it is still up to
 the server administrator to review and maintain system security.</p>
 </div>
+<div class="section" id="limit-on-password-length">
+<h2>Limit on Password Length<a class="headerlink" href="#limit-on-password-length" title="Permalink to this headline">¶</a></h2>
+<p>ownCloud uses the bcrypt algorithm and thus for security and performance reasons,
+e.g. Denial of Service as CPU demand increases exponentially, it only verifies
+the first 72 characters of passwords. This applies to all passwords that you use
+in ownCloud: user passwords, passwords on link shares, and passwords on external
+shares.</p>
+</div>
 <div class="section" id="operating-system">
 <h2>Operating system<a class="headerlink" href="#operating-system" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="give-php-read-accesss-to-dev-urandom">
@@ -193,14 +205,26 @@ mixer to generate cryptographically secure pseudo-random numbers. This means
 that when generating a random number ownCloud will request multiple random
 numbers from different sources and derive from these the final random number.</p>
 <p>The random number generation also tries to request random numbers from
-<tt class="docutils literal"><span class="pre">/dev/urandom</span></tt>, thus it is highly recommended to configure your setup in such
-a way that PHP is able to read random data from it.</p>
+<tt class="docutils literal"><span class="pre">/dev/urandom</span></tt>, thus it is <strong>highly recommended</strong> to configure your setup in
+such a way that PHP is able to read random data from it. Not granting PHP access
+to <tt class="docutils literal"><span class="pre">/dev/urandom</span></tt> may make your random numbers predictable and may make your
+ownCloud instance insecure as attackers might predict password reset tokens or
+other sensitive data.</p>
 </div>
 <div class="section" id="enable-hardening-modules-such-as-selinux">
 <h3>Enable hardening modules such as SELinux<a class="headerlink" href="#enable-hardening-modules-such-as-selinux" title="Permalink to this headline">¶</a></h3>
 <p>It is highly recommend to enable hardening modules such as SELinux where
 possible. See <a class="reference internal" href="../installation/selinux_configuration.html"><em>SELinux Configuration</em></a> to learn more about
 SELinux.</p>
+</div>
+<div class="section" id="use-newest-php-version">
+<h3>Use newest PHP version<a class="headerlink" href="#use-newest-php-version" title="Permalink to this headline">¶</a></h3>
+<p>Some security features and hardenings in PHP are only available in the latest
+PHP release and thus it is recommended to run the latest PHP version. You can
+find the latest version on <a class="reference external" href="http://php.net/">http://php.net/</a>.</p>
+<p>Some Linux distributions backport security patches, but this is not reliable as
+some get missed, or the backports are years late. It is always best to run the
+latest PHP version.</p>
 </div>
 </div>
 <div class="section" id="deployment">
@@ -257,11 +281,15 @@ able to get bypassed.</p>
 VirtualHost file:</p>
 <div class="highlight-none"><div class="highlight"><pre>&lt;VirtualHost *:443&gt;
    ServerName cloud.owncloud.com
-   Header always add Strict-Transport-Security &quot;max-age=15768000&quot;
+   Header always add Strict-Transport-Security &quot;max-age=15768000; includeSubDomains; preload&quot;
 &lt;/VirtualHost&gt;
 </pre></div>
 </div>
-<p>It shall be noted that this requires that the <tt class="docutils literal"><span class="pre">mod_headers</span></tt> extension to be installed.</p>
+<p>Be aware that above policy will also apply for all subdomains, if you don&#8217;t
+have HTTPS properly configured on all subdomains you mut remove the <tt class="docutils literal"><span class="pre">includeSubdomains</span></tt>
+part.</p>
+<p>Furthermore it shall be noted that this requires that the <tt class="docutils literal"><span class="pre">mod_headers</span></tt>
+extension is installed.</p>
 </div>
 <div class="section" id="proper-ssl-configuration">
 <h3>Proper SSL configuration<a class="headerlink" href="#proper-ssl-configuration" title="Permalink to this headline">¶</a></h3>
@@ -321,14 +349,15 @@ Same-Origin-Policy.</p>
 <p>However, these headers are added by the applications code in PHP and thus not
 served on static resources and rely on the fact that there is no way to bypass
 the intended response code path.</p>
-<p>For optimal security administrators are encouraged to serve these basic HTTP
-headers by the web server to enforce them on response. To do this Apache has to
-be configured to use the <tt class="docutils literal"><span class="pre">.htaccess</span></tt> file as well as the following Apache
+<p>For optimal security, administrators are encouraged to serve these basic HTTP
+headers by the web server to enforce them on response.</p>
+<p>Apache has to be configured to use the <tt class="docutils literal"><span class="pre">.htaccess</span></tt> file as well as the following Apache
 modules needs to be enabled:</p>
 <ul class="simple">
 <li>mod_headers</li>
 <li>mod_env</li>
 </ul>
+<p>For nginx, please see the nginx configuration example <em class="xref std std-ref">nginx_configuration_example</em></p>
 <p>Administrators can verify whether this security change is active by accessing a
 static resource served by the web server and verify that above mentioned
 security headers are shipped.</p>

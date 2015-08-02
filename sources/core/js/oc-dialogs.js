@@ -138,7 +138,7 @@ var OCdialogs = {
 	 * @param title dialog title
 	 * @param callback which will be triggered when user presses Choose
 	 * @param multiselect whether it should be possible to select multiple files
-	 * @param mimetypeFilter mimetype to filter by
+	 * @param mimetypeFilter mimetype to filter by - directories will always be included
 	 * @param modal make the dialog modal
 	*/
 	filepicker:function(title, callback, multiselect, mimetypeFilter, modal) {
@@ -207,7 +207,8 @@ var OCdialogs = {
 
 			self.$filePicker.ocdialog({
 				closeOnEscape: true,
-				width: (4/5)*$(document).width(),
+				// max-width of 600
+				width: Math.min((4/5)*$(document).width(), 600),
 				height: 420,
 				modal: modal,
 				buttons: buttonlist,
@@ -380,9 +381,17 @@ var OCdialogs = {
 				$replacementDiv.find('.mtime').text(formatDate(replacement.lastModifiedDate));
 			}
 			var path = original.directory + '/' +original.name;
-			Files.lazyLoadPreview(path, original.mimetype, function(previewpath){
-				$originalDiv.find('.icon').css('background-image','url('+previewpath+')');
-			}, 96, 96, original.etag);
+			var urlSpec = {
+				file:		path,
+				x:		96,
+				y:		96,
+				c:		original.etag,
+				forceIcon:	0
+			};
+			var previewpath = OC.generateUrl('/core/preview.png?') + $.param(urlSpec);
+			// Escaping single quotes
+			previewpath = previewpath.replace(/'/g, "%27")
+			$originalDiv.find('.icon').css({"background-image":   "url('" + previewpath + "')"});
 			getCroppedPreview(replacement).then(
 				function(path){
 					$replacementDiv.find('.icon').css('background-image','url(' + path + ')');
@@ -693,7 +702,7 @@ var OCdialogs = {
 		}
 		$template.octemplate({
 			dir: '',
-			name: '&nbsp;&nbsp;&nbsp;&nbsp;' // Ugly but works ;)
+			name: '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' // Ugly but works ;)
 		}, {escapeFunction: null}).addClass('home svg').prependTo(this.$dirTree);
 	},
 	/**

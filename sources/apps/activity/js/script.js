@@ -11,7 +11,7 @@ $(function(){
 				return;
 			}
 
-			this.navigation.find('a[data-navigation=' + this.filter + ']').removeClass('active');
+			this.navigation.find('a[data-navigation=' + this.filter + ']').parent().removeClass('active');
 			this.currentPage = 0;
 
 			this.filter = filter;
@@ -19,12 +19,12 @@ $(function(){
 
 			OCActivity.InfinitScrolling.container.animate({ scrollTop: 0 }, 'slow');
 			OCActivity.InfinitScrolling.container.children().remove();
-			$('#no_activities').addClass('hidden');
+			$('#emptycontent').addClass('hidden');
 			$('#no_more_activities').addClass('hidden');
 			$('#loading_activities').removeClass('hidden');
 			OCActivity.InfinitScrolling.ignoreScroll = false;
 
-			this.navigation.find('a[data-navigation=' + filter + ']').addClass('active');
+			this.navigation.find('a[data-navigation=' + filter + ']').parent().addClass('active');
 
 			OCActivity.InfinitScrolling.prefill();
 		}
@@ -50,7 +50,13 @@ $(function(){
 							OCActivity.InfinitScrolling.prefill();
 						} else if (OCActivity.Filter.currentPage == 1) {
 							// First page is empty - No activities :(
-							$('#no_activities').removeClass('hidden');
+							var $emptyContent = $('#emptycontent');
+							$emptyContent.removeClass('hidden');
+							if (OCActivity.Filter.filter == 'all') {
+								$emptyContent.find('p').text(t('activity', 'This stream will show events like additions, changes & shares'));
+							} else {
+								$emptyContent.find('p').text(t('activity', 'There are no events for this filter'));
+							}
 							$('#loading_activities').addClass('hidden');
 						} else {
 							// Page is empty - No more activities :(
@@ -116,8 +122,7 @@ $(function(){
 			});
 
 			$(parentElement).find('.tooltip').tipsy({
-				gravity:	's',
-				fade:		true
+				gravity: 'n'
 			});
 		}
 	};
@@ -136,8 +141,8 @@ $(function(){
 		} else {
 			$('#rssurl').addClass('hidden');
 		}
-		$.post(OC.generateUrl('/apps/activity/settings/feed'), 'enable=' + this.checked, function(data) {
-			$('#rssurl').val(data.data.rsslink);
+		$.post(OC.generateUrl('/apps/activity/settings/feed'), 'enable=' + this.checked, function(response) {
+			$('#rssurl').val(response.data.rsslink);
 		});
 	});
 

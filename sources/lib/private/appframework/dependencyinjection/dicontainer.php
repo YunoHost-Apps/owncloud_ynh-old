@@ -1,23 +1,27 @@
 <?php
-
 /**
- * ownCloud - App Framework
+ * @author Bernhard Posselt <dev@bernhard-posselt.com>
+ * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Thomas Tanghus <thomas@tanghus.net>
  *
- * @author Bernhard Posselt
- * @copyright 2012 Bernhard Posselt <dev@bernhard-posselt.com>
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
 
@@ -28,6 +32,7 @@ use OC;
 use OC\AppFramework\Http;
 use OC\AppFramework\Http\Request;
 use OC\AppFramework\Http\Dispatcher;
+use OC\AppFramework\Http\Output;
 use OC\AppFramework\Core\API;
 use OC\AppFramework\Middleware\MiddlewareDispatcher;
 use OC\AppFramework\Middleware\Security\SecurityMiddleware;
@@ -37,7 +42,6 @@ use OC\AppFramework\Utility\SimpleContainer;
 use OC\AppFramework\Utility\TimeFactory;
 use OC\AppFramework\Utility\ControllerMethodReflector;
 use OCP\AppFramework\IApi;
-use OCP\AppFramework\QueryException;
 use OCP\AppFramework\IAppContainer;
 use OCP\AppFramework\Middleware;
 use OCP\IServerContainer;
@@ -58,6 +62,17 @@ class DIContainer extends SimpleContainer implements IAppContainer {
 		$this['AppName'] = $appName;
 		$this['urlParams'] = $urlParams;
 
+		// aliases
+		$this->registerService('appName', function($c) {
+			return $c->query('AppName');
+		});
+		$this->registerService('webRoot', function($c) {
+			return $c->query('WebRoot');
+		});
+		$this->registerService('userId', function($c) {
+			return $c->query('UserId');
+		});
+
 		/**
 		 * Core services
 		 */
@@ -67,6 +82,10 @@ class DIContainer extends SimpleContainer implements IAppContainer {
 
 		$this->registerService('OCP\\App\\IAppManager', function($c) {
 			return $this->getServer()->getAppManager();
+		});
+
+		$this->registerService('OCP\\AppFramework\\Http\\IOutput', function($c){
+			return new Output();
 		});
 
 		$this->registerService('OCP\\IAvatarManager', function($c) {
@@ -272,7 +291,8 @@ class DIContainer extends SimpleContainer implements IAppContainer {
 		$this->registerService('CORSMiddleware', function($c) {
 			return new CORSMiddleware(
 				$c['Request'],
-				$c['ControllerMethodReflector']
+				$c['ControllerMethodReflector'],
+				$c['OCP\IUserSession']
 			);
 		});
 
@@ -287,8 +307,8 @@ class DIContainer extends SimpleContainer implements IAppContainer {
 		$middleWares = &$this->middleWares;
 		$this->registerService('MiddlewareDispatcher', function($c) use (&$middleWares) {
 			$dispatcher = new MiddlewareDispatcher();
-			$dispatcher->registerMiddleware($c['SecurityMiddleware']);
 			$dispatcher->registerMiddleware($c['CORSMiddleware']);
+			$dispatcher->registerMiddleware($c['SecurityMiddleware']);
 
 			foreach($middleWares as $middleWare) {
 				$dispatcher->registerMiddleware($c[$middleWare]);

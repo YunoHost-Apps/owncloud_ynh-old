@@ -3,7 +3,7 @@ Table of Contents
 =================
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
      
     index 
     release_notes
@@ -22,12 +22,11 @@ Enterprise Subscription Only
 ----------------------------
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
     enterprise_installation/index
     enterprise_clients/index
-    enterprise_external_storage/index
+    enterprise_external_storage/index   
     enterprise_user_management/index
+    enterprise_files_drop/index
     
-..    uncomment this when the app is released and page is published    
-..    enterprise_files_drop/index

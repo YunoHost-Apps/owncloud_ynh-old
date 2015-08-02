@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Config.php Parameters &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>Config.php Parameters &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
     <link rel="up" title="ownCloud Server Configuration" href="index.html" />
     <link rel="next" title="Email Configuration" href="email_configuration.html" />
     <link rel="prev" title="Defining Background Jobs" href="background_jobs_configuration.html" />
@@ -114,13 +114,14 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">ownCloud Server Configuration</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="security_setup_warnings.html">Warnings on Admin Page</a></li>
 <li class="toctree-l2"><a class="reference internal" href="occ_command.html">Using the occ Command</a></li>
 <li class="toctree-l2"><a class="reference internal" href="activity_configuration.html">Configuring the Activity App</a></li>
 <li class="toctree-l2"><a class="reference internal" href="antivirus_configuration.html">Configuring the ClamAV Antivirus Scanner</a></li>
@@ -148,6 +149,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="email_configuration.html">Email Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="external_sites.html">Linking External Sites</a></li>
 <li class="toctree-l2"><a class="reference internal" href="js_css_asset_management_configuration.html">JavaScript and CSS Asset Management</a></li>
 <li class="toctree-l2"><a class="reference internal" href="knowledgebase_configuration.html">Knowledge Base Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="language_configuration.html">Language Configuration</a></li>
@@ -167,9 +169,10 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Custom and Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
 </ul>
 
 								</ul>
@@ -189,6 +192,13 @@
 ownCloud. This document provides a more detailed reference. Many options are
 configurable on your Admin page, so it is usually not necessary to edit
 <tt class="docutils literal"><span class="pre">config/config.php</span></tt>.</p>
+<p>ownCloud supports loading configuration parameters from multiple files.
+You can add arbitrary files ending with <tt class="file docutils literal"><span class="pre">.config.php</span></tt> in the <tt class="file docutils literal"><span class="pre">config/</span></tt>
+directory, for example you could place your email server configuration
+in <tt class="file docutils literal"><span class="pre">email.config.php</span></tt>. This allows you to easily create and manage
+custom configurations, or to divide a large complex configuration file
+into a set of smaller files. These custom files are not overwritten by
+ownCloud, and the values in these files take precedence over <tt class="file docutils literal"><span class="pre">config.php</span></tt>.</p>
 <div class="section" id="default-parameters">
 <h2>Default Parameters<a class="headerlink" href="#default-parameters" title="Permalink to this headline">¶</a></h2>
 <p>These parameters are configured by the ownCloud installer, and are required
@@ -239,7 +249,6 @@ during installation and update, so you shouldn&#8217;t need to change it.</p>
 <li>mysql (MySQL/MariaDB)</li>
 <li>pgsql (PostgreSQL)</li>
 <li>oci (Oracle - Enterprise Edition Only)</li>
-<li>mssql (Microsoft SQL Server - Enterprise Edition Only)</li>
 </ul>
 </dd>
 </dl>
@@ -372,7 +381,7 @@ expressed in seconds.</p>
 </div>
 <p>Enable or disable session keep-alive when a user is logged in to the Web UI.</p>
 <p>Enabling this sends a &#8220;heartbeat&#8221; to the server to keep it from timing out.</p>
-<div class="highlight-python"><pre>'skeletondirectory' =&gt; '',</pre>
+<div class="highlight-python"><pre>'skeletondirectory' =&gt; '/path/to/owncloud/core/skeleton',</pre>
 </div>
 <p>The directory where the skeleton files are located. These files will be
 copied to the data directory of new users. Leave empty to not copy any
@@ -557,6 +566,40 @@ for logging.</p>
 </div>
 <p>Loglevel to start logging at. Valid values are: 0 = Debug, 1 = Info, 2 =
 Warning, 3 = Error. The default value is Warning.</p>
+<div class="highlight-python"><pre>'log.condition' =&gt; [
+        'shared_secret' =&gt; '57b58edb6637fe3059b3595cf9c41b9',
+        'users' =&gt; ['sample-user'],
+        'apps' =&gt; ['files'],
+],</pre>
+</div>
+<p>Log condition for log level increase based on conditions. Once one of these
+conditions is met, the required log level is set to debug. This allows to
+debug specific requests, users or apps</p>
+<dl class="docutils">
+<dt>Supported conditions:</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">shared_secret</span></tt>: if a request parameter with the name <cite>log_secret</cite> is set to</dt>
+<dd><p class="first last">this value the condition is met</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">users</span></tt>:  if the current request is done by one of the specified users,</dt>
+<dd><p class="first last">this condition is met</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">apps</span></tt>:   if the log message is invoked by one of the specified apps,</dt>
+<dd><p class="first last">this condition is met</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<p>Defaults to an empty array.</p>
 <div class="highlight-python"><pre>'logdateformat' =&gt; 'F d, Y H:i:s',</pre>
 </div>
 <p>This uses PHP.date formatting; see <a class="reference external" href="http://php.net/manual/en/function.date.php">http://php.net/manual/en/function.date.php</a></p>
@@ -574,11 +617,9 @@ debugging, as your logfile will become huge.</p>
 <div class="highlight-python"><pre>'cron.lockfile.location' =&gt; '',</pre>
 </div>
 <p>Location of the lock file for cron executions can be specified here.</p>
-<dl class="docutils">
-<dt>Default is within the tmp directory. The file is named in the following way</dt>
-<dd>owncloud-server-$INSTANCEID-cron.lock</dd>
-</dl>
-<p>where $INSTANCEID is the string specified in the instanceid field.
+<p>Default is within the tmp directory. The file is named in the following way:
+owncloud-server-$INSTANCEID-cron.lock
+where $INSTANCEID is the string specified in the instanceid field.
 Because the cron lock file is accessed in regular intervals, it may prevent
 enabled disk drives from spinning down. A different location for this file
 can solve such issues.</p>
@@ -807,6 +848,15 @@ with this name. <tt class="docutils literal"><span class="pre">.htaccess</span><
 </div>
 <p>The default cipher for encrypting files. Currently AES-128-CFB and
 AES-256-CFB are supported.</p>
+<div class="highlight-python"><pre>'minimum.supported.desktop.version' =&gt; '1.7.0',</pre>
+</div>
+<p>The minimum ownCloud desktop client version that will be allowed to sync with
+this server instance. All connections made from earlier clients will be denied
+by the server. Defaults to the minimum officially supported ownCloud version at
+the time of release of this server version.</p>
+<p>When changing this, note that older unsupported versions of the ownCloud desktop
+client may not function as expected, and could lead to permanent data loss for
+clients or other unexpected results.</p>
 </div>
 <div class="section" id="memory-caching-backend-configuration">
 <h2>Memory caching backend configuration<a class="headerlink" href="#memory-caching-backend-configuration" title="Permalink to this headline">¶</a></h2>
@@ -924,7 +974,6 @@ to be fetched in addition to any requested file.</p>
         'mysql',
         'pgsql',
         'oci',
-        'mssql'
 ),</pre>
 </div>
 <p>Database types that are supported for installation.</p>
@@ -935,7 +984,6 @@ to be fetched in addition to any requested file.</p>
 <li>mysql (MySQL)</li>
 <li>pgsql (PostgreSQL)</li>
 <li>oci (Oracle - Enterprise Edition Only)</li>
-<li>mssql (Microsoft SQL Server - Enterprise Edition Only)</li>
 </ul>
 </dd>
 </dl>
@@ -960,6 +1008,18 @@ lose this string there will be data corruption.</p>
 <p>Value represents the maximum filesize in megabytes
 Default is 10
 Set to -1 for no limit</p>
+<div class="highlight-python"><pre>'filelocking.enabled' =&gt; false,</pre>
+</div>
+<p>Enables transactional file locking.</p>
+<p>This is disabled by default as it is still beta.</p>
+<p>Prevents concurrent processes to access the same files
+at the same time. Can help prevent side effects that would
+be caused by concurrent operations.</p>
+<p>WARNING: BETA quality</p>
+<div class="highlight-python"><pre>'memcache.locking' =&gt; '\\OC\\Memcache\\Redis',</pre>
+</div>
+<p>Memory caching backend for file locking
+Because most memcache backends can clean values without warning using redis is recommended</p>
 <div class="highlight-python"><pre>'copied_sample_config' =&gt; true,</pre>
 </div>
 <p>This entry is just here to show a warning in case somebody copied the sample

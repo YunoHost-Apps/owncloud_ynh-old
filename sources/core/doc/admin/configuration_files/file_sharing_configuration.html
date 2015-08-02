@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>File Sharing &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>File Sharing &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
     <link rel="up" title="File Sharing and Management" href="index.html" />
     <link rel="next" title="Uploading big files &gt; 512MB" href="big_file_upload_configuration.html" />
     <link rel="prev" title="File Sharing and Management" href="index.html" />
@@ -114,9 +114,9 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">File Sharing and Management</a><ul class="current">
@@ -127,10 +127,11 @@
 <li class="toctree-l2"><a class="reference internal" href="big_file_upload_configuration.html">Uploading big files &gt; 512MB</a></li>
 <li class="toctree-l2"><a class="reference internal" href="collaborative_documents_configuration.html">Configuring the Collaborative Documents App</a></li>
 <li class="toctree-l2"><a class="reference internal" href="default_files_configuration.html">Providing Default Files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="encryption_configuration.html">Encryption Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="external_storage_configuration_gui.html">Configuring External Storage (GUI)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="external_storage_configuration.html">Configuring External Storage (Configuration File)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="encryption_configuration.html">Encryption Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="files_locking_enabling.html">Using the Files Locking App</a></li>
+<li class="toctree-l2"><a class="reference internal" href="files_locking_experimental.html">Experimental File Locking</a></li>
 <li class="toctree-l2"><a class="reference internal" href="federated_cloud_sharing_configuration.html">Configuring Federated Cloud Sharing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="previews_configuration.html">Previews Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="serving_static_files_configuration.html">Serving Static Files for Better Performance</a></li>
@@ -145,9 +146,10 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Custom and Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
 </ul>
 
 								</ul>
@@ -180,30 +182,46 @@ ownCloud users. You have control of a number of user permissions on file shares:
 <div class="figure">
 <img alt="../_images/sharing-admin.png" src="../_images/sharing-admin.png" />
 </div>
-<ul class="simple">
-<li>Check <tt class="docutils literal"><span class="pre">Allow</span> <span class="pre">apps</span> <span class="pre">to</span> <span class="pre">use</span> <span class="pre">the</span> <span class="pre">Share</span> <span class="pre">API</span></tt> to enable users to share files. If
-this is not checked, no users can create file shares</li>
-<li>Check <tt class="docutils literal"><span class="pre">Allow</span> <span class="pre">users</span> <span class="pre">to</span> <span class="pre">share</span> <span class="pre">via</span> <span class="pre">link</span></tt> to enable creating public shares for
+<ul>
+<li><p class="first">Check <tt class="docutils literal"><span class="pre">Allow</span> <span class="pre">apps</span> <span class="pre">to</span> <span class="pre">use</span> <span class="pre">the</span> <span class="pre">Share</span> <span class="pre">API</span></tt> to enable users to share files. If
+this is not checked, no users can create file shares</p>
+</li>
+<li><p class="first">Check <tt class="docutils literal"><span class="pre">Allow</span> <span class="pre">users</span> <span class="pre">to</span> <span class="pre">share</span> <span class="pre">via</span> <span class="pre">link</span></tt> to enable creating public shares for
 people who are not ownCloud users. This creates a hyperlink, just like a
 Web page, so your ownCloud server needs to be accessible to whoever you are
-sharing with</li>
-<li>Check <tt class="docutils literal"><span class="pre">Enforce</span> <span class="pre">password</span> <span class="pre">protection</span></tt> to force users to set a password on all
-public share links. This does not affect local user and group shares</li>
-<li>Check <tt class="docutils literal"><span class="pre">Allow</span> <span class="pre">public</span> <span class="pre">uploads</span></tt> to allow outside users to upload files to
-public shares</li>
-<li>Checking <tt class="docutils literal"><span class="pre">Set</span> <span class="pre">default</span> <span class="pre">expiration</span> <span class="pre">date</span></tt> sets a default expiration date on
-public shares, and checking <tt class="docutils literal"><span class="pre">Enforce</span> <span class="pre">expiration</span> <span class="pre">date</span></tt> makes it a requirement</li>
-<li>Check <tt class="docutils literal"><span class="pre">Allow</span> <span class="pre">resharing</span></tt> to enable users to re-share files shared with them</li>
-<li>Check <tt class="docutils literal"><span class="pre">Restrict</span> <span class="pre">users</span> <span class="pre">to</span> <span class="pre">only</span> <span class="pre">share</span> <span class="pre">with</span> <span class="pre">users</span> <span class="pre">in</span> <span class="pre">their</span> <span class="pre">groups</span></tt> to confine
-sharing within group memberships</li>
-<li>Check <tt class="docutils literal"><span class="pre">Allow</span> <span class="pre">users</span> <span class="pre">to</span> <span class="pre">send</span> <span class="pre">mail</span> <span class="pre">notification</span> <span class="pre">for</span> <span class="pre">shared</span> <span class="pre">files</span></tt> so that
+sharing with</p>
+</li>
+<li><p class="first">Check <tt class="docutils literal"><span class="pre">Enforce</span> <span class="pre">password</span> <span class="pre">protection</span></tt> to force users to set a password on all
+public share links. This does not affect local user and group shares</p>
+</li>
+<li><p class="first">Check <tt class="docutils literal"><span class="pre">Allow</span> <span class="pre">public</span> <span class="pre">uploads</span></tt> to allow outside users to upload files to
+public shares</p>
+</li>
+<li><p class="first">Checking <tt class="docutils literal"><span class="pre">Set</span> <span class="pre">default</span> <span class="pre">expiration</span> <span class="pre">date</span></tt> sets a default expiration date on
+public shares, and checking <tt class="docutils literal"><span class="pre">Enforce</span> <span class="pre">expiration</span> <span class="pre">date</span></tt> makes it a requirement</p>
+</li>
+<li><p class="first">Check <tt class="docutils literal"><span class="pre">Allow</span> <span class="pre">resharing</span></tt> to enable users to re-share files shared with them</p>
+</li>
+<li><p class="first">Check <tt class="docutils literal"><span class="pre">Restrict</span> <span class="pre">users</span> <span class="pre">to</span> <span class="pre">only</span> <span class="pre">share</span> <span class="pre">with</span> <span class="pre">users</span> <span class="pre">in</span> <span class="pre">their</span> <span class="pre">groups</span></tt> to confine
+sharing within group memberships</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This setting does not apply to the federated cloud sharing feature. If
+<a class="reference internal" href="federated_cloud_sharing_configuration.html"><em>federated cloud sharing</em></a> is
+enabled, users can still share items with any users on any instances
+(including the one they are on) via a remote share.</p>
+</div>
+</li>
+<li><p class="first">Check <tt class="docutils literal"><span class="pre">Allow</span> <span class="pre">users</span> <span class="pre">to</span> <span class="pre">send</span> <span class="pre">mail</span> <span class="pre">notification</span> <span class="pre">for</span> <span class="pre">shared</span> <span class="pre">files</span></tt> so that
 users can check &#8220;notify by email&#8221; when they create new file shares. This
 sends an email notification to everyone the file is shared with (everyone who
-has entered an email address on their Personal page)</li>
-<li>Check <tt class="docutils literal"><span class="pre">Exclude</span> <span class="pre">groups</span> <span class="pre">from</span> <span class="pre">sharing</span></tt> to prevent members of specific groups
+has entered an email address on their Personal page)</p>
+</li>
+<li><p class="first">Check <tt class="docutils literal"><span class="pre">Exclude</span> <span class="pre">groups</span> <span class="pre">from</span> <span class="pre">sharing</span></tt> to prevent members of specific groups
 from creating any file shares in those groups. When you check this, you&#8217;ll
 get a dropdown list of all your groups to choose from. Members of excluded
-groups can still receive shares, but not create any</li>
+groups can still receive shares, but not create any</p>
+</li>
 </ul>
 <p>This is how it looks when a user creates a public share with passwords and
 expiration dates required:</p>

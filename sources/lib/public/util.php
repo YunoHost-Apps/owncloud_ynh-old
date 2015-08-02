@@ -1,22 +1,40 @@
 <?php
 /**
- * ownCloud
+ * @author Arthur Schiwon <blizzz@owncloud.com>
+ * @author Bart Visscher <bartv@thisnet.nl>
+ * @author Björn Schießle <schiessle@owncloud.com>
+ * @author Frank Karlitschek <frank@owncloud.org>
+ * @author Georg Ehrke <georg@owncloud.com>
+ * @author itheiss <ingo.theiss@i-matrixx.de>
+ * @author Jens-Christian Fischer <jens-christian.fischer@switch.ch>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Michael Gapczynski <GapczynskiM@gmail.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Pellaeon Lin <nfsmwlin@gmail.com>
+ * @author Randolph Carter <RandolphCarter@fantasymail.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @author Stefan Herbrechtsmeier <stefan@herbrechtsmeier.net>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Thomas Tanghus <thomas@tanghus.net>
+ * @author Victor Dubiniuk <dubiniuk@owncloud.com>
+ * @author Vincent Petry <pvince81@owncloud.com>
  *
- * @author Frank Karlitschek
- * @copyright 2012 Frank Karlitschek frank@owncloud.org
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
 
@@ -33,6 +51,7 @@ use DateTimeZone;
 
 /**
  * This class provides different helper functions to make the life of a developer easier
+ * @since 4.0.0
  */
 class Util {
 	// consts for Logging
@@ -45,9 +64,30 @@ class Util {
 	/**
 	 * get the current installed version of ownCloud
 	 * @return array
+	 * @since 4.0.0
 	 */
 	public static function getVersion() {
 		return(\OC_Util::getVersion());
+	}
+	
+	/**
+	 * Set current update channel
+	 * @param string $channel
+	 * @since 8.1.0
+	 */
+	public static function setChannel($channel) {
+		//Flush timestamp to reload version.php
+		\OC::$server->getSession()->set('OC_Version_Timestamp', 0);
+		return \OC::$server->getAppConfig()->setValue('core', 'OC_Channel', $channel);
+	}
+	
+	/**
+	 * Get current update channel
+	 * @return string
+	 * @since 8.1.0
+	 */
+	public static function getChannel() {
+		return \OC_Util::getChannel();
 	}
 
 	/**
@@ -63,12 +103,41 @@ class Util {
 	 * @param string $ccaddress
 	 * @param string $ccname
 	 * @param string $bcc
+	 * @deprecated 8.1.0 Use \OCP\Mail\IMailer instead
+	 * @since 4.0.0
 	 */
-	public static function sendMail( $toaddress, $toname, $subject, $mailtext, $fromaddress, $fromname,
+	public static function sendMail($toaddress, $toname, $subject, $mailtext, $fromaddress, $fromname,
 		$html = 0, $altbody = '', $ccaddress = '', $ccname = '', $bcc = '') {
-		// call the internal mail class
-		\OC_MAIL::send($toaddress, $toname, $subject, $mailtext, $fromaddress, $fromname,
-			$html, $altbody, $ccaddress, $ccname, $bcc);
+		$mailer = \OC::$server->getMailer();
+		$message = $mailer->createMessage();
+		$message->setTo([$toaddress => $toname]);
+		$message->setSubject($subject);
+		$message->setPlainBody($mailtext);
+		$message->setFrom([$fromaddress => $fromname]);
+		if($html === 1) {
+			$message->setHTMLBody($altbody);
+		}
+
+		if($altbody === '') {
+			$message->setHTMLBody($mailtext);
+			$message->setPlainBody('');
+		} else {
+			$message->setHtmlBody($mailtext);
+			$message->setPlainBody($altbody);
+		}
+
+		if(!empty($ccaddress)) {
+			if(!empty($ccname)) {
+				$message->setCc([$ccaddress => $ccname]);
+			} else {
+				$message->setCc([$ccaddress]);
+			}
+		}
+		if(!empty($bcc)) {
+			$message->setBcc([$bcc]);
+		}
+
+		$mailer->send($message);
 	}
 
 	/**
@@ -76,6 +145,7 @@ class Util {
 	 * @param string $app
 	 * @param string $message
 	 * @param int $level
+	 * @since 4.0.0
 	 */
 	public static function writeLog( $app, $message, $level ) {
 		// call the internal log class
@@ -87,9 +157,11 @@ class Util {
 	 * @param string $app app name
 	 * @param \Exception $ex exception to log
 	 * @param int $level log level, defaults to \OCP\Util::FATAL
+	 * @since ....0.0 - parameter $level was added in 7.0.0
 	 */
 	public static function logException( $app, \Exception $ex, $level = \OCP\Util::FATAL ) {
 		$exception = array(
+			'Exception' => get_class($ex),
 			'Message' => $ex->getMessage(),
 			'Code' => $ex->getCode(),
 			'Trace' => $ex->getTraceAsString(),
@@ -103,6 +175,7 @@ class Util {
 	 * check if sharing is disabled for the current user
 	 *
 	 * @return boolean
+	 * @since 7.0.0
 	 */
 	public static function isSharingDisabledForUser() {
 		return \OC_Util::isSharingDisabledForUser();
@@ -113,6 +186,7 @@ class Util {
 	 * @param string $application
 	 * @param string|null $language
 	 * @return \OC_L10N
+	 * @since 6.0.0 - parameter $language was added in 8.0.0
 	 */
 	public static function getL10N($application, $language = null) {
 		return \OC::$server->getL10N($application, $language);
@@ -122,6 +196,7 @@ class Util {
 	 * add a css file
 	 * @param string $application
 	 * @param string $file
+	 * @since 4.0.0
 	 */
 	public static function addStyle( $application, $file = null ) {
 		\OC_Util::addStyle( $application, $file );
@@ -131,6 +206,7 @@ class Util {
 	 * add a javascript file
 	 * @param string $application
 	 * @param string $file
+	 * @since 4.0.0
 	 */
 	public static function addScript( $application, $file = null ) {
 		\OC_Util::addScript( $application, $file );
@@ -140,6 +216,7 @@ class Util {
 	 * Add a translation JS file
 	 * @param string $application application id
 	 * @param string $languageCode language code, defaults to the current locale
+	 * @since 8.0.0
 	 */
 	public static function addTranslations($application, $languageCode = null) {
 		\OC_Util::addTranslations($application, $languageCode);
@@ -152,6 +229,7 @@ class Util {
 	 * @param string $tag tag name of the element
 	 * @param array $attributes array of attributes for the element
 	 * @param string $text the text content for the element
+	 * @since 4.0.0
 	 */
 	public static function addHeader($tag, $attributes, $text=null) {
 		\OC_Util::addHeader($tag, $attributes, $text);
@@ -164,7 +242,8 @@ class Util {
 	 * @param DateTimeZone|string $timeZone where the given timestamp shall be converted to
 	 * @return string timestamp
 	 *
-	 * @deprecated Use \OC::$server->query('DateTimeFormatter') instead
+	 * @deprecated 8.0.0 Use \OC::$server->query('DateTimeFormatter') instead
+	 * @since 4.0.0
 	 */
 	public static function formatDate($timestamp, $dateOnly=false, $timeZone = null) {
 		return(\OC_Util::formatDate($timestamp, $dateOnly, $timeZone));
@@ -173,9 +252,12 @@ class Util {
 	/**
 	 * check if some encrypted files are stored
 	 * @return bool
+	 *
+	 * @deprecated 8.1.0 No longer required
+	 * @since 6.0.0
 	 */
 	public static function encryptedFiles() {
-		return \OC_Util::encryptedFiles();
+		return false;
 	}
 
 	/**
@@ -185,6 +267,7 @@ class Util {
 	 * @param array $args array with param=>value, will be appended to the returned url
 	 * 	The value of $args will be urlencoded
 	 * @return string the url
+	 * @since 4.0.0 - parameter $args was added in 4.5.0
 	 */
 	public static function linkToAbsolute( $app, $file, $args = array() ) {
 		return(\OC_Helper::linkToAbsolute( $app, $file, $args ));
@@ -194,6 +277,7 @@ class Util {
 	 * Creates an absolute url for remote use.
 	 * @param string $service id
 	 * @return string the url
+	 * @since 4.0.0
 	 */
 	public static function linkToRemote( $service ) {
 		return(\OC_Helper::linkToRemote( $service ));
@@ -203,6 +287,7 @@ class Util {
 	 * Creates an absolute url for public use
 	 * @param string $service id
 	 * @return string the url
+	 * @since 4.5.0
 	 */
 	public static function linkToPublic($service) {
 		return \OC_Helper::linkToPublic($service);
@@ -214,19 +299,23 @@ class Util {
 	 * @param array $parameters
 	 * @internal param array $args with param=>value, will be appended to the returned url
 	 * @return string the url
+	 * @deprecated 8.1.0 Use \OC::$server->getURLGenerator()->linkToRoute($route, $parameters)
+	 * @since 5.0.0
 	 */
 	public static function linkToRoute( $route, $parameters = array() ) {
 		return \OC_Helper::linkToRoute($route, $parameters);
 	}
 
 	/**
-	* Creates an url to the given app and file
-	* @param string $app app
-	* @param string $file file
-	* @param array $args array with param=>value, will be appended to the returned url
-	* 	The value of $args will be urlencoded
-	* @return string the url
-	*/
+	 * Creates an url to the given app and file
+	 * @param string $app app
+	 * @param string $file file
+	 * @param array $args array with param=>value, will be appended to the returned url
+	 * 	The value of $args will be urlencoded
+	 * @return string the url
+	 * @deprecated 8.1.0 Use \OC::$server->getURLGenerator()->linkTo($app, $file, $args)
+	 * @since 4.0.0 - parameter $args was added in 4.5.0
+	 */
 	public static function linkTo( $app, $file, $args = array() ) {
 		return(\OC_Helper::linkTo( $app, $file, $args ));
 	}
@@ -234,14 +323,17 @@ class Util {
 	/**
 	 * Returns the server host, even if the website uses one or more reverse proxy
 	 * @return string the server host
+	 * @deprecated 8.1.0 Use \OCP\IRequest::getServerHost
+	 * @since 4.0.0
 	 */
 	public static function getServerHost() {
-		return(\OC_Request::serverHost());
+		return \OC::$server->getRequest()->getServerHost();
 	}
 
 	/**
 	 * Returns the server host name without an eventual port number
 	 * @return string the server hostname
+	 * @since 5.0.0
 	 */
 	public static function getServerHostName() {
 		$host_name = self::getServerHost();
@@ -267,6 +359,7 @@ class Util {
 	 * If the configuration value 'mail_from_address' is set in
 	 * config.php, this value will override the $user_part that
 	 * is passed to this function
+	 * @since 5.0.0
 	 */
 	public static function getDefaultEmailAddress($user_part) {
 		$user_part = \OC_Config::getValue('mail_from_address', $user_part);
@@ -274,7 +367,8 @@ class Util {
 		$host_name = \OC_Config::getValue('mail_domain', $host_name);
 		$defaultEmailAddress = $user_part.'@'.$host_name;
 
-		if (\OC_Mail::validateAddress($defaultEmailAddress)) {
+		$mailer = \OC::$server->getMailer();
+		if ($mailer->validateMailAddress($defaultEmailAddress)) {
 			return $defaultEmailAddress;
 		}
 
@@ -285,25 +379,31 @@ class Util {
 	/**
 	 * Returns the server protocol. It respects reverse proxy servers and load balancers
 	 * @return string the server protocol
+	 * @deprecated 8.1.0 Use \OCP\IRequest::getServerProtocol
+	 * @since 4.5.0
 	 */
 	public static function getServerProtocol() {
-		return(\OC_Request::serverProtocol());
+		return \OC::$server->getRequest()->getServerProtocol();
 	}
 
 	/**
 	 * Returns the request uri, even if the website uses one or more reverse proxies
 	 * @return string the request uri
+	 * @deprecated 8.1.0 Use \OCP\IRequest::getRequestUri
+	 * @since 5.0.0
 	 */
 	public static function getRequestUri() {
-		return(\OC_Request::requestUri());
+		return \OC::$server->getRequest()->getRequestUri();
 	}
 
 	/**
 	 * Returns the script name, even if the website uses one or more reverse proxies
 	 * @return string the script name
+	 * @deprecated 8.1.0 Use \OCP\IRequest::getScriptName
+	 * @since 5.0.0
 	 */
 	public static function getScriptName() {
-		return(\OC_Request::scriptName());
+		return \OC::$server->getRequest()->getScriptName();
 	}
 
 	/**
@@ -311,15 +411,18 @@ class Util {
 	 * @param string $app app
 	 * @param string $image image name
 	 * @return string the url
+	 * @deprecated 8.1.0 Use \OC::$server->getURLGenerator()->imagePath($app, $image)
+	 * @since 4.0.0
 	 */
 	public static function imagePath( $app, $image ) {
-		return(\OC_Helper::imagePath( $app, $image ));
+		return \OC::$server->getURLGenerator()->imagePath($app, $image);
 	}
 
 	/**
 	 * Make a human file size (2048 to 2 kB)
 	 * @param int $bytes file size in bytes
 	 * @return string a human readable file size
+	 * @since 4.0.0
 	 */
 	public static function humanFileSize( $bytes ) {
 		return(\OC_Helper::humanFileSize( $bytes ));
@@ -331,6 +434,7 @@ class Util {
 	 * @return int a file size in bytes
 	 *
 	 * Inspired by: http://www.php.net/manual/en/function.filesize.php#92418
+	 * @since 4.0.0
 	 */
 	public static function computerFileSize( $str ) {
 		return(\OC_Helper::computerFileSize( $str ));
@@ -338,18 +442,20 @@ class Util {
 
 	/**
 	 * connects a function to a hook
-	 * @param string $signalclass class name of emitter
-	 * @param string $signalname name of signal
-	 * @param string $slotclass class name of slot
-	 * @param string $slotname name of slot
+	 *
+	 * @param string $signalClass class name of emitter
+	 * @param string $signalName name of signal
+	 * @param string|object $slotClass class name of slot
+	 * @param string $slotName name of slot
 	 * @return bool
 	 *
 	 * This function makes it very easy to connect to use hooks.
 	 *
 	 * TODO: write example
+	 * @since 4.0.0
 	 */
-	static public function connectHook( $signalclass, $signalname, $slotclass, $slotname ) {
-		return(\OC_Hook::connect( $signalclass, $signalname, $slotclass, $slotname ));
+	static public function connectHook($signalClass, $signalName, $slotClass, $slotName ) {
+		return(\OC_Hook::connect($signalClass, $signalName, $slotClass, $slotName ));
 	}
 
 	/**
@@ -360,6 +466,7 @@ class Util {
 	 * @return bool true if slots exists or false if not
 	 *
 	 * TODO: write example
+	 * @since 4.0.0
 	 */
 	static public function emitHook( $signalclass, $signalname, $params = array()) {
 		return(\OC_Hook::emit( $signalclass, $signalname, $params ));
@@ -368,6 +475,7 @@ class Util {
 	/**
 	 * Register an get/post call. This is important to prevent CSRF attacks
 	 * TODO: write example
+	 * @since 4.5.0
 	 */
 	public static function callRegister() {
 		return(\OC_Util::callRegister());
@@ -376,6 +484,7 @@ class Util {
 	/**
 	 * Check an ajax get/post call if the request token is valid. exit if not.
 	 * Todo: Write howto
+	 * @since 4.5.0
 	 */
 	public static function callCheck() {
 		\OC_Util::callCheck();
@@ -389,6 +498,7 @@ class Util {
 	 *
 	 * @param string|array $value
 	 * @return string|array an array of sanitized strings or a single sinitized string, depends on the input parameter.
+	 * @since 4.5.0
 	 */
 	public static function sanitizeHTML( $value ) {
 		return(\OC_Util::sanitizeHTML($value));
@@ -403,6 +513,7 @@ class Util {
 	 *
 	 * @param string $component part of URI to encode
 	 * @return string
+	 * @since 6.0.0
 	 */
 	public static function encodePath($component) {
 		return(\OC_Util::encodePath($component));
@@ -415,6 +526,7 @@ class Util {
 	 * @param int $case Either MB_CASE_UPPER or MB_CASE_LOWER (default)
 	 * @param string $encoding The encoding parameter is the character encoding. Defaults to UTF-8
 	 * @return array
+	 * @since 4.5.0
 	 */
 	public static function mb_array_change_key_case($input, $case = MB_CASE_LOWER, $encoding = 'UTF-8') {
 		return(\OC_Helper::mb_array_change_key_case($input, $case, $encoding));
@@ -429,6 +541,7 @@ class Util {
 	 * @param int $length Length of the part to be replaced
 	 * @param string $encoding The encoding parameter is the character encoding. Defaults to UTF-8
 	 * @return string
+	 * @since 4.5.0
 	 */
 	public static function mb_substr_replace($string, $replacement, $start, $length = null, $encoding = 'UTF-8') {
 		return(\OC_Helper::mb_substr_replace($string, $replacement, $start, $length, $encoding));
@@ -443,6 +556,7 @@ class Util {
 	 * @param string $encoding The encoding parameter is the character encoding. Defaults to UTF-8
 	 * @param int $count If passed, this will be set to the number of replacements performed.
 	 * @return string
+	 * @since 4.5.0
 	 */
 	public static function mb_str_replace($search, $replace, $subject, $encoding = 'UTF-8', &$count = null) {
 		return(\OC_Helper::mb_str_replace($search, $replace, $subject, $encoding, $count));
@@ -455,6 +569,7 @@ class Util {
 	 * @param string $needle the search string
 	 * @param int $index optional, only search this key name
 	 * @return mixed the key of the matching field, otherwise false
+	 * @since 4.5.0
 	 */
 	public static function recursiveArraySearch($haystack, $needle, $index = null) {
 		return(\OC_Helper::recursiveArraySearch($haystack, $needle, $index));
@@ -466,6 +581,7 @@ class Util {
 	 * @param string $dir the current folder where the user currently operates
 	 * @param int $free the number of bytes free on the storage holding $dir, if not set this will be received from the storage directly
 	 * @return int number of bytes representing
+	 * @since 5.0.0
 	 */
 	public static function maxUploadFilesize($dir, $free = null) {
 		return \OC_Helper::maxUploadFilesize($dir, $free);
@@ -475,6 +591,7 @@ class Util {
 	 * Calculate free space left within user quota
 	 * @param string $dir the current folder where the user currently operates
 	 * @return int number of bytes representing
+	 * @since 7.0.0
 	 */
 	public static function freeSpace($dir) {
 		return \OC_Helper::freeSpace($dir);
@@ -484,6 +601,7 @@ class Util {
 	 * Calculate PHP upload limit
 	 *
 	 * @return int number of bytes representing
+	 * @since 7.0.0
 	 */
 	public static function uploadLimit() {
 		return \OC_Helper::uploadLimit();
@@ -493,6 +611,8 @@ class Util {
 	 * Returns whether the given file name is valid
 	 * @param string $file file name to check
 	 * @return bool true if the file name is valid, false otherwise
+	 * @deprecated 8.1.0 use \OC\Files\View::verifyPath()
+	 * @since 7.0.0
 	 */
 	public static function isValidFileName($file) {
 		return \OC_Util::isValidFileName($file);
@@ -502,7 +622,8 @@ class Util {
 	 * Generates a cryptographic secure pseudo-random string
 	 * @param int $length of the random string
 	 * @return string
-	 * @deprecated Use \OC::$server->getSecureRandom()->getMediumStrengthGenerator()->generate($length); instead
+	 * @deprecated 8.0.0 Use \OC::$server->getSecureRandom()->getMediumStrengthGenerator()->generate($length); instead
+	 * @since 7.0.0
 	 */
 	public static function generateRandomBytes($length = 30) {
 		return \OC_Util::generateRandomBytes($length);
@@ -514,6 +635,7 @@ class Util {
 	 * @param string $b second string to compare
 	 * @return -1 if $b comes before $a, 1 if $a comes before $b
 	 * or 0 if the strings are identical
+	 * @since 7.0.0
 	 */
 	public static function naturalSortCompare($a, $b) {
 		return \OC\NaturalSort::getInstance()->compare($a, $b);
@@ -522,6 +644,7 @@ class Util {
 	/**
 	 * check if a password is required for each public link
 	 * @return boolean
+	 * @since 7.0.0
 	 */
 	public static function isPublicLinkPasswordRequired() {
 		return \OC_Util::isPublicLinkPasswordRequired();
@@ -530,6 +653,7 @@ class Util {
 	/**
 	 * check if share API enforces a default expire date
 	 * @return boolean
+	 * @since 8.0.0
 	 */
 	public static function isDefaultExpireDateEnforced() {
 		return \OC_Util::isDefaultExpireDateEnforced();
@@ -540,6 +664,7 @@ class Util {
 	 * Checks whether the current version needs upgrade.
 	 *
 	 * @return bool true if upgrade is needed, false otherwise
+	 * @since 7.0.0
 	 */
 	public static function needUpgrade() {
 		return \OC_Util::needUpgrade(\OC::$server->getConfig());

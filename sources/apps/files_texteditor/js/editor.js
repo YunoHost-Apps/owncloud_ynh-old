@@ -12,6 +12,8 @@ function setSyntaxMode(ext) {
 	filetype["clj"] = "clojure";
 	filetype["coffee"] = "coffee"; // coffescript can be compiled to javascript
 	filetype["coldfusion"] = "cfc";
+	filetype["cnf"] = "text";
+	filetype["conf"] = "text";
 	filetype["cpp"] = "c_cpp";
 	filetype["cs"] = "csharp";
 	filetype["css"] = "css";
@@ -50,6 +52,8 @@ function setSyntaxMode(ext) {
 	filetype["svg"] = "svg";
 	filetype["textile"] = "textile"; // related to markdown
 	filetype["xml"] = "xml";
+	filetype["yaml"] = "yaml";
+	filetype["yml"] = "yaml";
 
 	if (filetype[ext] != null) {
 		// Then it must be in the array, so load the custom syntax mode
@@ -154,18 +158,18 @@ function doFileSave() {
 			// Get the data
 			var filecontents = window.aceEditor.getSession().getValue();
 			// Send the data
-			$.post(OC.filePath('files_texteditor', 'ajax', 'savefile.php'), { filecontents: filecontents, path: path, mtime: mtime }, function (jsondata) {
-				if (jsondata.status != 'success') {
-					// Save failed
-					$('#editor_save').text(t('files_texteditor', 'Save'));
-					$('#notification').text(jsondata.data.message);
-					$('#notification').fadeIn();
-					$('#editor').attr('data-edited', 'true');
-					$('#editor').attr('data-saving', 'false');
-				} else {
+			$.ajax({
+				type: 'PUT',
+				url: OC.generateUrl('/apps/files_texteditor/ajax/savefile'),
+				data: {
+					filecontents: filecontents,
+					path: path,
+					mtime: mtime
+				}
+			}).done(function(data) {
 					// Save OK
 					// Update mtime
-					$('#editor').attr('data-mtime', jsondata.data.mtime);
+					$('#editor').attr('data-mtime', data.mtime);
 					$('#editor_save').text(t('files_texteditor', 'Save'));
 					// Update titles
 					if($('#editor').attr('data-edited') != 'true') {
@@ -173,9 +177,17 @@ function doFileSave() {
 						document.title = $('#editor').attr('data-filename') + ' - ownCloud';
 					}
 					$('#editor').attr('data-saving', 'false');
+					$('#editor_save').live('click', doFileSave);
 				}
-				$('#editor_save').live('click', doFileSave);
-			}, 'json');
+			).fail(function(jqXHR) {
+					$('#editor_save').text(t('files_texteditor', 'Save'));
+					$('#notification').text(JSON.parse(jqXHR.responseText).message);
+					$('#notification').fadeIn();
+					$('#editor').attr('data-edited', 'true');
+					$('#editor').attr('data-saving', 'false');
+					$('#editor_save').live('click', doFileSave);
+				}
+			);
 		}
 	}
 	giveEditorFocus();
@@ -206,13 +218,16 @@ function showFileEditor(dir, filename) {
 			// bigger text for better readability
 			document.getElementById('editor').style.fontSize = '16px';
 
-			var data = $.getJSON(
-				OC.filePath('files_texteditor', 'ajax', 'loadfile.php'),
-				{file: filename, dir: dir},
-				function (result) {
-					if (result.status === 'success') {
+
+			$.get(
+			OC.generateUrl('/apps/files_texteditor/ajax/loadfile'),
+				{
+					filename: filename,
+					dir: dir
+				}
+			).done(function (data) {
 						// Save mtime
-						$('#editor').attr('data-mtime', result.data.mtime);
+						$('#editor').attr('data-mtime', data.mtime);
 						$('#editor').attr('data-saving', 'false');
 						// Initialise the editor
 						if (window.FileList){
@@ -221,21 +236,21 @@ function showFileEditor(dir, filename) {
 							$('#fileList').on('changeDirectory.texteditor', textEditorOnChangeDirectory);
 						}
 						// Show the control bar
-						showControls(dir, filename, result.data.writeable);
+						showControls(dir, filename, data.writeable);
 						// Update document title
 						$('body').attr('old_title', document.title);
 						document.title = filename + ' - ownCloud';
-						$('#editor').text(result.data.filecontents);
+						$('#editor').text(data.filecontents);
 						$('#editor').attr('data-dir', dir);
 						$('#editor').attr('data-filename', filename);
 						$('#editor').attr('data-edited', 'false');
 						window.aceEditor = ace.edit("editor");
 						aceEditor.setShowPrintMargin(false);
 						aceEditor.getSession().setUseWrapMode(true);
-						if ( ! result.data.writeable ) {
+						if ( ! data.writeable ) {
 							aceEditor.setReadOnly(true);
 						}
-						if (result.data.mime && result.data.mime === 'text/html') {
+						if (data.mime && data.mime === 'text/html') {
 							setSyntaxMode('html');
 						} else {
 							setSyntaxMode(getFileExtension(filename));
@@ -267,15 +282,13 @@ function showFileEditor(dir, filename) {
 							}
 						});
 						giveEditorFocus();
-					} else {
-						// Failed to get the file.
-						OC.dialogs.alert(result.data.message, t('files_texteditor', 'An error occurred!'));
 					}
-					// End success
+			).fail(function(jqXHR) {
+					// Failed to get the file.
+					OC.dialogs.alert(JSON.parse(jqXHR.responseText).message, t('files_texteditor', 'An error occurred!'));
+					hideFileEditor();
 				}
-				// End ajax
 			);
-			return data;
 		}
 	}
 }
@@ -306,26 +319,29 @@ function hideFileEditor() {
 		// and also the breadcrumb
 		window.FileList.reload();
 	}
-	if ($('#editor').attr('data-edited') == 'true') {
+	var $editorWasEdited = $('#editor').attr('data-edited') == 'true';
+
+	// Fade out editor
+	if ($editorWasEdited) {
 		// Hide, not remove
 		$('#editorcontrols,#editor_container').hide();
-		// Fade out editor
-		// Reset document title
+	} else {
+		$('#editor_container, #editorcontrols').remove();
+	}
+
+	// Reset document title
+	if (typeof $('body').attr('old_title') !== 'undefined') {
 		document.title = $('body').attr('old_title');
-		FileList.setViewerMode(false);
-		$('#content table').show();
+	}
+	FileList.setViewerMode(false);
+	$('#content table').show();
+
+	if ($editorWasEdited) {
 		OC.Notification.showTemporary(t('files_texteditor', 'There were unsaved changes, click here to go back'));
 		$('#notification').data('reopeneditor', true);
-		is_editor_shown = false;
-	} else {
-		// Fade out editor
-		$('#editor_container, #editorcontrols').remove();
-		// Reset document title
-		document.title = $('body').attr('old_title');
-		FileList.setViewerMode(false);
-		$('#content table').show();
-		is_editor_shown = false;
 	}
+
+	is_editor_shown = false;
 }
 
 // Reopens the last document
@@ -373,10 +389,10 @@ $(document).ready(function () {
 			showFileEditor($('#dir').val(), filename);
 		});
 		FileActions.setDefault('application/javascript', 'Edit');
-		FileActions.register('application/x-pearl', 'Edit', OC.PERMISSION_READ, '', function (filename) {
+		FileActions.register('application/x-perl', 'Edit', OC.PERMISSION_READ, '', function (filename) {
 			showFileEditor($('#dir').val(), filename);
 		});
-		FileActions.setDefault('application/x-pearl', 'Edit');
+		FileActions.setDefault('application/x-perl', 'Edit');
 		FileActions.register('application/x-tex', 'Edit', OC.PERMISSION_READ, '', function (filename) {
 			showFileEditor($('#dir').val(), filename);
 		});

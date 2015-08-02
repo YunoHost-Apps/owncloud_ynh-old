@@ -58,7 +58,7 @@ final_path=/var/www/owncloud
 data_path=/home/yunohost.app/owncloud/data
 sudo mkdir -p $final_path
 sudo mkdir -p $data_path
-sudo cp -a ../sources/* $final_path
+sudo cp -a ../sources/. $final_path
 sudo cp -a ../conf/ow-setup $final_path/ow-setup
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo cp ../conf/php-fpm.conf /etc/php5/fpm/pool.d/owncloud.conf

@@ -1,11 +1,25 @@
 <?php
 /**
+ * @author Joas Schilling <nickvergessen@owncloud.com>
  * @author Lukas Reschke <lukas@owncloud.com>
- * @copyright 2014 Lukas Reschke
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
  *
- * This file is licensed under the Affero General Public License version 3 or
- * later.
- * See the COPYING-README file.
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 
 namespace OCA\Files_Sharing\Middleware;
@@ -45,7 +59,7 @@ class SharingCheckMiddlewareTest extends \Test\TestCase {
 			->with('core', 'shareapi_allow_links', 'yes')
 			->will($this->returnValue('yes'));
 
-		$this->assertTrue(\Test_Helper::invokePrivate($this->sharingCheckMiddleware, 'isSharingEnabled'));
+		$this->assertTrue(self::invokePrivate($this->sharingCheckMiddleware, 'isSharingEnabled'));
 	}
 
 	public function testIsSharingEnabledWithAppDisabled() {
@@ -55,7 +69,7 @@ class SharingCheckMiddlewareTest extends \Test\TestCase {
 			->with('files_sharing')
 			->will($this->returnValue(false));
 
-		$this->assertFalse(\Test_Helper::invokePrivate($this->sharingCheckMiddleware, 'isSharingEnabled'));
+		$this->assertFalse(self::invokePrivate($this->sharingCheckMiddleware, 'isSharingEnabled'));
 	}
 
 	public function testIsSharingEnabledWithSharingDisabled() {
@@ -71,6 +85,6 @@ class SharingCheckMiddlewareTest extends \Test\TestCase {
 			->with('core', 'shareapi_allow_links', 'yes')
 			->will($this->returnValue('no'));
 
-		$this->assertFalse(\Test_Helper::invokePrivate($this->sharingCheckMiddleware, 'isSharingEnabled'));
+		$this->assertFalse(self::invokePrivate($this->sharingCheckMiddleware, 'isSharingEnabled'));
 	}
 }

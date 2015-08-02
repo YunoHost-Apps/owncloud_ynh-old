@@ -109,10 +109,9 @@ class Settings extends Controller {
 		}
 
 		$email_batch_time = 3600;
-		if ($notify_setting_batchtime == UserSettings::EMAIL_SEND_DAILY) {
+		if ($notify_setting_batchtime === UserSettings::EMAIL_SEND_DAILY) {
 			$email_batch_time = 3600 * 24;
-		}
-		if ($notify_setting_batchtime == UserSettings::EMAIL_SEND_WEEKLY) {
+		} else if ($notify_setting_batchtime === UserSettings::EMAIL_SEND_WEEKLY) {
 			$email_batch_time = 3600 * 24 * 7;
 		}
 
@@ -133,7 +132,6 @@ class Settings extends Controller {
 		);
 
 		return new DataResponse(array(
-			'status'	=>'success',
 			'data'		=> array(
 				'message'	=> (string) $this->l10n->t('Your settings have been updated.'),
 			),
@@ -159,9 +157,10 @@ class Settings extends Controller {
 		}
 
 		$settingBatchTime = UserSettings::EMAIL_SEND_HOURLY;
-		if ($this->userSettings->getUserSetting($this->user, 'setting', 'batchtime') == 3600 * 24 * 7) {
+		$currentSetting = (int) $this->userSettings->getUserSetting($this->user, 'setting', 'batchtime');
+		if ($currentSetting === 3600 * 24 * 7) {
 			$settingBatchTime = UserSettings::EMAIL_SEND_WEEKLY;
-		} else if ($this->userSettings->getUserSetting($this->user, 'setting', 'batchtime') == 3600 * 24) {
+		} else if ($currentSetting === 3600 * 24) {
 			$settingBatchTime = UserSettings::EMAIL_SEND_DAILY;
 		}
 
@@ -194,13 +193,12 @@ class Settings extends Controller {
 				$conflicts = $this->config->getUsersForUserValue('activity', 'rsstoken', $token);
 			}
 
-			$tokenUrl = $this->urlGenerator->linkToRouteAbsolute('activity.rss', array('token' => $token)); //FIXME
+			$tokenUrl = $this->urlGenerator->linkToRouteAbsolute('activity.Feed.show', ['token' => $token]);
 		}
 
 		$this->config->setUserValue($this->user, 'activity', 'rsstoken', $token);
 
 		return new DataResponse(array(
-			'status'	=>'success',
 			'data'		=> array(
 				'message'	=> (string) $this->l10n->t('Your settings have been updated.'),
 				'rsslink'	=> $tokenUrl,

@@ -1,5 +1,26 @@
 <?php
-
+/**
+ * @author Bart Visscher <bartv@thisnet.nl>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
+ */
 namespace OC\Setup;
 
 class MSSQL extends AbstractDatabase {
@@ -11,11 +32,9 @@ class MSSQL extends AbstractDatabase {
 
 		$masterConnection = @sqlsrv_connect($this->dbhost, $masterConnectionInfo);
 		if(!$masterConnection) {
-			$entry = null;
+			$entry = '';
 			if( ($errors = sqlsrv_errors() ) != null) {
 				$entry='DB Error: "'.print_r(sqlsrv_errors()).'"<br />';
-			} else {
-				$entry = '';
 			}
 			throw new \OC\DatabaseSetupException($this->trans->t('MS SQL username and/or password not valid: %s', array($entry)),
 					$this->trans->t('You need to enter either an existing account or the administrator.'));

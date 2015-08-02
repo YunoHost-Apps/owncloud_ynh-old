@@ -1,4 +1,30 @@
 <?php
+/**
+ * @author Bart Visscher <bartv@thisnet.nl>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Michael Gapczynski <GapczynskiM@gmail.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Victor Dubiniuk <dubiniuk@owncloud.com>
+ * @author Vincent Petry <pvince81@owncloud.com>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
+ */
 set_time_limit(0);
 require_once '../../lib/base.php';
 
@@ -19,11 +45,14 @@ if (OC::checkUpgrade(false)) {
 	$incompatibleApps = [];
 	$disabledThirdPartyApps = [];
 
-	$updater->listen('\OC\Updater', 'maintenanceStart', function () use ($eventSource, $l) {
+	$updater->listen('\OC\Updater', 'maintenanceEnabled', function () use ($eventSource, $l) {
 		$eventSource->send('success', (string)$l->t('Turned on maintenance mode'));
 	});
-	$updater->listen('\OC\Updater', 'maintenanceEnd', function () use ($eventSource, $l) {
+	$updater->listen('\OC\Updater', 'maintenanceDisabled', function () use ($eventSource, $l) {
 		$eventSource->send('success', (string)$l->t('Turned off maintenance mode'));
+	});
+	$updater->listen('\OC\Updater', 'maintenanceActive', function () use ($eventSource, $l) {
+		$eventSource->send('success', (string)$l->t('Maintenance mode is kept active'));
 	});
 	$updater->listen('\OC\Updater', 'dbUpgrade', function () use ($eventSource, $l) {
 		$eventSource->send('success', (string)$l->t('Updated database'));

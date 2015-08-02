@@ -44,12 +44,12 @@
 				var area = $(areaSelector);
 
 				function hideArea() {
-					area.slideUp(function() {
+					area.slideUp(OC.menuSpeed*4, function() {
 						area.trigger(new $.Event('hide'));
 					});
 				}
 				function showArea() {
-					area.slideDown(function() {
+					area.slideDown(OC.menuSpeed*4, function() {
 						area.trigger(new $.Event('show'));
 					});
 				}
@@ -58,7 +58,7 @@
 				if (!area.is(':animated')) {
 
 					// button toggles the area
-					if (button === event.target) {
+					if (button === event.target.closest('[data-apps-slide-toggle]')) {
 						if (area.is(':visible')) {
 							hideArea();
 						} else {

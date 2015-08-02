@@ -1,9 +1,37 @@
 <?php
 /**
- * Copyright (c) 2012 Robin Appelman <icewind@owncloud.com>
- * This file is licensed under the Affero General Public License version 3 or
- * later.
- * See the COPYING-README file.
+ * @author Andreas Fischer <bantu@owncloud.com>
+ * @author Bart Visscher <bartv@thisnet.nl>
+ * @author Brice Maron <brice@bmaron.net>
+ * @author Jakob Sack <mail@jakobsack.de>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Klaas Freitag <freitag@owncloud.com>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Michael Gapczynski <GapczynskiM@gmail.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @author Sjors van der Pluijm <sjors@desjors.nl>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Tigran Mkrtchyan <tigran.mkrtchyan@desy.de>
+ * @author Vincent Petry <pvince81@owncloud.com>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 
 namespace OC\Files\Storage;
@@ -201,6 +229,19 @@ if (\OC_Util::runningOnWindows()) {
 				$this->unlink($path2);
 			}
 
+			if ($this->is_dir($path1)) {
+				// we cant move folders across devices, use copy instead
+				$stat1 = stat(dirname($this->getSourcePath($path1)));
+				$stat2 = stat(dirname($this->getSourcePath($path2)));
+				if ($stat1['dev'] !== $stat2['dev']) {
+					$result = $this->copy($path1, $path2);
+					if ($result) {
+						$result &= $this->rmdir($path1);
+					}
+					return $result;
+				}
+			}
+
 			return rename($this->getSourcePath($path1), $this->getSourcePath($path2));
 		}
 
@@ -242,6 +283,8 @@ if (\OC_Util::runningOnWindows()) {
 
 		/**
 		 * @param string $query
+		 * @param string $dir
+		 * @return array
 		 */
 		protected function searchInDir($query, $dir = '') {
 			$files = array();
@@ -282,7 +325,7 @@ if (\OC_Util::runningOnWindows()) {
 		 * @param string $path
 		 * @return string
 		 */
-		protected function getSourcePath($path) {
+		public function getSourcePath($path) {
 			$fullPath = $this->datadir . $path;
 			return $fullPath;
 		}
@@ -311,6 +354,42 @@ if (\OC_Util::runningOnWindows()) {
 				);
 			} else {
 				return parent::getETag($path);
+			}
+		}
+
+		/**
+		 * @param \OCP\Files\Storage $sourceStorage
+		 * @param string $sourceInternalPath
+		 * @param string $targetInternalPath
+		 * @return bool
+		 */
+		public function copyFromStorage(\OCP\Files\Storage $sourceStorage, $sourceInternalPath, $targetInternalPath) {
+			if($sourceStorage->instanceOfStorage('\OC\Files\Storage\Local')){
+				/**
+				 * @var \OC\Files\Storage\Local $sourceStorage
+				 */
+				$rootStorage = new Local(['datadir' => '/']);
+				return $rootStorage->copy($sourceStorage->getSourcePath($sourceInternalPath), $this->getSourcePath($targetInternalPath));
+			} else {
+				return parent::copyFromStorage($sourceStorage, $sourceInternalPath, $targetInternalPath);
+			}
+		}
+
+		/**
+		 * @param \OCP\Files\Storage $sourceStorage
+		 * @param string $sourceInternalPath
+		 * @param string $targetInternalPath
+		 * @return bool
+		 */
+		public function moveFromStorage(\OCP\Files\Storage $sourceStorage, $sourceInternalPath, $targetInternalPath) {
+			if ($sourceStorage->instanceOfStorage('\OC\Files\Storage\Local')) {
+				/**
+				 * @var \OC\Files\Storage\Local $sourceStorage
+				 */
+				$rootStorage = new Local(['datadir' => '/']);
+				return $rootStorage->rename($sourceStorage->getSourcePath($sourceInternalPath), $this->getSourcePath($targetInternalPath));
+			} else {
+				return parent::moveFromStorage($sourceStorage, $sourceInternalPath, $targetInternalPath);
 			}
 		}
 	}

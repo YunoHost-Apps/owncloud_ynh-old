@@ -1,26 +1,25 @@
 <?php
-
 /**
- * ownCloud
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Tom Needham <tom@owncloud.com>
  *
- * @copyright (C) 2014 ownCloud, Inc.
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * @author Tom <tom@owncloud.com>
- * @author Thomas Müller <deepdiver@owncloud.com>
- * @author Bart Visscher
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
 
@@ -31,6 +30,7 @@ use \OC_SubAdmin;
 use \OC_User;
 use \OC_Group;
 use \OC_Helper;
+use OCP\Files\NotFoundException;
 
 class Users {
 
@@ -71,7 +71,7 @@ class Users {
 		if(OC_User::isAdminUser(OC_User::getUser()) || OC_SubAdmin::isUserAccessible(OC_User::getUser(), $userId)) {
 			// Check they exist
 			if(!OC_User::userExists($userId)) {
-				return new OC_OCS_Result(null, \OC_API::RESPOND_NOT_FOUND, 'The requested user could not be found');
+				return new OC_OCS_Result(null, \OCP\API::RESPOND_NOT_FOUND, 'The requested user could not be found');
 			}
 			// Show all
 			$return = array(
@@ -84,7 +84,7 @@ class Users {
 		} else {
 			// Check they are looking up themselves
 			if(OC_User::getUser() != $userId) {
-				return new OC_OCS_Result(null, \OC_API::RESPOND_UNAUTHORISED);
+				return new OC_OCS_Result(null, \OCP\API::RESPOND_UNAUTHORISED);
 			}
 			// Return some additional information compared to the core route
 			$return = array(
@@ -96,16 +96,8 @@ class Users {
 		$config = \OC::$server->getConfig();
 
 		// Find the data
-		$data = array();
-		\OC_Util::tearDownFS();
-		\OC_Util::setupFS($userId);
-		$storage = OC_Helper::getStorageInfo('/');
-		$data['quota'] = array(
-			'free' =>  $storage['free'],
-			'used' =>  $storage['used'],
-			'total' =>  $storage['total'],
-			'relative' => $storage['relative'],
-			);
+		$data = [];
+		$data = self::fillStorageInfo($userId, $data);
 		$data['enabled'] = $config->getUserValue($userId, 'core', 'enabled', 'true');
 		$data['email'] = $config->getUserValue($userId, 'settings', 'email');
 		$data['displayname'] = OC_User::getDisplayName($parameters['userid']);
@@ -159,7 +151,14 @@ class Users {
 			case 'quota':
 				$quota = $parameters['_put']['value'];
 				if($quota !== 'none' and $quota !== 'default') {
-					$quota = OC_Helper::computerFileSize($quota);
+					if (is_numeric($quota)) {
+						$quota = floatval($quota);
+					} else {
+						$quota = OC_Helper::computerFileSize($quota);
+					}
+					if ($quota === false) {
+						return new OC_OCS_Result(null, 103, "Invalid quota value {$parameters['_put']['value']}");
+					}
 					if($quota == 0) {
 						$quota = 'default';
 					}else if($quota == -1){
@@ -230,7 +229,7 @@ class Users {
 		// Check they're an admin
 		if(!OC_Group::inGroup(OC_User::getUser(), 'admin')){
 			// This user doesn't have rights to add a user to this group
-			return new OC_OCS_Result(null, \OC_API::RESPOND_UNAUTHORISED);
+			return new OC_OCS_Result(null, \OCP\API::RESPOND_UNAUTHORISED);
 		}
 		// Check if the group exists
 		if(!OC_Group::groupExists($group)){
@@ -296,6 +295,10 @@ class Users {
 		if(strtolower($group) == 'admin') {
 			return new OC_OCS_Result(null, 103, 'Cannot create subadmins for admin group');
 		}
+		// We cannot be subadmin twice
+		if (OC_Subadmin::isSubAdminOfGroup($user, $group)) {
+			return new OC_OCS_Result(null, 100);
+		}
 		// Go
 		if(OC_Subadmin::createSubAdmin($user, $group)) {
 			return new OC_OCS_Result(null, 100);
@@ -342,5 +345,28 @@ class Users {
 		} else {
 			return new OC_OCS_Result($groups);
 		}
+	}
+
+	/**
+	 * @param $userId
+	 * @param $data
+	 * @return mixed
+	 * @throws \OCP\Files\NotFoundException
+	 */
+	private static function fillStorageInfo($userId, $data) {
+		try {
+			\OC_Util::tearDownFS();
+			\OC_Util::setupFS($userId);
+			$storage = OC_Helper::getStorageInfo('/');
+			$data['quota'] = [
+				'free' => $storage['free'],
+				'used' => $storage['used'],
+				'total' => $storage['total'],
+				'relative' => $storage['relative'],
+			];
+		} catch (NotFoundException $ex) {
+			$data['quota'] = [];
+		}
+		return $data;
 	}
 }
