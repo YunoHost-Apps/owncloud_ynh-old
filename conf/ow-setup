@@ -37,7 +37,8 @@ try {
             "dbpass:",
             "dbname:",
             "dbhost:",
-            "trusted_domain:"
+            "trusted_domain:",
+            "memcache.local:"
         );
         $params = getopt("", $longopts);
         $params['install']='true';

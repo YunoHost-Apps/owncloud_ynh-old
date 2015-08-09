@@ -21,7 +21,7 @@ path=${path%/}
 
 # Install dependencies
 sudo apt-get update -qq
-sudo apt-get install acl smbclient php5-cli -y -qq
+sudo apt-get install acl smbclient php5-cli php-apc -y -qq
 
 # Generate random password
 db_pwd=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d 'A-Za-z0-9' | sed -n 's/\(.\{24\}\).*/\1/p')
@@ -62,6 +62,7 @@ sudo cp -a ../sources/. $final_path
 sudo cp -a ../conf/ow-setup $final_path/ow-setup
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo cp ../conf/php-fpm.conf /etc/php5/fpm/pool.d/owncloud.conf
+sudo cp ../conf/20-apc.ini /etc/php5/cli/conf.d/20-apc.ini
 sudo cp ../conf/mount.json $data_path
 sudo chown -hR owncloud:www-data $final_path
 sudo chown -hR owncloud:www-data $data_path
@@ -104,7 +105,7 @@ sudo yunohost app ssowatconf
 old_pwd=$(pwd)
 cd $final_path
 sudo sed -i "s@public static function checkInstalled() {@public static function checkInstalled() { return;@g" $final_path/lib/base.php
-sudo su -c "php ow-setup --adminlogin=admin --adminpass=$db_pwd --directory=/home/yunohost.app/owncloud/data --dbtype=mysql --dbuser=$db_user --dbpass=$db_pwd --dbname=$db_user --dbhost=localhost --trusted_domain=$domain" owncloud
+sudo su -c "php ow-setup --adminlogin=admin --adminpass=$db_pwd --directory=/home/yunohost.app/owncloud/data --dbtype=mysql --dbuser=$db_user --dbpass=$db_pwd --dbname=$db_user --dbhost=localhost --trusted_domain=$domain --memcache.local=\OC\Memcache\APC" owncloud
 sudo sed -i "s@public static function checkInstalled() { return;@public static function checkInstalled() {@g" $final_path/lib/base.php
 sudo rm -f $final_path/ow-setup
 cd $old_pwd

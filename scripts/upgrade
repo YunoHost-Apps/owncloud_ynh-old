@@ -10,7 +10,7 @@ db_pwd=$(sudo yunohost app setting owncloud mysqlpwd)
 
 # Install dependencies
 sudo apt-get update -qq
-sudo apt-get install acl smbclient php5-cli -y -qq
+sudo apt-get install acl smbclient php5-cli php-apc -y -qq
 
 # Remove trailing "/" for next commands
 path=${path%/}
@@ -44,6 +44,7 @@ sudo cp -a $final_path/old_apps/* $final_path/apps/ \
 
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo cp ../conf/php-fpm.conf /etc/php5/fpm/pool.d/owncloud.conf
+sudo cp ../conf/20-apc.ini /etc/php5/cli/conf.d/20-apc.ini
 sudo cp ../conf/mount.json $data_path
 sudo chown -hR owncloud:www-data $final_path
 sudo chown -hR owncloud:www-data $data_path
@@ -65,6 +66,10 @@ sudo sed -i "s@PATHTOCHANGE@$path@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo sed -i "s@ALIASTOCHANGE@$final_path/@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/php5/fpm/pool.d/owncloud.conf
+if ! grep -Fq "memcache" $final_path/config/config.php  
+then
+    sudo bash -c "echo \"\\\$CONFIG['memcache.local']= '\OC\Memcache\APC';\" >> $final_path/config/config.php"
+fi
 
 # Reload Nginx and regenerate SSOwat conf
 sudo killall php5-fpm
