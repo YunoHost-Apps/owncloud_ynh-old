@@ -105,7 +105,7 @@ sudo yunohost app ssowatconf
 old_pwd=$(pwd)
 cd $final_path
 sudo sed -i "s@public static function checkInstalled() {@public static function checkInstalled() { return;@g" $final_path/lib/base.php
-sudo su -c "php ow-setup --adminlogin=admin --adminpass=$db_pwd --directory=/home/yunohost.app/owncloud/data --dbtype=mysql --dbuser=$db_user --dbpass=$db_pwd --dbname=$db_user --dbhost=localhost --trusted_domain=$domain --memcache.local=\OC\Memcache\APC" owncloud
+sudo su -c "php ow-setup --adminlogin=admin --adminpass=$db_pwd --directory=/home/yunohost.app/owncloud/data --dbtype=mysql --dbuser=$db_user --dbpass=$db_pwd --dbname=$db_user --dbhost=localhost --trusted_domain=$domain" owncloud
 sudo sed -i "s@public static function checkInstalled() { return;@public static function checkInstalled() {@g" $final_path/lib/base.php
 sudo rm -f $final_path/ow-setup
 cd $old_pwd
@@ -164,3 +164,9 @@ sudo chmod -R 770 $data_path
 
 # Make an LDAP user as admin
 mysql -u $db_user -p$db_pwd $db_user -e "INSERT INTO oc_group_user VALUES ('admin','$user');"
+
+#Configure cache
+if ! grep -Fq "memcache" $final_path/config/config.php  
+then
+    sudo bash -c "echo \"\\\$CONFIG['memcache.local']= '\OC\Memcache\APC';\" >> $final_path/config/config.php"
+fi
