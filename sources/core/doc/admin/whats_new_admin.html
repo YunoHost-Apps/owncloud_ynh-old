@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>What’s New for Admins in ownCloud 8.1 &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>What’s New for Admins in ownCloud 8.1 &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="_static/style.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,9 +27,9 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="index.html" />
     <link rel="next" title="Installation" href="installation/index.html" />
-    <link rel="prev" title="ownCloud 8.2 Release Notes" href="release_notes.html" />
+    <link rel="prev" title="ownCloud 8.1 Release Notes" href="release_notes.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -113,9 +113,13 @@
 <li><a href="contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="release_notes.html">ownCloud 8.2 Release Notes</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">What&#8217;s New for Admins in ownCloud 8.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">ownCloud 8.1 Release Notes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">What&#8217;s New for Admins in ownCloud 8.1</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#new-packaging">New Packaging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improvements-and-new-features">Improvements and New Features</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_files/index.html">File Sharing and Management</a></li>
@@ -124,7 +128,6 @@
 <li class="toctree-l1"><a class="reference internal" href="maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -144,12 +147,62 @@
 				<div class="span9">
 					<div class="page-content">
 						
-  <div class="section" id="what-s-new-for-admins-in-owncloud-8-1">
-<h1>What&#8217;s New for Admins in ownCloud 8.1<a class="headerlink" href="#what-s-new-for-admins-in-owncloud-8-1" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="what-s-new-for-admins-in-owncloud-version">
+<h1>What&#8217;s New for Admins in ownCloud 8.1<a class="headerlink" href="#what-s-new-for-admins-in-owncloud-version" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="new-packaging">
+<h2>New Packaging<a class="headerlink" href="#new-packaging" title="Permalink to this headline">¶</a></h2>
+<p>We are introducing a new packaging system (starting in ownCloud 8.0). Instead of
+two editions, Community and Enterprise, we now offer Server to replace the old
+Community edition, and Enterprise Subscription replaces the old Enterprise
+Edition.</p>
+<p>Server includes core file share and synchronization features plus community
+apps, and is community-supported and free of cost. See <a class="reference external" href="https://owncloud.org/">owncloud.org</a> for current information and links to downloads.</p>
+<p>ownCloud now offers two levels of paid support:</p>
+<ul class="simple">
+<li>ownCloud Standard</li>
+<li>ownCloud Enterprise</li>
+</ul>
+<p>The ownCloud Standard Subscription is for customers who want paid support for
+the core Server, and do not need Enterprise apps. This includes:</p>
+<ul class="simple">
+<li>ownCloud Server</li>
+<li>ownCloud desktop and mobile apps (without the custom branding build service)</li>
+<li>ownCloud open-source apps licensed as AGPL (Share Files,
+Federated Cloud, Versions, Deleted files, LDAP/AD, Antivirus, Encryption,
+External Storage. etc.), 8x5 support hours</li>
+</ul>
+<p>Note: This does not include support for Contacts, Calendar, Tasks, Chat,
+Documents, or any other community-only apps, and it does not include support
+for Enterprise-only apps or services.</p>
+<p>The ownCloud Enterprise Subscription replaces the Enterprise Edition. This
+includes the core Server plus Enterprise apps. The Enterprise Subscription
+includes:</p>
+<ul class="simple">
+<li>ownCloud Standard Subscription</li>
+<li>ownCloud Enterprise apps (Logging modules, SAML, File Firewall, Sharepoint,
+Windows Network Drive, Home Directory Mounts, etc)</li>
+<li>ownBrander for mobile app branding</li>
+<li>ownCloud Commercial License for closed-source customizations</li>
+<li>Up to 24x7 support</li>
+<li>Deployment assistance for the rollout</li>
+</ul>
+<p>New customers, or customers upgrading from the old Enterprise Edition will
+install ownCloud 8 from the existing <tt class="docutils literal"><span class="pre">owncloud-enterprise</span></tt> repository. The
+<tt class="docutils literal"><span class="pre">owncloud-server</span></tt> dependency will be pulled in automatically. Customers using
+the community edition will upgrade via package manager by adding the
+<tt class="docutils literal"><span class="pre">owncloud-enterprise</span> <span class="pre">repository</span></tt>, and installing ownCloud Enterprise Edition
+apps on top of their <tt class="docutils literal"><span class="pre">owncloud-server</span></tt>.</p>
+<p>Visit <a class="reference external" href="https://owncloud.com/">owncloud.com</a> for more information on the
+Enterprise Subscription.</p>
+</div>
+<div class="section" id="improvements-and-new-features">
+<h2>Improvements and New Features<a class="headerlink" href="#improvements-and-new-features" title="Permalink to this headline">¶</a></h2>
 <p>ownCloud Server and Enterprise Subscription 8.1 are shipping with a batch of
 improvements and new features, including:</p>
 <ul class="simple">
-<li>Improved performance, with faster file transfers, much faster file deletion, improved scalability   through improved handling of parallel requests, and up to 50% more users on each ownCloud server    instance.</li>
+<li>Improved performance, with faster file transfers, much faster file deletion,
+improved scalability   through improved handling of parallel requests, and up
+to 50% more users on each ownCloud server instance.</li>
 <li>Better file locking</li>
 <li>Updated encryption with support for multiple encryption backends and
 migration tools for 8.0 -&gt; 8.1</li>
@@ -157,6 +210,7 @@ migration tools for 8.0 -&gt; 8.1</li>
 <li>WebDAV performance enhancements</li>
 <li>SFTP external storage with SSH keys</li>
 <li>SMB external storage is now based on <tt class="docutils literal"><span class="pre">libsmbclient</span></tt></li>
+<li>Individual settings per external storage mount, including encryption and previews</li>
 <li>Improved performance and better storage space management of preview
 generation</li>
 <li>UI improvements for configurating external storage</li>
@@ -186,6 +240,7 @@ connections to the Appstore</li>
 <li>Introduce new &#8220;OC-ETag&#8221; header fixing issues with server configs stripping off
 ETags &#8220;No E-Tag received from server&#8221;</li>
 </ul>
+</div>
 </div>
 
 

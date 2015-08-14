@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Upgrading Your ownCloud Server &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>Upgrading Your ownCloud Server &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="Maintenance" href="index.html" />
     <link rel="next" title="Upgrading ownCloud with the Updater App" href="update.html" />
     <link rel="prev" title="Backing up ownCloud" href="backup.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
@@ -141,7 +141,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -297,7 +296,11 @@ section of <a class="reference internal" href="../installation/installation_wiza
 </div>
 <div class="section" id="manual-upgrade-procedure">
 <h2>Manual Upgrade Procedure<a class="headerlink" href="#manual-upgrade-procedure" title="Permalink to this headline">¶</a></h2>
-<p>Start by putting your server in maintenance mode. This prevents new logins,
+<p>If you are upgrading to a major release, for example from 7.0.5 to
+8.0, you must review all third party applications (not core apps), for
+compatibility with your new ownCloud version. Then disable all of them
+before starting the upgrade.</p>
+<p>Next putting your server in maintenance mode. This prevents new logins,
 locks the sessions of logged-in users, and displays a status screen so users
 know what is happening. There are two ways to do this, and the preferred method
 is to use the <tt class="docutils literal"><span class="pre">occ</span></tt> command, which you must run as your HTTP user. This example
@@ -308,10 +311,6 @@ is for Ubuntu Linux:</p>
 <p>The other way is by entering your <tt class="docutils literal"><span class="pre">config.php</span></tt> file and changing
 <tt class="docutils literal"><span class="pre">'maintenance'</span> <span class="pre">=&gt;</span> <span class="pre">false,</span></tt> to <tt class="docutils literal"><span class="pre">'maintenance'</span> <span class="pre">=&gt;</span> <span class="pre">true,</span></tt>.</p>
 <ol class="arabic simple">
-<li>If you are upgrading to a major release, for example from 7.0.5 to
-8.0, you must review all third party applications (not core apps), for
-compatibility with your new ownCloud version. Then disable all of them
-before starting the upgrade.</li>
 <li>Back up your existing ownCloud Server database, data directory, and
 <tt class="docutils literal"><span class="pre">config.php</span></tt> file. (See <a class="reference internal" href="backup.html"><em>Backing up ownCloud</em></a>.)</li>
 <li>Download and unpack the latest ownCloud Server release (Archive file) from
@@ -321,7 +320,7 @@ installed in <tt class="docutils literal"><span class="pre">/var/www/owncloud/</
 <tt class="docutils literal"><span class="pre">/var/www/owncloud2/</span></tt></li>
 <li>Stop your web server.</li>
 </ol>
-<p>Apache 2 is the recommended server for ownCloud (see <a class="reference internal" href="../release_notes.html"><em>ownCloud 8.2 Release Notes</em></a>
+<p>Apache 2 is the recommended server for ownCloud (see <a class="reference internal" href="../release_notes.html"><em>ownCloud 8.1 Release Notes</em></a>
 for recommended setups and supported platforms.)</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -354,7 +353,7 @@ Linux 11</p>
 </tbody>
 </table>
 </div></blockquote>
-<ol class="arabic" start="5">
+<ol class="arabic" start="4">
 <li><p class="first">Rename or move your current ownCloud directory (named <tt class="docutils literal"><span class="pre">owncloud/</span></tt> if
 installed using defaults) to another location.</p>
 </li>
@@ -382,7 +381,7 @@ your original <tt class="docutils literal"><span class="pre">config.php</span></
 <p class="last">We recommend storing your <tt class="docutils literal"><span class="pre">data/</span></tt> directory in a location other
 than your <tt class="docutils literal"><span class="pre">owncloud/</span></tt> directory.</p>
 </div>
-<ol class="arabic simple" start="10">
+<ol class="arabic simple" start="9">
 <li>Restart your web server.</li>
 </ol>
 <blockquote>
@@ -416,7 +415,7 @@ Linux 11</p>
 </tbody>
 </table>
 </div></blockquote>
-<ol class="arabic" start="11">
+<ol class="arabic" start="10">
 <li><p class="first">Now you should be able to open a Web browser to your ownCloud server and
 log in as usual. You have a couple more steps to go: You should see a
 <strong>Start Update</strong> screen, just like in the <strong>Upgrading With Your Linux
@@ -436,7 +435,7 @@ avoid PHP timeouts, like this example on Ubuntu Linux:</p>
 and install the updated code (steps 1-3), and then <tt class="docutils literal"><span class="pre">occ</span></tt> performs the final upgrade steps.</p>
 </div>
 </div></blockquote>
-<ol class="arabic simple" start="13">
+<ol class="arabic simple" start="11">
 <li>The upgrade operation takes a few minutes, depending on the size of your
 installation. When it is finished you will see a success message, or an
 error message that will tell where it went wrong.</li>

@@ -79,7 +79,8 @@ class Application extends App {
 				$c->query('Config'),
 				$c->query('DatabaseConnection'),
 				$c->query('UserManager'),
-				new View()
+				new View(),
+				$c->query('Logger')
 			);
 		});
 		$container->registerService('AppSettingsController', function(IContainer $c) {
@@ -153,7 +154,8 @@ class Application extends App {
 				$c->query('Config'),
 				$c->query('ClientService'),
 				$c->query('URLGenerator'),
-				$c->query('Util')
+				$c->query('Util'),
+				$c->query('L10N')
 			);
 		});
 

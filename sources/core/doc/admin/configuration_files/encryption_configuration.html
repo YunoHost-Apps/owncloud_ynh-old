@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Encryption Configuration &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>Encryption Configuration &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="File Sharing and Management" href="index.html" />
     <link rel="next" title="Using the Files Locking App" href="files_locking_enabling.html" />
     <link rel="prev" title="Configuring External Storage (Configuration File)" href="external_storage_configuration.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
@@ -140,7 +140,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="files_locking_enabling.html">Using the Files Locking App</a></li>
-<li class="toctree-l2"><a class="reference internal" href="files_locking_experimental.html">Experimental File Locking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="files_locking_transactional.html">Transactional File Locking</a></li>
 <li class="toctree-l2"><a class="reference internal" href="federated_cloud_sharing_configuration.html">Configuring Federated Cloud Sharing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="previews_configuration.html">Previews Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="serving_static_files_configuration.html">Serving Static Files for Better Performance</a></li>
@@ -151,7 +151,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -379,10 +378,10 @@ your Admin page to migrate your encryption keys, or use the <tt class="docutils 
 strongly recommend using the <tt class="docutils literal"><span class="pre">occ</span></tt> command; the <strong>Start Migration</strong> button is
 for admins who do not have access to the console, for example installations on
 shared hosting. This example is for Debian/Ubuntu Linux:</p>
-<div class="highlight-python"><pre>$ sudo -u www-data php occ encryption:migrate-keys</pre>
+<div class="highlight-python"><pre>$ sudo -u www-data php occ encryption:migrate</pre>
 </div>
 <p>This example is for Red Hat/CentOS/Fedora Linux:</p>
-<div class="highlight-python"><pre>$ sudo -u apache php occ encryption:migrate-keys</pre>
+<div class="highlight-python"><pre>$ sudo -u apache php occ encryption:migrate</pre>
 </div>
 <p>You must run <tt class="docutils literal"><span class="pre">occ</span></tt> as your HTTP user; see
 <a class="reference internal" href="../configuration_server/occ_command.html"><em>Using the occ Command</em></a>.</p>
@@ -423,33 +422,25 @@ old file structure for ownCloud 8.0:</p>
 <p>This is the new file structure for ownCloud 8.1:</p>
 <dl class="docutils">
 <dt>Private public share key:</dt>
-<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/OC_DEFAULT_MODULE/pubShare_&lt;public-share-key-id&gt;.</span>
-<span class="pre">privateKey</span></tt></dd>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/OC_DEFAULT_MODULE/pubShare_&lt;public-share-key-id&gt;.privateKey</span></tt></dd>
 <dt>Private recovery key:</dt>
-<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/OC_DEFAULT_MODULE/recovery_&lt;recovery-key-id&gt;.</span>
-<span class="pre">privateKey</span></tt></dd>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/OC_DEFAULT_MODULE/recovery_&lt;recovery-key-id&gt;.privateKey</span></tt></dd>
 <dt>Public public share key:</dt>
-<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/OC_DEFAULT_MODULE/pubShare_&lt;public-share-key-id&gt;.</span>
-<span class="pre">publicKey</span></tt></dd>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/OC_DEFAULT_MODULE/pubShare_&lt;public-share-key-id&gt;.publicKey</span></tt></dd>
 <dt>Public recovery key:</dt>
-<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/OC_DEFAULT_MODULE/recovery_&lt;recovery-key-id&gt;.</span>
-<span class="pre">publicKey</span></tt></dd>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/OC_DEFAULT_MODULE/recovery_&lt;recovery-key-id&gt;.publicKey</span></tt></dd>
 <dt>File keys for system-wide mount points:</dt>
-<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/keys/&lt;file_path&gt;/&lt;filename&gt;/OC_DEFAULT_MODULE/</span>
-<span class="pre">fileKey</span></tt></dd>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/keys/&lt;file_path&gt;/&lt;filename&gt;/OC_DEFAULT_MODULE/fileKey</span></tt></dd>
 <dt>Share keys for files on a system-wide mount point (one key for the owner and one key for each user with access to the file):</dt>
-<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/keys/&lt;file_path&gt;/&lt;filename/OC_DEFAULT_MODULE/</span>
-<span class="pre">&lt;user&gt;.shareKey</span></tt></dd>
+<dd><tt class="file docutils literal"><span class="pre">data/files_encryption/keys/&lt;file_path&gt;/&lt;filename&gt;/OC_DEFAULT_MODULE/&lt;user&gt;.shareKey</span></tt></dd>
 <dt>Users&#8217; private keys:</dt>
 <dd><tt class="file docutils literal"><span class="pre">data/&lt;user&gt;/files_encryption/OC_DEFAULT_MODULE/&lt;user&gt;.privateKey</span></tt></dd>
 <dt>Users&#8217; public keys:</dt>
 <dd><tt class="file docutils literal"><span class="pre">data/&lt;user&gt;/files_encryption/OC_DEFAULT_MODULE/&lt;user&gt;.publicKey</span></tt></dd>
 <dt>File keys for files owned by the user:</dt>
-<dd><tt class="file docutils literal"><span class="pre">data/&lt;user&gt;/files_encryption/keys/&lt;file_path&gt;/&lt;filename&gt;/</span>
-<span class="pre">OC_DEFAULT_MODULE/fileKey</span></tt></dd>
+<dd><tt class="file docutils literal"><span class="pre">data/&lt;user&gt;/files_encryption/keys/&lt;file_path&gt;/&lt;filename&gt;/OC_DEFAULT_MODULE/fileKey</span></tt></dd>
 <dt>Share keys for files owned by the user (one key for the owner and one key for each user with access to the file):</dt>
-<dd><tt class="file docutils literal"><span class="pre">data/&lt;user&gt;/files_encryption/keys/&lt;file_path&gt;/&lt;filename/</span>
-<span class="pre">OC_DEFAULT_MODULE/&lt;user&gt;</span> <span class="pre">.shareKey</span></tt></dd>
+<dd><tt class="file docutils literal"><span class="pre">data/&lt;user&gt;/files_encryption/keys/&lt;file_path&gt;/&lt;filename&gt;/OC_DEFAULT_MODULE/&lt;user&gt;.shareKey</span></tt></dd>
 </dl>
 </div>
 </div>

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Using the occ Command &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>Using the occ Command &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="ownCloud Server Configuration" href="index.html" />
     <link rel="next" title="Configuring the Activity App" href="activity_configuration.html" />
     <link rel="prev" title="Warnings on Admin Page" href="security_setup_warnings.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
@@ -159,7 +159,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -385,7 +384,7 @@ place of running the graphical Installation Wizard.</p>
 available options:</p>
 <div class="highlight-python"><pre>$ sudo -u www-data php /var/www/owncloud/occ
 ownCloud is not installed - only a limited number of commands are available
-ownCloud version 8.1 RC1
+ownCloud version 8.1.0
 
 Usage:
  [options] command [arguments]
@@ -413,7 +412,7 @@ Available commands:
  maintenance:install   install ownCloud</pre>
 </div>
 <p>Display your <tt class="docutils literal"><span class="pre">maintenance:install</span></tt> options:</p>
-<div class="highlight-python"><pre>$ sudo -u www-data php /var/www/owncloud/occ help maintenance:install
+<div class="highlight-python"><pre>$ sudo -u www-data php occ help maintenance:install
 ownCloud is not installed - only a limited number of commands are available
 Usage:
  maintenance:install [--database="..."] [--database-name="..."]
@@ -442,7 +441,8 @@ Options:
  --no-interaction (-n)    Do not ask any interactive question</pre>
 </div>
 <p>This example completes the installation:</p>
-<div class="highlight-python"><pre>$ sudo -u www-data php /var/www/owncloud/occ  maintenance:install --database
+<div class="highlight-python"><pre>$ cd /var/www/owncloud/
+$ sudo -u www-data php occ maintenance:install --database
 "mysql" --database-name "owncloud"  --database-user "root" --database-pass
 "password" --admin-user "admin" --admin-pass "password"
 ownCloud is not installed - only a limited number of commands are available
@@ -666,14 +666,60 @@ authentication servers such as LDAP:</p>
 </div>
 <div class="section" id="upgrade-command">
 <h2>Upgrade Command<a class="headerlink" href="#upgrade-command" title="Permalink to this headline">¶</a></h2>
+<p>List all options, like this example on CentOS Linux:</p>
+<div class="highlight-python"><pre>$ sudo -u apache php occ upgrade -h
+Usage:
+upgrade [--skip-migration-test] [--dry-run] [--no-app-disable]
+
+Options:
+--skip-migration-test  skips the database schema migration simulation and
+   update directly
+--dry-run              only runs the database schema migration simulation, do
+  not actually update
+--no-app-disable       skips the disable of third party apps
+--help (-h)            Display this help message.
+--quiet (-q)           Do not output any message.
+--verbose (-v|vv|vvv)  Increase the verbosity of messages: 1 for normal output,
+  2 for more verbose output and 3 for debug.
+--version (-V)         Display this application version.
+--ansi                 Force ANSI output.
+--no-ansi              Disable ANSI output.
+--no-interaction (-n)  Do not ask any interactive question</pre>
+</div>
 <p>When you are performing an update or upgrade on your ownCloud server (see the
 Maintenance section of this manual), it is better to use <tt class="docutils literal"><span class="pre">occ</span></tt> to perform the
 database upgrade step, rather than the Web GUI, in order to avoid timeouts. PHP
 scripts invoked from the Web interface are limited to 3600 seconds. In larger
 environments this may not be enough, leaving the system in an inconsistent
 state. After performing all the preliminary steps (see
-<a class="reference internal" href="../maintenance/upgrade.html"><em>Upgrading Your ownCloud Server</em></a>) use this command to upgrade your databases:</p>
-<div class="highlight-python"><pre>$ sudo -u www-data php occ upgrade</pre>
+<a class="reference internal" href="../maintenance/upgrade.html"><em>Upgrading Your ownCloud Server</em></a>) use this command to upgrade your databases,
+like this example on CentOS Linux. Note how it details the steps:</p>
+<div class="highlight-python"><pre>$ sudo -u www-data php occ upgrade
+ownCloud or one of the apps require upgrade - only a limited number of
+commands are available
+Turned on maintenance mode
+Checked database schema update
+Checked database schema update for apps
+Updated database
+Updating &lt;gallery&gt; ...
+Updated &lt;gallery&gt; to 0.6.1
+Updating &lt;activity&gt; ...
+Updated &lt;activity&gt; to 2.1.0
+Update successful
+Turned off maintenance mode</pre>
+</div>
+<p>If there is an error it throws an exception, and the error is detailed in your
+ownCloud logfile, so you can use the log output to figure out what went wrong,
+or to use in a bug report:</p>
+<div class="highlight-python"><pre>Turned on maintenance mode
+Checked database schema update
+Checked database schema update for apps
+Updated database
+Updating &lt;files_sharing&gt; ...
+Exception
+ServerNotAvailableException: LDAP server is not available
+Update failed
+Turned off maintenance mode</pre>
 </div>
 <p>Before completing the upgrade, ownCloud first runs a simulation by
 copying all database tables to a temporary directory and then performing the

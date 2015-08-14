@@ -10,6 +10,27 @@ All of these connect to a LAN ownCloud server that is not publicly accessible,
 with one exception: Google Drive requires an ownCloud server with a registered 
 domain name that is accessible over the Internet.
 
+`Video: How to Configure External Storage in ownCloud Server 8.1
+<https://youtu.be/uezzFDRnoPY>`_
+
+.. figure:: images/video_externalstorage.png
+   :target: https://youtu.be/uezzFDRnoPY 
+  
+New Settings Options
+--------------------
+
+Hover your cursor to the right of any external mount configuration to expose 
+the settings button and trashcan. Click the trashcan to delete the 
+mountpoint. The settings button allows you to configure each mountpoint 
+individually with the following options:
+
+* Encryption
+* Previews
+* Check for changes Never, Once every direct access, or Every time the 
+  filesystem is Used. 
+  
+.. figure:: ../images/encryption13.png
+
 Supported mounts
 ----------------
 
@@ -28,6 +49,9 @@ ownCloud admins may mount these external storage services and devices:
 
 ownCloud users can be given permission to mount any of these, except local 
 storage.
+
+.. note:: A non-blocking or correctly configured SELinux setup is needed
+   for these backends to work. Please refer to the :ref:`selinux-config-label`.
 
 Enabling External Storage Support
 ---------------------------------
@@ -195,8 +219,9 @@ Connecting to an FTP server requires:
   configured to support ``ftps://``)
 * Enter the ownCloud users or groups who are allowed to access the share.  
 
-.. note:: A non-blocking or correctly configured SELinux setup is needed
-   for this backend to work.
+.. note:: The external storage ``FTP/FTPS/SFTP`` needs the ``allow_url_fopen`` PHP
+   setting to be set to ``1``. When having connection problems make sure that it is
+   not set to ``0`` in your ``php.ini``.
 
 .. figure:: ../images/external-storage-ftp.png
 
@@ -367,4 +392,3 @@ Although configuration may be done by making modifications to the
 panel (as described in the above section) to add, remove, or modify mount 
 options to prevent any problems. See :doc:`external_storage_configuration` for 
 configuration examples.
-

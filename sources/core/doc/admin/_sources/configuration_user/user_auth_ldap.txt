@@ -27,7 +27,10 @@ The LDAP application supports:
 * Read-only access to your LDAP (no edit or delete of users on your LDAP) 
 
 .. Note:: The LDAP app is not compatible with the ``User backend using remote HTTP servers`` app. 
-   You cannot use both of them at the same time. 
+   You cannot use both of them at the same time.
+
+.. note:: A non-blocking or correctly configured SELinux setup is needed
+   for the LDAP backend to work. Please refer to the :ref:`selinux-config-label`.
 
 Configuration
 -------------
@@ -584,7 +587,7 @@ improve login times set up a slave LDAP server to share the load.
 
 The Redis key-value cache and store is an excellent fast and robust cache, and 
 if you are using the new experimental file locking (see 
-:doc:`../configuration_files/files_locking_experimental`) then you must use 
+:doc:`../configuration_files/files_locking_transactional`) then you must use 
 Redis. Redis configuration looks like this::
 
  'filelocking.enabled' => 'true',

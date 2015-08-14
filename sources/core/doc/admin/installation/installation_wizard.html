@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installation Wizard &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>Installation Wizard &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="Installation" href="index.html" />
     <link rel="next" title="ownCloud Appliances" href="appliance_installation.html" />
     <link rel="prev" title="Installing ownCloud From the Command Line" href="command_line_installation.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Installation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="linux_installation.html">Preferred Linux Installation Method</a></li>
@@ -147,7 +147,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -171,18 +170,15 @@
 <h1>Installation Wizard<a class="headerlink" href="#installation-wizard" title="Permalink to this headline">¶</a></h1>
 <p>When ownCloud prerequisites are fulfilled and all ownCloud files are installed on the server, the last step to complete the
 installation is running the Installation Wizard.</p>
-<blockquote>
-<div><ul class="simple">
+<p><a class="reference external" href="https://youtu.be/8QeJKGyhFhk">Video: Your first minute with ownCloud Server 8.1</a></p>
+<div class="figure">
+<a class="reference external image-reference" href="https://youtu.be/8QeJKGyhFhk"><img alt="../_images/video_firstminute.png" src="../_images/video_firstminute.png" /></a>
+</div>
+<ul class="simple">
 <li>If you are installing ownCloud on the same machine as you are accessing the
 install wizard from, the URL will be <tt class="docutils literal"><span class="pre">http://localhost/owncloud</span></tt>, or <tt class="docutils literal"><span class="pre">https://localhost/owncloud</span></tt> if you have enabled SSL.</li>
-<li>If you are installing ownCloud on a different machine, you&#8217;ll have to access
-it by its hostname or IP address, e.g. <tt class="docutils literal"><span class="pre">http://example.com/owncloud</span></tt>.</li>
-<li>If you are using a self-signed certificate, you will be presented with a
-security warning about the issuer of the certificate not being trusted which
-you can ignore.</li>
-</ul>
-</div></blockquote>
-<ul class="simple">
+<li>If you are installing ownCloud on a different machine, you&#8217;ll have to access it by its hostname or IP address, e.g. <tt class="docutils literal"><span class="pre">http://example.com/owncloud</span></tt>.</li>
+<li>If you are using a self-signed certificate, you will be presented with a security warning about the issuer of the certificate not being trusted, which you can ignore.</li>
 <li>You will be presented with the setup screen:</li>
 </ul>
 <a class="reference internal image-reference" href="../_images/install-wizard.png"><img alt="../_images/install-wizard.png" src="../_images/install-wizard.png" style="width: 261.75px; height: 418.5px;" /></a>
@@ -246,9 +242,23 @@ ownCloud, create, modify and delete your data files, and install apps via the
 ownCloud Web interface.</p>
 <p>You can find your HTTP user in your HTTP server configuration files. Or you can
 create a PHP page to find it for you. To do this, create a plain text file with
-a single line in it:</p>
-<blockquote>
-<div><tt class="docutils literal"><span class="pre">&lt;?php</span> <span class="pre">echo</span> <span class="pre">exec('whoami');</span> <span class="pre">?&gt;</span></tt></div></blockquote>
+the following lines in it:</p>
+<div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
+<span class="k">echo</span> <span class="s2">&quot;User: &quot;</span> <span class="o">.</span> <span class="nb">exec</span><span class="p">(</span><span class="s1">&#39;whoami&#39;</span><span class="p">);</span>
+<span class="k">echo</span> <span class="s2">&quot;Group: &quot;</span> <span class="o">.</span> <span class="nb">exec</span><span class="p">(</span><span class="s1">&#39;groups&#39;</span><span class="p">);</span>
+<span class="cp">?&gt;</span><span class="x"></span>
+</pre></div>
+</div>
+<p>If the exec php function is disabled (getting a white page with the script above)
+you can also try to use a script like:</p>
+<div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
+<span class="nv">$processUser</span> <span class="o">=</span> <span class="nb">posix_getpwuid</span><span class="p">(</span><span class="nb">posix_geteuid</span><span class="p">());</span>
+<span class="k">echo</span> <span class="s2">&quot;User: &quot;</span> <span class="o">.</span> <span class="nv">$processUser</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">];</span>
+<span class="nv">$processGroup</span> <span class="o">=</span> <span class="nb">posix_getgrgid</span><span class="p">(</span><span class="nv">$processUser</span><span class="p">[</span><span class="s1">&#39;gid&#39;</span><span class="p">]);</span>
+<span class="k">echo</span> <span class="s2">&quot; Group: &quot;</span> <span class="o">.</span> <span class="nv">$processGroup</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">];</span>
+<span class="cp">?&gt;</span><span class="x"></span>
+</pre></div>
+</div>
 <p>Name it <tt class="docutils literal"><span class="pre">whoami.php</span></tt> and place it in your <tt class="docutils literal"><span class="pre">/var/www/html</span></tt> directory, and
 then open it in a Web browser, for example <tt class="docutils literal"><span class="pre">http://localhost/whoami.php</span></tt>. You
 should see a single line in your browser page with the HTTP user name.</p>

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Configuring External Storage (Configuration File) &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>Configuring External Storage (Configuration File) &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="File Sharing and Management" href="index.html" />
     <link rel="next" title="Encryption Configuration" href="encryption_configuration.html" />
     <link rel="prev" title="Configuring External Storage (GUI)" href="external_storage_configuration_gui.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
@@ -136,7 +136,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="encryption_configuration.html">Encryption Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="files_locking_enabling.html">Using the Files Locking App</a></li>
-<li class="toctree-l2"><a class="reference internal" href="files_locking_experimental.html">Experimental File Locking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="files_locking_transactional.html">Transactional File Locking</a></li>
 <li class="toctree-l2"><a class="reference internal" href="federated_cloud_sharing_configuration.html">Configuring Federated Cloud Sharing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="previews_configuration.html">Previews Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="serving_static_files_configuration.html">Serving Static Files for Better Performance</a></li>
@@ -147,7 +147,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -169,11 +168,9 @@
 						
   <div class="section" id="configuring-external-storage-configuration-file">
 <h1>Configuring External Storage (Configuration File)<a class="headerlink" href="#configuring-external-storage-configuration-file" title="Permalink to this headline">¶</a></h1>
-<p>Since ownCloud 4.0 it is possible to configure the filesystem to mount external
-storage providers into ownCloud&#8217;s virtual file system. You can configure these
-file systems by creating and editing <tt class="file docutils literal"><span class="pre">data/mount.json</span></tt>. This file contains
-all settings in JSON (JavaScript Object Notation) format. At the moment two
-different types of entries exist:</p>
+<p>You may configure external storage mounts by creating and editing the
+<tt class="file docutils literal"><span class="pre">data/mount.json</span></tt>. This file contains all settings in JSON (JavaScript
+Object Notation) format. At the moment two different types of entries exist:</p>
 <ul class="simple">
 <li><strong>Group mounts:</strong> each entry configures a mount for each user in group.</li>
 <li><strong>User mounts:</strong> each entry configures a mount for a single user or for all
@@ -196,11 +193,25 @@ available for use:</p>
 <li><a class="reference external" href="https://drive.google.com/start">Google Drive</a></li>
 <li><a class="reference external" href="http://openstack.org/projects/storage/">OpenStack Swift</a></li>
 </ul>
+<p>You need to enable the <cite>External storage support</cite> app first. You can
+do this on the Apps page of your ownCloud Web GUI, or use the <tt class="docutils literal"><span class="pre">occ</span></tt> command.
+This example shows how to list apps, and how to enable the <cite>External storage
+support</cite> app on Debian Linux and its derivatives:</p>
+<div class="highlight-python"><pre>$ sudo -u www-data php occ app:list
+Enabled:
+ [snip]
+Disabled:
+- files_external
+ [snip]
+
+ $ sudo -u www-data php occ app:enable files_external
+ files_external enabled</pre>
+</div>
+<p>See <a class="reference internal" href="../configuration_server/occ_command.html"><em>Using the occ Command</em></a> to learn more about <tt class="docutils literal"><span class="pre">occ</span></tt>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">You need to enable the <cite>External storage support</cite> app first before you
-can use the examples below. See the section <a class="reference internal" href="external_storage_configuration_gui.html"><em>Configuring External Storage (GUI)</em></a>
-how to do this.</p>
+<p class="last">A non-blocking or correctly configured SELinux setup is needed
+for these backends to work. Please refer to the <a class="reference internal" href="../installation/selinux_configuration.html#selinux-config-label"><em>SELinux Configuration</em></a>.</p>
 </div>
 <p>Please keep in mind that some formatting has been applied and carriage returns
 have been added for better readability. In the <tt class="file docutils literal"><span class="pre">data/mount.json</span></tt> all
@@ -337,8 +348,9 @@ to ‘/’)</li>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">A non-blocking or correctly configured SELinux setup is needed
-for this backend to work.</p>
+<p class="last">The external storage <tt class="docutils literal"><span class="pre">FTP/FTPS/SFTP</span></tt> needs the <tt class="docutils literal"><span class="pre">allow_url_fopen</span></tt> PHP
+setting to be set to <tt class="docutils literal"><span class="pre">1</span></tt>. When having connection problems make sure that it is
+not set to <tt class="docutils literal"><span class="pre">0</span></tt> in your <tt class="docutils literal"><span class="pre">php.ini</span></tt>.</p>
 </div>
 </div>
 </div>
@@ -372,6 +384,12 @@ to ‘/’)</li>
 <p class="first admonition-title">Note</p>
 <p class="last">PHP needs to be build with SFTP support for this backend to work.</p>
 </div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The external storage <tt class="docutils literal"><span class="pre">FTP/FTPS/SFTP</span></tt> needs the <tt class="docutils literal"><span class="pre">allow_url_fopen</span></tt> PHP
+setting to be set to <tt class="docutils literal"><span class="pre">1</span></tt>. When having connection problems make sure that it is
+not set to <tt class="docutils literal"><span class="pre">0</span></tt> in your <tt class="docutils literal"><span class="pre">php.ini</span></tt>.</p>
+</div>
 </div>
 </div>
 <div class="section" id="smb">
@@ -388,10 +406,6 @@ takes the following options:</p>
 <li><strong>root</strong>: the remote subfolder inside the samba share to mount (optional, defaults
 to ‘/’). To assign the ownCloud logon username automatically to the subfolder, use <tt class="docutils literal"><span class="pre">$user</span></tt> instead of a particular subfolder name.</li>
 </ul>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The SMB backend requires <strong>smbclient</strong> to be installed on the server.</p>
-</div>
 <div class="section" id="id4">
 <h4>Example<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
 <p>With username only:</p>

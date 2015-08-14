@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Issues and Troubleshooting &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>Issues and Troubleshooting &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,8 +27,8 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
-    <link rel="next" title="ownCloud Videos" href="../videos/index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
+    <link rel="next" title="Enterprise Subscription Installation (ES Only)" href="../enterprise_installation/index.html" />
     <link rel="prev" title="Theming ownCloud" href="../operations/theming.html" />
 <script type="text/javascript">
 (function () {
@@ -113,8 +113,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
@@ -146,7 +146,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -191,7 +190,7 @@ accessible via <a class="reference external" href="http://webchat.freenode.net/?
 <li>Search for a solution (see the options above)</li>
 <li>Double check your configuration</li>
 </ul>
-<p>If you can&#8217;t find a solution, please use our <a class="reference external" href="http://doc.owncloud.org/server/8.0/developer_manual/bugtracker/index.html">bugtracker</a>.</p>
+<p>If you can&#8217;t find a solution, please use our <a class="reference external" href="http://doc.owncloud.org/server/8.1/developer_manual/bugtracker/index.html">bugtracker</a>.</p>
 </div>
 <div class="section" id="general-troubleshooting">
 <h2>General Troubleshooting<a class="headerlink" href="#general-troubleshooting" title="Permalink to this headline">¶</a></h2>
@@ -268,6 +267,9 @@ database how to raise the config options <tt class="docutils literal"><span clas
 accessing your SQLite database file in your datadirectory (<tt class="docutils literal"><span class="pre">data/owncloud.db</span></tt>).
 Please check the permissions of this folder/file or if it exists at all. If you&#8217;re
 using MySQL please start your database.</li>
+<li><tt class="docutils literal"><span class="pre">Connection</span> <span class="pre">closed</span> <span class="pre">/</span> <span class="pre">Operation</span> <span class="pre">cancelled</span></tt> -&gt; This could be caused by wrong <tt class="docutils literal"><span class="pre">KeepAlive</span></tt>
+settings within your Apache config. Make sure that <tt class="docutils literal"><span class="pre">KeepAlive</span></tt> is set to <tt class="docutils literal"><span class="pre">On</span></tt> and
+also try to raise the limits of <tt class="docutils literal"><span class="pre">KeepAliveTimeout</span></tt> and <tt class="docutils literal"><span class="pre">MaxKeepAliveRequests</span></tt>.</li>
 </ul>
 </div>
 </div>

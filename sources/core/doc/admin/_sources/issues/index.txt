@@ -33,7 +33,7 @@ If you can't find a solution, please use our `bugtracker`_.
 .. _the ownCloud User mailing list: https://mailman.owncloud.org/mailman/listinfo/user
 .. _webchat: http://webchat.freenode.net/?channels=owncloud
 .. _Enterprise Edition: https://owncloud.com/lp/community-or-enterprise/
-.. _bugtracker: http://doc.owncloud.org/server/8.0/developer_manual/bugtracker/index.html
+.. _bugtracker: http://doc.owncloud.org/server/8.1/developer_manual/bugtracker/index.html
 .. TODO ON RELEASE: Update version number above on release
 
 General Troubleshooting
@@ -115,6 +115,9 @@ Some common problems / error messages found in your logfiles as described above:
   accessing your SQLite database file in your datadirectory (``data/owncloud.db``).
   Please check the permissions of this folder/file or if it exists at all. If you're
   using MySQL please start your database.
+* ``Connection closed / Operation cancelled`` -> This could be caused by wrong ``KeepAlive``
+  settings within your Apache config. Make sure that ``KeepAlive`` is set to ``On`` and
+  also try to raise the limits of ``KeepAliveTimeout`` and ``MaxKeepAliveRequests``.
 
 Troubleshooting Webserver and PHP problems
 ------------------------------------------

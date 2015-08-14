@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Manual Installation on Linux &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>Manual Installation on Linux &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="Installation" href="index.html" />
     <link rel="next" title="Univention Corporate Server" href="ucs_installation.html" />
     <link rel="prev" title="Nginx Configuration" href="nginx_configuration.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Installation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="linux_installation.html">Preferred Linux Installation Method</a></li>
@@ -152,7 +152,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -235,8 +234,9 @@ of non-ASCII characters)</li>
 <p>Required for specific apps:</p>
 <ul class="simple">
 <li>PHP module ldap (for LDAP integration)</li>
-<li>smbclient (for SMB storage)</li>
-<li>PHP module ftp (for FTP storage)</li>
+<li>smbclient (for external user authentication)</li>
+<li>PHP module ftp (for FTP storage / external user authentication)</li>
+<li>PHP module imap (for external user authentication)</li>
 </ul>
 <p>Recommended for specific apps (<em>optional</em>):</p>
 <ul class="simple">
@@ -340,6 +340,15 @@ configuration so all you have to do is create a
 by running:</p>
 <div class="highlight-python"><pre>a2enmod rewrite</pre>
 </div>
+<p>Additional recommended modules are <tt class="docutils literal"><span class="pre">mod_headers</span></tt>, <tt class="docutils literal"><span class="pre">mod_env</span></tt>, <tt class="docutils literal"><span class="pre">mod_dir</span></tt> and <tt class="docutils literal"><span class="pre">mod_mime</span></tt>:</p>
+<div class="highlight-python"><pre>a2enmod headers
+a2enmod env
+a2enmod dir
+a2enmod mime</pre>
+</div>
+<p>If you&#8217;re running <tt class="docutils literal"><span class="pre">mod_fcgi</span></tt> instead of the standard <tt class="docutils literal"><span class="pre">mod_php</span></tt> also enable:</p>
+<div class="highlight-python"><pre>a2enmod setenvif</pre>
+</div>
 </li>
 <li><p class="first">You should make sure that any built-in WebDAV module of your Web server is
 disabled (at least for the ownCloud directory), as it will interfere with
@@ -377,7 +386,7 @@ user&#8217;s logins and data in transit.</p>
 </div>
 </div>
 <div class="section" id="enabling-ssl">
-<h2>Enabling SSL<a class="headerlink" href="#enabling-ssl" title="Permalink to this headline">¶</a></h2>
+<span id="enabling-ssl-label"></span><h2>Enabling SSL<a class="headerlink" href="#enabling-ssl" title="Permalink to this headline">¶</a></h2>
 <p>An Apache installed under Ubuntu comes already set-up with a simple
 self-signed certificate. All you have to do is to enable the ssl module and
 the according site. Open a terminal and run:</p>

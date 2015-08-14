@@ -5,19 +5,20 @@ Installation Wizard
 When ownCloud prerequisites are fulfilled and all ownCloud files are installed on the server, the last step to complete the 
 installation is running the Installation Wizard.
 
-  * If you are installing ownCloud on the same machine as you are accessing the
-    install wizard from, the URL will be ``http://localhost/owncloud``, or ``https://localhost/owncloud`` if you have enabled SSL.
-  * If you are installing ownCloud on a different machine, you'll have to access
-    it by its hostname or IP address, e.g. ``http://example.com/owncloud``.
-  * If you are using a self-signed certificate, you will be presented with a
-    security warning about the issuer of the certificate not being trusted which
-    you can ignore.
+`Video: Your first minute with ownCloud Server 8.1
+<https://youtu.be/8QeJKGyhFhk>`_
 
+.. figure:: images/video_firstminute.png
+   :target: https://youtu.be/8QeJKGyhFhk 
+
+* If you are installing ownCloud on the same machine as you are accessing the
+  install wizard from, the URL will be ``http://localhost/owncloud``, or ``https://localhost/owncloud`` if you have enabled SSL. 
+* If you are installing ownCloud on a different machine, you'll have to access it by its hostname or IP address, e.g. ``http://example.com/owncloud``.
+* If you are using a self-signed certificate, you will be presented with a security warning about the issuer of the certificate not being trusted, which you can ignore.
 * You will be presented with the setup screen:
 
 .. image:: images/install-wizard.png
    :scale: 75%
- 
    
 Required Settings
 ~~~~~~~~~~~~~~~~~
@@ -86,10 +87,27 @@ ownCloud Web interface.
 
 You can find your HTTP user in your HTTP server configuration files. Or you can 
 create a PHP page to find it for you. To do this, create a plain text file with 
-a single line in it:
+the following lines in it:
 
-      ``<?php echo exec('whoami'); ?>``
-   
+.. code-block:: php
+
+  <?php
+  echo "User: " . exec('whoami');
+  echo "Group: " . exec('groups');
+  ?>
+
+If the exec php function is disabled (getting a white page with the script above)
+you can also try to use a script like:
+
+.. code-block:: php
+
+  <?php
+  $processUser = posix_getpwuid(posix_geteuid());
+  echo "User: " . $processUser['name'];
+  $processGroup = posix_getgrgid($processUser['gid']);
+  echo " Group: " . $processGroup['name'];
+  ?>
+
 Name it ``whoami.php`` and place it in your ``/var/www/html`` directory, and 
 then open it in a Web browser, for example ``http://localhost/whoami.php``. You 
 should see a single line in your browser page with the HTTP user name.

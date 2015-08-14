@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Shibboleth Integration (Enterprise Subscription only) &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>Shibboleth Integration (Enterprise Subscription only) &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="User Management (ES only)" href="index.html" />
     <link rel="next" title="File Firewall" href="file_firewall_configuration.html" />
     <link rel="prev" title="User Management (ES only)" href="index.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
@@ -125,7 +125,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -216,89 +215,98 @@ following aliases are defined in an Apache virtual host directive:</p>
 </div>
 <p>Further Shibboleth specific configuration as defined in
 <tt class="docutils literal"><span class="pre">/etc/apache2/conf.d/shib.conf</span></tt>:</p>
-<div class="highlight-apache"><pre>#
-# Load the Shibboleth module.
-#
-LoadModule mod_shib /usr/lib64/shibboleth/mod_shib_22.so
+<div class="highlight-apache"><pre>    #
+    # Load the Shibboleth module.
+    #
+    LoadModule mod_shib /usr/lib64/shibboleth/mod_shib_22.so
 
-#
-# Ensures handler will be accessible.
-#
-&lt;Location /Shibboleth.sso&gt;
-  Satisfy Any
-  Allow from all
-&lt;/Location&gt;
+    #
+    # Ensures handler will be accessible.
+    #
+    &lt;Location /Shibboleth.sso&gt;
+      Satisfy Any
+      Allow from all
+    &lt;/Location&gt;
 
-#
-# Configure the module for content.
-#
-# Shibboleth is disabled for the following location to allow non
-  shibboleth webdav access
-&lt;Location ~ "/oc-shib/remote.php/nonshib-webdav"&gt;
-  Satisfy Any
-  Allow from all
-  AuthType None
-  Require all granted
-&lt;/Location&gt;
+    #
+    # Configure the module for content.
+    #
+    # Shibboleth is disabled for the following location to allow non
+    # shibboleth webdav access
+    &lt;Location ~ "/oc-shib/remote.php/nonshib-webdav"&gt;
+      Satisfy Any
+      Allow from all
+      AuthType None
+      Require all granted
+    &lt;/Location&gt;
 
-# Shibboleth is disabled for the following location to allow public link
-  sharing
-&lt;Location ~
-  "/oc-shib/(status.php$
-  |public.php$
-  |cron.php$
-  |core/img/
-  |index.php/apps/files_sharing/publicpreview.png$
-  |index.php/apps/files/ajax/upload.php$
-  |index.php/core/ajax/translations.php$
-  |apps/files/templates/fileexists.html$
-  |index.php/apps/files/ajax/mimeicon.php$)"&gt;
-  Satisfy Any
-  Allow from all
-  AuthType None
-  Require all granted
-&lt;/Location&gt;
+    # Shibboleth is disabled for the following location to allow public link
+    # sharing
+    &lt;Location ~
+      "/oc-shib/(status.php$
+      |index.php/s/
+      |public.php$
+      |cron.php$
+      |core/img/
+      |index.php/apps/files_sharing/ajax/publicpreview.php$
+      |index.php/apps/files/ajax/upload.php$
+      |apps/files/templates/fileexists.html$
+      |index.php/apps/files/ajax/mimeicon.php$)"&gt;
+      Satisfy Any
+      Allow from all
+      AuthType None
+      Require all granted
+    &lt;/Location&gt;
 
-# Shibboleth is disabled for the following location to allow public gallery
-  sharing
-&lt;Location ~
- "/oc-shib/(apps/gallery/templates/slideshow.html$
- |index.php/apps/gallery/ajax/getimages.php
- |index.php/apps/gallery/ajax/thumbnail.php
- |index.php/apps/gallery/ajax/image.php)"&gt;
-  Satisfy Any
-  Allow from all
-  AuthType None
-  Require all granted
-&lt;/Location&gt;
+    # Shibboleth is disabled for the following location to allow public gallery
+# sharing
+    &lt;Location ~
+     "/oc-shib/(apps/gallery/templates/slideshow.html$
+     |index.php/apps/gallery/ajax/getimages.php
+     |index.php/apps/gallery/ajax/thumbnail.php
+     |index.php/apps/gallery/ajax/image.php)"&gt;
+      Satisfy Any
+      Allow from all
+      AuthType None
+      Require all granted
+    &lt;/Location&gt;
 
-# Shibboleth is disabled for the following location to allow public link
-  sharing
-&lt;Location ~ "/oc-shib/.*\.css"&gt;
-  Satisfy Any
-  Allow from all
-  AuthType None
-  Require all granted
-&lt;/Location&gt;
+    # Shibboleth is disabled for the following location to allow public link
+    # sharing
+    &lt;Location ~ "/oc-shib/.*\.css"&gt;
+      Satisfy Any
+      Allow from all
+      AuthType None
+      Require all granted
+    &lt;/Location&gt;
 
-# Shibboleth is disabled for the following location to allow public link
-  sharing
-&lt;Location ~ "/oc-shib/.*\.js"&gt;
-  Satisfy Any
-  Allow from all
-  AuthType None
-  Require all granted
-&lt;/Location&gt;
+    # Shibboleth is disabled for the following location to allow public link
+    # sharing
+    &lt;Location ~ "/oc-shib/.*\.js"&gt;
+      Satisfy Any
+      Allow from all
+      AuthType None
+      Require all granted
+    &lt;/Location&gt;
 
-# Besides the exceptions above this location is now under control of
-  Shibboleth
-&lt;Location /oc-shib&gt;
-  AuthType shibboleth
-  ShibRequireSession On
-  ShibUseHeaders Off
-  ShibExportAssertion On
-  require valid-user
-&lt;/Location&gt;</pre>
+    # Shibboleth is disabled for the following location to allow public link
+    # sharing
+    &lt;Location ~ "/oc-shib/.*\.woff "&gt;
+      Satisfy Any
+      Allow from all
+      AuthType None
+      Require all granted
+    &lt;/Location&gt;
+
+    # Besides the exceptions above this location is now under control of
+    # Shibboleth
+    &lt;Location /oc-shib&gt;
+      AuthType shibboleth
+      ShibRequireSession On
+      ShibUseHeaders Off
+      ShibExportAssertion On
+      require valid-user
+    &lt;/Location&gt;</pre>
 </div>
 </div>
 <div class="section" id="application-configuration">
@@ -372,6 +380,19 @@ password for a user:</p>
 <li>100 - successful</li>
 <li>998 - user unknown</li>
 </ul>
+<p>Example:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>curl -X DELETE <span class="s2">&quot;https://cloud.example.com/ocs/v1.php/cloud/users/myself@testshib.org/non_shib_password&quot;</span> -u admin:admin
+&lt;?xml <span class="nv">version</span><span class="o">=</span><span class="s2">&quot;1.0&quot;</span>?&gt;
+&lt;ocs&gt;
+ &lt;meta&gt;
+  &lt;status&gt;ok&lt;/status&gt;
+  &lt;statuscode&gt;100&lt;/statuscode&gt;
+  &lt;message/&gt;
+ &lt;/meta&gt;
+ &lt;data/&gt;
+&lt;/ocs&gt;
+</pre></div>
+</div>
 </div>
 <div class="section" id="known-limitations">
 <h2>Known Limitations<a class="headerlink" href="#known-limitations" title="Permalink to this headline">¶</a></h2>

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Hardening and Security Guidance &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>Hardening and Security Guidance &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="ownCloud Server Configuration" href="index.html" />
     <link rel="next" title="Server Tuning &amp; Performance Tips" href="performance_tuning.html" />
     <link rel="prev" title="Logging Configuration" href="logging_configuration.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
@@ -153,7 +153,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -199,7 +198,7 @@ shares.</p>
 <div class="section" id="operating-system">
 <h2>Operating system<a class="headerlink" href="#operating-system" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="give-php-read-accesss-to-dev-urandom">
-<h3>Give PHP read accesss to <tt class="docutils literal"><span class="pre">/dev/urandom</span></tt><a class="headerlink" href="#give-php-read-accesss-to-dev-urandom" title="Permalink to this headline">¶</a></h3>
+<span id="dev-urandom-label"></span><h3>Give PHP read accesss to <tt class="docutils literal"><span class="pre">/dev/urandom</span></tt><a class="headerlink" href="#give-php-read-accesss-to-dev-urandom" title="Permalink to this headline">¶</a></h3>
 <p>ownCloud uses a <a class="reference external" href="https://tools.ietf.org/html/rfc4086#section-5.2">RFC 4086 (&#8220;Randomness Requirements for Security&#8221;)</a> compliant
 mixer to generate cryptographically secure pseudo-random numbers. This means
 that when generating a random number ownCloud will request multiple random
@@ -210,6 +209,11 @@ such a way that PHP is able to read random data from it. Not granting PHP access
 to <tt class="docutils literal"><span class="pre">/dev/urandom</span></tt> may make your random numbers predictable and may make your
 ownCloud instance insecure as attackers might predict password reset tokens or
 other sensitive data.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When having an <tt class="docutils literal"><span class="pre">open_basedir</span></tt> configured within your <tt class="docutils literal"><span class="pre">php.ini</span></tt>
+make sure to include the folder <tt class="docutils literal"><span class="pre">/dev</span></tt>.</p>
+</div>
 </div>
 <div class="section" id="enable-hardening-modules-such-as-selinux">
 <h3>Enable hardening modules such as SELinux<a class="headerlink" href="#enable-hardening-modules-such-as-selinux" title="Permalink to this headline">¶</a></h3>
@@ -250,7 +254,7 @@ modifying the <tt class="docutils literal"><span class="pre">enabledPreviewProvi
 </div>
 </div>
 <div class="section" id="use-https">
-<h2>Use HTTPS<a class="headerlink" href="#use-https" title="Permalink to this headline">¶</a></h2>
+<span id="use-https-label"></span><h2>Use HTTPS<a class="headerlink" href="#use-https" title="Permalink to this headline">¶</a></h2>
 <p>Using ownCloud without using an encrypted HTTPS connection might allow attackers
 in a man-in-the-middle (MITM) situation to intercept your users data and
 passwords. Thus ownCloud always recommends to setup ownCloud behind HTTPS.</p>
@@ -270,7 +274,7 @@ achieved by a setting such as the following in the Apache VirtualHosts config:</
 </div>
 </div>
 <div class="section" id="enable-http-strict-transport-security">
-<h3>Enable HTTP Strict Transport Security<a class="headerlink" href="#enable-http-strict-transport-security" title="Permalink to this headline">¶</a></h3>
+<span id="enable-hsts-label"></span><h3>Enable HTTP Strict Transport Security<a class="headerlink" href="#enable-http-strict-transport-security" title="Permalink to this headline">¶</a></h3>
 <p>While redirecting all traffic to HTTPS is already a good start it will often not
 completely prevent man-in-the-middle attacks for a regular user. Thus
 administrators are encouraged to set the HTTP Strict Transport Security header
@@ -357,7 +361,7 @@ modules needs to be enabled:</p>
 <li>mod_headers</li>
 <li>mod_env</li>
 </ul>
-<p>For nginx, please see the nginx configuration example <em class="xref std std-ref">nginx_configuration_example</em></p>
+<p>For nginx, please see the nginx configuration example <a class="reference internal" href="../installation/nginx_configuration.html#nginx-configuration-example"><em>Nginx Configuration</em></a></p>
 <p>Administrators can verify whether this security change is active by accessing a
 static resource served by the web server and verify that above mentioned
 security headers are shipped.</p>

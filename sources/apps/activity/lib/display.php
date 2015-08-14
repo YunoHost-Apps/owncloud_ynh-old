@@ -91,7 +91,7 @@ class Display {
 			$tmpl->assign('previewLink', $this->getPreviewLink($activity['file'], $is_dir));
 
 			// show a preview image if the file still exists
-			$mimeType = \OCP\Files::getMimeType($activity['file']);
+			$mimeType = \OC_Helper::getFileNameMimeType($activity['file']);
 			if ($mimeType && !$is_dir && $this->preview->isMimeSupported($mimeType) && $exist) {
 				$tmpl->assign('previewImageLink',
 					$this->urlGenerator->linkToRoute('core_ajax_preview', array(
@@ -101,7 +101,9 @@ class Display {
 					))
 				);
 			} else {
-				$tmpl->assign('previewImageLink', Template::mimetype_icon($is_dir ? 'dir' : $mimeType));
+				$mimeTypeIcon = Template::mimetype_icon($is_dir ? 'dir' : $mimeType);
+				$mimeTypeIcon = (substr($mimeTypeIcon, -4) === '.png') ? substr($mimeTypeIcon, 0, -4) . '.svg' : $mimeTypeIcon;
+				$tmpl->assign('previewImageLink', $mimeTypeIcon);
 				$tmpl->assign('previewLinkIsDir', true);
 			}
 		}

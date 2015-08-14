@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Creating Branded Client Apps (Enterprise Only) &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>Creating Branded Client Apps (Enterprise Only) &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="Creating Branded ownCloud Clients (ES only)" href="index.html" />
     <link rel="next" title="Custom Client Download Repositories" href="custom_client_repos.html" />
     <link rel="prev" title="Creating Branded ownCloud Clients (ES only)" href="index.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
@@ -125,7 +125,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -134,6 +133,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#building-a-branded-ios-app">Building a Branded iOS App</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#building-an-android-app-or-desktop-sync-client">Building an Android App or Desktop Sync Client</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-the-wizard">Using the Wizard</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#signing-android-client">Signing Android Client</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="custom_client_repos.html">Custom Client Download Repositories</a></li>
@@ -170,7 +171,7 @@ they are loaded into your account.</p>
 <div class="section" id="building-a-branded-ios-app">
 <h2>Building a Branded iOS App<a class="headerlink" href="#building-a-branded-ios-app" title="Permalink to this headline">¶</a></h2>
 <p>Building a branded iOS app requires your own artwork, and you must create a
-P12 certificate and three provisioning profiles for digitally signing your
+P12 certificate and four provisioning profiles for digitally signing your
 apps. Apple has strict and specific requirements, so it is a lengthy
 process. See <a class="reference internal" href="../enterprise_ios_app/index.html"><em>Creating Branded iOS Apps (ES only)</em></a> for a complete tutorial.</p>
 </div>
@@ -185,6 +186,9 @@ of any items that need to be corrected, or a success message:</p>
 <p>When your new app is built, which may take up to 48 hours, it will
 appear in your personal folder on the Files page.</p>
 <img alt="../_images/ownbrander-4.png" src="../_images/ownbrander-4.png" />
+</div>
+<div class="section" id="using-the-wizard">
+<h2>Using the Wizard<a class="headerlink" href="#using-the-wizard" title="Permalink to this headline">¶</a></h2>
 <p>You can play around with ownBrander and create some apps for testing and
 learning. The Android and Desktop sync clients are the easiest to use for
 testing, so we&#8217;ll walk through creating an Android app. You need a just a few
@@ -196,34 +200,57 @@ your global defaults, and you can change them when you create your apps. When
 you create production apps, then you must use your real app name, and the URL
 must point to your real ownCloud server.</p>
 <img alt="../_images/ownbrander-5.png" src="../_images/ownbrander-5.png" />
-<p>Now go to the Android tab. There is a lot of helpful information on this page.
-Fill in your Application name, or keep the default set from the Common tab,
-and the Android package name.</p>
+<p>Next, go to the Android tab. This has three sections: <strong>Required</strong>,
+<strong>Suggested</strong>, and <strong>Advanced</strong>. Start in the <strong>Required</strong> section with your
+application name and server URL, which should be already entered from the
+Common tab. You may change these, and optionally check <strong>Server URL visible</strong> to
+allow users to change it.</p>
+<img alt="../_images/ownbrander-29.png" src="../_images/ownbrander-29.png" />
+<p>Now enter your Android package name. This is the unique name that identifies it
+to Google Play. Then enter your account type; this identifies it on your users&#8217;
+Android devices.</p>
 <img alt="../_images/ownbrander-6.png" src="../_images/ownbrander-6.png" />
+<p>Your next three options are <strong>Show multiaccount or disconnect</strong>, <strong>Enable send
+to other apps features</strong>, and <strong>Enable SAML</strong>. When you enable <strong>Show
+multiaccount or disconnect</strong>, your users can configure multiple ownCloud
+accounts. When it is disabled they see only a disconnect button.</p>
+<p><strong>Enable SAML</strong> is for ownCloud servers that use SAML (Security Assertion Markup
+Language) authentication.</p>
+<p><strong>Enable send to other apps features</strong> allows your users to open ownCloud files
+with other Android apps, such as file managers and photo galleries.</p>
 <p>Next, upload your images. The wizard tells you the exact size they must be, and
-click the images on the right to see some example screenshots.</p>
+you can click the images on the right to see some example screenshots.</p>
 <img alt="../_images/ownbrander-7.png" src="../_images/ownbrander-7.png" />
-<p>Next, you have the option to display a New Account link on users&#8217; login
-screens. This is a simple mechanism for users to create new accounts. Then you
-can have a default root folder name that displays at the top of users&#8217; screens,
-such as home, your company name, or anything you want.</p>
+<p>You may enter a custom user agent, if you wish, and display a new account link
+button to your users. You need this to enable multiaccounts.</p>
 <img alt="../_images/ownbrander-8.png" src="../_images/ownbrander-8.png" />
-<p>The next option is enabling a help URL. This can be a link to documentation on
-your own site, or to <a class="reference external" href="https://doc.owncloud.org">doc.owncloud.org</a>. Then you
-have options to enable a &#8220;Recommend&#8221; feature so your users can recommend your
-app to other users, and a feedback option so they can tell you what they think
-of your app.</p>
-<img alt="../_images/ownbrander-9.png" src="../_images/ownbrander-9.png" />
-<p>The Imprint URL option allows you to enter a link to information about your
-company. The URL to download the app is automatically generated by ownBrander,
-or you may enter an alternate download link.</p>
-<img alt="../_images/ownbrander-10.png" src="../_images/ownbrander-10.png" />
-<p>Finally, if you are creating a paid app then check the checkbox for Paid Users
-and upload an icon.</p>
+</div>
+<div class="section" id="signing-android-client">
+<span id="sign-android-app"></span><h2>Signing Android Client<a class="headerlink" href="#signing-android-client" title="Permalink to this headline">¶</a></h2>
+<p>The next option is <strong>Sign Android Client</strong>. You can upload your signing
+certificate in the wizard so that is signed during the build process, or you
+can optionally sign your app after we build it. See
+<a class="reference internal" href="publishing_android_app.html"><em>Distributing Your Branded Android App (Enterprise Only)</em></a> to learn how to sign your app after it is built.</p>
+<p><strong>Root folder name</strong> displays the root folder name on your user&#8217;s devices.</p>
+<p><strong>Help url</strong> is for entering a link to your help page for the app.</p>
+<p><strong>Activate &#8220;Recommend&#8221; option</strong> displays a &#8220;recommend this app&#8221; option via
+email.</p>
+<p>Use <strong>Activate the option feedback</strong> to display an email address for user
+feedback.</p>
+<p><strong>Imprint URL</strong> is for the about page on your Web site, or any page that has
+information about your company.</p>
+<p>Enter any custom download link in <strong>URL to download the app</strong>.</p>
+<p>Finally, if you are creating a paid app then check the checkbox for <strong>Paid
+Users</strong> and upload an icon.</p>
 <img alt="../_images/ownbrander-11.png" src="../_images/ownbrander-11.png" />
-<p>Now you are finished. Click the Generate Android App button, and you will
+<p>The <strong>Suggested</strong> and <strong>Advanced</strong> sections allow you to further customize your
+branding with custom colors and images.</p>
+<p>When you are finished click the <strong>Generate Android App</strong> button, and you will
 either see a success message, or an error message telling you what you need to
-fix. When all of your options are entered correctly and you click the Generate
+fix. Note also that at the bottom of the wizard, the name and version of
+your new app is displayed, for example <strong>The version that it will be generated
+is: oc-android-1.7.0_signed</strong>. When all of your options are
+entered correctly and you click the Generate
 Android App button, it takes up to 48 hours for your app to appear in your
 <a class="reference external" href="https://customer.owncloud.com/owncloud/">Customer.owncloud.com</a> account.</p>
 <img alt="../_images/ownbrander-12.png" src="../_images/ownbrander-12.png" />

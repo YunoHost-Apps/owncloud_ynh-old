@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>SELinux Configuration &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>SELinux Configuration &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="Installation" href="index.html" />
     <link rel="next" title="Mac OS X" href="macos_installation.html" />
     <link rel="prev" title="Yaws Configuration" href="yaws_configuration.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Installation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="linux_installation.html">Preferred Linux Installation Method</a></li>
@@ -132,6 +132,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#allow-access-to-a-remote-database">Allow access to a remote database</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#allow-access-to-ldap-server">Allow access to LDAP server</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#allow-access-to-remote-network">Allow access to remote network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#allow-access-to-smtp-sendmail">Allow access to SMTP/sendmail</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="macos_installation.html">Mac OS X</a></li>
@@ -144,7 +145,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -165,7 +165,7 @@
 					<div class="page-content">
 						
   <div class="section" id="selinux-configuration">
-<h1>SELinux Configuration<a class="headerlink" href="#selinux-configuration" title="Permalink to this headline">¶</a></h1>
+<span id="selinux-config-label"></span><h1>SELinux Configuration<a class="headerlink" href="#selinux-configuration" title="Permalink to this headline">¶</a></h1>
 <p>When you have SELinux enabled on your Linux distribution, you may run into
 permissions problems after a new ownCloud installation, and see <tt class="docutils literal"><span class="pre">permission</span>
 <span class="pre">denied</span></tt> errors in your ownCloud logs.</p>
@@ -211,6 +211,13 @@ HTTP server write access to these directories:</p>
 <p>ownCloud requires access to remote networks for functionalities such as Server-to-Server sharing, external storages or
 the app store. To allow this access use the following setting:</p>
 <div class="highlight-python"><pre>setsebool -P httpd_can_network_connect on</pre>
+</div>
+</div>
+<div class="section" id="allow-access-to-smtp-sendmail">
+<h2>Allow access to SMTP/sendmail<a class="headerlink" href="#allow-access-to-smtp-sendmail" title="Permalink to this headline">¶</a></h2>
+<p>If you want to allow ownCloud to send out e-mail notifications via sendmail you need
+to use the following setting:</p>
+<div class="highlight-python"><pre>setsebool -P httpd_can_sendmail on</pre>
 </div>
 </div>
 </div>

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Configuring Federated Cloud Sharing &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>Configuring Federated Cloud Sharing &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,10 +27,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="File Sharing and Management" href="index.html" />
     <link rel="next" title="Previews Configuration" href="previews_configuration.html" />
-    <link rel="prev" title="Experimental File Locking" href="files_locking_experimental.html" />
+    <link rel="prev" title="Transactional File Locking" href="files_locking_transactional.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
@@ -128,9 +128,11 @@
 <li class="toctree-l2"><a class="reference internal" href="external_storage_configuration.html">Configuring External Storage (Configuration File)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="encryption_configuration.html">Encryption Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="files_locking_enabling.html">Using the Files Locking App</a></li>
-<li class="toctree-l2"><a class="reference internal" href="files_locking_experimental.html">Experimental File Locking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="files_locking_transactional.html">Transactional File Locking</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Configuring Federated Cloud Sharing</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#creating-federated-cloud-shares-via-email">Creating Federated Cloud Shares via Email</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sharing-with-owncloud-7">Sharing With ownCloud 7</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-a-direct-share-link">Creating a Direct Share Link</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-federated-cloud-shares-via-public-link-share">Creating Federated Cloud Shares via Public Link Share</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#configuration-tips">Configuration Tips</a></li>
 </ul>
 </li>
@@ -143,7 +145,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -176,6 +177,14 @@ allow users to upload files, and set an expiration date.</p>
 <p class="last">Currently, federated shares cannot be re-shared, and the only visible
 option when you create the share is <strong>Can edit</strong>.</p>
 </div>
+<div class="section" id="sharing-with-owncloud-7">
+<h2>Sharing With ownCloud 7<a class="headerlink" href="#sharing-with-owncloud-7" title="Permalink to this headline">¶</a></h2>
+<p>Direct share links (<a class="reference internal" href="#direct-share-link"><em>Creating a Direct Share Link</em></a>) are not supported in ownCloud
+7, so you must create federated cloud shares with public links
+(<a class="reference internal" href="#public-link-share"><em>Creating Federated Cloud Shares via Public Link Share</em></a>).</p>
+</div>
+<div class="section" id="creating-a-direct-share-link">
+<span id="direct-share-link"></span><h2>Creating a Direct Share Link<a class="headerlink" href="#creating-a-direct-share-link" title="Permalink to this headline">¶</a></h2>
 <p>Follow these steps to create a new federated cloud share:</p>
 <p>1. Go to your ownCloud Admin page and scroll to the Federated Cloud Sharing
 section of the Sharing section.</p>
@@ -223,11 +232,12 @@ shared with, and federated cloud shares are labeled as <tt class="docutils liter
 <img alt="../_images/create_public_share-5.png" src="../_images/create_public_share-5.png" />
 </div>
 <p>Click the trash can icon to disconnect the share.</p>
-<div class="section" id="creating-federated-cloud-shares-via-email">
-<h2>Creating Federated Cloud Shares via Email<a class="headerlink" href="#creating-federated-cloud-shares-via-email" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="creating-federated-cloud-shares-via-public-link-share">
+<span id="public-link-share"></span><h2>Creating Federated Cloud Shares via Public Link Share<a class="headerlink" href="#creating-federated-cloud-shares-via-public-link-share" title="Permalink to this headline">¶</a></h2>
 <p>Check the <tt class="docutils literal"><span class="pre">Share</span> <span class="pre">Link</span></tt> checkbox to expose more sharing options (which are
 described more fully in <a class="reference internal" href="file_sharing_configuration.html"><em>File Sharing</em></a>). You may create a
-federated cloud share by allowing ownCloud to create the link for you, and
+federated cloud share by allowing ownCloud to create a public link for you, and
 then email it to the person you want to create the share with.</p>
 <div class="figure">
 <img alt="../_images/create_public_share-6.png" src="../_images/create_public_share-6.png" />

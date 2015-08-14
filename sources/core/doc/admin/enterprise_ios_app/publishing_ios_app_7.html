@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Building Your iOS App With ownBrander &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>Building Your iOS App With ownBrander &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="Creating Branded iOS Apps (ES only)" href="index.html" />
     <link rel="next" title="Testing Your New Branded iOS App" href="publishing_ios_app_8.html" />
     <link rel="prev" title="Creating a P12 Certificate" href="publishing_ios_app_6.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
@@ -125,7 +125,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -242,7 +241,9 @@ configurator.</p>
 <div class="figure">
 <img alt="../_images/ownbrander-24.png" src="../_images/ownbrander-24.png" />
 </div>
-<p>Enter a <strong>Feedback email</strong> address, if you have one.</p>
+<p><strong>Activate the option feedback</strong> creates an option for your users to either
+enable or not enable the feedback option on their devices. If you enable this,
+enter your <strong>Feedback email</strong> address.</p>
 <div class="figure">
 <img alt="../_images/ownbrander-25.png" src="../_images/ownbrander-25.png" />
 </div>
@@ -254,6 +255,25 @@ configurator.</p>
 account.</p>
 <div class="figure">
 <img alt="../_images/ownbrander-27.png" src="../_images/ownbrander-27.png" />
+</div>
+<p>Upload an icon that will be displayed by default when there is no file preview
+to display.</p>
+<div class="figure">
+<img alt="../_images/ownbrander-30.png" src="../_images/ownbrander-30.png" />
+</div>
+<p>By default, sharing by public URL is enabled. Public share links allow your
+users to share files with anyone. This option allows you to disable public link
+sharing.</p>
+<div class="figure">
+<img alt="../_images/ownbrander-31.png" src="../_images/ownbrander-31.png" />
+</div>
+<p>You may disable background transfers if you are using mobile device management
+(MDM), such as Mobile Iron, that does not support background jobs, or if you
+simply do not want to allow the app to work in the background. By default,
+the ownCloud iOS app supports background file transfers by taking
+advantage of <a class="reference external" href="https://developer.apple.com/library/ios/documentation/iPhone/Conceptual/iPhoneOSProgrammingGuide/BackgroundExecution/BackgroundExecution.html">Background Execution.</a></p>
+<div class="figure">
+<img alt="../_images/ownbrander-32.png" src="../_images/ownbrander-32.png" />
 </div>
 <p>That completes the required elements of your branded iOS app.</p>
 </div>
@@ -272,7 +292,7 @@ additional icons.</p>
 <h2>Generate iOS App<a class="headerlink" href="#generate-ios-app" title="Permalink to this headline">¶</a></h2>
 <p>When you have uploaded all of your images and completed your customizations,
 click the <strong>Generate iOS App</strong> button and take a well-deserved break. Remember
-to email your three provisioning profiles and P12 certificate to
+to email your four Ad Hoc provisioning profiles and P12 certificate to
 <a class="reference external" href="mailto:branding&#37;&#52;&#48;owncloud&#46;com">branding<span>&#64;</span>owncloud<span>&#46;</span>com</a>.</p>
 <div class="figure">
 <img alt="../_images/ownbrander-28.png" src="../_images/ownbrander-28.png" />

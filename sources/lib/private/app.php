@@ -659,6 +659,12 @@ class OC_App {
 		if (is_array($data)) {
 			$data = OC_App::parseAppInfo($data);
 		}
+		if(isset($data['ocsid'])) {
+			$storedId = \OC::$server->getConfig()->getAppValue($appId, 'ocsid');
+			if($storedId !== '' && $storedId !== $data['ocsid']) {
+				$data['ocsid'] = $storedId;
+			}
+		}
 
 		self::$appInfo[$appId] = $data;
 
@@ -1162,9 +1168,7 @@ class OC_App {
 			OC_DB::updateDbFromStructure(self::getAppPath($appId) . '/appinfo/database.xml');
 		}
 		unset(self::$appVersion[$appId]);
-		if (!self::isEnabled($appId)) {
-			return false;
-		}
+		// run upgrade code
 		if (file_exists(self::getAppPath($appId) . '/appinfo/update.php')) {
 			self::loadApp($appId, false);
 			include self::getAppPath($appId) . '/appinfo/update.php';
@@ -1225,23 +1229,27 @@ class OC_App {
 		// just modify the description if it is available
 		// otherwise this will create a $data element with an empty 'description'
 		if (isset($data['description'])) {
-			// sometimes the description contains line breaks and they are then also
-			// shown in this way in the app management which isn't wanted as HTML
-			// manages line breaks itself
+			if (is_string($data['description'])) {
+				// sometimes the description contains line breaks and they are then also
+				// shown in this way in the app management which isn't wanted as HTML
+				// manages line breaks itself
 
-			// first of all we split on empty lines
-			$paragraphs = preg_split("!\n[[:space:]]*\n!mu", $data['description']);
+				// first of all we split on empty lines
+				$paragraphs = preg_split("!\n[[:space:]]*\n!mu", $data['description']);
 
-			$result = [];
-			foreach ($paragraphs as $value) {
-				// replace multiple whitespace (tabs, space, newlines) inside a paragraph
-				// with a single space - also trims whitespace
-				$result[] = trim(preg_replace('![[:space:]]+!mu', ' ', $value));
+				$result = [];
+				foreach ($paragraphs as $value) {
+					// replace multiple whitespace (tabs, space, newlines) inside a paragraph
+					// with a single space - also trims whitespace
+					$result[] = trim(preg_replace('![[:space:]]+!mu', ' ', $value));
+				}
+
+				// join the single paragraphs with a empty line in between
+				$data['description'] = implode("\n\n", $result);
+
+			} else {
+				$data['description'] = '';
 			}
-
-			// join the single paragraphs with a empty line in between
-			$data['description'] = implode("\n\n", $result);
-
 		}
 
 		return $data;

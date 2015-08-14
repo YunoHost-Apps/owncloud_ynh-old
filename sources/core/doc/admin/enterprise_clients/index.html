@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Creating Branded ownCloud Clients (ES only) &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>Creating Branded ownCloud Clients (ES only) &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="next" title="Creating Branded Client Apps (Enterprise Only)" href="creating_branded_apps.html" />
     <link rel="prev" title="License Keys" href="../enterprise_installation/license_keys_installation.html" />
 <script type="text/javascript">
@@ -113,8 +113,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
@@ -124,7 +124,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -158,6 +157,8 @@
 <li class="toctree-l2"><a class="reference internal" href="creating_branded_apps.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="creating_branded_apps.html#building-a-branded-ios-app">Building a Branded iOS App</a></li>
 <li class="toctree-l2"><a class="reference internal" href="creating_branded_apps.html#building-an-android-app-or-desktop-sync-client">Building an Android App or Desktop Sync Client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_branded_apps.html#using-the-wizard">Using the Wizard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_branded_apps.html#signing-android-client">Signing Android Client</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="custom_client_repos.html">Custom Client Download Repositories</a></li>
@@ -190,13 +191,17 @@
 <li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_3.html#create-app-group">Create App Group</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_3.html#create-a-documentprovider-bundle-id">Create a DocumentProvider Bundle ID</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_3.html#create-a-documentproviderfileprovider-bundle-id">Create a DocumentProviderFileProvider Bundle ID</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_3.html#create-a-shareextapp-bundle-id">Create a ShareExtApp Bundle ID</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_3.html#four-completed-app-ids">Four Completed App IDs</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_4.html">Setting up Testing Devices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_5.html">Create Provisioning Profiles</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_5.html#first-provisioning-profile">First Provisioning Profile</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_5.html#second-provisioning-profile">Second Provisioning Profile</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_5.html#third-provisioning-profile">Third Provisioning Profile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_5.html#first-ad-hoc-provisioning-profile">First Ad Hoc Provisioning Profile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_5.html#second-ad-hoc-provisioning-profile">Second Ad Hoc Provisioning Profile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_5.html#third-ad-hoc-provisioning-profile">Third Ad Hoc Provisioning Profile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_5.html#fourth-ad-hoc-provisioning-profile">Fourth Ad Hoc Provisioning Profile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_5.html#create-four-app-store-profiles">Create Four App Store Profiles</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_6.html">Creating a P12 Certificate</a></li>
@@ -211,7 +216,12 @@
 <li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_8.html#getting-crash-reports-from-testers">Getting Crash Reports From Testers</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_9.html">Publishing Your New Branded iOS App</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_9.html">Publishing Your New Branded iOS App</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_9.html#setting-up-your-itunes-storefront">Setting up Your iTunes Storefront</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_9.html#pricing">Pricing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../enterprise_ios_app/publishing_ios_app_9.html#submit-for-review">Submit For Review</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

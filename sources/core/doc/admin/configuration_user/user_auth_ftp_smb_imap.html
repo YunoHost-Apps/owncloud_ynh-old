@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>User Authentication with IMAP, SMB, and FTP &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>User Authentication with IMAP, SMB, and FTP &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="User Management" href="index.html" />
     <link rel="next" title="User Authentication with LDAP" href="user_auth_ldap.html" />
     <link rel="prev" title="Resetting a Lost Admin Password" href="reset_admin_password.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">User Management</a><ul class="current">
@@ -138,7 +138,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -175,6 +174,11 @@ syntax:</p>
 <span class="p">),</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A non-blocking or correctly configured SELinux setup is needed
+for these backends to work. Please refer to the <a class="reference internal" href="../installation/selinux_configuration.html#selinux-config-label"><em>SELinux Configuration</em></a>.</p>
+</div>
 <p>Currently the “External user support” (user_external) app, which you need to
 enable first (See <a class="reference internal" href="../installation/apps_management_installation.html"><em>Installing and Managing Apps</em></a>)
 provides the following user backends:</p>
@@ -184,6 +188,7 @@ provides the following user backends:</p>
 <ul class="simple">
 <li><strong>Class:</strong> OC_User_IMAP</li>
 <li><strong>Arguments:</strong>  a mailbox string as defined <a class="reference external" href="http://www.php.net/manual/en/function.imap-open.php">in the PHP documentation</a></li>
+<li><strong>Dependency:</strong> php-imap (See <a class="reference internal" href="../installation/source_installation.html"><em>Manual Installation on Linux</em></a>)</li>
 <li><strong>Example:</strong></li>
 </ul>
 <div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
@@ -205,6 +210,7 @@ provides the following user backends:</p>
 <ul class="simple">
 <li><strong>Class:</strong> OC_User_SMB</li>
 <li><strong>Arguments:</strong> the samba server to authenticate against</li>
+<li><strong>Dependency:</strong> smbclient (See <a class="reference internal" href="../installation/source_installation.html"><em>Manual Installation on Linux</em></a>)</li>
 <li><strong>Example:</strong></li>
 </ul>
 <div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
@@ -226,6 +232,7 @@ provides the following user backends:</p>
 <ul class="simple">
 <li><strong>Class:</strong> OC_User_FTP</li>
 <li><strong>Arguments:</strong> the FTP server to authenticate against</li>
+<li><strong>Dependency:</strong> php-ftp (See <a class="reference internal" href="../installation/source_installation.html"><em>Manual Installation on Linux</em></a>)</li>
 <li><strong>Example:</strong></li>
 </ul>
 <div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>

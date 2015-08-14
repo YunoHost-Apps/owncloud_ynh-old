@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Server Tuning &amp; Performance Tips &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>Server Tuning &amp; Performance Tips &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="ownCloud Server Configuration" href="index.html" />
     <link rel="next" title="Reverse Proxy Configuration" href="reverse_proxy_configuration.html" />
     <link rel="prev" title="Hardening and Security Guidance" href="harden_server.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
@@ -156,7 +156,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -225,6 +224,15 @@ performance. To do so, add the following to <tt class="docutils literal"><span c
 </div>
 <div class="section" id="caching">
 <span id="id1"></span><h3>Caching<a class="headerlink" href="#caching" title="Permalink to this headline">¶</a></h3>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Memory cache configuration for the ownCloud server is no longer
+automatic, requiring configuration in config.php with the keys
+memcache.local and/or memcache.distributed;
+see <a class="reference internal" href="config_sample_php_parameters.html"><em>Config.php Parameters</em></a>.
+Before the memcache.local can be used you need to install
+APC, APCu or XCache.</p>
+</div>
 <p>Caching improves performance by storing data, code, and other objects in
 memory.</p>
 <p>The APC or OPCache bytecode cache are commonly used in PHP environments. This
@@ -249,6 +257,15 @@ configuration examples see <a class="reference internal" href="config_sample_php
 <p>Distributed PHP environments should use Memcached. Memcached servers must be
 specified in the <tt class="docutils literal"><span class="pre">memcached_servers</span></tt> array in ownCloud&#8217;s config file
 <tt class="docutils literal"><span class="pre">config.php</span></tt>. For examples see <a class="reference internal" href="config_sample_php_parameters.html"><em>Config.php Parameters</em></a>.</p>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When a memory cache has been configured, but is unavailable due to a
+a missing extension or server downtime, ownCloud will be
+inaccessible, as a memory cache is considered to be a vital
+component.</p>
+</div>
+</div></blockquote>
 </div>
 <div class="section" id="tuning-system-parameters">
 <h3>Tuning System Parameters<a class="headerlink" href="#tuning-system-parameters" title="Permalink to this headline">¶</a></h3>
@@ -258,8 +275,8 @@ specified in the <tt class="docutils literal"><span class="pre">memcached_server
 <span class="nb">echo</span> <span class="s2">&quot;1&quot;</span> &gt; /proc/sys/net/ipv4/tcp_tw_reuse
 <span class="nb">echo</span> <span class="s2">&quot;10&quot;</span> &gt; /proc/sys/net/ipv4/tcp_fin_timeout
 
-<span class="nb">echo</span> <span class="s2">&quot;65536&quot;</span> &gt; /proc/sys/net/core/somaxconn
-<span class="nb">echo</span> <span class="s2">&quot;65536&quot;</span> &gt; /proc/sys/net/ipv4/tcp_max_syn_backlog
+<span class="nb">echo</span> <span class="s2">&quot;65535&quot;</span> &gt; /proc/sys/net/core/somaxconn
+<span class="nb">echo</span> <span class="s2">&quot;65535&quot;</span> &gt; /proc/sys/net/ipv4/tcp_max_syn_backlog
 <span class="nb">echo</span> <span class="s2">&quot;262144&quot;</span> &gt; /proc/sys/net/netfilter/nf_conntrack_max
 </pre></div>
 </div>
@@ -273,9 +290,9 @@ specified in the <tt class="docutils literal"><span class="pre">memcached_server
 <span class="gp">#</span> cat /proc/sys/net/ipv4/tcp_fin_timeout
 <span class="go">10</span>
 <span class="gp">#</span> cat /proc/sys/net/core/somaxconn
-<span class="go">65536</span>
+<span class="go">65535</span>
 <span class="gp">#</span> cat /proc/sys/net/ipv4/tcp_max_syn_backlog
-<span class="go">65536</span>
+<span class="go">65535</span>
 <span class="gp">#</span> cat /proc/sys/net/netfilter/nf_conntrack_max
 <span class="go">262144</span>
 </pre></div>
@@ -286,8 +303,8 @@ net.ipv4.tcp_tw_recycle = 1
 net.ipv4.tcp_tw_reuse = 1
 net.ipv4.tcp_fin_timeout = 10
 
-net.core.somaxconn = 65536
-net.ipv4.tcp_max_syn_backlog = 65536
+net.core.somaxconn = 65535
+net.ipv4.tcp_max_syn_backlog = 65535
 net.netfilter.nf_conntrack_max = 262144</pre>
 </div>
 </div>

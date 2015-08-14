@@ -7,28 +7,73 @@ Recommended Setup for Running ownCloud
 
 For best performance, stability, support, and full functionality we recommend:
 
-* Red Hat Enterprise Linux 7
-* MySQL/MariaDB
-* PHP 5.4 +
-* Apache 2.4
+* LAMP stack with a Web server and separate database/storage server
+* PHP 5.4+ with APC cache enabled
+* MySQL with InnoDB, and buffer cache increased to 16MB
+* MySQL Query Cache enabled
+* Windows 7 or Mac 10.8 desktop clients
+* Webkit browser (Firefox, Chrome, Safari)
+* Mobile apps on Android 4+, iOS 7+
+* WebDAV Clients: Cyber Duck and NetDrive (for mounting via a Windows drive 
+  letter)
 
-Supported Platforms
--------------------
+Supported Server Platforms
+--------------------------
 
-* Server: Linux (Debian 7, SUSE Linux Enterprise Server 11 SP3 & 12, 
-  Red Hat Enterprise Linux/Centos 6.5 and 7, Ubuntu 12.04 LTS, 14.04 LTS, 
-  14.10)
-* Webserver: Apache 2  
-* Databases: MySQL/MariaDB 5.x; Oracle 11g; PostgreSQL
+Full Packages:
+
+* Debian 7, 8
+* RHEL / Centos 6.5, 6.6 and 7
+* Ubuntu 14.04 LTS and 15.04
+* SLES 12 (once PHP dependencies (e.g. posix) are added)
+    
+Only as .tar files:
+
+* Ubuntu 12.04 LTS
+* SLES 11 sp3
+
+Other server components:
+
 * PHP 5.4 + required
+* Databases: MySQL/MariaDB 5.x; Oracle 11g; PostgreSQL
 * Hypervisors: Hyper-V, VMware ESX, Xen, KVM
-* Desktop: Windows XP SP3 (EoL Q2 2015), Windows 7+, Mac OS X 10.7+ (64-bit 
-  only), Linux (CentOS 6.5, 7, Ubuntu 12.04 LTS, 14.04 LTS, 14.10, Fedora 20, 
-  21, openSUSE 12.3, 13)
-* Mobile apps: iOS 7+, Android 4+
-* Web browser: IE8+ (but not compatibility mode), Firefox 14+, Chrome 18+, 
-  Safari 5+
- 
+
+Supported Desktop Platforms
+---------------------------
+
+In general, we will support the most recent two releases of operating systems 
+that are still supported by upstream or by the publisher. Currently this 
+includes:
+
+* Windows 7+
+* Mac OS X 10.7+ (64-bit only)
+* CentOS 6.6, 7 (7 is 64 bit only)
+* Ubuntu 14.04 LTS, 15.04
+* Fedora 21, 22
+* Debian 7,8
+* openSUSE 13.1, 13.2
+
+Supported Mobile Platforms
+--------------------------
+
+* iOS 7+
+* Android 4+
+
+Supported Web Browsers
+----------------------
+
+* IE8+ (except compatibility mode)
+* Firefox v35+
+* Chrome v40+, 
+* Safari v5+
+
+Not Supported With any ownCloud Version
+---------------------------------------
+
+* Native Windows WebDAV clients
+* Windows RT
+* SQLite in production
+
 Changes in 8.1
 --------------
   
@@ -49,12 +94,17 @@ A default set of security and privacy HTTP headers have been added to the
 ownCloud ``.htaccess`` file, and ownCloud administrators may now customize which 
 headers are sent.
 
+More strict SSL certificate checking improves security but can result in
+"cURL error 60: SSL certificate problem: unable to get local issuer certificate"
+errors with certain broken PHP versions. Please verify your SSL setup, update your
+PHP or contact your vendor if you receive these errors.
+
 The persistent file-based cache (e.g. used by LDAP integration) has been dropped and 
 replaced with a memory-only cache, which must be explicitly configured. See 
 :doc:`configuration_user/user_auth_ldap`. Memory cache configuration for the 
 ownCloud server is no longer automatic, requiring configuration in 
-``config.php```` with the keys memcache.local`` and/or 
-``memcache.distributed``; see :ref:`caching`. 
+``config.php`` with the keys ``memcache.local`` and/or ``memcache.distributed``;
+see :ref:`caching`. 
 
 The OC_User_HTTP backend has been removed. Administrators are encouraged to use 
 the ``user_webdavauth`` application instead.
@@ -66,13 +116,29 @@ requests.
 When you upgrade from ownCloud 8.0, with encryption enabled, to 8.1, you must 
 enable the new encryption backend and migrate your encryption keys. See 
 :doc:`configuration_files/encryption_configuration`
-  
+
+Encryption can no longer be disabled in ownCloud 8.1. It is planned to re-add
+this feature to the command line client for a future release.
+
+It is not recommended to upgrade encryption-enabled systems from ownCloud Server 8.0
+to version 8.1.0 as there is a chance the migration will break. We recommend to
+migrate to the first bugfix release, ownCloud Server 8.1.1.
+
 Due to various technical issues, by default desktop sync clients older than 
 1.7 are not allowed to connect and sync with the ownCloud server. This is 
 configurable via the ``minimum.supported.desktop.version`` switch in 
 ``config.php``.
 
+Previews are now generated at a maximum size of 2048 x 2048 pixels. This is configurable
+via the ``preview_max_x`` and ``preview_max_y`` switches in ``config.php``.
+
 The ownCloud 8 server is not supported on any version of Windows.
+
+The 8.1.0 release has a minor bug which makes app updates fail at first try. Reload the
+apps page and try again, and the update will succeed.
+
+The ``forcessl`` option within the ``config.php`` and the ``Enforce SSL`` option within the
+Admin-Backend was removed. This now needs to be configured like described in :ref:`use-https-label`.
 
 Enterprise 8.1 Only
 -------------------

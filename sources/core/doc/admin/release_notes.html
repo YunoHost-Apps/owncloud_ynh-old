@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ownCloud 8.2 Release Notes &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>ownCloud 8.1 Release Notes &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="_static/style.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,9 +27,9 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="index.html" />
     <link rel="next" title="What’s New for Admins in ownCloud 8.1" href="whats_new_admin.html" />
-    <link rel="prev" title="ownCloud 8.2 Server Administration Manual Introduction" href="index.html" />
+    <link rel="prev" title="ownCloud 8.1 Server Administration Manual Introduction" href="index.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -113,10 +113,14 @@
 <li><a href="contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">ownCloud 8.2 Release Notes</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">ownCloud 8.1 Release Notes</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#recommended-setup-for-running-owncloud">Recommended Setup for Running ownCloud</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#supported-platforms">Supported Platforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#supported-server-platforms">Supported Server Platforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#supported-desktop-platforms">Supported Desktop Platforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#supported-mobile-platforms">Supported Mobile Platforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#supported-web-browsers">Supported Web Browsers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#not-supported-with-any-owncloud-version">Not Supported With any ownCloud Version</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#changes-in-8-1">Changes in 8.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#enterprise-8-1-only">Enterprise 8.1 Only</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#owncloud-8-0">ownCloud 8.0</a><ul>
@@ -176,7 +180,6 @@
 <li class="toctree-l1"><a class="reference internal" href="maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -197,33 +200,80 @@
 					<div class="page-content">
 						
   <div class="section" id="owncloud-version-release-notes">
-<h1>ownCloud 8.2 Release Notes<a class="headerlink" href="#owncloud-version-release-notes" title="Permalink to this headline">¶</a></h1>
+<h1>ownCloud 8.1 Release Notes<a class="headerlink" href="#owncloud-version-release-notes" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="recommended-setup-for-running-owncloud">
 <h2>Recommended Setup for Running ownCloud<a class="headerlink" href="#recommended-setup-for-running-owncloud" title="Permalink to this headline">¶</a></h2>
 <p>For best performance, stability, support, and full functionality we recommend:</p>
 <ul class="simple">
-<li>Red Hat Enterprise Linux 7</li>
-<li>MySQL/MariaDB</li>
-<li>PHP 5.4 +</li>
-<li>Apache 2.4</li>
+<li>LAMP stack with a Web server and separate database/storage server</li>
+<li>PHP 5.4+ with APC cache enabled</li>
+<li>MySQL with InnoDB, and buffer cache increased to 16MB</li>
+<li>MySQL Query Cache enabled</li>
+<li>Windows 7 or Mac 10.8 desktop clients</li>
+<li>Webkit browser (Firefox, Chrome, Safari)</li>
+<li>Mobile apps on Android 4+, iOS 7+</li>
+<li>WebDAV Clients: Cyber Duck and NetDrive (for mounting via a Windows drive
+letter)</li>
 </ul>
 </div>
-<div class="section" id="supported-platforms">
-<h2>Supported Platforms<a class="headerlink" href="#supported-platforms" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="supported-server-platforms">
+<h2>Supported Server Platforms<a class="headerlink" href="#supported-server-platforms" title="Permalink to this headline">¶</a></h2>
+<p>Full Packages:</p>
 <ul class="simple">
-<li>Server: Linux (Debian 7, SUSE Linux Enterprise Server 11 SP3 &amp; 12,
-Red Hat Enterprise Linux/Centos 6.5 and 7, Ubuntu 12.04 LTS, 14.04 LTS,
-14.10)</li>
-<li>Webserver: Apache 2</li>
-<li>Databases: MySQL/MariaDB 5.x; Oracle 11g; PostgreSQL</li>
+<li>Debian 7, 8</li>
+<li>RHEL / Centos 6.5, 6.6 and 7</li>
+<li>Ubuntu 14.04 LTS and 15.04</li>
+<li>SLES 12 (once PHP dependencies (e.g. posix) are added)</li>
+</ul>
+<p>Only as .tar files:</p>
+<ul class="simple">
+<li>Ubuntu 12.04 LTS</li>
+<li>SLES 11 sp3</li>
+</ul>
+<p>Other server components:</p>
+<ul class="simple">
 <li>PHP 5.4 + required</li>
+<li>Databases: MySQL/MariaDB 5.x; Oracle 11g; PostgreSQL</li>
 <li>Hypervisors: Hyper-V, VMware ESX, Xen, KVM</li>
-<li>Desktop: Windows XP SP3 (EoL Q2 2015), Windows 7+, Mac OS X 10.7+ (64-bit
-only), Linux (CentOS 6.5, 7, Ubuntu 12.04 LTS, 14.04 LTS, 14.10, Fedora 20,
-21, openSUSE 12.3, 13)</li>
-<li>Mobile apps: iOS 7+, Android 4+</li>
-<li>Web browser: IE8+ (but not compatibility mode), Firefox 14+, Chrome 18+,
-Safari 5+</li>
+</ul>
+</div>
+<div class="section" id="supported-desktop-platforms">
+<h2>Supported Desktop Platforms<a class="headerlink" href="#supported-desktop-platforms" title="Permalink to this headline">¶</a></h2>
+<p>In general, we will support the most recent two releases of operating systems
+that are still supported by upstream or by the publisher. Currently this
+includes:</p>
+<ul class="simple">
+<li>Windows 7+</li>
+<li>Mac OS X 10.7+ (64-bit only)</li>
+<li>CentOS 6.6, 7 (7 is 64 bit only)</li>
+<li>Ubuntu 14.04 LTS, 15.04</li>
+<li>Fedora 21, 22</li>
+<li>Debian 7,8</li>
+<li>openSUSE 13.1, 13.2</li>
+</ul>
+</div>
+<div class="section" id="supported-mobile-platforms">
+<h2>Supported Mobile Platforms<a class="headerlink" href="#supported-mobile-platforms" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>iOS 7+</li>
+<li>Android 4+</li>
+</ul>
+</div>
+<div class="section" id="supported-web-browsers">
+<h2>Supported Web Browsers<a class="headerlink" href="#supported-web-browsers" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>IE8+ (except compatibility mode)</li>
+<li>Firefox v35+</li>
+<li>Chrome v40+,</li>
+<li>Safari v5+</li>
+</ul>
+</div>
+<div class="section" id="not-supported-with-any-owncloud-version">
+<h2>Not Supported With any ownCloud Version<a class="headerlink" href="#not-supported-with-any-owncloud-version" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Native Windows WebDAV clients</li>
+<li>Windows RT</li>
+<li>SQLite in production</li>
 </ul>
 </div>
 <div class="section" id="changes-in-8-1">
@@ -239,12 +289,16 @@ configuration in <tt class="docutils literal"><span class="pre">config.php</span
 <p>A default set of security and privacy HTTP headers have been added to the
 ownCloud <tt class="docutils literal"><span class="pre">.htaccess</span></tt> file, and ownCloud administrators may now customize which
 headers are sent.</p>
+<p>More strict SSL certificate checking improves security but can result in
+&#8220;cURL error 60: SSL certificate problem: unable to get local issuer certificate&#8221;
+errors with certain broken PHP versions. Please verify your SSL setup, update your
+PHP or contact your vendor if you receive these errors.</p>
 <p>The persistent file-based cache (e.g. used by LDAP integration) has been dropped and
 replaced with a memory-only cache, which must be explicitly configured. See
 <a class="reference internal" href="configuration_user/user_auth_ldap.html"><em>User Authentication with LDAP</em></a>. Memory cache configuration for the
 ownCloud server is no longer automatic, requiring configuration in
-<tt class="docutils literal"><span class="pre">config.php``</span></tt> with the keys memcache.local`` and/or
-<tt class="docutils literal"><span class="pre">memcache.distributed</span></tt>; see <a class="reference internal" href="configuration_server/performance_tuning.html#caching"><em>Caching</em></a>.</p>
+<tt class="docutils literal"><span class="pre">config.php</span></tt> with the keys <tt class="docutils literal"><span class="pre">memcache.local</span></tt> and/or <tt class="docutils literal"><span class="pre">memcache.distributed</span></tt>;
+see <a class="reference internal" href="configuration_server/performance_tuning.html#caching"><em>Caching</em></a>.</p>
 <p>The OC_User_HTTP backend has been removed. Administrators are encouraged to use
 the <tt class="docutils literal"><span class="pre">user_webdavauth</span></tt> application instead.</p>
 <p>ownCloud ships now with its own root certificate bundle derived from the
@@ -253,11 +307,22 @@ requests.</p>
 <p>When you upgrade from ownCloud 8.0, with encryption enabled, to 8.1, you must
 enable the new encryption backend and migrate your encryption keys. See
 <a class="reference internal" href="configuration_files/encryption_configuration.html"><em>Encryption Configuration</em></a></p>
+<p>Encryption can no longer be disabled in ownCloud 8.1. It is planned to re-add
+this feature to the command line client for a future release.</p>
+<p>It is not recommended to upgrade encryption-enabled systems from ownCloud Server 8.0
+to version 8.1.0 as there is a chance the migration will break. We recommend to
+migrate to the first bugfix release, ownCloud Server 8.1.1.</p>
 <p>Due to various technical issues, by default desktop sync clients older than
 1.7 are not allowed to connect and sync with the ownCloud server. This is
 configurable via the <tt class="docutils literal"><span class="pre">minimum.supported.desktop.version</span></tt> switch in
 <tt class="docutils literal"><span class="pre">config.php</span></tt>.</p>
+<p>Previews are now generated at a maximum size of 2048 x 2048 pixels. This is configurable
+via the <tt class="docutils literal"><span class="pre">preview_max_x</span></tt> and <tt class="docutils literal"><span class="pre">preview_max_y</span></tt> switches in <tt class="docutils literal"><span class="pre">config.php</span></tt>.</p>
 <p>The ownCloud 8 server is not supported on any version of Windows.</p>
+<p>The 8.1.0 release has a minor bug which makes app updates fail at first try. Reload the
+apps page and try again, and the update will succeed.</p>
+<p>The <tt class="docutils literal"><span class="pre">forcessl</span></tt> option within the <tt class="docutils literal"><span class="pre">config.php</span></tt> and the <tt class="docutils literal"><span class="pre">Enforce</span> <span class="pre">SSL</span></tt> option within the
+Admin-Backend was removed. This now needs to be configured like described in <a class="reference internal" href="configuration_server/harden_server.html#use-https-label"><em>Use HTTPS</em></a>.</p>
 </div>
 <div class="section" id="enterprise-8-1-only">
 <h2>Enterprise 8.1 Only<a class="headerlink" href="#enterprise-8-1-only" title="Permalink to this headline">¶</a></h2>

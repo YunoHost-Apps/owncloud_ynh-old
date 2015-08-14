@@ -142,15 +142,25 @@ class Share extends Constants {
 
 		while ($source !== -1) {
 			// Fetch all shares with another user
-			$query = \OC_DB::prepare(
-				'SELECT `share_with`, `file_source`, `file_target`
+			if (!$returnUserPaths) {
+				$query = \OC_DB::prepare(
+					'SELECT `share_with`, `file_source`, `file_target`
+					FROM
+					`*PREFIX*share`
+					WHERE
+					`item_source` = ? AND `share_type` = ? AND `item_type` IN (\'file\', \'folder\')'
+				);
+				$result = $query->execute(array($source, self::SHARE_TYPE_USER));
+			} else {
+				$query = \OC_DB::prepare(
+					'SELECT `share_with`, `file_source`, `file_target`
 				FROM
 				`*PREFIX*share`
 				WHERE
-				`item_source` = ? AND `share_type` = ? AND `item_type` IN (\'file\', \'folder\')'
-			);
-
-			$result = $query->execute(array($source, self::SHARE_TYPE_USER));
+				`item_source` = ? AND `share_type` IN (?, ?) AND `item_type` IN (\'file\', \'folder\')'
+				);
+				$result = $query->execute(array($source, self::SHARE_TYPE_USER, self::$shareTypeGroupUserUnique));
+			}
 
 			if (\OCP\DB::isError($result)) {
 				\OCP\Util::writeLog('OCP\Share', \OC_DB::getErrorMessage(), \OC_Log::ERROR);
@@ -182,7 +192,12 @@ class Share extends Constants {
 					$shares = array_merge($shares, $usersInGroup);
 					if ($returnUserPaths) {
 						foreach ($usersInGroup as $user) {
-							$fileTargets[(int) $row['file_source']][$user] = $row;
+							if (!isset($fileTargets[(int) $row['file_source']][$user])) {
+								// When the user already has an entry for this file source
+								// the file is either shared directly with him as well, or
+								// he has an exception entry (because of naming conflict).
+								$fileTargets[(int) $row['file_source']][$user] = $row;
+							}
 						}
 					}
 				}
@@ -238,9 +253,6 @@ class Share extends Constants {
 		// Include owner in list of users, if requested
 		if ($includeOwner) {
 			$shares[] = $ownerUser;
-			if ($returnUserPaths) {
-				$sharePaths[$ownerUser] = $path;
-			}
 		}
 
 		if ($returnUserPaths) {
@@ -266,6 +278,12 @@ class Share extends Constants {
 						}
 					}
 				}
+			}
+
+			if ($includeOwner) {
+				$sharePaths[$ownerUser] = $path;
+			} else {
+				unset($sharePaths[$ownerUser]);
 			}
 
 			return $sharePaths;
@@ -719,6 +737,7 @@ class Share extends Constants {
 
 				// Generate hash of password - same method as user passwords
 				if (!empty($shareWith)) {
+					self::verifyPassword($shareWith);
 					$shareWith = \OC::$server->getHasher()->hash($shareWith);
 				} else {
 					// reuse the already set password, but only if we change permissions
@@ -1200,7 +1219,7 @@ class Share extends Constants {
 	}
 
 	/**
-	 * Set expiration date for a share
+	 * Set password for a public link share
 	 *
 	 * @param IUserSession $userSession
 	 * @param Connection $connection
@@ -1233,6 +1252,8 @@ class Share extends Constants {
 		if (self::enforcePassword($config) && is_null($password)) {
 			throw new \Exception('Cannot remove password');
 		}
+
+		self::verifyPassword($password);
 
 		$qb = $connection->createQueryBuilder();
 		$qb->update('`*PREFIX*share`')
@@ -2585,5 +2606,24 @@ class Share extends Constants {
 		$query = 'SELECT * FROM `*PREFIX*share` WHERE `file_source` = ?';
 		$result = \OC::$server->getDatabaseConnection()->executeQuery($query, [$id]);
 		return $result->fetchAll();
+	}
+
+	/**
+	 * @param string $password
+	 * @throws \Exception
+	 */
+	private static function verifyPassword($password) {
+
+		$accepted = true;
+		$message = '';
+		\OCP\Util::emitHook('\OC\Share', 'verifyPassword', [
+			'password' => $password,
+			'accepted' => &$accepted,
+			'message' => &$message
+		]);
+
+		if (!$accepted) {
+			throw new \Exception($message);
+		}
 	}
 }

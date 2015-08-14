@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installing ownCloud From the Command Line &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>Installing ownCloud From the Command Line &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="Installation" href="index.html" />
     <link rel="next" title="Installation Wizard" href="installation_wizard.html" />
     <link rel="prev" title="Preferred Linux Installation Method" href="linux_installation.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Installation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="linux_installation.html">Preferred Linux Installation Method</a></li>
@@ -139,7 +139,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -174,12 +173,16 @@ and unpack the tarball in the appropriate directories. (See
 of running the graphical Installation Wizard.</p>
 <p>You must run <tt class="docutils literal"><span class="pre">occ</span></tt> as your HTTP user; see <a class="reference internal" href="../configuration_server/occ_command.html#http-user"><em>Run occ As Your HTTP User</em></a>. This example
 shows how to complete your ownCloud installation with <tt class="docutils literal"><span class="pre">occ</span></tt> on Ubuntu Linux:</p>
-<div class="highlight-python"><pre>$ sudo -u www-data php /var/www/owncloud/occ  maintenance:install --database
+<div class="highlight-python"><pre>$ cd /var/www/owncloud/
+$ sudo -u www-data php occ  maintenance:install --database
 "mysql" --database-name "owncloud"  --database-user "root" --database-pass
 "password" --admin-user "admin" --admin-pass "password"
 ownCloud is not installed - only a limited number of commands are available
 ownCloud was successfully installed</pre>
 </div>
+<p>Note that you must change to the root ownCloud directory, as in the example
+above, to run <tt class="docutils literal"><span class="pre">occ</span>&nbsp; <span class="pre">maintenance:install</span></tt>, or the installation will fail with
+a PHP fatal error message.</p>
 <p>Supported databases are:</p>
 <div class="highlight-python"><pre>- sqlite (SQLite3 - Server Edition Only)
 - mysql (MySQL/MariaDB)

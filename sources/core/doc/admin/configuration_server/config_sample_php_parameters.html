@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Config.php Parameters &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
+    <title>Config.php Parameters &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.2',
+        VERSION:     '8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="ownCloud Server Configuration" href="index.html" />
     <link rel="next" title="Email Configuration" href="email_configuration.html" />
     <link rel="prev" title="Defining Background Jobs" href="background_jobs_configuration.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
@@ -142,8 +142,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#ldap">LDAP</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#maintenance">Maintenance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ssl">SSL</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#miscellaneous">Miscellaneous</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#memory-caching-backend-configuration">Memory caching backend configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-object-store-with-owncloud">Using Object Store with ownCloud</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#all-other-config-options">All other config options</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#app-config-options">App config options</a></li>
 </ul>
@@ -165,7 +165,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
@@ -233,7 +232,7 @@ necessary security checks.</p>
 </div>
 <p>Where user files are stored; this defaults to <tt class="docutils literal"><span class="pre">data/</span></tt> in the ownCloud
 directory. The SQLite database is also stored here, when you use SQLite.</p>
-<p>(SQLite is available only in ownCloud Community Edition)</p>
+<p>(SQLite is not available in ownCloud Enterprise Edition)</p>
 <div class="highlight-python"><pre>'version' =&gt; '',</pre>
 </div>
 <p>The current version number of your ownCloud installation. This is set up
@@ -245,7 +244,7 @@ during installation and update, so you shouldn&#8217;t need to change it.</p>
 <dl class="docutils">
 <dt>Available:</dt>
 <dd><ul class="first last simple">
-<li>sqlite (SQLite3 - Community Edition Only)</li>
+<li>sqlite (SQLite3 - Not in Enterprise Edition)</li>
 <li>mysql (MySQL/MariaDB)</li>
 <li>pgsql (PostgreSQL)</li>
 <li>oci (Oracle - Enterprise Edition Only)</li>
@@ -659,7 +658,6 @@ seen in the first-run wizard and on Personal pages.</p>
 <div class="highlight-python"><pre>'appstoreenabled' =&gt; true,</pre>
 </div>
 <p>When enabled, admins may install apps from the ownCloud app store.</p>
-<p>The app store is disabled by default for ownCloud Enterprise Edition</p>
 <div class="highlight-python"><pre>'appstoreurl' =&gt; 'https://api.owncloud.com/v1',</pre>
 </div>
 <p>The URL of the appstore to use.</p>
@@ -830,8 +828,120 @@ who are not in the <tt class="docutils literal"><span class="pre">admin</span></
 </div>
 <p>Extra SSL options to be used for configuration.</p>
 </div>
-<div class="section" id="miscellaneous">
-<h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="memory-caching-backend-configuration">
+<h2>Memory caching backend configuration<a class="headerlink" href="#memory-caching-backend-configuration" title="Permalink to this headline">¶</a></h2>
+<p>Available cache backends:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">\OC\Memcache\APC</span></tt>        Alternative PHP Cache backend</li>
+<li><tt class="docutils literal"><span class="pre">\OC\Memcache\APCu</span></tt>       APC user backend</li>
+<li><tt class="docutils literal"><span class="pre">\OC\Memcache\ArrayCache</span></tt> In-memory array-based backend (not recommended)</li>
+<li><tt class="docutils literal"><span class="pre">\OC\Memcache\Memcached</span></tt>  Memcached backend</li>
+<li><tt class="docutils literal"><span class="pre">\OC\Memcache\Redis</span></tt>      Redis backend</li>
+<li><tt class="docutils literal"><span class="pre">\OC\Memcache\XCache</span></tt>     XCache backend</li>
+</ul>
+<p>Advice on choosing between the various backends:</p>
+<ul class="simple">
+<li>APCu should be easiest to install. Almost all distributions have packages.
+Use this for single user environment for all caches.</li>
+<li>Use Redis or Memcached for distributed environments.
+For the local cache (you can configure two) take APCu.</li>
+</ul>
+<div class="highlight-python"><pre>'memcache.local' =&gt; '\OC\Memcache\APCu',</pre>
+</div>
+<p>Memory caching backend for locally stored data</p>
+<ul class="simple">
+<li>Used for host-specific data, e.g. file paths</li>
+</ul>
+<div class="highlight-python"><pre>'memcache.distributed' =&gt; '\OC\Memcache\Memcached',</pre>
+</div>
+<p>Memory caching backend for distributed data</p>
+<ul class="simple">
+<li>Used for installation-specific data, e.g. database caching</li>
+<li>If unset, defaults to the value of memcache.local</li>
+</ul>
+<div class="highlight-python"><pre>'redis' =&gt; array(
+        'host' =&gt; 'localhost', // can also be a unix domain socket: '/tmp/redis.sock'
+        'port' =&gt; 6379,
+        'timeout' =&gt; 0.0,
+        'dbindex' =&gt; 0, // Optional, if undefined SELECT will not run and will use Redis Server's default DB Index.
+),</pre>
+</div>
+<p>Connection details for redis to use for memory caching.</p>
+<div class="highlight-python"><pre>'memcached_servers' =&gt; array(
+        // hostname, port and optional weight. Also see:
+        // http://www.php.net/manual/en/memcached.addservers.php
+        // http://www.php.net/manual/en/memcached.addserver.php
+        array('localhost', 11211),
+        //array('other.host.local', 11211),
+),</pre>
+</div>
+<p>Server details for one or more memcached servers to use for memory caching.</p>
+<div class="highlight-python"><pre>'cache_path' =&gt; '',</pre>
+</div>
+<p>Location of the cache folder, defaults to <tt class="docutils literal"><span class="pre">data/$user/cache</span></tt> where
+<tt class="docutils literal"><span class="pre">$user</span></tt> is the current user. When specified, the format will change to
+<tt class="docutils literal"><span class="pre">$cache_path/$user</span></tt> where <tt class="docutils literal"><span class="pre">$cache_path</span></tt> is the configured cache directory
+and <tt class="docutils literal"><span class="pre">$user</span></tt> is the user.</p>
+</div>
+<div class="section" id="using-object-store-with-owncloud">
+<h2>Using Object Store with ownCloud<a class="headerlink" href="#using-object-store-with-owncloud" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>'objectstore' =&gt; array(
+        'class' =&gt; 'OC\\Files\\ObjectStore\\Swift',
+        'arguments' =&gt; array(
+                // trystack will user your facebook id as the user name
+                'username' =&gt; 'facebook100000123456789',
+                // in the trystack dashboard go to user -&gt; settings -&gt; API Password to
+                // generate a password
+                'password' =&gt; 'Secr3tPaSSWoRdt7',
+                // must already exist in the objectstore, name can be different
+                'container' =&gt; 'owncloud',
+                // create the container if it does not exist. default is false
+                'autocreate' =&gt; true,
+                // required, dev-/trystack defaults to 'RegionOne'
+                'region' =&gt; 'RegionOne',
+                // The Identity / Keystone endpoint
+                'url' =&gt; 'http://8.21.28.222:5000/v2.0',
+                // required on dev-/trystack
+                'tenantName' =&gt; 'facebook100000123456789',
+                // dev-/trystack uses swift by default, the lib defaults to 'cloudFiles'
+                // if omitted
+                'serviceName' =&gt; 'swift',
+        ),
+),</pre>
+</div>
+<p>This example shows how to configure ownCloud to store all files in a
+swift object storage.</p>
+<p>It is important to note that ownCloud in object store mode will expect
+exclusive access to the object store container because it only stores the
+binary data for each file. The metadata is currently kept in the local
+database for performance reasons.</p>
+<p>WARNING: The current implementation is incompatible with any app that uses
+direct file IO and circumvents our virtual filesystem. That includes
+Encryption and Gallery. Gallery will store thumbnails directly in the
+filesystem and encryption will cause severe overhead because key files need
+to be fetched in addition to any requested file.</p>
+<p>One way to test is applying for a trystack account at <a class="reference external" href="http://trystack.org/">http://trystack.org/</a></p>
+<div class="highlight-python"><pre>'supportedDatabases' =&gt; array(
+        'sqlite',
+        'mysql',
+        'pgsql',
+        'oci',
+),</pre>
+</div>
+<p>Database types that are supported for installation.</p>
+<dl class="docutils">
+<dt>Available:</dt>
+<dd><ul class="first last simple">
+<li>sqlite (SQLite3 - Not in Enterprise Edition)</li>
+<li>mysql (MySQL)</li>
+<li>pgsql (PostgreSQL)</li>
+<li>oci (Oracle - Enterprise Edition Only)</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="all-other-config-options">
+<h2>All other config options<a class="headerlink" href="#all-other-config-options" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><pre>'blacklisted_files' =&gt; array('.htaccess'),</pre>
 </div>
 <p>Blacklist a specific file or files and disallow the upload of files
@@ -857,48 +967,6 @@ the time of release of this server version.</p>
 <p>When changing this, note that older unsupported versions of the ownCloud desktop
 client may not function as expected, and could lead to permanent data loss for
 clients or other unexpected results.</p>
-</div>
-<div class="section" id="memory-caching-backend-configuration">
-<h2>Memory caching backend configuration<a class="headerlink" href="#memory-caching-backend-configuration" title="Permalink to this headline">¶</a></h2>
-<p>Available cache backends:
-- OCMemcacheAPC        Alternative PHP Cache backend
-- OCMemcacheAPCu       APC user backend
-- OCMemcacheArrayCache In-memory array-based backend (not recommended)
-- OCMemcacheMemcached  Memcached backend
-- OCMemcacheRedis      Redis backend
-- OCMemcacheXCache     XCache backend</p>
-<div class="highlight-python"><pre>'memcache.local' =&gt; '\OC\Memcache\APCu',</pre>
-</div>
-<p>Memory caching backend for locally stored data
-Used for host-specific data, e.g. file paths</p>
-<div class="highlight-python"><pre>'memcache.distributed' =&gt; '\OC\Memcache\Memcached',</pre>
-</div>
-<p>Memory caching backend for distributed data
-Used for installation-specific data, e.g. database caching
-If unset, defaults to the value of memcache.local</p>
-<div class="highlight-python"><pre>'redis' =&gt; array(
-        'host' =&gt; 'localhost', // can also be a unix domain socket: '/tmp/redis.sock'
-        'port' =&gt; 6379,
-        'timeout' =&gt; 0.0,
-        'dbindex' =&gt; 0, // Optional, if undefined SELECT will not run and will use Redis Server's default DB Index.
-),</pre>
-</div>
-<p>Connection details for redis to use for memory caching.</p>
-<div class="highlight-python"><pre>'memcached_servers' =&gt; array(
-        // hostname, port and optional weight. Also see:
-        // http://www.php.net/manual/en/memcached.addservers.php
-        // http://www.php.net/manual/en/memcached.addserver.php
-        array('localhost', 11211),
-        //array('other.host.local', 11211),
-),</pre>
-</div>
-<p>Server details for one or more memcached servers to use for memory caching.</p>
-<div class="highlight-python"><pre>'cache_path' =&gt; '',</pre>
-</div>
-<p>Location of the cache folder, defaults to <tt class="docutils literal"><span class="pre">data/$user/cache</span></tt> where
-<tt class="docutils literal"><span class="pre">$user</span></tt> is the current user. When specified, the format will change to
-<tt class="docutils literal"><span class="pre">$cache_path/$user</span></tt> where <tt class="docutils literal"><span class="pre">$cache_path</span></tt> is the configured cache directory
-and <tt class="docutils literal"><span class="pre">$user</span></tt> is the user.</p>
 <div class="highlight-python"><pre>'quota_include_external_storage' =&gt; false,</pre>
 </div>
 <p>EXPERIMENTAL: option whether to include external storage in quota
@@ -917,7 +985,7 @@ using external storages, not recommended for regular use.</p>
 <div class="highlight-python"><pre>'asset-pipeline.enabled' =&gt; false,</pre>
 </div>
 <p>All css and js files will be served by the web server statically in one js
-file and one css file if this is set to <tt class="docutils literal"><span class="pre">true</span></tt>.</p>
+file and one css file if this is set to <tt class="docutils literal"><span class="pre">true</span></tt>. This improves performance.</p>
 <div class="highlight-python"><pre>'assetdirectory' =&gt; '/var/www/owncloud',</pre>
 </div>
 <p>The parent of the directory where css and js assets will be stored if
@@ -933,63 +1001,6 @@ is not writeable by the web server in your configuration.</p>
 </div>
 <p>When <tt class="docutils literal"><span class="pre">true</span></tt>, prevent ownCloud from changing the cache due to changes in the
 filesystem for all storage.</p>
-<div class="highlight-python"><pre>'objectstore' =&gt; array(
-        'class' =&gt; 'OC\\Files\\ObjectStore\\Swift',
-        'arguments' =&gt; array(
-                // trystack will user your facebook id as the user name
-                'username' =&gt; 'facebook100000123456789',
-                // in the trystack dashboard go to user -&gt; settings -&gt; API Password to
-                // generate a password
-                'password' =&gt; 'Secr3tPaSSWoRdt7',
-                // must already exist in the objectstore, name can be different
-                'container' =&gt; 'owncloud',
-                // create the container if it does not exist. default is false
-                'autocreate' =&gt; true,
-                // required, dev-/trystack defaults to 'RegionOne'
-                'region' =&gt; 'RegionOne',
-                // The Identity / Keystone endpoint
-                'url' =&gt; 'http://8.21.28.222:5000/v2.0',
-                // required on dev-/trystack
-                'tenantName' =&gt; 'facebook100000123456789',
-                // dev-/trystack uses swift by default, the lib defaults to 'cloudFiles'
-                // if omitted
-                'serviceName' =&gt; 'swift',
-        ),
-),</pre>
-</div>
-<p>The example below shows how to configure ownCloud to store all files in a
-swift object storage.</p>
-<p>It is important to note that ownCloud in object store mode will expect
-exclusive access to the object store container because it only stores the
-binary data for each file. The metadata is currently kept in the local
-database for performance reasons.</p>
-<p>WARNING: The current implementation is incompatible with any app that uses
-direct file IO and circumvents our virtual filesystem. That includes
-Encryption and Gallery. Gallery will store thumbnails directly in the
-filesystem and encryption will cause severe overhead because key files need
-to be fetched in addition to any requested file.</p>
-<p>One way to test is applying for a trystack account at <a class="reference external" href="http://trystack.org/">http://trystack.org/</a></p>
-<div class="highlight-python"><pre>'supportedDatabases' =&gt; array(
-        'sqlite',
-        'mysql',
-        'pgsql',
-        'oci',
-),</pre>
-</div>
-<p>Database types that are supported for installation.</p>
-<dl class="docutils">
-<dt>Available:</dt>
-<dd><ul class="first last simple">
-<li>sqlite (SQLite3 - Community Edition Only)</li>
-<li>mysql (MySQL)</li>
-<li>pgsql (PostgreSQL)</li>
-<li>oci (Oracle - Enterprise Edition Only)</li>
-</ul>
-</dd>
-</dl>
-</div>
-<div class="section" id="all-other-config-options">
-<h2>All other config options<a class="headerlink" href="#all-other-config-options" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><pre>'secret' =&gt; '',</pre>
 </div>
 <p>Secret used by ownCloud for various purposes, e.g. to encrypt data. If you
@@ -1005,21 +1016,23 @@ lose this string there will be data corruption.</p>
 </div>
 <p>max file size for animating gifs on public-sharing-site.</p>
 <p>If the gif is bigger, it&#8217;ll show a static preview</p>
-<p>Value represents the maximum filesize in megabytes
-Default is 10
-Set to -1 for no limit</p>
+<p>Value represents the maximum filesize in megabytes. Default is <tt class="docutils literal"><span class="pre">10</span></tt>. Set to
+<tt class="docutils literal"><span class="pre">-1</span></tt> for no limit.</p>
 <div class="highlight-python"><pre>'filelocking.enabled' =&gt; false,</pre>
 </div>
 <p>Enables transactional file locking.</p>
 <p>This is disabled by default as it is still beta.</p>
 <p>Prevents concurrent processes to access the same files
 at the same time. Can help prevent side effects that would
-be caused by concurrent operations.</p>
+be caused by concurrent operations. Mainly relevant for
+very large installations with many users working with
+shared files.</p>
 <p>WARNING: BETA quality</p>
 <div class="highlight-python"><pre>'memcache.locking' =&gt; '\\OC\\Memcache\\Redis',</pre>
 </div>
-<p>Memory caching backend for file locking
-Because most memcache backends can clean values without warning using redis is recommended</p>
+<p>Memory caching backend for file locking</p>
+<p>Because most memcache backends can clean values without warning using redis
+is highly recommended to <em>avoid data loss</em>.</p>
 <div class="highlight-python"><pre>'copied_sample_config' =&gt; true,</pre>
 </div>
 <p>This entry is just here to show a warning in case somebody copied the sample

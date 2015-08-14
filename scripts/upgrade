@@ -70,6 +70,14 @@ if ! grep -Fq "memcache" $final_path/config/config.php
 then
     sudo bash -c "echo \"\\\$CONFIG['memcache.local']= '\OC\Memcache\APC';\" >> $final_path/config/config.php"
 fi
+# Set permissions to owncloud directories and /home directories + add Home external storage
+for i in $(ls /home)
+do
+    sudo yunohost user list --json | grep -q "\"username\": \"$i\"" && (
+	    sudo mkdir -p $data_path/$i
+	    sudo setfacl -m g:owncloud:rwx /home/$i || echo "ACL not available"
+	) || true
+done
 
 # Reload Nginx and regenerate SSOwat conf
 sudo killall php5-fpm
