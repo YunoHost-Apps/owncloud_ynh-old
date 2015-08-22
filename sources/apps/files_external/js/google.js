@@ -32,7 +32,7 @@ $(document).ready(function() {
 							if (result && result.status == 'success') {
 								$(token).val(result.data.token);
 								$(configured).val('true');
-								OC.MountConfig.saveStorage(tr, function(status) {
+								OCA.External.Settings.mountConfig.saveStorageConfig(tr, function(status) {
 									if (status) {
 										$(tr).find('.configuration input').attr('disabled', 'disabled');
 										$(tr).find('.configuration').append($('<span/>')
@@ -85,8 +85,9 @@ $(document).ready(function() {
 				|| $(tr).find('.chzn-select').val() != null))
 			{
 				if ($(tr).find('.google').length == 0) {
-					$(config).append($('<a/>').addClass('button google')
-						.text(t('files_external', 'Grant access')));
+					$(config).append($(document.createElement('input')).addClass('button google')
+						.attr('type', 'button')
+						.attr('value', t('files_external', 'Grant access')));
 				} else {
 					$(tr).find('.google').show();
 				}
@@ -114,7 +115,7 @@ $(document).ready(function() {
 					if (result && result.status == 'success') {
 						$(configured).val('false');
 						$(token).val('false');
-						OC.MountConfig.saveStorage(tr, function(status) {
+						OCA.External.Settings.mountConfig.saveStorageConfig(tr, function(status) {
 							window.location = result.data.url;
 						});
 					} else {

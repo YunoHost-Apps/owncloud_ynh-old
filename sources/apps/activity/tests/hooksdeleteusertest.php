@@ -23,7 +23,7 @@
 namespace OCA\Activity\Tests;
 
 use OCA\Activity\Data;
-use OCA\Activity\HooksStatic;
+use OCA\Activity\Hooks;
 use OCP\Activity\IExtension;
 
 class HooksDeleteUserTest extends TestCase {
@@ -43,9 +43,9 @@ class HooksDeleteUserTest extends TestCase {
 			$queryActivity->execute(array(
 				'app',
 				$activity['subject'],
-				serialize(array()),
+				json_encode([]),
 				'',
-				serialize(array()),
+				json_encode([]),
 				'file',
 				'link',
 				'user',
@@ -57,7 +57,7 @@ class HooksDeleteUserTest extends TestCase {
 			$queryMailQueue->execute(array(
 				'app',
 				$activity['subject'],
-				serialize(array()),
+				json_encode([]),
 				$activity['affectedUser'],
 				time(),
 				'test',
@@ -83,7 +83,7 @@ class HooksDeleteUserTest extends TestCase {
 
 		$this->assertUserActivities(array('delete', 'otherUser'));
 		$this->assertUserMailQueue(array('delete', 'otherUser'));
-		HooksStatic::deleteUser(array('uid' => 'delete'));
+		Hooks::deleteUser(array('uid' => 'delete'));
 		$this->assertUserActivities(array('otherUser'));
 		$this->assertUserMailQueue(array('otherUser'));
 	}

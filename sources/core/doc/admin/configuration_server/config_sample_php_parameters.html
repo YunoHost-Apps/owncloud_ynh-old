@@ -116,11 +116,12 @@
                   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">ownCloud Server Configuration</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="security_setup_warnings.html">Warnings on Admin Page</a></li>
 <li class="toctree-l2"><a class="reference internal" href="occ_command.html">Using the occ Command</a></li>
 <li class="toctree-l2"><a class="reference internal" href="activity_configuration.html">Configuring the Activity App</a></li>
 <li class="toctree-l2"><a class="reference internal" href="antivirus_configuration.html">Configuring the ClamAV Antivirus Scanner</a></li>
@@ -141,13 +142,14 @@
 <li class="toctree-l3"><a class="reference internal" href="#ldap">LDAP</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#maintenance">Maintenance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ssl">SSL</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#miscellaneous">Miscellaneous</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#memory-caching-backend-configuration">Memory caching backend configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-object-store-with-owncloud">Using Object Store with ownCloud</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#all-other-config-options">All other config options</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#app-config-options">App config options</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="email_configuration.html">Email Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="external_sites.html">Linking External Sites</a></li>
 <li class="toctree-l2"><a class="reference internal" href="js_css_asset_management_configuration.html">JavaScript and CSS Asset Management</a></li>
 <li class="toctree-l2"><a class="reference internal" href="knowledgebase_configuration.html">Knowledge Base Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="language_configuration.html">Language Configuration</a></li>
@@ -163,13 +165,13 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Custom and Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
 </ul>
 
 								</ul>
@@ -189,6 +191,13 @@
 ownCloud. This document provides a more detailed reference. Many options are
 configurable on your Admin page, so it is usually not necessary to edit
 <tt class="docutils literal"><span class="pre">config/config.php</span></tt>.</p>
+<p>ownCloud supports loading configuration parameters from multiple files.
+You can add arbitrary files ending with <tt class="file docutils literal"><span class="pre">.config.php</span></tt> in the <tt class="file docutils literal"><span class="pre">config/</span></tt>
+directory, for example you could place your email server configuration
+in <tt class="file docutils literal"><span class="pre">email.config.php</span></tt>. This allows you to easily create and manage
+custom configurations, or to divide a large complex configuration file
+into a set of smaller files. These custom files are not overwritten by
+ownCloud, and the values in these files take precedence over <tt class="file docutils literal"><span class="pre">config.php</span></tt>.</p>
 <div class="section" id="default-parameters">
 <h2>Default Parameters<a class="headerlink" href="#default-parameters" title="Permalink to this headline">¶</a></h2>
 <p>These parameters are configured by the ownCloud installer, and are required
@@ -223,7 +232,7 @@ necessary security checks.</p>
 </div>
 <p>Where user files are stored; this defaults to <tt class="docutils literal"><span class="pre">data/</span></tt> in the ownCloud
 directory. The SQLite database is also stored here, when you use SQLite.</p>
-<p>(SQLite is available only in ownCloud Community Edition)</p>
+<p>(SQLite is not available in ownCloud Enterprise Edition)</p>
 <div class="highlight-python"><pre>'version' =&gt; '',</pre>
 </div>
 <p>The current version number of your ownCloud installation. This is set up
@@ -235,11 +244,10 @@ during installation and update, so you shouldn&#8217;t need to change it.</p>
 <dl class="docutils">
 <dt>Available:</dt>
 <dd><ul class="first last simple">
-<li>sqlite (SQLite3 - Community Edition Only)</li>
+<li>sqlite (SQLite3 - Not in Enterprise Edition)</li>
 <li>mysql (MySQL/MariaDB)</li>
 <li>pgsql (PostgreSQL)</li>
 <li>oci (Oracle - Enterprise Edition Only)</li>
-<li>mssql (Microsoft SQL Server - Enterprise Edition Only)</li>
 </ul>
 </dd>
 </dl>
@@ -372,7 +380,7 @@ expressed in seconds.</p>
 </div>
 <p>Enable or disable session keep-alive when a user is logged in to the Web UI.</p>
 <p>Enabling this sends a &#8220;heartbeat&#8221; to the server to keep it from timing out.</p>
-<div class="highlight-python"><pre>'skeletondirectory' =&gt; '',</pre>
+<div class="highlight-python"><pre>'skeletondirectory' =&gt; '/path/to/owncloud/core/skeleton',</pre>
 </div>
 <p>The directory where the skeleton files are located. These files will be
 copied to the data directory of new users. Leave empty to not copy any
@@ -557,6 +565,40 @@ for logging.</p>
 </div>
 <p>Loglevel to start logging at. Valid values are: 0 = Debug, 1 = Info, 2 =
 Warning, 3 = Error. The default value is Warning.</p>
+<div class="highlight-python"><pre>'log.condition' =&gt; [
+        'shared_secret' =&gt; '57b58edb6637fe3059b3595cf9c41b9',
+        'users' =&gt; ['sample-user'],
+        'apps' =&gt; ['files'],
+],</pre>
+</div>
+<p>Log condition for log level increase based on conditions. Once one of these
+conditions is met, the required log level is set to debug. This allows to
+debug specific requests, users or apps</p>
+<dl class="docutils">
+<dt>Supported conditions:</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">shared_secret</span></tt>: if a request parameter with the name <cite>log_secret</cite> is set to</dt>
+<dd><p class="first last">this value the condition is met</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">users</span></tt>:  if the current request is done by one of the specified users,</dt>
+<dd><p class="first last">this condition is met</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">apps</span></tt>:   if the log message is invoked by one of the specified apps,</dt>
+<dd><p class="first last">this condition is met</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<p>Defaults to an empty array.</p>
 <div class="highlight-python"><pre>'logdateformat' =&gt; 'F d, Y H:i:s',</pre>
 </div>
 <p>This uses PHP.date formatting; see <a class="reference external" href="http://php.net/manual/en/function.date.php">http://php.net/manual/en/function.date.php</a></p>
@@ -574,11 +616,9 @@ debugging, as your logfile will become huge.</p>
 <div class="highlight-python"><pre>'cron.lockfile.location' =&gt; '',</pre>
 </div>
 <p>Location of the lock file for cron executions can be specified here.</p>
-<dl class="docutils">
-<dt>Default is within the tmp directory. The file is named in the following way</dt>
-<dd>owncloud-server-$INSTANCEID-cron.lock</dd>
-</dl>
-<p>where $INSTANCEID is the string specified in the instanceid field.
+<p>Default is within the tmp directory. The file is named in the following way:
+owncloud-server-$INSTANCEID-cron.lock
+where $INSTANCEID is the string specified in the instanceid field.
 Because the cron lock file is accessed in regular intervals, it may prevent
 enabled disk drives from spinning down. A different location for this file
 can solve such issues.</p>
@@ -618,7 +658,6 @@ seen in the first-run wizard and on Personal pages.</p>
 <div class="highlight-python"><pre>'appstoreenabled' =&gt; true,</pre>
 </div>
 <p>When enabled, admins may install apps from the ownCloud app store.</p>
-<p>The app store is disabled by default for ownCloud Enterprise Edition</p>
 <div class="highlight-python"><pre>'appstoreurl' =&gt; 'https://api.owncloud.com/v1',</pre>
 </div>
 <p>The URL of the appstore to use.</p>
@@ -789,43 +828,37 @@ who are not in the <tt class="docutils literal"><span class="pre">admin</span></
 </div>
 <p>Extra SSL options to be used for configuration.</p>
 </div>
-<div class="section" id="miscellaneous">
-<h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>'blacklisted_files' =&gt; array('.htaccess'),</pre>
-</div>
-<p>Blacklist a specific file or files and disallow the upload of files
-with this name. <tt class="docutils literal"><span class="pre">.htaccess</span></tt> is blocked by default.</p>
-<p>WARNING: USE THIS ONLY IF YOU KNOW WHAT YOU ARE DOING.</p>
-<div class="highlight-python"><pre>'share_folder' =&gt; '/',</pre>
-</div>
-<p>Define a default folder for shared files and folders other than root.</p>
-<div class="highlight-python"><pre>'theme' =&gt; '',</pre>
-</div>
-<p>If you are applying a theme to ownCloud, enter the name of the theme here.</p>
-<p>The default location for themes is <tt class="docutils literal"><span class="pre">owncloud/themes/</span></tt>.</p>
-<div class="highlight-python"><pre>'cipher' =&gt; 'AES-256-CFB',</pre>
-</div>
-<p>The default cipher for encrypting files. Currently AES-128-CFB and
-AES-256-CFB are supported.</p>
-</div>
 <div class="section" id="memory-caching-backend-configuration">
 <h2>Memory caching backend configuration<a class="headerlink" href="#memory-caching-backend-configuration" title="Permalink to this headline">¶</a></h2>
-<p>Available cache backends:
-- OCMemcacheAPC        Alternative PHP Cache backend
-- OCMemcacheAPCu       APC user backend
-- OCMemcacheArrayCache In-memory array-based backend (not recommended)
-- OCMemcacheMemcached  Memcached backend
-- OCMemcacheRedis      Redis backend
-- OCMemcacheXCache     XCache backend</p>
+<p>Available cache backends:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">\OC\Memcache\APC</span></tt>        Alternative PHP Cache backend</li>
+<li><tt class="docutils literal"><span class="pre">\OC\Memcache\APCu</span></tt>       APC user backend</li>
+<li><tt class="docutils literal"><span class="pre">\OC\Memcache\ArrayCache</span></tt> In-memory array-based backend (not recommended)</li>
+<li><tt class="docutils literal"><span class="pre">\OC\Memcache\Memcached</span></tt>  Memcached backend</li>
+<li><tt class="docutils literal"><span class="pre">\OC\Memcache\Redis</span></tt>      Redis backend</li>
+<li><tt class="docutils literal"><span class="pre">\OC\Memcache\XCache</span></tt>     XCache backend</li>
+</ul>
+<p>Advice on choosing between the various backends:</p>
+<ul class="simple">
+<li>APCu should be easiest to install. Almost all distributions have packages.
+Use this for single user environment for all caches.</li>
+<li>Use Redis or Memcached for distributed environments.
+For the local cache (you can configure two) take APCu.</li>
+</ul>
 <div class="highlight-python"><pre>'memcache.local' =&gt; '\OC\Memcache\APCu',</pre>
 </div>
-<p>Memory caching backend for locally stored data
-Used for host-specific data, e.g. file paths</p>
+<p>Memory caching backend for locally stored data</p>
+<ul class="simple">
+<li>Used for host-specific data, e.g. file paths</li>
+</ul>
 <div class="highlight-python"><pre>'memcache.distributed' =&gt; '\OC\Memcache\Memcached',</pre>
 </div>
-<p>Memory caching backend for distributed data
-Used for installation-specific data, e.g. database caching
-If unset, defaults to the value of memcache.local</p>
+<p>Memory caching backend for distributed data</p>
+<ul class="simple">
+<li>Used for installation-specific data, e.g. database caching</li>
+<li>If unset, defaults to the value of memcache.local</li>
+</ul>
 <div class="highlight-python"><pre>'redis' =&gt; array(
         'host' =&gt; 'localhost', // can also be a unix domain socket: '/tmp/redis.sock'
         'port' =&gt; 6379,
@@ -849,40 +882,9 @@ If unset, defaults to the value of memcache.local</p>
 <tt class="docutils literal"><span class="pre">$user</span></tt> is the current user. When specified, the format will change to
 <tt class="docutils literal"><span class="pre">$cache_path/$user</span></tt> where <tt class="docutils literal"><span class="pre">$cache_path</span></tt> is the configured cache directory
 and <tt class="docutils literal"><span class="pre">$user</span></tt> is the user.</p>
-<div class="highlight-python"><pre>'quota_include_external_storage' =&gt; false,</pre>
 </div>
-<p>EXPERIMENTAL: option whether to include external storage in quota
-calculation, defaults to false.</p>
-<div class="highlight-python"><pre>'filesystem_check_changes' =&gt; 1,</pre>
-</div>
-<p>Specifies how often the filesystem is checked for changes made outside
-ownCloud.</p>
-<p>0 -&gt; Never check the filesystem for outside changes, provides a performance
-increase when it&#8217;s certain that no changes are made directly to the
-filesystem</p>
-<p>1 -&gt; Check each file or folder at most once per request, recommended for
-general use if outside changes might happen.</p>
-<p>2 -&gt; Check every time the filesystem is used, causes a performance hit when
-using external storages, not recommended for regular use.</p>
-<div class="highlight-python"><pre>'asset-pipeline.enabled' =&gt; false,</pre>
-</div>
-<p>All css and js files will be served by the web server statically in one js
-file and one css file if this is set to <tt class="docutils literal"><span class="pre">true</span></tt>.</p>
-<div class="highlight-python"><pre>'assetdirectory' =&gt; '/var/www/owncloud',</pre>
-</div>
-<p>The parent of the directory where css and js assets will be stored if
-piplelining is enabled; this defaults to the ownCloud directory. The assets
-will be stored in a subdirectory of this directory named &#8216;assets&#8217;. The
-server <em>must</em> be configured to serve that directory as $WEBROOT/assets.</p>
-<p>You will only likely need to change this if the main ownCloud directory
-is not writeable by the web server in your configuration.</p>
-<div class="highlight-python"><pre>'mount_file' =&gt; 'data/mount.json',</pre>
-</div>
-<p>Where <tt class="docutils literal"><span class="pre">mount.json</span></tt> file should be stored, defaults to <tt class="docutils literal"><span class="pre">data/mount.json</span></tt></p>
-<div class="highlight-python"><pre>'filesystem_cache_readonly' =&gt; false,</pre>
-</div>
-<p>When <tt class="docutils literal"><span class="pre">true</span></tt>, prevent ownCloud from changing the cache due to changes in the
-filesystem for all storage.</p>
+<div class="section" id="using-object-store-with-owncloud">
+<h2>Using Object Store with ownCloud<a class="headerlink" href="#using-object-store-with-owncloud" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><pre>'objectstore' =&gt; array(
         'class' =&gt; 'OC\\Files\\ObjectStore\\Swift',
         'arguments' =&gt; array(
@@ -907,7 +909,7 @@ filesystem for all storage.</p>
         ),
 ),</pre>
 </div>
-<p>The example below shows how to configure ownCloud to store all files in a
+<p>This example shows how to configure ownCloud to store all files in a
 swift object storage.</p>
 <p>It is important to note that ownCloud in object store mode will expect
 exclusive access to the object store container because it only stores the
@@ -924,24 +926,81 @@ to be fetched in addition to any requested file.</p>
         'mysql',
         'pgsql',
         'oci',
-        'mssql'
 ),</pre>
 </div>
 <p>Database types that are supported for installation.</p>
 <dl class="docutils">
 <dt>Available:</dt>
 <dd><ul class="first last simple">
-<li>sqlite (SQLite3 - Community Edition Only)</li>
+<li>sqlite (SQLite3 - Not in Enterprise Edition)</li>
 <li>mysql (MySQL)</li>
 <li>pgsql (PostgreSQL)</li>
 <li>oci (Oracle - Enterprise Edition Only)</li>
-<li>mssql (Microsoft SQL Server - Enterprise Edition Only)</li>
 </ul>
 </dd>
 </dl>
 </div>
 <div class="section" id="all-other-config-options">
 <h2>All other config options<a class="headerlink" href="#all-other-config-options" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>'blacklisted_files' =&gt; array('.htaccess'),</pre>
+</div>
+<p>Blacklist a specific file or files and disallow the upload of files
+with this name. <tt class="docutils literal"><span class="pre">.htaccess</span></tt> is blocked by default.</p>
+<p>WARNING: USE THIS ONLY IF YOU KNOW WHAT YOU ARE DOING.</p>
+<div class="highlight-python"><pre>'share_folder' =&gt; '/',</pre>
+</div>
+<p>Define a default folder for shared files and folders other than root.</p>
+<div class="highlight-python"><pre>'theme' =&gt; '',</pre>
+</div>
+<p>If you are applying a theme to ownCloud, enter the name of the theme here.</p>
+<p>The default location for themes is <tt class="docutils literal"><span class="pre">owncloud/themes/</span></tt>.</p>
+<div class="highlight-python"><pre>'cipher' =&gt; 'AES-256-CFB',</pre>
+</div>
+<p>The default cipher for encrypting files. Currently AES-128-CFB and
+AES-256-CFB are supported.</p>
+<div class="highlight-python"><pre>'minimum.supported.desktop.version' =&gt; '1.7.0',</pre>
+</div>
+<p>The minimum ownCloud desktop client version that will be allowed to sync with
+this server instance. All connections made from earlier clients will be denied
+by the server. Defaults to the minimum officially supported ownCloud version at
+the time of release of this server version.</p>
+<p>When changing this, note that older unsupported versions of the ownCloud desktop
+client may not function as expected, and could lead to permanent data loss for
+clients or other unexpected results.</p>
+<div class="highlight-python"><pre>'quota_include_external_storage' =&gt; false,</pre>
+</div>
+<p>EXPERIMENTAL: option whether to include external storage in quota
+calculation, defaults to false.</p>
+<div class="highlight-python"><pre>'filesystem_check_changes' =&gt; 1,</pre>
+</div>
+<p>Specifies how often the filesystem is checked for changes made outside
+ownCloud.</p>
+<p>0 -&gt; Never check the filesystem for outside changes, provides a performance
+increase when it&#8217;s certain that no changes are made directly to the
+filesystem</p>
+<p>1 -&gt; Check each file or folder at most once per request, recommended for
+general use if outside changes might happen.</p>
+<p>2 -&gt; Check every time the filesystem is used, causes a performance hit when
+using external storages, not recommended for regular use.</p>
+<div class="highlight-python"><pre>'asset-pipeline.enabled' =&gt; false,</pre>
+</div>
+<p>All css and js files will be served by the web server statically in one js
+file and one css file if this is set to <tt class="docutils literal"><span class="pre">true</span></tt>. This improves performance.</p>
+<div class="highlight-python"><pre>'assetdirectory' =&gt; '/var/www/owncloud',</pre>
+</div>
+<p>The parent of the directory where css and js assets will be stored if
+piplelining is enabled; this defaults to the ownCloud directory. The assets
+will be stored in a subdirectory of this directory named &#8216;assets&#8217;. The
+server <em>must</em> be configured to serve that directory as $WEBROOT/assets.</p>
+<p>You will only likely need to change this if the main ownCloud directory
+is not writeable by the web server in your configuration.</p>
+<div class="highlight-python"><pre>'mount_file' =&gt; 'data/mount.json',</pre>
+</div>
+<p>Where <tt class="docutils literal"><span class="pre">mount.json</span></tt> file should be stored, defaults to <tt class="docutils literal"><span class="pre">data/mount.json</span></tt></p>
+<div class="highlight-python"><pre>'filesystem_cache_readonly' =&gt; false,</pre>
+</div>
+<p>When <tt class="docutils literal"><span class="pre">true</span></tt>, prevent ownCloud from changing the cache due to changes in the
+filesystem for all storage.</p>
 <div class="highlight-python"><pre>'secret' =&gt; '',</pre>
 </div>
 <p>Secret used by ownCloud for various purposes, e.g. to encrypt data. If you
@@ -957,9 +1016,23 @@ lose this string there will be data corruption.</p>
 </div>
 <p>max file size for animating gifs on public-sharing-site.</p>
 <p>If the gif is bigger, it&#8217;ll show a static preview</p>
-<p>Value represents the maximum filesize in megabytes
-Default is 10
-Set to -1 for no limit</p>
+<p>Value represents the maximum filesize in megabytes. Default is <tt class="docutils literal"><span class="pre">10</span></tt>. Set to
+<tt class="docutils literal"><span class="pre">-1</span></tt> for no limit.</p>
+<div class="highlight-python"><pre>'filelocking.enabled' =&gt; false,</pre>
+</div>
+<p>Enables transactional file locking.</p>
+<p>This is disabled by default as it is still beta.</p>
+<p>Prevents concurrent processes to access the same files
+at the same time. Can help prevent side effects that would
+be caused by concurrent operations. Mainly relevant for
+very large installations with many users working with
+shared files.</p>
+<p>WARNING: BETA quality</p>
+<div class="highlight-python"><pre>'memcache.locking' =&gt; '\\OC\\Memcache\\Redis',</pre>
+</div>
+<p>Memory caching backend for file locking</p>
+<p>Because most memcache backends can clean values without warning using redis
+is highly recommended to <em>avoid data loss</em>.</p>
 <div class="highlight-python"><pre>'copied_sample_config' =&gt; true,</pre>
 </div>
 <p>This entry is just here to show a warning in case somebody copied the sample

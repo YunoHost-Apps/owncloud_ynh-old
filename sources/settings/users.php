@@ -1,8 +1,34 @@
 <?php
 /**
- * Copyright (c) 2011, Robin Appelman <icewind1991@gmail.com>
- * This file is licensed under the Affero General Public License version 3 or later.
- * See the COPYING-README file.
+ * @author Arthur Schiwon <blizzz@owncloud.com>
+ * @author Bart Visscher <bartv@thisnet.nl>
+ * @author Björn Schießle <schiessle@owncloud.com>
+ * @author Clark Tomlinson <fallen013@gmail.com>
+ * @author Daniel Molkentin <daniel@molkentin.de>
+ * @author Georg Ehrke <georg@owncloud.com>
+ * @author Jakob Sack <mail@jakobsack.de>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Stephan Peijnik <speijnik@anexia-it.com>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 
 OC_Util::checkSubAdminUser();
@@ -12,16 +38,27 @@ OC_App::setActiveNavigationEntry( 'core_users' );
 $userManager = \OC_User::getManager();
 $groupManager = \OC_Group::getManager();
 
+// Set the sort option: SORT_USERCOUNT or SORT_GROUPNAME
+$sortGroupsBy = \OC\Group\MetaData::SORT_USERCOUNT;
+
+if (class_exists('\OCA\user_ldap\GROUP_LDAP')) {
+	$isLDAPUsed = $groupManager->isBackendUsed('\OCA\user_ldap\GROUP_LDAP');
+	if ($isLDAPUsed) {
+		// LDAP user count can be slow, so we sort by group name here
+		$sortGroupsBy = \OC\Group\MetaData::SORT_GROUPNAME;
+	}
+}
+
 $config = \OC::$server->getConfig();
 
 $isAdmin = OC_User::isAdminUser(OC_User::getUser());
 
 $groupsInfo = new \OC\Group\MetaData(OC_User::getUser(), $isAdmin, $groupManager);
-$groupsInfo->setSorting($groupsInfo::SORT_USERCOUNT);
+$groupsInfo->setSorting($sortGroupsBy);
 list($adminGroup, $groups) = $groupsInfo->get();
 
-$recoveryAdminEnabled = OC_App::isEnabled('files_encryption') &&
-					    $config->getAppValue( 'files_encryption', 'recoveryAdminEnabled', null );
+$recoveryAdminEnabled = OC_App::isEnabled('encryption') &&
+					    $config->getAppValue( 'encryption', 'recoveryAdminEnabled', null );
 
 if($isAdmin) {
 	$subadmins = OC_SubAdmin::getAllSubAdmins();
@@ -50,6 +87,7 @@ $defaultQuotaIsUserDefined=array_search($defaultQuota, $quotaPreset)===false
 
 $tmpl = new OC_Template("settings", "users/main", "user");
 $tmpl->assign('groups', $groups);
+$tmpl->assign('sortGroups', $sortGroupsBy);
 $tmpl->assign('adminGroup', $adminGroup);
 $tmpl->assign('isAdmin', (int)$isAdmin);
 $tmpl->assign('subadmins', $subadmins);

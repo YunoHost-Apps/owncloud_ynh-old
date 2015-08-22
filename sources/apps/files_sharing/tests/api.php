@@ -1,22 +1,28 @@
 <?php
 /**
- * ownCloud
+ * @author Björn Schießle <schiessle@owncloud.com>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Vincent Petry <pvince81@owncloud.com>
  *
- * @author Bjoern Schiessle
- * @copyright 2013 Bjoern Schiessle <schiessle@owncloud.com>
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
 
@@ -103,6 +109,11 @@ class Test_Files_Sharing_Api extends TestCase {
 		// check if we have a token
 		$this->assertTrue(is_string($data['token']));
 
+		// check for correct link
+		$url = \OC::$server->getURLGenerator()->getAbsoluteURL('/index.php/s/' . $data['token']);
+		$this->assertEquals($url, $data['url']);
+
+
 		$share = $this->getShareFromId($data['id']);
 
 		$items = \OCP\Share::getItemShared('file', $share['item_source']);
@@ -118,6 +129,32 @@ class Test_Files_Sharing_Api extends TestCase {
 
 		\OCP\Share::unshare('folder', $fileinfo['fileid'], \OCP\Share::SHARE_TYPE_LINK, null);
 	}
+
+	/**
+	 * @medium
+	 */
+	public function testCreateShareInvalidPermissions() {
+
+		// simulate a post request
+		$_POST['path'] = $this->filename;
+		$_POST['shareWith'] = \Test_Files_Sharing_Api::TEST_FILES_SHARING_API_USER2;
+		$_POST['shareType'] = \OCP\Share::SHARE_TYPE_USER;
+		$_POST['permissions'] = \OCP\Constants::PERMISSION_SHARE;
+
+		$result = \OCA\Files_Sharing\API\Local::createShare([]);
+
+		// share was successful?
+		$this->assertFalse($result->succeeded());
+		$this->assertEquals(400, $result->getStatusCode());
+
+		$shares = \OCP\Share::getItemShared('file', null);
+		$this->assertCount(0, $shares);
+
+		$fileinfo = $this->view->getFileInfo($this->filename);
+		\OCP\Share::unshare('file', $fileinfo['fileid'], \OCP\Share::SHARE_TYPE_USER,
+				\Test_Files_Sharing_Api::TEST_FILES_SHARING_API_USER2);
+	}
+
 
 	function testEnfoceLinkPassword() {
 
@@ -851,7 +888,6 @@ class Test_Files_Sharing_Api extends TestCase {
 		$this->assertEquals('1', $newUserShare['permissions']);
 
 		// update password for link share
-
 		$this->assertTrue(empty($linkShare['share_with']));
 
 		$params = array();
@@ -876,12 +912,80 @@ class Test_Files_Sharing_Api extends TestCase {
 		$this->assertTrue(is_array($newLinkShare));
 		$this->assertTrue(!empty($newLinkShare['share_with']));
 
+		// Remove password for link share
+		$params = array();
+		$params['id'] = $linkShare['id'];
+		$params['_put'] = array();
+		$params['_put']['password'] = '';
+
+		$result = \OCA\Files_Sharing\API\Local::updateShare($params);
+
+		$this->assertTrue($result->succeeded());
+
+		$items = \OCP\Share::getItemShared('file', $linkShare['file_source']);
+
+		$newLinkShare = null;
+		foreach ($items as $item) {
+			if ($item['share_type'] === \OCP\Share::SHARE_TYPE_LINK) {
+				$newLinkShare = $item;
+				break;
+			}
+		}
+
+		$this->assertTrue(is_array($newLinkShare));
+		$this->assertTrue(empty($newLinkShare['share_with']));
+
 		\OCP\Share::unshare('file', $fileInfo['fileid'], \OCP\Share::SHARE_TYPE_USER,
 				\Test_Files_Sharing_Api::TEST_FILES_SHARING_API_USER2);
 
 		\OCP\Share::unshare('file', $fileInfo['fileid'], \OCP\Share::SHARE_TYPE_LINK, null);
 
 	}
+
+	/**
+	 * @medium
+	 * @depends testCreateShare
+	 */
+	public function testUpdateShareInvalidPermissions() {
+
+		$fileInfo = $this->view->getFileInfo($this->filename);
+
+		$result = \OCP\Share::shareItem('file', $fileInfo['fileid'], \OCP\Share::SHARE_TYPE_USER,
+				\Test_Files_Sharing_Api::TEST_FILES_SHARING_API_USER2, \OCP\Constants::PERMISSION_ALL);
+
+		// share was successful?
+		$this->assertTrue($result);
+
+		$share = \OCP\Share::getItemShared('file', null);
+		$this->assertCount(1, $share);
+		$share = reset($share);
+
+		// check if share have expected permissions, single shared files never have
+		// delete permissions
+		$this->assertEquals(\OCP\Constants::PERMISSION_ALL & ~\OCP\Constants::PERMISSION_DELETE, $share['permissions']);
+
+		// update permissions
+		$params = [];
+		$params['id'] = $share['id'];
+		$params['_put'] = [];
+		$params['_put']['permissions'] = \OCP\Constants::PERMISSION_SHARE;
+
+		$result = \OCA\Files_Sharing\API\Local::updateShare($params);
+
+		//Updating should fail with 400
+		$this->assertFalse($result->succeeded());
+		$this->assertEquals(400, $result->getStatusCode());
+
+		$share = \OCP\Share::getItemShared('file', $share['file_source']);
+		$share = reset($share);
+
+		//Permissions should not have changed!
+		$this->assertEquals(\OCP\Constants::PERMISSION_ALL & ~\OCP\Constants::PERMISSION_DELETE, $share['permissions']);
+
+		\OCP\Share::unshare('file', $fileInfo['fileid'], \OCP\Share::SHARE_TYPE_USER,
+				\Test_Files_Sharing_Api::TEST_FILES_SHARING_API_USER2);
+	}
+
 
 	/**
 	 * @medium
@@ -1230,9 +1334,19 @@ class Test_Files_Sharing_Api extends TestCase {
 
 	public function testDefaultExpireDate() {
 		\Test_Files_Sharing_Api::loginHelper(\Test_Files_Sharing_Api::TEST_FILES_SHARING_API_USER1);
-		\OC::$server->getAppConfig()->setValue('core', 'shareapi_default_expire_date', 'yes');
-		\OC::$server->getAppConfig()->setValue('core', 'shareapi_enforce_expire_date', 'yes');
-		\OC::$server->getAppConfig()->setValue('core', 'shareapi_expire_after_n_days', '2');
+
+		// TODO drop this once all code paths use the DI version - otherwise
+		// the cache inside this config object is out of date because
+		// OC_Appconfig is used and bypasses this cache which lead to integrity
+		// constraint violations
+		$config = \OC::$server->getConfig();
+		$config->deleteAppValue('core', 'shareapi_default_expire_date');
+		$config->deleteAppValue('core', 'shareapi_enforce_expire_date');
+		$config->deleteAppValue('core', 'shareapi_expire_after_n_days');
+
+		$config->setAppValue('core', 'shareapi_default_expire_date', 'yes');
+		$config->setAppValue('core', 'shareapi_enforce_expire_date', 'yes');
+		$config->setAppValue('core', 'shareapi_expire_after_n_days', '2');
 
 		// default expire date is set to 2 days
 		// the time when the share was created is set to 3 days in the past
@@ -1276,8 +1390,8 @@ class Test_Files_Sharing_Api extends TestCase {
 		//cleanup
 		$result = \OCP\Share::unshare('file', $info->getId(), \OCP\Share::SHARE_TYPE_USER, \Test_Files_Sharing_Api::TEST_FILES_SHARING_API_USER2);
 		$this->assertTrue($result);
-		\OC::$server->getAppConfig()->setValue('core', 'shareapi_default_expire_date', 'no');
-		\OC::$server->getAppConfig()->setValue('core', 'shareapi_enforce_expire_date', 'no');
+		$config->setAppValue('core', 'shareapi_default_expire_date', 'no');
+		$config->setAppValue('core', 'shareapi_enforce_expire_date', 'no');
 
 	}
 }

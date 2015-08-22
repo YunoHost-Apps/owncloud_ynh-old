@@ -75,7 +75,7 @@ var OC={
 	appConfig: window.oc_appconfig || {},
 	theme: window.oc_defaults || {},
 	coreApps:['', 'admin','log','core/search','settings','core','3rdparty'],
-	menuSpeed: 100,
+	menuSpeed: 50,
 
 	/**
 	 * Get an absolute url to a file in an app
@@ -116,17 +116,30 @@ var OC={
 
 	/**
 	 * Generates the absolute url for the given relative url, which can contain parameters.
+	 * Parameters will be URL encoded automatically.
 	 * @param {string} url
-	 * @param params
+	 * @param [params] params
+	 * @param [options] options
+	 * @param {bool} [options.escape=true] enable/disable auto escape of placeholders (by default enabled)
 	 * @return {string} Absolute URL for the given relative URL
 	 */
-	generateUrl: function(url, params) {
+	generateUrl: function(url, params, options) {
+		var defaultOptions = {
+				escape: true
+			},
+			allOptions = options || {};
+		_.defaults(allOptions, defaultOptions);
+
 		var _build = function (text, vars) {
 			var vars = vars || [];
 			return text.replace(/{([^{}]*)}/g,
 				function (a, b) {
-					var r = vars[b];
-					return typeof r === 'string' || typeof r === 'number' ? r : a;
+					var r = (vars[b]);
+					if(allOptions.escape) {
+						return (typeof r === 'string' || typeof r === 'number') ? encodeURIComponent(r) : encodeURIComponent(a);
+					} else {
+						return (typeof r === 'string' || typeof r === 'number') ? r : a;
+					}
 				}
 			);
 		};
@@ -195,6 +208,14 @@ var OC={
 	 */
 	redirect: function(targetURL) {
 		window.location = targetURL;
+	},
+
+	/**
+	 * Protocol that is used to access this ownCloud instance
+	 * @return {string} Used protocol
+	 */
+	getProtocol: function() {
+		return window.location.protocol.split(':')[0];
 	},
 
 	/**
@@ -455,11 +476,14 @@ var OC={
 	registerMenu: function($toggle, $menuEl) {
 		$menuEl.addClass('menu');
 		$toggle.on('click.menu', function(event) {
+			// prevent the link event (append anchor to URL)
+			event.preventDefault();
+
 			if ($menuEl.is(OC._currentMenu)) {
 				$menuEl.slideUp(OC.menuSpeed);
 				OC._currentMenu = null;
 				OC._currentMenuToggle = null;
-				return false;
+				return;
 			}
 			// another menu was open?
 			else if (OC._currentMenu) {
@@ -469,7 +493,6 @@ var OC={
 			$menuEl.slideToggle(OC.menuSpeed);
 			OC._currentMenu = $menuEl;
 			OC._currentMenuToggle = $toggle;
-			return false;
 		});
 	},
 
@@ -605,34 +628,30 @@ OC.addStyle.loaded=[];
 OC.addScript.loaded=[];
 
 /**
- * @todo Write documentation
+ * A little class to manage a status field for a "saving" process.
+ * It can be used to display a starting message (e.g. "Saving...") and then
+ * replace it with a green success message or a red error message.
+ *
+ * @namespace OC.msg
  */
-OC.msg={
+OC.msg = {
 	/**
-	 * @param selector
-	 * @todo Write documentation
+	 * Displayes a "Saving..." message in the given message placeholder
+	 *
+	 * @param {Object} selector	Placeholder to display the message in
 	 */
-	startSaving:function(selector){
-		OC.msg.startAction(selector, t('core', 'Saving...'));
+	startSaving: function(selector) {
+		this.startAction(selector, t('core', 'Saving...'));
 	},
 
 	/**
-	 * @param selector
-	 * @param data
-	 * @todo Write documentation
+	 * Displayes a custom message in the given message placeholder
+	 *
+	 * @param {Object} selector	Placeholder to display the message in
+	 * @param {string} message	Plain text message to display (no HTML allowed)
 	 */
-	finishedSaving:function(selector, data){
-		OC.msg.finishedAction(selector, data);
-	},
-
-	/**
-	 * @param selector
-	 * @param {string} message Message to display
-	 * @todo WRite documentation
-	 */
-	startAction:function(selector, message){
-		$(selector)
-			.html( message )
+	startAction: function(selector, message) {
+		$(selector).text(message)
 			.removeClass('success')
 			.removeClass('error')
 			.stop(true, true)
@@ -640,25 +659,64 @@ OC.msg={
 	},
 
 	/**
-	 * @param selector
-	 * @param data
-	 * @todo Write documentation
+	 * Displayes an success/error message in the given selector
+	 *
+	 * @param {Object} selector	Placeholder to display the message in
+	 * @param {Object} response	Response of the server
+	 * @param {Object} response.data	Data of the servers response
+	 * @param {string} response.data.message	Plain text message to display (no HTML allowed)
+	 * @param {string} response.status	is being used to decide whether the message
+	 * is displayed as an error/success
 	 */
-	finishedAction:function(selector, data){
-		if( data.status === "success" ){
-			$(selector).html( data.data.message )
-					.addClass('success')
-					.removeClass('error')
-					.stop(true, true)
-					.delay(3000)
-					.fadeOut(900)
-					.show();
-		}else{
-			$(selector).html( data.data.message )
-					.addClass('error')
-					.removeClass('success')
-					.show();
+	finishedSaving: function(selector, response) {
+		this.finishedAction(selector, response);
+	},
+
+	/**
+	 * Displayes an success/error message in the given selector
+	 *
+	 * @param {Object} selector	Placeholder to display the message in
+	 * @param {Object} response	Response of the server
+	 * @param {Object} response.data Data of the servers response
+	 * @param {string} response.data.message Plain text message to display (no HTML allowed)
+	 * @param {string} response.status is being used to decide whether the message
+	 * is displayed as an error/success
+	 */
+	finishedAction: function(selector, response) {
+		if (response.status === "success") {
+			this.finishedSuccess(selector, response.data.message);
+		} else {
+			this.finishedError(selector, response.data.message);
 		}
+	},
+
+	/**
+	 * Displayes an success message in the given selector
+	 *
+	 * @param {Object} selector Placeholder to display the message in
+	 * @param {string} message Plain text success message to display (no HTML allowed)
+	 */
+	finishedSuccess: function(selector, message) {
+		$(selector).text(message)
+			.addClass('success')
+			.removeClass('error')
+			.stop(true, true)
+			.delay(3000)
+			.fadeOut(900)
+			.show();
+	},
+
+	/**
+	 * Displayes an error message in the given selector
+	 *
+	 * @param {Object} selector Placeholder to display the message in
+	 * @param {string} message Plain text error message to display (no HTML allowed)
+	 */
+	finishedError: function(selector, message) {
+		$(selector).text(message)
+			.addClass('error')
+			.removeClass('success')
+			.show();
 	}
 };
 
@@ -1084,16 +1142,16 @@ function initCore() {
 	});
 
 	// all the tipsy stuff needs to be here (in reverse order) to work
-	$('.displayName .action').tipsy({gravity:'se', fade:true, live:true});
-	$('.password .action').tipsy({gravity:'se', fade:true, live:true});
-	$('#upload').tipsy({gravity:'w', fade:true});
-	$('.selectedActions a').tipsy({gravity:'s', fade:true, live:true});
-	$('a.action.delete').tipsy({gravity:'e', fade:true, live:true});
-	$('a.action').tipsy({gravity:'s', fade:true, live:true});
-	$('td .modified').tipsy({gravity:'s', fade:true, live:true});
-	$('td.lastLogin').tipsy({gravity:'s', fade:true, html:true});
-	$('input').tipsy({gravity:'w', fade:true});
-	$('.extra-data').tipsy({gravity:'w', fade:true, live:true});
+	$('.displayName .action').tipsy({gravity:'se', live:true});
+	$('.password .action').tipsy({gravity:'se', live:true});
+	$('#upload').tipsy({gravity:'w'});
+	$('.selectedActions a').tipsy({gravity:'s', live:true});
+	$('a.action.delete').tipsy({gravity:'e', live:true});
+	$('a.action').tipsy({gravity:'s', live:true});
+	$('td .modified').tipsy({gravity:'s', live:true});
+	$('td.lastLogin').tipsy({gravity:'s', html:true});
+	$('input').tipsy({gravity:'w'});
+	$('.extra-data').tipsy({gravity:'w', live:true});
 
 	// toggle for menus
 	$(document).on('mouseup.closemenus', function(event) {
@@ -1140,6 +1198,20 @@ function initCore() {
 
 	setupMainMenu();
 
+	// move triangle of apps dropdown to align with app name triangle
+	// 2 is the additional offset between the triangles
+	if($('#navigation').length) {
+		$('#header #owncloud + .menutoggle').one('click', function(){
+			var caretPosition = $('.header-appname + .icon-caret').offset().left - 2;
+			if(caretPosition > 255) {
+				// if the app name is longer than the menu, just put the triangle in the middle
+				return;
+			} else {
+				$('head').append('<style>#navigation:after { left: '+ caretPosition +'px; }</style>');
+			}
+		});
+	}
+
 	// just add snapper for logged in users
 	if($('#app-navigation').length && !$('html').hasClass('lte9')) {
 
@@ -1159,7 +1231,7 @@ function initCore() {
 		});
 		// close sidebar when switching navigation entry
 		var $appNavigation = $('#app-navigation');
-		$appNavigation.delegate('a', 'click', function(event) {
+		$appNavigation.delegate('a, :button', 'click', function(event) {
 			var $target = $(event.target);
 			// don't hide navigation when changing settings or adding things
 			if($target.is('.app-navigation-noclose') ||
@@ -1190,6 +1262,33 @@ function initCore() {
 
 		// initial call
 		toggleSnapperOnSize();
+
+		// adjust controls bar width
+		var adjustControlsWidth = function() {
+			if($('#controls').length) {
+				var controlsWidth;
+				// if there is a scrollbar …
+				if($('#app-content').get(0).scrollHeight > $('#app-content').height()) {
+					if($(window).width() > 768) {
+						controlsWidth = $('#content').width() - $('#app-navigation').width() - getScrollBarWidth();
+					} else {
+						controlsWidth = $('#content').width() - getScrollBarWidth();
+					}
+				} else { // if there is none
+					if($(window).width() > 768) {
+						controlsWidth = $('#content').width() - $('#app-navigation').width();
+					} else {
+						controlsWidth = $('#content').width();
+					}
+				}
+				$('#controls').css('width', controlsWidth);
+				$('#controls').css('min-width', controlsWidth);
+			}
+		};
+
+		$(window).resize(_.debounce(adjustControlsWidth, 250));
+
+		$('body').delegate('#app-content', 'apprendered', adjustControlsWidth);
 
 	}
 
@@ -1282,7 +1381,7 @@ OC.Util = {
 	 * @returns {string} timestamp formatted as requested
 	 */
 	formatDate: function (timestamp, format) {
-		format = format || "MMMM D, YYYY h:mm";
+		format = format || "LLL";
 		return moment(timestamp).format(format);
 	},
 
@@ -1615,3 +1714,31 @@ jQuery.fn.selectRange = function(start, end) {
 jQuery.fn.exists = function(){
 	return this.length > 0;
 };
+
+function getScrollBarWidth() {
+	var inner = document.createElement('p');
+	inner.style.width = "100%";
+	inner.style.height = "200px";
+
+	var outer = document.createElement('div');
+	outer.style.position = "absolute";
+	outer.style.top = "0px";
+	outer.style.left = "0px";
+	outer.style.visibility = "hidden";
+	outer.style.width = "200px";
+	outer.style.height = "150px";
+	outer.style.overflow = "hidden";
+	outer.appendChild (inner);
+
+	document.body.appendChild (outer);
+	var w1 = inner.offsetWidth;
+	outer.style.overflow = 'scroll';
+	var w2 = inner.offsetWidth;
+	if(w1 === w2) {
+		w2 = outer.clientWidth;
+	}
+
+	document.body.removeChild (outer);
+
+	return (w1 - w2);
+}

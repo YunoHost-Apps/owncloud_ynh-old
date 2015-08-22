@@ -32,7 +32,9 @@
 #app-navigation > ul {
 	position: relative;
 	height: 100%;
+	width: inherit;
 	overflow: auto;
+	padding-bottom: 44px;
 	-moz-box-sizing: border-box; box-sizing: border-box;
 }
 #app-navigation li {
@@ -455,11 +457,16 @@
 	width: 100%;
 	padding: 0;
 	margin: 0;
-	background-color: transparent; background-image: url('../img/actions/settings.svg');
-	background-position: 10px center; background-repeat: no-repeat;
+	background-color: transparent;
+	background-image: url('../img/actions/settings.svg');
+	background-position: 14px center;
+	background-repeat: no-repeat;
 	box-shadow: none;
 	border: 0;
 	border-radius: 0;
+	text-align: left;
+	padding-left: 42px;
+	font-weight: normal;
 }
 .settings-button:hover,
 .settings-button:focus {
@@ -485,6 +492,15 @@ button.loading {
 	color: #555;
 	border-top: 1px solid #ddd;
 }
+.section.hidden {
+	display: none !important;
+}
+.sub-section {
+	position: relative;
+	margin-top: 10px;
+	margin-left: 27px;
+	margin-bottom: 10px;
+}
 /* no top border for first settings item */
 #app-content > .section:first-child {
 	border-top: none;
@@ -495,8 +511,9 @@ button.loading {
 	font-weight: normal;
 }
 .section h3 {
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: normal;
+	margin: 12px 0;
 }
 /* slight position correction of checkboxes and radio buttons */
 .section input[type="checkbox"],
@@ -521,6 +538,21 @@ button.loading {
 em {
 	font-style: normal;
 	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-	filter: alpha(opacity=50);
 	opacity: .5;
 }
+
+/* generic dropdown style */
+.dropdown {
+	background:#eee;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+	box-shadow:0 1px 1px #777;
+	display:block;
+	margin-right: 0;
+	position:absolute;
+	right:0;
+	width:420px;
+	z-index:500;
+	padding:16px;
+}
+

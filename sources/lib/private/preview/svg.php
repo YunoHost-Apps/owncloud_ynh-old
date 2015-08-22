@@ -1,9 +1,25 @@
 <?php
 /**
- * Copyright (c) 2013 Georg Ehrke georg@ownCloud.com
- * This file is licensed under the Affero General Public License version 3 or
- * later.
- * See the COPYING-README file.
+ * @author Georg Ehrke <georg@owncloud.com>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Olivier Paroz <github@oparoz.com>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 namespace OC\Preview;
 
@@ -19,17 +35,17 @@ class SVG extends Provider {
 	 * {@inheritDoc}
 	 */
 	public function getThumbnail($path, $maxX, $maxY, $scalingup, $fileview) {
-		try{
+		try {
 			$svg = new \Imagick();
 			$svg->setBackgroundColor(new \ImagickPixel('transparent'));
 
 			$content = stream_get_contents($fileview->fopen($path, 'r'));
-			if(substr($content, 0, 5) !== '<?xml') {
+			if (substr($content, 0, 5) !== '<?xml') {
 				$content = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' . $content;
 			}
 
 			// Do not parse SVG files with references
-			if(stripos($content, 'xlink:href') !== false) {
+			if (stripos($content, 'xlink:href') !== false) {
 				return false;
 			}
 
@@ -44,6 +60,11 @@ class SVG extends Provider {
 		$image = new \OC_Image();
 		$image->loadFromData($svg);
 		//check if image object is valid
-		return $image->valid() ? $image : false;
+		if ($image->valid()) {
+			$image->scaleDownToFit($maxX, $maxY);
+
+			return $image;
+		}
+		return false;
 	}
 }

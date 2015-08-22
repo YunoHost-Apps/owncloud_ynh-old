@@ -1,22 +1,24 @@
 <?php
 /**
- * ownCloud - App Framework
+ * @author Bernhard Posselt <dev@bernhard-posselt.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Thomas Tanghus <thomas@tanghus.net>
  *
- * @author Bernhard Posselt
- * @copyright 2012 Bernhard Posselt <dev@bernhard-posselt.com>
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
 
@@ -31,6 +33,7 @@ use OCP\AppFramework\Http;
 
 /**
  * A renderer for JSON calls
+ * @since 6.0.0
  */
 class JSONResponse extends Response {
 
@@ -45,6 +48,7 @@ class JSONResponse extends Response {
 	 * constructor of JSONResponse
 	 * @param array|object $data the object or array that should be transformed
 	 * @param int $statusCode the Http status code, defaults to 200
+	 * @since 6.0.0
 	 */
 	public function __construct($data=array(), $statusCode=Http::STATUS_OK) {
 		$this->data = $data;
@@ -56,6 +60,7 @@ class JSONResponse extends Response {
 	/**
 	 * Returns the rendered json
 	 * @return string the rendered json
+	 * @since 6.0.0
 	 */
 	public function render(){
 		return json_encode($this->data);
@@ -66,6 +71,7 @@ class JSONResponse extends Response {
 	 * @param array|object $data an array or object which will be transformed
 	 *                             to JSON
 	 * @return JSONResponse Reference to this object
+	 * @since 6.0.0 - return value was added in 7.0.0
 	 */
 	public function setData($data){
 		$this->data = $data;
@@ -77,6 +83,7 @@ class JSONResponse extends Response {
 	/**
 	 * Used to get the set parameters
 	 * @return array the data
+	 * @since 6.0.0
 	 */
 	public function getData(){
 		return $this->data;

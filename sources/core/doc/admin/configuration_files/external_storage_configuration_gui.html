@@ -30,7 +30,7 @@
     <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="File Sharing and Management" href="index.html" />
     <link rel="next" title="Configuring External Storage (Configuration File)" href="external_storage_configuration.html" />
-    <link rel="prev" title="Encryption Configuration" href="encryption_configuration.html" />
+    <link rel="prev" title="Providing Default Files" href="default_files_configuration.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -116,7 +116,7 @@
                   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">File Sharing and Management</a><ul class="current">
@@ -124,8 +124,8 @@
 <li class="toctree-l2"><a class="reference internal" href="big_file_upload_configuration.html">Uploading big files &gt; 512MB</a></li>
 <li class="toctree-l2"><a class="reference internal" href="collaborative_documents_configuration.html">Configuring the Collaborative Documents App</a></li>
 <li class="toctree-l2"><a class="reference internal" href="default_files_configuration.html">Providing Default Files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="encryption_configuration.html">Encryption Configuration</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Configuring External Storage (GUI)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#new-settings-options">New Settings Options</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#supported-mounts">Supported mounts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#enabling-external-storage-support">Enabling External Storage Support</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#using-self-signed-certificates">Using self-signed certificates</a></li>
@@ -143,7 +143,9 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="external_storage_configuration.html">Configuring External Storage (Configuration File)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="encryption_configuration.html">Encryption Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="files_locking_enabling.html">Using the Files Locking App</a></li>
+<li class="toctree-l2"><a class="reference internal" href="files_locking_transactional.html">Transactional File Locking</a></li>
 <li class="toctree-l2"><a class="reference internal" href="federated_cloud_sharing_configuration.html">Configuring Federated Cloud Sharing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="previews_configuration.html">Previews Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="serving_static_files_configuration.html">Serving Static Files for Better Performance</a></li>
@@ -154,13 +156,13 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Custom and Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
 </ul>
 
 								</ul>
@@ -181,6 +183,26 @@ mount their own external storage services.</p>
 <p>All of these connect to a LAN ownCloud server that is not publicly accessible,
 with one exception: Google Drive requires an ownCloud server with a registered
 domain name that is accessible over the Internet.</p>
+<p><a class="reference external" href="https://youtu.be/uezzFDRnoPY">Video: How to Configure External Storage in ownCloud Server 8.1</a></p>
+<div class="figure">
+<a class="reference external image-reference" href="https://youtu.be/uezzFDRnoPY"><img alt="../_images/video_externalstorage.png" src="../_images/video_externalstorage.png" /></a>
+</div>
+<div class="section" id="new-settings-options">
+<h2>New Settings Options<a class="headerlink" href="#new-settings-options" title="Permalink to this headline">¶</a></h2>
+<p>Hover your cursor to the right of any external mount configuration to expose
+the settings button and trashcan. Click the trashcan to delete the
+mountpoint. The settings button allows you to configure each mountpoint
+individually with the following options:</p>
+<ul class="simple">
+<li>Encryption</li>
+<li>Previews</li>
+<li>Check for changes Never, Once every direct access, or Every time the
+filesystem is Used.</li>
+</ul>
+<div class="figure">
+<img alt="../_images/encryption13.png" src="../_images/encryption13.png" />
+</div>
+</div>
 <div class="section" id="supported-mounts">
 <h2>Supported mounts<a class="headerlink" href="#supported-mounts" title="Permalink to this headline">¶</a></h2>
 <p>ownCloud admins may mount these external storage services and devices:</p>
@@ -198,6 +220,11 @@ domain name that is accessible over the Internet.</p>
 </ul>
 <p>ownCloud users can be given permission to mount any of these, except local
 storage.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A non-blocking or correctly configured SELinux setup is needed
+for these backends to work. Please refer to the <a class="reference internal" href="../installation/selinux_configuration.html#selinux-config-label"><em>SELinux Configuration</em></a>.</p>
+</div>
 </div>
 <div class="section" id="enabling-external-storage-support">
 <h2>Enabling External Storage Support<a class="headerlink" href="#enabling-external-storage-support" title="Permalink to this headline">¶</a></h2>
@@ -347,8 +374,9 @@ configured to support <tt class="docutils literal"><span class="pre">ftps://</sp
 </ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">A non-blocking or correctly configured SELinux setup is needed
-for this backend to work.</p>
+<p class="last">The external storage <tt class="docutils literal"><span class="pre">FTP/FTPS/SFTP</span></tt> needs the <tt class="docutils literal"><span class="pre">allow_url_fopen</span></tt> PHP
+setting to be set to <tt class="docutils literal"><span class="pre">1</span></tt>. When having connection problems make sure that it is
+not set to <tt class="docutils literal"><span class="pre">0</span></tt> in your <tt class="docutils literal"><span class="pre">php.ini</span></tt>.</p>
 </div>
 <div class="figure">
 <img alt="../_images/external-storage-ftp.png" src="../_images/external-storage-ftp.png" />

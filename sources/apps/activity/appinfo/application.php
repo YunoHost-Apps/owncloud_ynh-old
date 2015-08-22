@@ -25,11 +25,15 @@ namespace OCA\Activity\AppInfo;
 use OC\Files\View;
 use OCA\Activity\Consumer;
 use OCA\Activity\Controller\Activities;
+use OCA\Activity\Controller\Feed;
 use OCA\Activity\Controller\Settings;
 use OCA\Activity\Data;
 use OCA\Activity\DataHelper;
+use OCA\Activity\Display;
 use OCA\Activity\GroupHelper;
-use OCA\Activity\Hooks;
+use OCA\Activity\FilesHooks;
+use OCA\Activity\MailQueueHandler;
+use OCA\Activity\MockUtilSendMail;
 use OCA\Activity\Navigation;
 use OCA\Activity\ParameterHelper;
 use OCA\Activity\UserSettings;
@@ -57,7 +61,8 @@ class Application extends App {
 
 		$container->registerService('Consumer', function(IContainer $c) {
 			return new Consumer(
-				$c->query('UserSettings')
+				$c->query('UserSettings'),
+				$c->query('CurrentUID')
 			);
 		});
 
@@ -68,11 +73,25 @@ class Application extends App {
 				$server->getActivityManager(),
 				new ParameterHelper (
 					$server->getActivityManager(),
+					$server->getUserManager(),
 					new View(''),
 					$server->getConfig(),
-					$c->query('ActivityL10N')
+					$c->query('ActivityL10N'),
+					$c->query('CurrentUID')
 				),
 				$c->query('ActivityL10N')
+			);
+		});
+
+		$container->registerService('DisplayHelper', function(IContainer $c) {
+			/** @var \OC\Server $server */
+			$server = $c->query('ServerContainer');
+
+			return new Display(
+				$server->query('DateTimeFormatter'),
+				$server->getPreviewManager(),
+				$server->getURLGenerator(),
+				new View('')
 			);
 		});
 
@@ -84,11 +103,33 @@ class Application extends App {
 			);
 		});
 
+		$container->registerService('GroupHelperSingleEntries', function(IContainer $c) {
+			return new GroupHelper(
+				$c->query('ServerContainer')->getActivityManager(),
+				$c->query('DataHelper'),
+				false
+			);
+		});
+
 		$container->registerService('Hooks', function(IContainer $c) {
-			return new Hooks(
+			return new FilesHooks(
 				$c->query('ActivityData'),
 				$c->query('UserSettings'),
 				$c->query('CurrentUID')
+			);
+		});
+
+		$container->registerService('MailQueueHandler', function(IContainer $c) {
+			/** @var \OC\Server $server */
+			$server = $c->query('ServerContainer');
+
+			return new MailQueueHandler(
+				$server->getDateTimeFormatter(),
+				$server->getDatabaseConnection(),
+				$c->query('DataHelper'),
+				$server->getMailer(),
+				$server->getURLGenerator(),
+				$server->getUserManager()
 			);
 		});
 
@@ -100,7 +141,9 @@ class Application extends App {
 			return new Navigation(
 				$c->query('ActivityL10N'),
 				$server->getActivityManager(),
-				$c->query('URLGenerator'),
+				$server->getURLGenerator(),
+				$c->query('UserSettings'),
+				$c->query('CurrentUID'),
 				$rssToken
 			);
 		});
@@ -157,9 +200,27 @@ class Application extends App {
 				$c->query('AppName'),
 				$c->query('Request'),
 				$c->query('ActivityData'),
+				$c->query('DisplayHelper'),
 				$c->query('GroupHelper'),
 				$c->query('Navigation'),
 				$c->query('UserSettings'),
+				$c->query('CurrentUID')
+			);
+		});
+
+		$container->registerService('FeedController', function(IContainer $c) {
+			/** @var \OC\Server $server */
+			$server = $c->query('ServerContainer');
+
+			return new Feed(
+				$c->query('AppName'),
+				$c->query('Request'),
+				$c->query('ActivityData'),
+				$c->query('GroupHelperSingleEntries'),
+				$c->query('UserSettings'),
+				$c->query('URLGenerator'),
+				$server->getActivityManager(),
+				$server->getConfig(),
 				$c->query('CurrentUID')
 			);
 		});

@@ -1,9 +1,27 @@
 <?php
 /**
- * Copyright (c) 2014 Lukas Reschke <lukas@owncloud.com>
- * This file is licensed under the Affero General Public License version 3 or
- * later.
- * See the COPYING-README file.
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
+ * @author Tobias Kaminsky <tobias@kaminsky.me>
+ * @author Vincent Petry <pvince81@owncloud.com>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 
 namespace OCA\Files\Controller;
@@ -11,24 +29,36 @@ namespace OCA\Files\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Controller;
 use OCP\IRequest;
-use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\DataResponse;
-use OCP\AppFramework\Http\DownloadResponse;
-use OC\Preview;
+use OCP\AppFramework\Http\DataDisplayResponse;
 use OCA\Files\Service\TagService;
+use OCP\IPreview;
 
+/**
+ * Class ApiController
+ *
+ * @package OCA\Files\Controller
+ */
 class ApiController extends Controller {
+	/** @var TagService */
+	private $tagService;
+	/** @var IPreview */
+	private $previewManager;
 
 	/**
-	 * @var TagService $tagService
+	 * @param string $appName
+	 * @param IRequest $request
+	 * @param TagService $tagService
+	 * @param IPreview $previewManager
 	 */
-	private $tagService;
-
-	public function __construct($appName, IRequest $request, TagService $tagService){
+	public function __construct($appName,
+								IRequest $request,
+								TagService $tagService,
+								IPreview $previewManager){
 		parent::__construct($appName, $request);
 		$this->tagService = $tagService;
+		$this->previewManager = $previewManager;
 	}
-
 
 	/**
 	 * Gets a thumbnail of the specified file
@@ -41,19 +71,18 @@ class ApiController extends Controller {
 	 * @param int $x
 	 * @param int $y
 	 * @param string $file URL-encoded filename
-	 * @return JSONResponse|DownloadResponse
+	 * @return DataResponse|DataDisplayResponse
 	 */
 	public function getThumbnail($x, $y, $file) {
 		if($x < 1 || $y < 1) {
-			return new JSONResponse('Requested size must be numeric and a positive value.', Http::STATUS_BAD_REQUEST);
+			return new DataResponse(['message' => 'Requested size must be numeric and a positive value.'], Http::STATUS_BAD_REQUEST);
 		}
 
-		try {
-			$preview = new Preview('', 'files', urldecode($file), $x, $y, true);
-			echo($preview->showPreview('image/png'));
-			return new DownloadResponse(urldecode($file).'.png', 'image/png');
-		} catch (\Exception $e) {
-			return new JSONResponse('File not found.', Http::STATUS_NOT_FOUND);
+		$preview = $this->previewManager->createPreview('files/'.urldecode($file), $x, $y, true);
+		if ($preview->valid()) {
+			return new DataDisplayResponse($preview->data(), Http::STATUS_OK, ['Content-Type' => 'image/png']);
+		} else {
+			return new DataResponse(['message' => 'File not found.'], Http::STATUS_NOT_FOUND);
 		}
 	}
 
@@ -63,37 +92,41 @@ class ApiController extends Controller {
 	 * replace the actual tag selection.
 	 *
 	 * @NoAdminRequired
-	 * @CORS
 	 *
 	 * @param string $path path
-	 * @param array  $tags array of tags
+	 * @param array|string $tags array of tags
 	 * @return DataResponse
 	 */
 	public function updateFileTags($path, $tags = null) {
-		$result = array();
+		$result = [];
 		// if tags specified or empty array, update tags
 		if (!is_null($tags)) {
 			try {
 				$this->tagService->updateFileTags($path, $tags);
 			} catch (\OCP\Files\NotFoundException $e) {
-				return new DataResponse($e->getMessage(), Http::STATUS_NOT_FOUND);
+				return new DataResponse([
+					'message' => $e->getMessage()
+				], Http::STATUS_NOT_FOUND);
 			} catch (\OCP\Files\StorageNotAvailableException $e) {
-				return new DataResponse($e->getMessage(), Http::STATUS_SERVICE_UNAVAILABLE);
+				return new DataResponse([
+					'message' => $e->getMessage()
+				], Http::STATUS_SERVICE_UNAVAILABLE);
 			} catch (\Exception $e) {
-				return new DataResponse($e->getMessage(), Http::STATUS_NOT_FOUND);
+				return new DataResponse([
+					'message' => $e->getMessage()
+				], Http::STATUS_NOT_FOUND);
 			}
 			$result['tags'] = $tags;
 		}
-		return new DataResponse($result, Http::STATUS_OK);
+		return new DataResponse($result);
 	}
 
 	/**
 	 * Returns a list of all files tagged with the given tag.
 	 *
 	 * @NoAdminRequired
-	 * @CORS
 	 *
-	 * @param array $tagName tag name to filter by
+	 * @param array|string $tagName tag name to filter by
 	 * @return DataResponse
 	 */
 	public function getFilesByTag($tagName) {
@@ -107,10 +140,10 @@ class ApiController extends Controller {
 			} else {
 				$file['path'] = '/';
 			}
-			$file['tags'] = array($tagName);
+			$file['tags'] = [$tagName];
 			$files[] = $file;
 		}
-		return new DataResponse(array('files' => $files), Http::STATUS_OK);
+		return new DataResponse(['files' => $files]);
 	}
 
 }

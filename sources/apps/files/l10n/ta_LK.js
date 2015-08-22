@@ -1,7 +1,6 @@
 OC.L10N.register(
     "files",
     {
-    "Invalid name, '\\', '/', '<', '>', ':', '\"', '|', '?' and '*' are not allowed." : "செல்லுபடியற்ற பெயர்,'\\', '/', '<', '>', ':', '\"', '|', '?' மற்றும் '*' ஆகியன அனுமதிக்கப்படமாட்டாது.",
     "No file was uploaded. Unknown error" : "ஒரு கோப்பும் பதிவேற்றப்படவில்லை. அறியப்படாத வழு",
     "There is no error, the file uploaded with success" : "இங்கு வழு இல்லை, கோப்பு வெற்றிகரமாக பதிவேற்றப்பட்டது",
     "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form" : "பதிவேற்றப்பட்ட கோப்பானது HTML  படிவத்தில் குறிப்பிடப்பட்டுள்ள MAX_FILE_SIZE  directive ஐ விட கூடியது",
@@ -25,10 +24,6 @@ OC.L10N.register(
     "Name" : "பெயர்",
     "Size" : "அளவு",
     "Modified" : "மாற்றப்பட்டது",
-    "_%n folder_::_%n folders_" : ["",""],
-    "_%n file_::_%n files_" : ["",""],
-    "_Uploading %n file_::_Uploading %n files_" : ["",""],
-    "_matches '{filter}'_::_match '{filter}'_" : ["",""],
     "Favorite" : "விருப்பமான",
     "File handling" : "கோப்பு கையாளுதல்",
     "Maximum upload size" : "பதிவேற்றக்கூடிய ஆகக்கூடிய அளவு ",
@@ -38,7 +33,6 @@ OC.L10N.register(
     "New" : "புதிய",
     "Text file" : "கோப்பு உரை",
     "Folder" : "கோப்புறை",
-    "From link" : "இணைப்பிலிருந்து",
     "Upload" : "பதிவேற்றுக",
     "Cancel upload" : "பதிவேற்றலை இரத்து செய்க",
     "Upload too large" : "பதிவேற்றல் மிகப்பெரியது",

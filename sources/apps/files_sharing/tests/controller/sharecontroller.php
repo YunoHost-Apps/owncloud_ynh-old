@@ -1,20 +1,35 @@
 <?php
 /**
+ * @author Georg Ehrke <georg@owncloud.com>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
  * @author Lukas Reschke <lukas@owncloud.com>
- * @copyright 2014 Lukas Reschke
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Vincent Cloutier <vincent1cloutier@gmail.com>
  *
- * This file is licensed under the Affero General Public License version 3 or
- * later.
- * See the COPYING-README file.
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 
 namespace OCA\Files_Sharing\Controllers;
 
 use OC\Files\Filesystem;
-use OCA\Files_Sharing\Application;
+use OCA\Files_Sharing\AppInfo\Application;
 use OCP\AppFramework\Http\NotFoundResponse;
 use OCP\AppFramework\IAppContainer;
-use OCP\Files;
 use OCP\AppFramework\Http\RedirectResponse;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\Security\ISecureRandom;
@@ -25,7 +40,7 @@ use OC\URLGenerator;
 /**
  * @package OCA\Files_Sharing\Controllers
  */
-class ShareControllerTest extends \PHPUnit_Framework_TestCase {
+class ShareControllerTest extends \Test\TestCase {
 
 	/** @var IAppContainer */
 	private $container;
@@ -63,10 +78,7 @@ class ShareControllerTest extends \PHPUnit_Framework_TestCase {
 
 		\OC_User::createUser($this->user, $this->user);
 		\OC_Util::tearDownFS();
-		\OC_User::setUserId('');
-		Filesystem::tearDown();
-		\OC_User::setUserId($this->user);
-		\OC_Util::setupFS($this->user);
+		$this->loginAsUser($this->user);
 
 		// Create a dummy shared file
 		$view = new View('/'. $this->user . '/files');
@@ -166,8 +178,15 @@ class ShareControllerTest extends \PHPUnit_Framework_TestCase {
 			'fileSize' => '33 B',
 			'nonHumanFileSize' => 33,
 			'maxSizeAnimateGif' => 10,
+			'previewSupported' => true,
+			'previewEnabled' => true,
 		);
+
+		$csp = new \OCP\AppFramework\Http\ContentSecurityPolicy();
+		$csp->addAllowedFrameDomain('\'self\'');
 		$expectedResponse = new TemplateResponse($this->container['AppName'], 'public', $sharedTmplParams, 'base');
+		$expectedResponse->setContentSecurityPolicy($csp);
+
 		$this->assertEquals($expectedResponse, $response);
 	}
 

@@ -48,6 +48,10 @@ var UserList = {
 	 * @returns table row created for this user
 	 */
 	add: function (user, sort) {
+		if (this.currentGid && this.currentGid !== '_everyone' && _.indexOf(user.groups, this.currentGid) < 0) {
+			return;
+		}
+
 		var $tr = $userListBody.find('tr:first-child').clone();
 		// this removes just the `display:none` of the template row
 		$tr.removeAttr('style');
@@ -70,7 +74,7 @@ var UserList = {
 		$tr.data('displayname', user.displayname);
 		$tr.data('mailAddress', user.email);
 		$tr.data('restoreDisabled', user.isRestoreDisabled);
-		$tr.find('td.name').text(user.name);
+		$tr.find('.name').text(user.name);
 		$tr.find('td.displayName > span').text(user.displayname);
 		$tr.find('td.mailAddress > span').text(user.email);
 
@@ -158,7 +162,7 @@ var UserList = {
 		//original title. We use a temporary div to get back the html that we
 		//can pass later. It is also required to initialise tipsy.
 		var tooltip = $('<div>').html($($tdLastLogin.attr('original-title')).text(lastLoginAbs)).html();
-		$tdLastLogin.tipsy({gravity:'s', fade:true, html:true});
+		$tdLastLogin.tipsy({gravity:'s', html:true});
 		$tdLastLogin.attr('title', tooltip);
 
 		/**
@@ -255,8 +259,8 @@ var UserList = {
 		rows.sort(function(a, b) {
 			// FIXME: inefficient way of getting the names,
 			// better use a data attribute
-			a = $(a).find('td.name').text();
-			b = $(b).find('td.name').text();
+			a = $(a).find('.name').text();
+			b = $(b).find('.name').text();
 			var firstSort = UserList.preSortSearchString(a, b);
 			if(typeof firstSort !== 'undefined') {
 				return firstSort;
@@ -639,7 +643,7 @@ $(document).ready(function () {
 		if(isRestoreDisabled) {
 			$tr.addClass('row-warning');
 			// add tipsy if the password change could cause data loss - no recovery enabled
-			$input.tipsy({gravity:'s', fade:false});
+			$input.tipsy({gravity:'s'});
 			$input.attr('title', t('settings', 'Changing the password will result in data loss, because data recovery is not available for this user'));
 		}
 		$td.find('img').hide();
@@ -875,5 +879,9 @@ $(document).ready(function () {
 
 	// trigger loading of users on startup
 	UserList.update(UserList.currentGid, initialUserCountLimit);
+
+	_.defer(function() {
+		$('#app-content').trigger($.Event('apprendered'));
+	});
 
 });

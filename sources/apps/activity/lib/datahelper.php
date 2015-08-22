@@ -23,8 +23,9 @@
 
 namespace OCA\Activity;
 
-use \OCP\Util;
-use \OCP\Activity\IManager;
+use OCP\Activity\IManager;
+use OCP\IL10N;
+use OCP\Util;
 
 class DataHelper {
 	/** @var \OCP\Activity\IManager */
@@ -33,12 +34,27 @@ class DataHelper {
 	/** @var \OCA\Activity\ParameterHelper */
 	protected $parameterHelper;
 
-	/** @var \OC_L10N */
+	/** @var IL10N */
 	protected $l;
 
-	public function __construct(IManager $activityManager, ParameterHelper $parameterHelper, \OC_L10N $l) {
+	public function __construct(IManager $activityManager, ParameterHelper $parameterHelper, IL10N $l) {
 		$this->activityManager = $activityManager;
 		$this->parameterHelper = $parameterHelper;
+		$this->l = $l;
+	}
+
+	/**
+	 * @param string $user
+	 */
+	public function setUser($user) {
+		$this->parameterHelper->setUser($user);
+	}
+
+	/**
+	 * @param IL10N $l
+	 */
+	public function setL10n(IL10N $l) {
+		$this->parameterHelper->setL10n($l);
 		$this->l = $l;
 	}
 
@@ -63,38 +79,7 @@ class DataHelper {
 			$stripPath, $highlightParams
 		);
 
-		if ($app === 'files') {
-			switch ($text) {
-				case 'created_self':
-					return $this->l->t('You created %1$s', $preparedParams);
-				case 'created_by':
-					return $this->l->t('%2$s created %1$s', $preparedParams);
-				case 'created_public':
-					return $this->l->t('%1$s was created in a public folder', $preparedParams);
-				case 'changed_self':
-					return $this->l->t('You changed %1$s', $preparedParams);
-				case 'changed_by':
-					return $this->l->t('%2$s changed %1$s', $preparedParams);
-				case 'deleted_self':
-					return $this->l->t('You deleted %1$s', $preparedParams);
-				case 'deleted_by':
-					return $this->l->t('%2$s deleted %1$s', $preparedParams);
-				case 'restored_self':
-					return $this->l->t('You restored %1$s', $preparedParams);
-				case 'restored_by':
-					return $this->l->t('%2$s restored %1$s', $preparedParams);
-				case 'shared_user_self':
-					return $this->l->t('You shared %1$s with %2$s', $preparedParams);
-				case 'shared_group_self':
-					return $this->l->t('You shared %1$s with group %2$s', $preparedParams);
-				case 'shared_with_by':
-					return $this->l->t('%2$s shared %1$s with you', $preparedParams);
-				case 'shared_link_self':
-					return $this->l->t('You shared %1$s via link', $preparedParams);
-			}
-		}
-
-		// Allow other apps to correctly translate their activities
+		// Allow apps to correctly translate their activities
 		$translation = $this->activityManager->translate(
 			$app, $text, $preparedParams, $stripPath, $highlightParams, $this->l->getLanguageCode());
 
@@ -102,7 +87,7 @@ class DataHelper {
 			return $translation;
 		}
 
-		$l = Util::getL10N($app);
+		$l = Util::getL10N($app, $this->l->getLanguageCode());
 		return $l->t($text, $preparedParams);
 	}
 
@@ -130,26 +115,37 @@ class DataHelper {
 	}
 
 	/**
-	 * Get the icon for a given activity type
+	 * Get the parameter array from the parameter string of the database table
 	 *
-	 * @param string $type
-	 * @return string CSS class which adds the icon
+	 * @param string $parameterString can be a JSON string, serialize() or a simple string.
+	 * @return array List of Parameters
 	 */
-	public function getTypeIcon($type)
-	{
-		switch ($type)
-		{
-			case Data::TYPE_SHARE_CHANGED:
-				return 'icon-change';
-			case Data::TYPE_SHARE_CREATED:
-				return 'icon-add-color';
-			case Data::TYPE_SHARE_DELETED:
-				return 'icon-delete-color';
-			case Data::TYPE_SHARED:
-				return 'icon-share';
+	public function getParameters($parameterString) {
+		if (!is_string($parameterString)) {
+			return [];
+		}
+		$parameters = $parameterString;
+
+		if ($parameterString[0] === '[' && substr($parameterString, -1) === ']' || $parameterString[0] === '"' && substr($parameterString, -1) === '"') {
+			// ownCloud 8.1+
+			$parameters = json_decode($parameterString, true);
+			if ($parameters === null) {
+				// Error on json decode
+				$parameters = $parameterString;
+			}
+
+		} else if (isset($parameterString[7]) && $parameterString[1] === ':' && ($parameterString[0] === 's' && substr($parameterString, -1) === ';' || $parameterString[0] === 'a' && substr($parameterString, -1) === '}')) {
+			// ownCloud 7+
+			// Min length 8: `s:1:"a";`
+			// Accepts: `s:1:"a";` for single string `a:1:{i:0;s:1:"a";}` for array
+			$parameters = unserialize($parameterString);
 		}
 
-		// Allow other apps to add a icon for their notifications
-		return $this->activityManager->getTypeIcon($type);
+		if (is_array($parameters)) {
+			return $parameters;
+		}
+
+		// ownCloud <7
+		return [$parameters];
 	}
 }

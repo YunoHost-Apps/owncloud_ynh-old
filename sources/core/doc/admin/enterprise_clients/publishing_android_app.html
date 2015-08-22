@@ -28,8 +28,8 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
     <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
-    <link rel="up" title="Creating Custom and Branded ownCloud Clients (ES only)" href="index.html" />
-    <link rel="next" title="External Storage (ES only)" href="../enterprise_external_storage/index.html" />
+    <link rel="up" title="Creating Branded ownCloud Clients (ES only)" href="index.html" />
+    <link rel="next" title="Creating Branded iOS Apps (ES only)" href="../enterprise_ios_app/index.html" />
     <link rel="prev" title="Custom Client Download Repositories" href="custom_client_repos.html" />
 <script type="text/javascript">
 (function () {
@@ -116,7 +116,7 @@
                   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
@@ -125,12 +125,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="index.html">Creating Custom and Branded ownCloud Clients (ES only)</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="creating_branded_apps.html">Creating Branded iOS and Android Apps (Enterprise Only)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Creating Branded ownCloud Clients (ES only)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="creating_branded_apps.html">Creating Branded Client Apps (Enterprise Only)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_client_repos.html">Custom Client Download Repositories</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Distributing Your Branded Android App (Enterprise Only)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#digitally-signing-android-apps">Digitally Signing Android Apps</a></li>
@@ -140,10 +139,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#resources">Resources</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../enterprise_ios_app/index.html">Creating Branded iOS Apps (ES only)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
 </ul>
 
 								</ul>
@@ -159,7 +160,7 @@
   <div class="section" id="distributing-your-branded-android-app-enterprise-only">
 <h1>Distributing Your Branded Android App (Enterprise Only)<a class="headerlink" href="#distributing-your-branded-android-app-enterprise-only" title="Permalink to this headline">¶</a></h1>
 <p>Now that you have created your branded Android app with ownCloud&#8217;s ownBuilder
-service (<a class="reference internal" href="creating_branded_apps.html"><em>Creating Branded iOS and Android Apps (Enterprise Only)</em></a>) how do you distribute it to your users?
+service (<a class="reference internal" href="creating_branded_apps.html"><em>Creating Branded Client Apps (Enterprise Only)</em></a>) how do you distribute it to your users?
 There are multiple ways: <a class="reference internal" href="#email"><em>Distribution via Email</em></a>, <a class="reference internal" href="#publish-server"><em>Publish On Your ownCloud Server</em></a>, or
 <a class="reference internal" href="#publish-google-play"><em>Publish to the Google Play Store</em></a>. However you distribute it, the first step is to
 digitally sign your new app. Signing your app verifies authorship and
@@ -173,9 +174,11 @@ acmecloud_1.7.0-release-unsigned.apk</pre>
 you will sign and distribute.</p>
 <div class="section" id="digitally-signing-android-apps">
 <h2>Digitally Signing Android Apps<a class="headerlink" href="#digitally-signing-android-apps" title="Permalink to this headline">¶</a></h2>
-<p>Signing your app is required, and the most time-consuming part is installing
-the commands you need to sign them. You need three commands to sign your app:
-<tt class="docutils literal"><span class="pre">keytool</span></tt>, <tt class="docutils literal"><span class="pre">jarsigner</span></tt>, and <tt class="docutils literal"><span class="pre">zipalign</span></tt>. Follow these steps:</p>
+<p>Signing your app is required. You can do this in the <a class="reference internal" href="creating_branded_apps.html#sign-android-app"><em>ownBrander
+wizard</em></a>, or after it is built and delivered to you. The most
+time-consuming part of signing the built app is installing the commands you need
+to sign it. You need three commands to sign your app: <tt class="docutils literal"><span class="pre">keytool</span></tt>,
+<tt class="docutils literal"><span class="pre">jarsigner</span></tt>, and <tt class="docutils literal"><span class="pre">zipalign</span></tt>. Follow these steps:</p>
 <ol class="arabic simple">
 <li>Install the signing commands</li>
 <li>Create a self-signed certificate with <tt class="docutils literal"><span class="pre">keytool</span></tt></li>
@@ -343,7 +346,7 @@ your branded app.</p>
 to your ownCloud server and share it like any other file: you can create normal
 ownCloud shares with ownCloud users and groups, and you may create a link share
 to share it with anyone. (See the <strong>Files &amp; Synchronization</strong> section of the
-<a class="reference external" href="https://doc.owncloud.org/server/8.0/user_manual/files/index.html">ownCloud User Manual</a> to learn
+<a class="reference external" href="https://doc.owncloud.org/server/8.1/user_manual/files/index.html">ownCloud User Manual</a> to learn
 more about sharing files.)</p>
 </div>
 <div class="section" id="publish-to-the-google-play-store">

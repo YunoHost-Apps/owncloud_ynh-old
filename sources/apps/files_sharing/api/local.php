@@ -1,26 +1,32 @@
 <?php
 /**
- * ownCloud - OCS API for local shares
+ * @author Björn Schießle <schiessle@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Vincent Petry <pvince81@owncloud.com>
  *
- * @author Bjoern Schiessle
- * @copyright 2013 Bjoern Schiessle schiessle@owncloud.com
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
 
 namespace OCA\Files_Sharing\API;
+
+use OC\HintException;
 
 class Local {
 
@@ -63,6 +69,7 @@ class Local {
 					if (\OC::$server->getPreviewManager()->isMimeSupported($share['mimetype'])) {
 						$share['isPreviewAvailable'] = true;
 					}
+					$share['icon'] = substr(\OC_Helper::mimetypeIcon($share['mimetype']), 0, -3) . 'svg';
 				}
 			}
 			return new \OC_OCS_Result($shares);
@@ -276,6 +283,10 @@ class Local {
 				return new \OC_OCS_Result(null, 400, "unknown share type");
 		}
 
+		if (($permissions & \OCP\Constants::PERMISSION_READ) === 0) {
+			return new \OC_OCS_Result(null, 400, 'invalid permissions');
+		}
+
 		try	{
 			$token = \OCP\Share::shareItem(
 					$itemType,
@@ -284,6 +295,8 @@ class Local {
 					$shareWith,
 					$permissions
 					);
+		} catch (HintException $e) {
+			return new \OC_OCS_Result(null, 400, $e->getHint());
 		} catch (\Exception $e) {
 			return new \OC_OCS_Result(null, 403, $e->getMessage());
 		}
@@ -299,8 +312,7 @@ class Local {
 						break;
 					}
 				}
-				$url = \OCP\Util::linkToPublic('files&t='.$token);
-				$data['url'] = $url; // '&' gets encoded to $amp;
+				$data['url'] = \OC::$server->getURLGenerator()->linkToRouteAbsolute('files_sharing.sharecontroller.showShare', ['token' => $token]);
 				$data['token'] = $token;
 
 			} else {
@@ -335,7 +347,7 @@ class Local {
 			if(isset($params['_put']['permissions'])) {
 				return self::updatePermissions($share, $params);
 			} elseif (isset($params['_put']['password'])) {
-				return self::updatePassword($share, $params);
+				return self::updatePassword($params['id'], (int)$share['share_type'], $params['_put']['password']);
 			} elseif (isset($params['_put']['publicUpload'])) {
 				return self::updatePublicUpload($share, $params);
 			} elseif (isset($params['_put']['expireDate'])) {
@@ -347,7 +359,6 @@ class Local {
 		}
 
 		return new \OC_OCS_Result(null, 400, "Wrong or no update parameter given");
-
 	}
 
 	/**
@@ -374,6 +385,10 @@ class Local {
 			if ($publicUploadEnabled === false || ($permissions !== 7 && $permissions !== 1)) {
 				return new \OC_OCS_Result(null, 400, "can't change permission for public link share");
 			}
+		}
+
+		if (($permissions & \OCP\Constants::PERMISSION_READ) === 0) {
+			return new \OC_OCS_Result(null, 400, 'invalid permissions');
 		}
 
 		try {
@@ -446,47 +461,22 @@ class Local {
 
 	/**
 	 * update password for public link share
-	 * @param array $share information about the share
-	 * @param array $params 'password'
+	 * @param int $shareId
+	 * @param int $shareType 
+	 * @param string $password
 	 * @return \OC_OCS_Result
 	 */
-	private static function updatePassword($share, $params) {
-
-		$itemSource = $share['item_source'];
-		$itemType = $share['item_type'];
-
-		if( (int)$share['share_type'] !== \OCP\Share::SHARE_TYPE_LINK) {
+	private static function updatePassword($shareId, $shareType, $password) {
+		if($shareType !== \OCP\Share::SHARE_TYPE_LINK) {
 			return  new \OC_OCS_Result(null, 400, "password protection is only supported for public shares");
 		}
 
-		$shareWith = isset($params['_put']['password']) ? $params['_put']['password'] : null;
-
-		if($shareWith === '') {
-			$shareWith = null;
-		}
-
-		$items = \OCP\Share::getItemShared($itemType, $itemSource);
-
-		$checkExists = false;
-		foreach ($items as $item) {
-			if($item['share_type'] === \OCP\Share::SHARE_TYPE_LINK) {
-				$checkExists = true;
-				$permissions = $item['permissions'];
-			}
-		}
-
-		if (!$checkExists) {
-			return  new \OC_OCS_Result(null, 404, "share doesn't exists, can't change password");
+		if($password === '') {
+			$password = null;
 		}
 
 		try {
-			$result = \OCP\Share::shareItem(
-					$itemType,
-					$itemSource,
-					\OCP\Share::SHARE_TYPE_LINK,
-					$shareWith,
-					$permissions
-					);
+			$result = \OCP\Share::setPassword($shareId, $password);
 		} catch (\Exception $e) {
 			return new \OC_OCS_Result(null, 403, $e->getMessage());
 		}
@@ -585,7 +575,7 @@ class Local {
 		$result = $query->execute($args);
 
 		if (\OCP\DB::isError($result)) {
-			\OCP\Util::writeLog('files_sharing', \OC_DB::getErrorMessage($result), \OCP\Util::ERROR);
+			\OCP\Util::writeLog('files_sharing', \OC_DB::getErrorMessage(), \OCP\Util::ERROR);
 			return null;
 		}
 		if ($share = $result->fetchRow()) {

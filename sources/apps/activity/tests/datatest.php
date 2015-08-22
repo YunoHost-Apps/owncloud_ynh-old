@@ -22,34 +22,71 @@
 
 namespace OCA\Activity\Tests;
 
+use OC\ActivityManager;
+use OCA\Activity\Data;
+use OCA\Activity\Tests\Mock\Extension;
+
 class DataTest extends TestCase {
-	public function getFilterFromParamData() {
+	/** @var \OCA\Activity\Data */
+	protected $data;
+
+	/** @var \OCP\IL10N */
+	protected $activityLanguage;
+
+	protected function setUp() {
+		parent::setUp();
+
+		$this->activityLanguage = $activityLanguage = \OCP\Util::getL10N('activity', 'en');
+		$activityManager = new ActivityManager(
+			$this->getMock('OCP\IRequest'),
+			$this->getMock('OCP\IUserSession'),
+			$this->getMock('OCP\IConfig')
+		);
+		$activityManager->registerExtension(function() use ($activityLanguage) {
+			return new Extension($activityLanguage, $this->getMock('\OCP\IURLGenerator'));
+		});
+		$this->data = new Data($activityManager);
+	}
+
+	public function dataGetNotificationTypes() {
+		return [
+			['type1'],
+		];
+	}
+
+	/**
+	 * @dataProvider dataGetNotificationTypes
+	 * @param string $typeKey
+	 */
+	public function testGetNotificationTypes($typeKey) {
+		$this->assertArrayHasKey($typeKey, $this->data->getNotificationTypes($this->activityLanguage));
+		// Check cached version aswell
+		$this->assertArrayHasKey($typeKey, $this->data->getNotificationTypes($this->activityLanguage));
+	}
+
+	public function validateFilterData() {
 		return array(
-			array('test', 'all'),
+			// Default filters
 			array('all', 'all'),
 			array('by', 'by'),
-			array('files', 'files'),
 			array('self', 'self'),
-			array('shares', 'shares'),
+
+			// Filter from extension
+			array('filter1', 'filter1'),
+
+			// Inexistent or empty filter
 			array('test', 'all'),
 			array(null, 'all'),
 		);
 	}
 
 	/**
-	 * @dataProvider getFilterFromParamData
+	 * @dataProvider validateFilterData
+	 *
+	 * @param string $filter
+	 * @param string $expected
 	 */
-	public function testGetFilterFromParam($globalValue, $expected) {
-		if ($globalValue !== null) {
-			$_GET['filter'] = $globalValue;
-		}
-
-		$data = new \OCA\Activity\Data(
-			$this->getMock('\OCP\Activity\IManager')
-		);
-		$this->assertEquals(
-			$expected,
-			$data->getFilterFromParam()
-		);
+	public function testValidateFilter($filter, $expected) {
+		$this->assertEquals($expected, $this->data->validateFilter($filter));
 	}
 }

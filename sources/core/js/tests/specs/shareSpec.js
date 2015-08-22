@@ -26,6 +26,10 @@ describe('OC.Share tests', function() {
 		var oldAppConfig;
 		var loadItemStub;
 		var autocompleteStub;
+		var oldEnableAvatars;
+		var avatarStub;
+		var placeholderStub;
+		var oldCurrentUser;
 
 		beforeEach(function() {
 			$('#testArea').append($('<div id="shareContainer"></div>'));
@@ -54,13 +58,25 @@ describe('OC.Share tests', function() {
 				var $el = $('<div></div>').data('ui-autocomplete', {});
 				return $el;
 			});
+
+			oldEnableAvatars = oc_config.enable_avatars;
+			oc_config.enable_avatars = false;
+			avatarStub = sinon.stub($.fn, 'avatar');
+			placeholderStub = sinon.stub($.fn, 'imageplaceholder');
+
+			oldCurrentUser = OC.currentUser;
+			OC.currentUser = 'user0';
 		});
 		afterEach(function() {
+			OC.currentUser = oldCurrentUser;
 			/* jshint camelcase:false */
 			oc_appconfig.core = oldAppConfig;
 			loadItemStub.restore();
 
 			autocompleteStub.restore();
+			avatarStub.restore();
+			placeholderStub.restore();
+			oc_config.enable_avatars = oldEnableAvatars;
 			$('#dropdown').remove();
 		});
 		it('calls loadItem with the correct arguments', function() {
@@ -94,6 +110,86 @@ describe('OC.Share tests', function() {
 		describe('Share with link', function() {
 			// TODO: test ajax calls
 			// TODO: test password field visibility (whenever enforced or not)
+			it('update password on focus out', function() {
+				$('#allowShareWithLink').val('yes');
+
+				OC.Share.showDropDown(
+					'file',
+					123,
+					$container,
+					true,
+					31,
+					'shared_file_name.txt'
+				);
+
+				// Toggle linkshare
+				$('#dropdown [name=linkCheckbox]').click();
+				fakeServer.requests[0].respond(
+					200,
+					{ 'Content-Type': 'application/json' },
+					JSON.stringify({data: {token: 'xyz'}, status: 'success'})
+				);
+
+				// Enable password, enter password and focusout
+				$('#dropdown [name=showPassword]').click();
+				$('#dropdown #linkPassText').focus();
+				$('#dropdown #linkPassText').val('foo');
+				$('#dropdown #linkPassText').focusout();
+
+				expect(fakeServer.requests[1].method).toEqual('POST');
+				var body = OC.parseQueryString(fakeServer.requests[1].requestBody);
+				expect(body['shareWith']).toEqual('foo');
+
+				// Set password response
+				fakeServer.requests[1].respond(
+					200,
+					{ 'Content-Type': 'application/json' },
+					JSON.stringify({data: {token: 'xyz'}, status: 'success'})
+				);
+
+				expect($('#dropdown #linkPassText').val()).toEqual('');
+				expect($('#dropdown #linkPassText').attr('placeholder')).toEqual('Password protected');
+			});
+			it('update password on enter', function() {
+				$('#allowShareWithLink').val('yes');
+
+				OC.Share.showDropDown(
+					'file',
+					123,
+					$container,
+					true,
+					31,
+					'shared_file_name.txt'
+				);
+
+				// Toggle linkshare
+				$('#dropdown [name=linkCheckbox]').click();
+				fakeServer.requests[0].respond(
+					200,
+					{ 'Content-Type': 'application/json' },
+					JSON.stringify({data: {token: 'xyz'}, status: 'success'})
+				);
+
+				// Enable password and enter password
+				$('#dropdown [name=showPassword]').click();
+				$('#dropdown #linkPassText').focus();
+				$('#dropdown #linkPassText').val('foo');
+				$('#dropdown #linkPassText').trigger(new $.Event('keyup', {keyCode: 13}));
+
+				expect(fakeServer.requests[1].method).toEqual('POST');
+				var body = OC.parseQueryString(fakeServer.requests[1].requestBody);
+				expect(body['shareWith']).toEqual('foo');
+
+				// Set password response
+				fakeServer.requests[1].respond(
+					200,
+					{ 'Content-Type': 'application/json' },
+					JSON.stringify({data: {token: 'xyz'}, status: 'success'})
+				);
+
+				expect($('#dropdown #linkPassText').val()).toEqual('');
+				expect($('#dropdown #linkPassText').attr('placeholder')).toEqual('Password protected');
+			});
 			it('shows share with link checkbox when allowed', function() {
 				$('#allowShareWithLink').val('yes');
 				OC.Share.showDropDown(
@@ -117,6 +213,206 @@ describe('OC.Share tests', function() {
 					'shared_file_name.txt'
 				);
 				expect($('#dropdown #linkCheckbox').length).toEqual(0);
+			});
+			it('Reset link when password is enforced and link is toggled', function() { 
+				var old = oc_appconfig.core.enforcePasswordForPublicLink;
+				oc_appconfig.core.enforcePasswordForPublicLink = true;
+				$('#allowShareWithLink').val('yes');
+
+				OC.Share.showDropDown(
+					'file',
+					123,
+					$container,
+					true,
+					31,
+					'shared_file_name.txt'
+				);
+
+				// Toggle linkshare
+				$('#dropdown [name=linkCheckbox]').click();
+				expect($('#dropdown #linkText').val()).toEqual('');
+
+				// Set password
+				$('#dropdown #linkPassText').val('foo');
+				$('#dropdown #linkPassText').trigger(new $.Event('keyup', {keyCode: 13}));
+				fakeServer.requests[0].respond(
+					200,
+					{ 'Content-Type': 'application/json' },
+					JSON.stringify({data: {token: 'xyz'}, status: 'success'})
+				);
+
+				// Remove link
+				$('#dropdown [name=linkCheckbox]').click();
+				fakeServer.requests[1].respond(
+					200,
+					{ 'Content-Type': 'application/json' },
+					JSON.stringify({status: 'success'})
+				);
+
+				/*
+				 * Try to share again
+				 * The linkText should be emptied
+				 */
+				$('#dropdown [name=linkCheckbox]').click();
+				expect($('#dropdown #linkText').val()).toEqual('');
+
+				/*
+				 * Do not set password but untoggle
+				 * Since there is no share this should not result in another request to the server
+				 */
+				$('#dropdown [name=linkCheckbox]').click();
+				expect(fakeServer.requests.length).toEqual(2);
+
+				oc_appconfig.core.enforcePasswordForPublicLink = old;
+			});
+
+			it('Reset password placeholder when password is enforced and link is toggled', function() { 
+				var old = oc_appconfig.core.enforcePasswordForPublicLink;
+				oc_appconfig.core.enforcePasswordForPublicLink = true;
+				$('#allowShareWithLink').val('yes');
+
+				OC.Share.showDropDown(
+					'file',
+					123,
+					$container,
+					true,
+					31,
+					'shared_file_name.txt'
+				);
+
+				// Toggle linkshare
+				$('#dropdown [name=linkCheckbox]').click();
+				expect($('#dropdown #linkPassText').attr('placeholder')).toEqual('Choose a password for the public link');
+
+				// Set password
+				$('#dropdown #linkPassText').val('foo');
+				$('#dropdown #linkPassText').trigger(new $.Event('keyup', {keyCode: 13}));
+				fakeServer.requests[0].respond(
+					200,
+					{ 'Content-Type': 'application/json' },
+					JSON.stringify({data: {token: 'xyz'}, status: 'success'})
+				);
+				expect($('#dropdown #linkPassText').attr('placeholder')).toEqual('**********');
+
+				// Remove link
+				$('#dropdown [name=linkCheckbox]').click();
+				fakeServer.requests[1].respond(
+					200,
+					{ 'Content-Type': 'application/json' },
+					JSON.stringify({status: 'success'})
+				);
+
+				// Try to share again
+				$('#dropdown [name=linkCheckbox]').click();
+				expect($('#dropdown #linkPassText').attr('placeholder')).toEqual('Choose a password for the public link');
+
+				oc_appconfig.core.enforcePasswordForPublicLink = old;
+			});
+			it('reset password on toggle of share', function() {
+				$('#allowShareWithLink').val('yes');
+				OC.Share.showDropDown(
+					'file',
+					123,
+					$container,
+					true,
+					31,
+					'shared_file_name.txt'
+				);
+				$('#dropdown [name=linkCheckbox]').click();
+				fakeServer.requests[0].respond(
+					200,
+					{ 'Content-Type': 'application/json' },
+					JSON.stringify({data: {token: 'xyz'}, status: 'success'})
+				);
+
+				//Password protection should be unchecked and password field not visible
+				expect($('#dropdown [name=showPassword]').prop('checked')).toEqual(false);
+				expect($('#dropdown #linkPass').is(":visible")).toEqual(false);
+
+				// Toggle and set password
+				$('#dropdown [name=showPassword]').click();
+				$('#dropdown #linkPassText').val('foo');
+				$('#dropdown #linkPassText').trigger(new $.Event('keyup', {keyCode: 13}));
+				fakeServer.requests[1].respond(
+					200,
+					{ 'Content-Type': 'application/json' },
+					JSON.stringify({data: {token: 'xyz2'}, status: 'success'})
+				);
+
+				// Unshare
+				$('#dropdown [name=linkCheckbox]').click();
+				fakeServer.requests[2].respond(
+					200,
+					{ 'Content-Type': 'application/json' },
+					JSON.stringify({status: 'success'})
+				);
+
+				// Toggle share again
+				$('#dropdown [name=linkCheckbox]').click();
+				fakeServer.requests[3].respond(
+					200,
+					{ 'Content-Type': 'application/json' },
+					JSON.stringify({data: {token: 'xyz3'}, status: 'success'})
+				);
+
+
+				// Password checkbox should be unchecked
+				expect($('#dropdown [name=showPassword]').prop('checked')).toEqual(false);
+				expect($('#dropdown #linkPass').is(":visible")).toEqual(false);
+			});
+			it('reset expiration on toggle of share', function() {
+				$('#allowShareWithLink').val('yes');
+				OC.Share.showDropDown(
+					'file',
+					123,
+					$container,
+					true,
+					31,
+					'shared_file_name.txt'
+				);
+				$('#dropdown [name=linkCheckbox]').click();
+				fakeServer.requests[0].respond(
+					200,
+					{ 'Content-Type': 'application/json' },
+					JSON.stringify({data: {token: 'xyz'}, status: 'success'})
+				);
+
+				//Expiration should be unchecked and expiration field not visible
+				expect($('#dropdown [name=expirationCheckbox]').prop('checked')).toEqual(false);
+				expect($('#dropdown #expirationDate').is(":visible")).toEqual(false);
+
+				// Toggle and set password
+				$('#dropdown [name=expirationCheckbox]').click();
+				d = new Date();
+				d.setDate(d.getDate() + 1);
+				date=d.getDate() + '-' + (d.getMonth()+1) + '-' + d.getFullYear();
+				$('#dropdown #expirationDate').val(date);
+				$('#dropdown #expirationDate').change();
+				fakeServer.requests[1].respond(
+					200,
+					{ 'Content-Type': 'application/json' },
+					JSON.stringify({data: {token: 'xyz2'}, status: 'success'})
+				);
+
+				// Unshare
+				$('#dropdown [name=linkCheckbox]').click();
+				fakeServer.requests[2].respond(
+					200,
+					{ 'Content-Type': 'application/json' },
+					JSON.stringify({status: 'success'})
+				);
+
+				// Toggle share again
+				$('#dropdown [name=linkCheckbox]').click();
+				fakeServer.requests[3].respond(
+					200,
+					{ 'Content-Type': 'application/json' },
+					JSON.stringify({data: {token: 'xyz3'}, status: 'success'})
+				);
+
+				// Recheck expire visibility
+				expect($('#dropdown [name=expirationCheckbox]').prop('checked')).toEqual(false);
+				expect($('#dropdown #expirationDate').is(":visible")).toEqual(false);
 			});
 			it('shows populated link share when a link share exists', function() {
 				loadItemStub.returns({
@@ -309,6 +605,7 @@ describe('OC.Share tests', function() {
 					};
 					loadItemStub.returns(shareData);
 					oc_appconfig.core.defaultExpireDate = 7;
+					oc_appconfig.core.enforcePasswordForPublicLink = false;
 					oc_appconfig.core.defaultExpireDateEnabled = false;
 					oc_appconfig.core.defaultExpireDateEnforced = false;
 				});
@@ -364,6 +661,32 @@ describe('OC.Share tests', function() {
 					$('#dropdown [name=expirationCheckbox]').click();
 					expect($('#dropdown [name=expirationCheckbox]').prop('checked')).toEqual(true);
 				});
+				it('enforces default date when enforced date setting is enabled and password is enforced', function() {
+					/* jshint camelcase:false */
+					oc_appconfig.core.enforcePasswordForPublicLink = true;
+					oc_appconfig.core.defaultExpireDateEnabled = true;
+					oc_appconfig.core.defaultExpireDateEnforced = true;
+					showDropDown();
+					$('#dropdown [name=linkCheckbox]').click();
+
+					//Enter password
+					$('#dropdown #linkPassText').val('foo');
+					$('#dropdown #linkPassText').trigger(new $.Event('keyup', {keyCode: 13}));
+					fakeServer.requests[0].respond(
+						200,
+						{ 'Content-Type': 'application/json' },
+						JSON.stringify({data: {token: 'xyz'}, status: 'success'})
+					);
+
+					expect($('#dropdown [name=expirationCheckbox]').prop('checked')).toEqual(true);
+					// TODO: those zeros must go...
+					expect($('#dropdown #expirationDate').val()).toEqual('2014-1-27 00:00:00');
+
+					// disabling is not allowed
+					expect($('#dropdown [name=expirationCheckbox]').prop('disabled')).toEqual(true);
+					$('#dropdown [name=expirationCheckbox]').click();
+					expect($('#dropdown [name=expirationCheckbox]').prop('checked')).toEqual(true);
+				});
 				it('displayes email form when sending emails is enabled', function() {
 					$('input[name=mailPublicNotificationEnabled]').val('yes');
 					showDropDown();
@@ -402,6 +725,109 @@ describe('OC.Share tests', function() {
 					showDropDown();
 					expect($.datepicker._defaults.minDate).toEqual(expectedMinDate);
 					expect($.datepicker._defaults.maxDate).toEqual(new Date(2014, 0, 27, 0, 0, 0, 0));
+				});
+			});
+		});
+		describe('check for avatar', function() {
+			beforeEach(function() {
+				loadItemStub.returns({
+					reshare: {
+						share_type: OC.Share.SHARE_TYPE_USER,
+						uid_owner: 'owner',
+						displayname_owner: 'Owner',
+						permissions: 31
+					},
+					shares: [{
+						id: 100,
+						item_source: 123,
+						permissions: 31,
+						share_type: OC.Share.SHARE_TYPE_USER,
+						share_with: 'user1',
+						share_with_displayname: 'User One'
+					},{
+						id: 101,
+						item_source: 123,
+						permissions: 31,
+						share_type: OC.Share.SHARE_TYPE_GROUP,
+						share_with: 'group',
+						share_with_displayname: 'group'
+					},{
+						id: 102,
+						item_source: 123,
+						permissions: 31,
+						share_type: OC.Share.SHARE_TYPE_REMOTE,
+						share_with: 'foo@bar.com/baz',
+						share_with_displayname: 'foo@bar.com/baz'
+
+					}]
+				});
+			});
+
+			describe('avatars enabled', function() {
+				beforeEach(function() {
+					oc_config.enable_avatars = true;
+					OC.Share.showDropDown(
+						'file',
+						123,
+						$container,
+						true,
+						31,
+						'shared_file_name.txt'
+					);
+				});
+
+				afterEach(function() {
+					oc_config.enable_avatars = false;
+				});
+
+				it('test correct function calls', function() {
+					expect(avatarStub.calledTwice).toEqual(true);
+					expect(placeholderStub.calledTwice).toEqual(true);
+					expect($('#shareWithList').children().length).toEqual(3);
+					expect($('.avatar').length).toEqual(4);
+				});
+
+				it('test avatar owner', function() {
+					var args = avatarStub.getCall(0).args;
+					expect(args.length).toEqual(2);
+					expect(args[0]).toEqual('owner');
+				});
+
+				it('test avatar user', function() {
+					var args = avatarStub.getCall(1).args;
+					expect(args.length).toEqual(2);
+					expect(args[0]).toEqual('user1');
+				});
+
+				it('test avatar for groups', function() {
+					var args = placeholderStub.getCall(0).args;
+					expect(args.length).toEqual(1);
+					expect(args[0]).toEqual('group ' + OC.Share.SHARE_TYPE_GROUP);
+				});
+
+				it('test avatar for remotes', function() {
+					var args = placeholderStub.getCall(1).args;
+					expect(args.length).toEqual(1);
+					expect(args[0]).toEqual('foo@bar.com/baz ' + OC.Share.SHARE_TYPE_REMOTE);
+				});
+			});
+
+			describe('avatars disabled', function() {
+				beforeEach(function() {
+					OC.Share.showDropDown(
+						'file',
+						123,
+						$container,
+						true,
+						31,
+						'shared_file_name.txt'
+					);
+				});
+
+				it('no avatar classes', function() {
+					expect($('.avatar').length).toEqual(0);
+					expect(avatarStub.callCount).toEqual(0);
+					expect(placeholderStub.callCount).toEqual(0);
 				});
 			});
 		});
@@ -656,6 +1082,26 @@ describe('OC.Share tests', function() {
 					);
 					expect($('#dropdown #shareWithList').length).toEqual(0);
 				});
+				it('allows owner to share their own share when they are also the recipient', function() {
+					OC.currentUser = 'user1';
+					loadItemStub.returns({
+						reshare: {
+							permissions: OC.PERMISSION_READ,
+							uid_owner: 'user1'
+						},
+						shares: []
+					});
+					OC.Share.showDropDown(
+						'file',
+						123,
+						$container,
+						true,
+						OC.PERMISSION_ALL,
+						'shared_file_name.txt'
+					);
+					// sharing still allowed
+					expect($('#dropdown #shareWithList').length).toEqual(1);
+				});
 			});
 		});
 	});
@@ -688,9 +1134,9 @@ describe('OC.Share tests', function() {
 				$action = $file.find('.action-share>span');
 				expect($action.text()).toEqual(output);
 				if (_.isString(title)) {
-					expect($action.find('.remoteOwner').attr('title')).toEqual(title);
+					expect($action.find('.remoteAddress').attr('title')).toEqual(title);
 				} else {
-					expect($action.find('.remoteOwner').attr('title')).not.toBeDefined();
+					expect($action.find('.remoteAddress').attr('title')).not.toBeDefined();
 				}
 				expect(tipsyStub.calledOnce).toEqual(true);
 				tipsyStub.reset();
@@ -781,7 +1227,94 @@ describe('OC.Share tests', function() {
 				checkIcon('filetypes/folder-public');
 			});
 		});
-		// TODO: add unit tests for share recipients
+
+		describe('displaying the recipoients', function() {
+			function checkRecipients(input, output, title) {
+				var $action;
+
+				$file.attr('data-share-recipients', input);
+				OC.Share.markFileAsShared($file, true);
+
+				$action = $file.find('.action-share>span');
+				expect($action.text()).toEqual(output);
+				if (_.isString(title)) {
+					expect($action.find('.remoteAddress').attr('title')).toEqual(title);
+				} else if (_.isArray(title)) {
+					var tooltips = $action.find('.remoteAddress');
+					expect(tooltips.length).toEqual(title.length);
+
+					tooltips.each(function(i) {
+						expect($(this).attr('title')).toEqual(title[i]);
+					});
+				} else {
+						expect($action.find('.remoteAddress').attr('title')).not.toBeDefined();
+				}
+				expect(tipsyStub.calledOnce).toEqual(true);
+				tipsyStub.reset();
+			}
+
+			it('displays the local share owner as is', function() {
+				checkRecipients('User One', 'Shared with User One', null);
+			});
+			it('displays the user name part of a remote recipient', function() {
+				checkRecipients(
+					'User One@someserver.com',
+					'Shared with User One@…',
+					'User One@someserver.com'
+				);
+				checkRecipients(
+					'User One@someserver.com/',
+					'Shared with User One@…',
+					'User One@someserver.com'
+				);
+				checkRecipients(
+					'User One@someserver.com/root/of/owncloud',
+					'Shared with User One@…',
+					'User One@someserver.com'
+				);
+			});
+			it('displays the user name part with domain of a remote share owner', function() {
+				checkRecipients(
+					'User One@example.com@someserver.com',
+					'Shared with User One@example.com',
+					'User One@example.com@someserver.com'
+				);
+				checkRecipients(
+					'User One@example.com@someserver.com/',
+					'Shared with User One@example.com',
+					'User One@example.com@someserver.com'
+				);
+				checkRecipients(
+					'User One@example.com@someserver.com/root/of/owncloud',
+					'Shared with User One@example.com',
+					'User One@example.com@someserver.com'
+				);
+			});
+			it('display multiple remote recipients', function() {
+				checkRecipients(
+					'One@someserver.com, two@otherserver.com',
+					'Shared with One@…, two@…',
+					['One@someserver.com', 'two@otherserver.com']
+				);
+				checkRecipients(
+					'One@someserver.com/, two@otherserver.com',
+					'Shared with One@…, two@…',
+					['One@someserver.com', 'two@otherserver.com']
+				);
+				checkRecipients(
+					'One@someserver.com/root/of/owncloud, two@otherserver.com',
+					'Shared with One@…, two@…',
+					['One@someserver.com', 'two@otherserver.com']
+				);
+			});
+			it('display mixed recipients', function() {
+				checkRecipients(
+					'One, two@otherserver.com',
+					'Shared with One, two@…',
+					['two@otherserver.com']
+				);
+			});
+		});
 	});
 });
 

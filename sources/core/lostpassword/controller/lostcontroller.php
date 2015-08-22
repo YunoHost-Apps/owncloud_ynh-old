@@ -1,9 +1,27 @@
 <?php
 /**
- * Copyright (c) 2012 Bart Visscher <bartv@thisnet.nl>
- * This file is licensed under the Affero General Public License version 3 or
- * later.
- * See the COPYING-README file.
+ * @author Bernhard Posselt <dev@bernhard-posselt.com>
+ * @author Björn Schießle <schiessle@owncloud.com>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Victor Dubiniuk <dubiniuk@owncloud.com>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 
 namespace OC\Core\LostPassword\Controller;
@@ -15,6 +33,7 @@ use \OCP\IRequest;
 use \OCP\IL10N;
 use \OCP\IConfig;
 use OCP\IUserManager;
+use OCP\Mail\IMailer;
 use OCP\Security\ISecureRandom;
 use \OC_Defaults;
 use OCP\Security\StringUtils;
@@ -32,6 +51,7 @@ class LostController extends Controller {
 	protected $urlGenerator;
 	/** @var IUserManager */
 	protected $userManager;
+	// FIXME: Inject a non-static factory of OC_Defaults for better unit-testing
 	/** @var OC_Defaults */
 	protected $defaults;
 	/** @var IL10N */
@@ -44,6 +64,8 @@ class LostController extends Controller {
 	protected $config;
 	/** @var ISecureRandom */
 	protected $secureRandom;
+	/** @var IMailer */
+	protected $mailer;
 
 	/**
 	 * @param string $appName
@@ -56,6 +78,7 @@ class LostController extends Controller {
 	 * @param ISecureRandom $secureRandom
 	 * @param string $from
 	 * @param string $isDataEncrypted
+	 * @param IMailer $mailer
 	 */
 	public function __construct($appName,
 								IRequest $request,
@@ -66,7 +89,8 @@ class LostController extends Controller {
 								IConfig $config,
 								ISecureRandom $secureRandom,
 								$from,
-								$isDataEncrypted) {
+								$isDataEncrypted,
+								IMailer $mailer) {
 		parent::__construct($appName, $request);
 		$this->urlGenerator = $urlGenerator;
 		$this->userManager = $userManager;
@@ -76,6 +100,7 @@ class LostController extends Controller {
 		$this->from = $from;
 		$this->isDataEncrypted = $isDataEncrypted;
 		$this->config = $config;
+		$this->mailer = $mailer;
 	}
 
 	/**
@@ -200,15 +225,12 @@ class LostController extends Controller {
 		$msg = $tmpl->fetchPage();
 
 		try {
-			// FIXME: should be added to the container and injected in here
-			\OC_Mail::send(
-				$email,
-				$user,
-				$this->l10n->t('%s password reset',	array($this->defaults->getName())),
-				$msg,
-				$this->from,
-				$this->defaults->getName()
-			);
+			$message = $this->mailer->createMessage();
+			$message->setTo([$email => $user]);
+			$message->setSubject($this->l10n->t('%s password reset', [$this->defaults->getName()]));
+			$message->setPlainBody($msg);
+			$message->setFrom([$this->from => $this->defaults->getName()]);
+			$this->mailer->send($message);
 		} catch (\Exception $e) {
 			throw new \Exception($this->l10n->t(
 				'Couldn\'t send reset email. Please contact your administrator.'

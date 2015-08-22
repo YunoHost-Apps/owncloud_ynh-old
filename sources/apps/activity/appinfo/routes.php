@@ -23,12 +23,10 @@
 
 namespace OCA\Activity\AppInfo;
 
-/** @var $this \OC\Route\Router */
-$this->create('activity.rss', 'rss.php')
-	->actionInclude('activity/rss.php');
+use OCP\API;
 
 // Register an OCS API call
-\OC_API::register(
+API::register(
 	'get',
 	'/cloud/activity',
 	array('OCA\Activity\Api', 'get'),
@@ -41,4 +39,5 @@ $application->registerRoutes($this, ['routes' => [
 	['name' => 'Settings#feed', 'url' => '/settings/feed', 'verb' => 'POST'],
 	['name' => 'Activities#showList', 'url' => '/', 'verb' => 'GET'],
 	['name' => 'Activities#fetch', 'url' => '/activities/fetch', 'verb' => 'GET'],
+	['name' => 'Feed#show', 'url' => '/rss.php', 'verb' => 'GET'],
 ]]);

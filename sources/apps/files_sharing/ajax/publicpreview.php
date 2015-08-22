@@ -1,9 +1,26 @@
 <?php
 /**
- * Copyright (c) 2013 Georg Ehrke georg@ownCloud.com
- * This file is licensed under the Affero General Public License version 3 or
- * later.
- * See the COPYING-README file.
+ * @author Björn Schießle <schiessle@owncloud.com>
+ * @author Georg Ehrke <georg@owncloud.com>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 
 OCP\JSON::checkAppEnabled('files_sharing');
@@ -46,6 +63,13 @@ $view = new \OC\Files\View('/' . $userId . '/files');
 
 $pathId = $linkedItem['file_source'];
 $path = $view->getPath($pathId);
+
+if($path === null) {
+	\OC_Response::setStatus(\OC_Response::STATUS_NOT_FOUND);
+	\OC_Log::write('core-preview', 'Could not resolve file for shared item', OC_Log::WARN);
+	exit;
+}
+
 $pathInfo = $view->getFileInfo($path);
 $sharedFile = null;
 
@@ -53,7 +77,7 @@ if($linkedItem['item_type'] === 'folder') {
 	$isValid = \OC\Files\Filesystem::isValidPath($file);
 	if(!$isValid) {
 		\OC_Response::setStatus(\OC_Response::STATUS_BAD_REQUEST);
-		\OC_Log::write('core-preview', 'Passed filename is not valid, might be malicious (file:"' . $file . '";ip:"' . $_SERVER['REMOTE_ADDR'] . '")', \OC_Log::WARN);
+		\OC_Log::write('core-preview', 'Passed filename is not valid, might be malicious (file:"' . $file . '";ip:"' . \OC::$server->getRequest()->getRemoteAddress() . '")', \OC_Log::WARN);
 		exit;
 	}
 	$sharedFile = \OC\Files\Filesystem::normalizePath($file);

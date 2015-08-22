@@ -10,6 +10,7 @@
 namespace OCA\Files_Locking;
 
 use OC\Files\Filesystem;
+use OC\Files\Storage\Storage;
 use OC\Files\Storage\Wrapper\Wrapper;
 
 /**
@@ -25,7 +26,7 @@ use OC\Files\Storage\Wrapper\Wrapper;
 class LockingWrapper extends Wrapper {
 
 	/** @var \OCA\Files_Locking\Lock[] $locks Holds an array of lock instances indexed by path for this storage */
-	protected $locks = array();
+	protected $locks = [];
 
 	/**
 	 * Acquire a lock on a file
@@ -53,7 +54,7 @@ class LockingWrapper extends Wrapper {
 	 * @param bool $releaseAll If true, release all outstanding locks
 	 * @return bool true on success, false on failure
 	 */
-	protected function releaseLock($path, $lockType, $releaseAll = false) {
+	protected function releaseFLock($path, $lockType, $releaseAll = false) {
 		$path = Filesystem::normalizePath($this->storage->getLocalFile($path));
 		if (is_dir($path)) {
 			return false;
@@ -81,10 +82,10 @@ class LockingWrapper extends Wrapper {
 			$result = $this->storage->file_get_contents($path);
 		} catch (\Exception $originalException) {
 			// Need to release the lock before more operations happen in upstream exception handlers
-			$this->releaseLock($path, Lock::READ);
+			$this->releaseFLock($path, Lock::READ);
 			throw $originalException;
 		}
-		$this->releaseLock($path, Lock::READ);
+		$this->releaseFLock($path, Lock::READ);
 		return $result;
 	}
 
@@ -94,10 +95,10 @@ class LockingWrapper extends Wrapper {
 			$result = $this->storage->file_put_contents($path, $data);
 		} catch (\Exception $originalException) {
 			// Release lock, throw original exception
-			$this->releaseLock($path, Lock::WRITE);
+			$this->releaseFLock($path, Lock::WRITE);
 			throw $originalException;
 		}
-		$this->releaseLock($path, Lock::WRITE);
+		$this->releaseFLock($path, Lock::WRITE);
 		return $result;
 	}
 
@@ -111,34 +112,34 @@ class LockingWrapper extends Wrapper {
 			$result = $this->storage->copy($path1, $path2);
 		} catch (\Exception $originalException) {
 			// Release locks, throw original exception
-			$this->releaseLock($path1, Lock::READ);
-			$this->releaseLock($path2, Lock::WRITE);
+			$this->releaseFLock($path1, Lock::READ);
+			$this->releaseFLock($path2, Lock::WRITE);
 			throw $originalException;
 		}
-		$this->releaseLock($path1, Lock::READ);
-		$this->releaseLock($path2, Lock::WRITE);
+		$this->releaseFLock($path1, Lock::READ);
+		$this->releaseFLock($path2, Lock::WRITE);
 		return $result;
 	}
 
 	public function rename($path1, $path2) {
 		try {
 			if (!$this->storage->is_dir($path1)) {
-				$this->getLock($path1, Lock::READ);
-				$this->getLock($path2, Lock::WRITE);
+				$lock1 = $this->getLock($path1, Lock::READ);
+				$lock2 = $this->getLock($path2, Lock::WRITE);
 			}
 			$result = $this->storage->rename($path1, $path2);
 		} catch (\Exception $originalException) {
 			// Release locks, throw original exception
-			$this->releaseLock($path1, Lock::READ);
-			$this->releaseLock($path2, Lock::WRITE);
+			$this->releaseFLock($path1, Lock::READ);
+			$this->releaseFLock($path2, Lock::WRITE);
 			throw $originalException;
 		}
-		$this->releaseLock($path1, Lock::READ);
-		$this->releaseLock($path2, Lock::WRITE);
-		$lockPath1 = Filesystem::normalizePath($this->storage->getLocalFile($path1));
-		$lockPath2 = Filesystem::normalizePath($this->storage->getLocalFile($path2));
-		$this->locks[$lockPath2] = $this->locks[$lockPath1];
-		unset($this->locks[$lockPath1]);
+		$this->releaseFLock($path1, Lock::READ);
+		$this->releaseFLock($path2, Lock::WRITE);
+		if (isset($lock1) && isset($lock2)) {
+			$this->locks[$lock2->getPath()] = $this->locks[$lock1->getPath()];
+			unset($this->locks[$lock1->getPath()]);
+		}
 		return $result;
 	}
 
@@ -181,26 +182,26 @@ class LockingWrapper extends Wrapper {
 			$result = $this->storage->unlink($path);
 		} catch (\Exception $originalException) {
 			// Need to release the lock before more operations happen in upstream exception handlers
-			$this->releaseLock($path, Lock::WRITE);
+			$this->releaseFLock($path, Lock::WRITE);
 			throw $originalException;
 		}
-		$this->releaseLock($path, Lock::WRITE);
+		$this->releaseFLock($path, Lock::WRITE);
 		$lockPath = Filesystem::normalizePath($this->storage->getLocalFile($path));
 		unset($this->locks[$lockPath]);
 		return $result;
 	}
 
 	/**
-	 * Setup the storate wrapper callback
+	 * Setup the storage wrapper callback
 	 */
 	public static function setupWrapper() {
 		// Set up flock
 		\OC\Files\Filesystem::addStorageWrapper('oc_flock', function ($mountPoint, $storage) {
 			/**
-			 * @var \OC\Files\Storage\Storage $storage
+			 * @var Storage $storage
 			 */
-			if ($storage instanceof \OC\Files\Storage\Storage && $storage->isLocal()) {
-				return new \OCA\Files_Locking\LockingWrapper(array('storage' => $storage));
+			if ($storage->instanceOfStorage('OC\Files\Storage\Local') && !$storage->instanceOfStorage('\OC\Files\Storage\MappedLocal')) {
+				return new LockingWrapper(array('storage' => $storage));
 			} else {
 				return $storage;
 			}

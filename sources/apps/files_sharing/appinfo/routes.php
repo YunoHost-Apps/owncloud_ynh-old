@@ -1,8 +1,33 @@
 <?php
-
+/**
+ * @author Björn Schießle <schiessle@owncloud.com>
+ * @author Georg Ehrke <georg@owncloud.com>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
+ */
 namespace OCA\Files_Sharing\AppInfo;
 
-use OCA\Files_Sharing\Application;
+use OCP\API;
 
 $application = new Application();
 $application->registerRoutes($this, [
@@ -32,27 +57,33 @@ $this->create('sharing_external_test_remote', '/testremote')
 
 //TODO: SET: mail notification, waiting for PR #4689 to be accepted
 
-\OC_API::register('get',
+API::register('get',
 		'/apps/files_sharing/api/v1/shares',
 		array('\OCA\Files_Sharing\API\Local', 'getAllShares'),
 		'files_sharing');
 
-\OC_API::register('post',
+API::register('post',
 		'/apps/files_sharing/api/v1/shares',
 		array('\OCA\Files_Sharing\API\Local', 'createShare'),
 		'files_sharing');
 
-\OC_API::register('get',
+API::register('get',
 		'/apps/files_sharing/api/v1/shares/{id}',
 		array('\OCA\Files_Sharing\API\Local', 'getShare'),
 		'files_sharing');
 
-\OC_API::register('put',
+API::register('put',
 		'/apps/files_sharing/api/v1/shares/{id}',
 		array('\OCA\Files_Sharing\API\Local', 'updateShare'),
 		'files_sharing');
 
-\OC_API::register('delete',
+API::register('delete',
 		'/apps/files_sharing/api/v1/shares/{id}',
 		array('\OCA\Files_Sharing\API\Local', 'deleteShare'),
 		'files_sharing');
+
+// Register with the capabilities API
+API::register('get',
+		'/cloud/capabilities',
+		array('OCA\Files_Sharing\Capabilities', 'getCapabilities'),
+		'files_sharing', API::USER_AUTH);

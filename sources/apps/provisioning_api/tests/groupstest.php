@@ -1,25 +1,24 @@
 <?php
-
 /**
- * ownCloud
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Tom Needham <tom@owncloud.com>
+ * @author Vincent Petry <pvince81@owncloud.com>
  *
- * @copyright (C) 2014 ownCloud, Inc.
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * @author Tom <tom@owncloud.com>
- * @author Thomas Müller <deepdiver@owncloud.com>
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
 
@@ -29,7 +28,7 @@ class GroupsTest extends TestCase {
 	public function testGetGroupAsUser() {
 
 		$users = $this->generateUsers(2);
-		\OC_User::setUserId($users[0]);
+		self::loginAsUser($users[0]);
 
 		$group = $this->getUniqueID();
 		\OC_Group::createGroup($group);
@@ -41,14 +40,14 @@ class GroupsTest extends TestCase {
 
 		$this->assertInstanceOf('OC_OCS_Result', $result);
 		$this->assertFalse($result->succeeded());
-		$this->assertEquals(\OC_API::RESPOND_UNAUTHORISED, $result->getStatusCode());
+		$this->assertEquals(\OCP\API::RESPOND_UNAUTHORISED, $result->getStatusCode());
 
 	}
 
 	public function testGetGroupAsSubadmin() {
 
 		$users = $this->generateUsers(2);
-		\OC_User::setUserId($users[0]);
+		self::loginAsUser($users[0]);
 
 		$group = $this->getUniqueID();
 		\OC_Group::createGroup($group);
@@ -63,14 +62,21 @@ class GroupsTest extends TestCase {
 
 		$this->assertInstanceOf('OC_OCS_Result', $result);
 		$this->assertTrue($result->succeeded());
-		$this->assertEquals(array('users' => $users), $result->getData());
+		$this->assertEquals(1, sizeof($result->getData()), 'Asserting the result data array only has the "users" key');
+		$this->assertArrayHasKey('users', $result->getData());
+		$resultData = $result->getData();
+		$resultData = $resultData['users'];
+
+		sort($users);
+		sort($resultData);
+		$this->assertEquals($users, $resultData);
 
 	}
 
 	public function testGetGroupAsIrrelevantSubadmin() {
 
 		$users = $this->generateUsers(2);
-		\OC_User::setUserId($users[0]);
+		self::loginAsUser($users[0]);
 
 		$group = $this->getUniqueID();
 		\OC_Group::createGroup($group);
@@ -87,14 +93,14 @@ class GroupsTest extends TestCase {
 
 		$this->assertInstanceOf('OC_OCS_Result', $result);
 		$this->assertFalse($result->succeeded());
-		$this->assertEquals(\OC_API::RESPOND_UNAUTHORISED, $result->getStatusCode());
+		$this->assertEquals(\OCP\API::RESPOND_UNAUTHORISED, $result->getStatusCode());
 
 	}
 
 	public function testGetGroupAsAdmin() {
 
 		$users = $this->generateUsers(2);
-		\OC_User::setUserId($users[0]);
+		self::loginAsUser($users[0]);
 
 		$group = $this->getUniqueID();
 		\OC_Group::createGroup($group);
@@ -115,7 +121,7 @@ class GroupsTest extends TestCase {
 	public function testGetSubAdminsOfGroup() {
 		$user1 = $this->generateUsers();
 		$user2 = $this->generateUsers();
-		\OC_User::setUserId($user1);
+		self::loginAsUser($user1);
 		\OC_Group::addToGroup($user1, 'admin');
 		$group1 = $this->getUniqueID();
 		\OC_Group::createGroup($group1);
@@ -130,7 +136,7 @@ class GroupsTest extends TestCase {
 		\OC_Group::deleteGroup($group1);
 
 		$user1 = $this->generateUsers();
-		\OC_User::setUserId($user1);
+		self::loginAsUser($user1);
 		\OC_Group::addToGroup($user1, 'admin');
 		$result = \OCA\provisioning_api\Groups::getSubAdminsOfGroup(array(
 			'groupid' => $this->getUniqueID(),

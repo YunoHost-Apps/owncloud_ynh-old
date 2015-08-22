@@ -27,7 +27,7 @@ try {
 	}
     
 	if (!\OC::$server->getConfig()->getSystemValue('installed', false)) {
-        $controller = new OC\Core\Setup\Controller(\OC::$server->getConfig(), \OC::$server->getIniWrapper(), \OC::$server->getL10N('core'), new \OC_Defaults());
+        $controller = new OC\Core\Setup\Controller(new OC\Setup(\OC::$server->getConfig(), \OC::$server->getIniWrapper(), \OC::$server->getL10N('core'), new \OC_Defaults()));
         $longopts  = array(
             "adminlogin:",
             "adminpass:",
@@ -37,7 +37,8 @@ try {
             "dbpass:",
             "dbname:",
             "dbhost:",
-            "trusted_domain:"
+            "trusted_domain:",
+            "memcache.local:"
         );
         $params = getopt("", $longopts);
         $params['install']='true';

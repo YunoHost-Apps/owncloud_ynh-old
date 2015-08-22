@@ -13,6 +13,11 @@
 }
 .actions.hidden { display: none; }
 
+.actions.creatable {
+	position: relative;
+	z-index: -30;
+}
+
 #new {
 	z-index: 1010;
 	float: left;
@@ -34,19 +39,21 @@
 	border-bottom-left-radius: 0;
 	border-bottom-right-radius: 0;
 	border-bottom: none;
+	background: #f8f8f8;
 }
 #new > ul {
 	display: none;
 	position: fixed;
 	min-width: 112px;
-	z-index: 10;
+	z-index: -10;
 	padding: 8px;
 	padding-bottom: 0;
-	margin-top: 14px;
+	margin-top: 13.5px;
 	margin-left: -1px;
 	text-align: left;
 	background: #f8f8f8;
 	border: 1px solid #ddd;
+	border: 1px solid rgba(190, 190, 190, 0.901961);
 	border-radius: 5px;
 	border-top-left-radius: 0;
 	box-shadow: 0 2px 7px rgba(170,170,170,.4);
@@ -96,10 +103,37 @@
 	min-height: 100%;
 }
 
+/* icons for sidebar */
+.nav-icon-files {
+	background-image: url('../img/folder.svg');
+}
+.nav-icon-favorites {
+	background-image: url('../img/star.svg');
+}
+.nav-icon-sharingin,
+.nav-icon-sharingout {
+	background-image: url('../img/share.svg');
+}
+.nav-icon-sharinglinks {
+	background-image: url('../img/public.svg');
+}
+.nav-icon-extstoragemounts {
+	background-image: url('../img/external.svg');
+}
+.nav-icon-trashbin {
+	background-image: url('../img/delete.svg');
+}
+
 /* move Deleted Files to bottom of sidebar */
 .nav-trashbin {
-	position: absolute !important;
-	bottom: 0;
+	position: fixed !important;
+	bottom: 44px;
+	width: inherit !important;
+	background-color: #f5f5f5;
+}
+/* double padding to account for Deleted files entry, issue with Firefox */
+.app-files #app-navigation > ul li:nth-last-child(2) {
+	margin-bottom: 44px;
 }
 
 #filestable tbody tr { background-color:#fff; height:40px; }
@@ -240,7 +274,16 @@ table.multiselect #headerName {
 	position: relative;
 	width: 9999px; /* when we use 100%, the styling breaks on mobile … table styling */
 }
-table td.selection, table th.selection, table td.fileaction { width:32px; text-align:center; }
+table.multiselect #modified {
+	display: none;
+}
+
+table td.selection,
+table th.selection,
+table td.fileaction {
+	width: 32px;
+	text-align: center;
+}
 table td.filename a.name {
 	position:relative; /* Firefox needs to explicitly have this default set … */
 	-moz-box-sizing: border-box;
@@ -481,7 +524,7 @@ table td.filename .uploadtext {
 #fileList img.move2trash { display:inline; margin:-8px 0; padding:16px 8px 16px 8px !important; float:right; }
 #fileList a.action.delete {
 	position: absolute;
-	right: 0;
+	right: 15px;
 	padding: 17px 14px;
 }
 
@@ -538,7 +581,9 @@ a.action>img {
 #fileList tr:hover a.action,
 #fileList a.action.permanent,
 #fileList tr:focus a.action,
-#fileList a.action.permanent
+#fileList a.action.permanent,
+#fileList tr:hover a.action.no-permission:hover,
+#fileList tr:focus a.action.no-permission:focus
 /*#fileList .name:focus .action*/ {
 	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
 	filter: alpha(opacity=50);
@@ -559,21 +604,25 @@ a.action>img {
 	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
 	filter: alpha(opacity=30);
 	opacity: .3;
-	height: 60px;
+	/* add whitespace to bottom of files list to correctly show dropdowns */
+	height: 300px;
 }
-
 .summary:hover,
 .summary:focus,
 .summary,
 table tr.summary td {
 	background-color: transparent;
 }
-
 .summary td {
 	border-bottom: none;
+	vertical-align: top;
+	padding-top: 20px;
 }
 .summary .info {
 	margin-left: 40px;
+}
+.has-favorites .summary .info {
+	margin-left: 90px;
 }
 
 #scanning-message{ top:40%; left:40%; position:absolute; display:none; }
@@ -617,27 +666,4 @@ table.dragshadow td.size {
 }
 .mask.transparent{
 	opacity: 0;
-}
-
-.nofilterresults {
-	font-size: 16px;
-	color: #888;
-	position: absolute;
-	text-align: center;
-	top: 30%;
-	width: 100%;
-}
-.nofilterresults h2 {
-	font-size: 22px;
-	margin-bottom: 10px;
-}
-.nofilterresults [class^="icon-"],
-.nofilterresults [class*=" icon-"] {
-	background-size: 64px;
-	height: 64px;
-	width: 64px;
-	margin: 0 auto 15px;
-	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-	filter: alpha(opacity=50);
-	opacity: .5;
 }

@@ -156,8 +156,7 @@ class SettingsTest extends TestCase {
 	 * @param array $response
 	 */
 	protected function assertDataResponse($response) {
-		$this->assertEquals(2, sizeof($response));
-		$this->assertArrayHasKey('status', $response);
+		$this->assertEquals(1, sizeof($response));
 		$this->assertArrayHasKey('data', $response);
 		$data = $response['data'];
 		$this->assertEquals(1, sizeof($data));
@@ -268,15 +267,14 @@ class SettingsTest extends TestCase {
 			->willReturn('012345678901234567890123456789');
 		$this->urlGenerator->expects($this->any())
 			->method('linkToRouteAbsolute')
-			->with('activity.rss', ['token' => '012345678901234567890123456789'])
+			->with('activity.Feed.show', ['token' => '012345678901234567890123456789'])
 			->willReturn('feedurl::012345678901234567890123456789');
 		$this->config->expects($this->once())
 			->method('setUserValue')
 			->with('test', 'activity', 'rsstoken', $token);
 
 		$response = $this->controller->feed($enabled)->getData();
-		$this->assertEquals(2, sizeof($response));
-		$this->assertArrayHasKey('status', $response);
+		$this->assertEquals(1, sizeof($response));
 		$this->assertArrayHasKey('data', $response);
 		$data = $response['data'];
 		$this->assertEquals(2, sizeof($data));

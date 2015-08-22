@@ -12,8 +12,9 @@
  * user or 1 second after the last data entry
  *
  * @param callback
+ * @param allowEmptyValue if this is set to true the callback is also called when the value is empty
  */
-jQuery.fn.keyUpDelayedOrEnter = function (callback) {
+jQuery.fn.keyUpDelayedOrEnter = function (callback, allowEmptyValue) {
 	var cb = callback;
 	var that = this;
 	this.keyup(_.debounce(function (event) {
@@ -21,13 +22,13 @@ jQuery.fn.keyUpDelayedOrEnter = function (callback) {
 		if (event.keyCode === 13) {
 			return;
 		}
-		if (that.val() !== '') {
+		if (allowEmptyValue || that.val() !== '') {
 			cb();
 		}
 	}, 1000));
 
 	this.keypress(function (event) {
-		if (event.keyCode === 13 && that.val() !== '') {
+		if (event.keyCode === 13 && (allowEmptyValue || that.val() !== '')) {
 			event.preventDefault();
 			cb();
 		}
@@ -110,7 +111,7 @@ function showAvatarCropper () {
 	var $cropperImage = $('#cropper img');
 
 	$cropperImage.attr('src',
-		OC.generateUrl('/avatar/tmp') + '?requesttoken=' + oc_requesttoken + '#' + Math.floor(Math.random() * 1000));
+		OC.generateUrl('/avatar/tmp') + '?requesttoken=' + encodeURIComponent(oc_requesttoken) + '#' + Math.floor(Math.random() * 1000));
 
 	// Looks weird, but on('load', ...) doesn't work in IE8
 	$cropperImage.ready(function () {
@@ -172,7 +173,13 @@ $(document).ready(function () {
 		$('#pass2').showPassword().keyup();
 	}
 	$("#passwordbutton").click(function () {
-		if ($('#pass1').val() !== '' && $('#pass2').val() !== '') {
+		var isIE8or9 = $('html').hasClass('lte9');
+		// FIXME - TODO - once support for IE8 and IE9 is dropped
+		// for IE8 and IE9 this will check additionally if the typed in password
+		// is different from the placeholder, because in IE8/9 the placeholder
+		// is simply set as the value to look like a placeholder
+		if ($('#pass1').val() !== '' && $('#pass2').val() !== ''
+			&& !(isIE8or9 && $('#pass2').val() === $('#pass2').attr('placeholder'))) {
 			// Serialize the data
 			var post = $("#passwordform").serialize();
 			$('#passwordchanged').hide();
@@ -182,27 +189,32 @@ $(document).ready(function () {
 				if (data.status === "success") {
 					$('#pass1').val('');
 					$('#pass2').val('');
-					$('#passwordchanged').show();
+					// Hide a possible errormsg and show successmsg
+					$('#password-changed').removeClass('hidden').addClass('inlineblock');
+					$('#password-error').removeClass('inlineblock').addClass('hidden');
 				} else {
 					if (typeof(data.data) !== "undefined") {
-						$('#passworderror').html(data.data.message);
+						$('#password-error').html(data.data.message);
 					} else {
-						$('#passworderror').html(t('Unable to change password'));
+						$('#password-error').html(t('Unable to change password'));
 					}
-					$('#passworderror').show();
+					// Hide a possible successmsg and show errormsg
+					$('#password-changed').removeClass('inlineblock').addClass('hidden');
+					$('#password-error').removeClass('hidden').addClass('inlineblock');
 				}
 			});
 			return false;
 		} else {
-			$('#passwordchanged').hide();
-			$('#passworderror').show();
+			// Hide a possible successmsg and show errormsg
+			$('#password-changed').removeClass('inlineblock').addClass('hidden');
+			$('#password-error').removeClass('hidden').addClass('inlineblock');
 			return false;
 		}
 
 	});
 
 	$('#displayName').keyUpDelayedOrEnter(changeDisplayName);
-	$('#email').keyUpDelayedOrEnter(changeEmailAddress);
+	$('#email').keyUpDelayedOrEnter(changeEmailAddress, true);
 
 	$("#languageinput").change(function () {
 		// Serialize the data
@@ -219,43 +231,23 @@ $(document).ready(function () {
 		return false;
 	});
 
-	$('button:button[name="submitDecryptAll"]').click(function () {
-		var privateKeyPassword = $('#decryptAll input:password[id="privateKeyPassword"]').val();
-		$('#decryptAll button:button[name="submitDecryptAll"]').prop("disabled", true);
-		$('#decryptAll input:password[name="privateKeyPassword"]').prop("disabled", true);
-		OC.Encryption.decryptAll(privateKeyPassword);
-	});
-
-
-	$('button:button[name="submitRestoreKeys"]').click(function () {
-		$('#restoreBackupKeys button:button[name="submitDeleteKeys"]').prop("disabled", true);
-		$('#restoreBackupKeys button:button[name="submitRestoreKeys"]').prop("disabled", true);
-		OC.Encryption.restoreKeys();
-	});
-
-	$('button:button[name="submitDeleteKeys"]').click(function () {
-		$('#restoreBackupKeys button:button[name="submitDeleteKeys"]').prop("disabled", true);
-		$('#restoreBackupKeys button:button[name="submitRestoreKeys"]').prop("disabled", true);
-		OC.Encryption.deleteKeys();
-	});
-
-	$('#decryptAll input:password[name="privateKeyPassword"]').keyup(function (event) {
-		var privateKeyPassword = $('#decryptAll input:password[id="privateKeyPassword"]').val();
-		if (privateKeyPassword !== '') {
-			$('#decryptAll button:button[name="submitDecryptAll"]').prop("disabled", false);
-			if (event.which === 13) {
-				$('#decryptAll button:button[name="submitDecryptAll"]').prop("disabled", true);
-				$('#decryptAll input:password[name="privateKeyPassword"]').prop("disabled", true);
-				OC.Encryption.decryptAll(privateKeyPassword);
-			}
-		} else {
-			$('#decryptAll button:button[name="submitDecryptAll"]').prop("disabled", true);
-		}
-	});
-
 	var uploadparms = {
 		done: function (e, data) {
 			avatarResponseHandler(data.result);
+		},
+		fail: function (e, data){
+			var msg = data.jqXHR.statusText + ' (' + data.jqXHR.status + ')';
+			if (!_.isUndefined(data.jqXHR.responseJSON) &&
+				!_.isUndefined(data.jqXHR.responseJSON.data) &&
+				!_.isUndefined(data.jqXHR.responseJSON.data.message)
+			) {
+				msg = data.jqXHR.responseJSON.data.message;
+			}
+			avatarResponseHandler({
+			data: {
+					message: t('settings', 'An error occurred: {message}', { message: msg })
+				}
+			});
 		}
 	};
 
@@ -269,7 +261,25 @@ $(document).ready(function () {
 		OC.dialogs.filepicker(
 			t('settings', "Select a profile picture"),
 			function (path) {
-				$.post(OC.generateUrl('/avatar/'), {path: path}, avatarResponseHandler);
+				$.ajax({
+					type: "POST",
+					url: OC.generateUrl('/avatar/'),
+					data: { path: path }
+				}).done(avatarResponseHandler)
+					.fail(function(jqXHR, status){
+						var msg = jqXHR.statusText + ' (' + jqXHR.status + ')';
+						if (!_.isUndefined(jqXHR.responseJSON) &&
+							!_.isUndefined(jqXHR.responseJSON.data) &&
+							!_.isUndefined(jqXHR.responseJSON.data.message)
+						) {
+							msg = jqXHR.responseJSON.data.message;
+						}
+						avatarResponseHandler({
+							data: {
+								message: t('settings', 'An error occurred: {message}', { message: msg })
+							}
+						});
+					});
 			},
 			false,
 			["image/png", "image/jpeg"]
@@ -311,7 +321,7 @@ $(document).ready(function () {
 	var url = OC.generateUrl(
 		'/avatar/{user}/{size}',
 		{user: OC.currentUser, size: 1}
-	) + '?requesttoken=' + oc_requesttoken;
+	) + '?requesttoken=' + encodeURIComponent(oc_requesttoken);
 	$.get(url, function (result) {
 		if (typeof(result) === 'object') {
 			$('#removeavatar').hide();
@@ -320,28 +330,33 @@ $(document).ready(function () {
 
 	$('#sslCertificate').on('click', 'td.remove > img', function () {
 		var row = $(this).parent().parent();
-		$.post(OC.generateUrl('settings/ajax/removeRootCertificate'), {
-			cert: row.data('name')
+		$.ajax(OC.generateUrl('settings/personal/certificate/{certificate}', {certificate: row.data('name')}), {
+			type: 'DELETE'
 		});
 		row.remove();
+
+		if ($('#sslCertificate > tbody > tr').length === 0) {
+			$('#sslCertificate').hide();
+		}
 		return true;
 	});
 
-	$('#sslCertificate tr > td').tipsy({fade: true, gravity: 'n', live: true});
+	$('#sslCertificate tr > td').tipsy({gravity: 'n', live: true});
 
 	$('#rootcert_import').fileupload({
-		done: function (e, data) {
-			var issueDate = new Date(data.result.validFrom * 1000);
-			var expireDate = new Date(data.result.validTill * 1000);
+		success: function (data) {
+			var issueDate = new Date(data.validFrom * 1000);
+			var expireDate = new Date(data.validTill * 1000);
 			var now = new Date();
 			var isExpired = !(issueDate <= now && now <= expireDate);
 
 			var row = $('<tr/>');
+			row.data('name', data.name);
 			row.addClass(isExpired? 'expired': 'valid');
-			row.append($('<td/>').attr('title', data.result.organization).text(data.result.commonName));
-			row.append($('<td/>').attr('title', t('core,', 'Valid until {date}', {date: data.result.validFromString}))
-				.text(data.result.validTillString));
-			row.append($('<td/>').attr('title', data.result.issuerOrganization).text(data.result.issuer));
+			row.append($('<td/>').attr('title', data.organization).text(data.commonName));
+			row.append($('<td/>').attr('title', t('core,', 'Valid until {date}', {date: data.validTillString}))
+				.text(data.validTillString));
+			row.append($('<td/>').attr('title', data.issuerOrganization).text(data.issuer));
 			row.append($('<td/>').addClass('remove').append(
 				$('<img/>').attr({
 					alt: t('core', 'Delete'),
@@ -351,57 +366,26 @@ $(document).ready(function () {
 			));
 
 			$('#sslCertificate tbody').append(row);
+			$('#sslCertificate').show();
+		},
+		fail: function () {
+			OC.Notification.showTemporary(
+				t('settings', 'An error occurred. Please upload an ASCII-encoded PEM certificate.'));
 		}
 	});
 
 	$('#rootcert_import_button').click(function () {
 		$('#rootcert_import').click();
 	});
+
+	if ($('#sslCertificate > tbody > tr').length === 0) {
+		$('#sslCertificate').hide();
+	}
 });
 
-OC.Encryption = {
-	decryptAll: function (password) {
-		var message = t('settings', 'Decrypting files... Please wait, this can take some time.');
-		OC.Encryption.msg.start('#decryptAll .msg', message);
-		$.post('ajax/decryptall.php', {password: password}, function (data) {
-			if (data.status === "error") {
-				OC.Encryption.msg.finished('#decryptAll .msg', data);
-				$('#decryptAll input:password[name="privateKeyPassword"]').prop("disabled", false);
-			} else {
-				OC.Encryption.msg.finished('#decryptAll .msg', data);
-			}
-			$('#restoreBackupKeys').removeClass('hidden');
-		});
-	},
-
-	deleteKeys: function () {
-		var message = t('settings', 'Delete encryption keys permanently.');
-		OC.Encryption.msg.start('#restoreBackupKeys .msg', message);
-		$.post('ajax/deletekeys.php', null, function (data) {
-			if (data.status === "error") {
-				OC.Encryption.msg.finished('#restoreBackupKeys .msg', data);
-				$('#restoreBackupKeys button:button[name="submitDeleteKeys"]').prop("disabled", false);
-				$('#restoreBackupKeys button:button[name="submitRestoreKeys"]').prop("disabled", false);
-			} else {
-				OC.Encryption.msg.finished('#restoreBackupKeys .msg', data);
-			}
-		});
-	},
-
-	restoreKeys: function () {
-		var message = t('settings', 'Restore encryption keys.');
-		OC.Encryption.msg.start('#restoreBackupKeys .msg', message);
-		$.post('ajax/restorekeys.php', {}, function (data) {
-			if (data.status === "error") {
-				OC.Encryption.msg.finished('#restoreBackupKeys .msg', data);
-				$('#restoreBackupKeys button:button[name="submitDeleteKeys"]').prop("disabled", false);
-				$('#restoreBackupKeys button:button[name="submitRestoreKeys"]').prop("disabled", false);
-			} else {
-				OC.Encryption.msg.finished('#restoreBackupKeys .msg', data);
-			}
-		});
-	}
-};
+if (!OC.Encryption) {
+	OC.Encryption = {};
+}
 
 OC.Encryption.msg = {
 	start: function (selector, msg) {

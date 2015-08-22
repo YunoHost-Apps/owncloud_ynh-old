@@ -53,9 +53,10 @@ Thumbnail.loadBatch = function (paths, square, token) {
 			scale: window.devicePixelRatio,
 			square: (square) ? 1 : 0,
 			token: (token) ? token : ''
-		});
+		}, {escape:false});
 
 		var eventSource = new OC.EventSource(url);
+		eventSource.listen('done', function (data) {});
 		eventSource.listen('preview', function (data) {
 			var path = data.image;
 			var extension = path.substr(path.length - 3);

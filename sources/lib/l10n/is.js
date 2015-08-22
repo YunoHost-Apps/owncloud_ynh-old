@@ -3,18 +3,12 @@ OC.L10N.register(
     {
     "Help" : "Hjálp",
     "Personal" : "Um mig",
-    "Settings" : "Stillingar",
     "Users" : "Notendur",
     "Admin" : "Stjórnun",
     "today" : "í dag",
     "yesterday" : "í gær",
-    "_%n day ago_::_%n days ago_" : ["",""],
     "last month" : "síðasta mánuði",
-    "_%n month ago_::_%n months ago_" : ["",""],
     "last year" : "síðasta ári",
-    "_%n year ago_::_%n years ago_" : ["",""],
-    "_%n hour ago_::_%n hours ago_" : ["",""],
-    "_%n minute ago_::_%n minutes ago_" : ["",""],
     "seconds ago" : "sek.",
     "web services under your control" : "vefþjónusta undir þinni stjórn",
     "Application is not enabled" : "Forrit ekki virkt",
@@ -22,4 +16,4 @@ OC.L10N.register(
     "Token expired. Please reload page." : "Auðkenning útrunnin. Vinsamlegast skráðu þig aftur inn.",
     "Could not find category \"%s\"" : "Fann ekki flokkinn \"%s\""
 },
-"nplurals=2; plural=(n != 1);");
+"nplurals=2; plural=(n % 10 == 1 || n % 100 != 11);");

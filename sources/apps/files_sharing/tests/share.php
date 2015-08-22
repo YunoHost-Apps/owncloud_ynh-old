@@ -1,22 +1,24 @@
 <?php
 /**
- * ownCloud
+ * @author Björn Schießle <schiessle@owncloud.com>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
  *
- * @author Bjoern Schiessle
- * @copyright 2014 Bjoern Schiessle <schiessle@owncloud.com>
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
 
@@ -317,6 +319,136 @@ class Test_Files_Sharing extends OCA\Files_sharing\Tests\TestCase {
 			array($permission5, $permission3),
 			array($permission6, $permission4),
 		);
+	}
+
+	/**
+	 * @dataProvider dataProviderGetUsersSharingFile
+	 *
+	 * @param string $groupName name of group to share with
+	 * @param bool $includeOwner whether to include the owner in the result
+	 * @param bool $includePaths whether to include paths in the result
+	 * @param array $expectedResult expected result of the API call
+	 */
+	function testGetUsersSharingFile($groupName, $includeOwner, $includePaths, $expectedResult) {
+
+		$fileinfo = $this->view->getFileInfo($this->folder);
+
+		$result = \OCP\Share::shareItem('folder', $fileinfo['fileid'], \OCP\Share::SHARE_TYPE_GROUP,
+				$groupName, \OCP\Constants::PERMISSION_READ);
+		$this->assertTrue($result);
+
+		// public share
+		$result = \OCP\Share::shareItem('folder', $fileinfo['fileid'], \OCP\Share::SHARE_TYPE_LINK,
+				null, \OCP\Constants::PERMISSION_READ);
+		$this->assertNotNull($result); // returns the token!
+
+		// owner renames after sharing
+		$this->view->rename($this->folder, $this->folder . '_owner_renamed');
+
+		self::loginHelper(self::TEST_FILES_SHARING_API_USER2);
+
+		$user2View = new \OC\Files\View('/' . self::TEST_FILES_SHARING_API_USER2 . '/files');
+		$user2View->rename($this->folder, $this->folder . '_renamed');
+
+		$ownerPath = $this->folder . '_owner_renamed';
+		$owner = self::TEST_FILES_SHARING_API_USER1;
+
+		$result = \OCP\Share::getUsersSharingFile($ownerPath, $owner, $includeOwner, $includePaths);
+
+		// sort users to make sure it matches
+		if ($includePaths) {
+			ksort($result);
+		} else {
+			sort($result['users']);
+		}
+		
+		$this->assertEquals(
+			$expectedResult,
+			$result
+		);
+	}
+
+	function dataProviderGetUsersSharingFile() {
+		// note: "group" contains user1 (the owner), user2 and user3
+		// and self::TEST_FILES_SHARING_API_GROUP1 contains only user2
+		return [
+			// share with group that contains owner
+			[
+				'group',
+				false,
+				false,
+				[
+					'users' =>
+					[
+						// because user1 was in group
+						self::TEST_FILES_SHARING_API_USER1,
+						self::TEST_FILES_SHARING_API_USER2,
+						self::TEST_FILES_SHARING_API_USER3,
+					],
+					'public' => true,
+					'remote' => false,
+				],
+			],
+			// share with group that does not contain owner
+			[
+				self::TEST_FILES_SHARING_API_GROUP1,
+				false,
+				false,
+				[
+					'users' =>
+					[
+						self::TEST_FILES_SHARING_API_USER2,
+					],
+					'public' => true,
+					'remote' => false,
+				],
+			],
+			// share with group that does not contain owner, include owner
+			[
+				self::TEST_FILES_SHARING_API_GROUP1,
+				true,
+				false,
+				[
+					'users' =>
+					[
+						self::TEST_FILES_SHARING_API_USER1,
+						self::TEST_FILES_SHARING_API_USER2,
+					],
+					'public' => true,
+					'remote' => false,
+				],
+			],
+			// include paths, with owner
+			[
+				'group',
+				true,
+				true,
+				[
+					self::TEST_FILES_SHARING_API_USER1 => self::TEST_FOLDER_NAME . '_owner_renamed',
+					self::TEST_FILES_SHARING_API_USER2 => self::TEST_FOLDER_NAME . '_renamed',
+					self::TEST_FILES_SHARING_API_USER3 => self::TEST_FOLDER_NAME,
+				],
+			],
+			// include paths, group without owner
+			[
+				self::TEST_FILES_SHARING_API_GROUP1,
+				false,
+				true,
+				[
+					self::TEST_FILES_SHARING_API_USER2 => self::TEST_FOLDER_NAME. '_renamed',
+				],
+			],
+			// include paths, include owner, group without owner
+			[
+				self::TEST_FILES_SHARING_API_GROUP1,
+				true,
+				true,
+				[
+					self::TEST_FILES_SHARING_API_USER1 => self::TEST_FOLDER_NAME . '_owner_renamed',
+					self::TEST_FILES_SHARING_API_USER2 => self::TEST_FOLDER_NAME . '_renamed',
+				],
+			],
+		];
 	}
 
 }

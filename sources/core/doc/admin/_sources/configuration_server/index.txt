@@ -5,6 +5,7 @@ ownCloud Server Configuration
 .. toctree::
    :maxdepth: 2
 
+   security_setup_warnings
    occ_command
    activity_configuration
    antivirus_configuration
@@ -12,7 +13,7 @@ ownCloud Server Configuration
    background_jobs_configuration   
    config_sample_php_parameters
    email_configuration
-  
+   external_sites
    js_css_asset_management_configuration
    knowledgebase_configuration
    language_configuration

@@ -5,7 +5,7 @@ OC.L10N.register(
     "Saved" : "Sauvegardé",
     "Reset" : "Réinitialiser",
     "Sharing email (HTML)" : "Email de partage (HTML)",
-    "Sharing email (plain text fallback)" : "Email de partage (format texte de repli)",
+    "Sharing email (plain text fallback)" : "Email de partage (version texte simple alternative)",
     "Lost password mail" : "Message envoyé en cas de perte du mot de passe",
     "New user email (HTML)" : "Email pour les nouveaux utilisateurs (HTML)",
     "New user email (plain text fallback)" : "Email pour les nouveaux utilisateurs (version texte simple alternative)",

@@ -76,7 +76,7 @@
 		var self = this;
 		self.menuDirection = 'down';
 		button.click(function(event){
-			
+
 			var button=$(this);
 			if(button.parent().children('ul').length>0) {
 				if(self.menuDirection === 'down') {
@@ -113,8 +113,9 @@
 					input.attr('name', 'ms'+multiSelectId+'-option');
 				}
 				var label=$('<label/>');
-				label.attr('for',id);
+				label.attr('for', id);
 				label.text(element.text() || item);
+				label.attr('title', element.text() || item);
 				if(settings.checked.indexOf(item) !== -1 || checked) {
 					input.attr('checked', true);
 				}
@@ -190,7 +191,8 @@
 			});
 			button.parent().data('preventHide',false);
 			if(settings.createText){
-				var li=$('<li class="creator">+ '+settings.createText+'</li>');
+				var li=$('<li class="creator" title="' + settings.createText +
+					'">+ ' + settings.createText + '</li>');
 				li.click(function(event){
 					li.empty();
 					var input=$('<input type="text" class="new">');
@@ -258,7 +260,7 @@
 				});
 				list.append(li);
 			}
-			
+
 			var doSort = function(list, selector) {
 				var rows = list.find('li'+selector).get();
 
@@ -299,7 +301,7 @@
 					top:pos.top - list.height(),
 					left:pos.left,
 					width:(button.outerWidth()-2)+'px'
-					
+
 				});
 				list.detach().insertBefore($(this));
 				list.addClass('up');
@@ -327,7 +329,7 @@
 				}
 			}
 		});
-		
+
 		return span;
 	};
 })( jQuery );

@@ -3,7 +3,7 @@ Owncloud package for YunoHost.
 
 OwnCloud gives you freedom and control over your own data. A personal cloud which run on your own server. With Owncloud you can synchronize your files over your devices.
 
-The current version in this package is Owncloud 8.0.3 from owncloud.org (the files have been checked with the sha256 sum).
+The current version in this package is Owncloud 8.1.1 from owncloud.org. The files have been checked with the sha256 sum. Note that sources directory doesn't verify sha256sum because there is calendar and contact app in more.
 
 <img src="https://github.com/owncloud/owncloud.org/blob/9519c21f0bdc1a590053aa78bf1c0efe9a7ee9ec/assets/img/screenshots/serverwebui.png" style="max-width:100%;" alt="Screen of owncloud webui"/>
 

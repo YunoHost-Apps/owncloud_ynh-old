@@ -7,6 +7,8 @@ OC.L10N.register(
     "Sharing email (HTML)" : "Partilhar email (HTML)",
     "Sharing email (plain text fallback)" : "Partilhar email (texto sem formatação)",
     "Lost password mail" : "Perdi a palavra passe do mail",
+    "New user email (HTML)" : "Novo email de utilizador (HTML)",
+    "New user email (plain text fallback)" : "Novo email de utilizador (texto simples)",
     "Activity notification mail" : "Email de notificação de actividade",
     "Mail Templates" : "Templates de Emails",
     "Theme" : "Tema",

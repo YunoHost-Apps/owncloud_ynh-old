@@ -1,23 +1,23 @@
 <?php
-
 /**
- * ownCloud – LDAP User
+ * @author Arthur Schiwon <blizzz@owncloud.com>
+ * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Morris Jobke <hey@morrisjobke.de>
  *
- * @author Arthur Schiwon
- * @copyright 2014 Arthur Schiwon blizzz@owncloud.com
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
 
@@ -110,8 +110,8 @@ class Manager {
 		$user = new User($uid, $dn, $this->access, $this->ocConfig,
 			$this->ocFilesystem, clone $this->image, $this->ocLog,
 			$this->avatarManager);
-		$users['byDN'][$dn]   = $user;
-		$users['byUid'][$uid] = $user;
+		$this->users['byDN'][$dn]   = $user;
+		$this->users['byUid'][$uid] = $user;
 		return $user;
 	}
 
@@ -150,6 +150,11 @@ class Manager {
 			$this->access->getUserMapper());
 	}
 
+	/**
+	 * @brief returns a User object by it's ownCloud username
+	 * @param string the DN or username of the user
+	 * @return \OCA\user_ldap\lib\user\User|\OCA\user_ldap\lib\user\OfflineUser|null
+	 */
 	protected function createInstancyByUserName($id) {
 		//most likely a uid. Check whether it is a deleted user
 		if($this->isDeletedUser($id)) {
@@ -159,13 +164,14 @@ class Manager {
 		if($dn !== false) {
 			return $this->createAndCache($dn, $id);
 		}
-		throw new \Exception('Could not create User instance');
+		return null;
 	}
 
 	/**
 	 * @brief returns a User object by it's DN or ownCloud username
 	 * @param string the DN or username of the user
 	 * @return \OCA\user_ldap\lib\user\User|\OCA\user_ldap\lib\user\OfflineUser|null
+	 * @throws \Exception when connection could not be established
 	 */
 	public function get($id) {
 		$this->checkAccess();
@@ -182,12 +188,7 @@ class Manager {
 			}
 		}
 
-		try {
-			$user = $this->createInstancyByUserName($id);
-			return $user;
-		} catch (\Exception $e) {
-			return null;
-		}
+		return $this->createInstancyByUserName($id);
 	}
 
 }

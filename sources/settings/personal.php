@@ -1,8 +1,36 @@
 <?php
 /**
- * Copyright (c) 2011, Robin Appelman <icewind1991@gmail.com>
- * This file is licensed under the Affero General Public License version 3 or later.
- * See the COPYING-README file.
+ * @author Arthur Schiwon <blizzz@owncloud.com>
+ * @author Bart Visscher <bartv@thisnet.nl>
+ * @author Björn Schießle <schiessle@owncloud.com>
+ * @author Christopher Schäpers <kondou@ts.unde.re>
+ * @author Frank Karlitschek <frank@owncloud.org>
+ * @author Georg Ehrke <georg@owncloud.com>
+ * @author Jakob Sack <mail@jakobsack.de>
+ * @author Jan-Christoph Borchardt <hey@jancborchardt.net>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Marvin Thomas Rabe <mrabe@marvinrabe.de>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Volkan Gezer <volkangezer@gmail.com>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 
 OC_Util::checkLoggedIn();
@@ -10,6 +38,7 @@ OC_Util::checkLoggedIn();
 $defaults = new OC_Defaults(); // initialize themable default strings and urls
 $certificateManager = \OC::$server->getCertificateManager();
 $config = \OC::$server->getConfig();
+$urlGenerator = \OC::$server->getURLGenerator();
 
 // Highlight navigation entry
 OC_Util::addScript( 'settings', 'personal' );
@@ -31,11 +60,6 @@ $email=$config->getUserValue(OC_User::getUser(), 'settings', 'email', '');
 
 $userLang=$config->getUserValue( OC_User::getUser(), 'core', 'lang', OC_L10N::findLanguage() );
 $languageCodes=OC_L10N::findAvailableLanguages();
-
-//check if encryption was enabled in the past
-$filesStillEncrypted = OC_Util::encryptedFiles();
-$backupKeysExists = OC_Util::backupKeysExists();
-$enableDecryptAll = $filesStillEncrypted || $backupKeysExists;
 
 // array of common languages
 $commonlangcodes = array(
@@ -93,23 +117,28 @@ $tmpl->assign('activelanguage', $userLang);
 $tmpl->assign('passwordChangeSupported', OC_User::canUserChangePassword(OC_User::getUser()));
 $tmpl->assign('displayNameChangeSupported', OC_User::canUserChangeDisplayName(OC_User::getUser()));
 $tmpl->assign('displayName', OC_User::getDisplayName());
-$tmpl->assign('enableDecryptAll' , $enableDecryptAll);
-$tmpl->assign('backupKeysExists' , $backupKeysExists);
-$tmpl->assign('filesStillEncrypted' , $filesStillEncrypted);
 $tmpl->assign('enableAvatars', $config->getSystemValue('enable_avatars', true));
 $tmpl->assign('avatarChangeSupported', OC_User::canUserChangeAvatar(OC_User::getUser()));
 $tmpl->assign('certs', $certificateManager->listCertificates());
+$tmpl->assign('urlGenerator', $urlGenerator);
+
+// Get array of group ids for this user
+$groups = \OC::$server->getGroupManager()->getUserIdGroups(OC_User::getUser());
+$groups2 = array_map(function($group) { return $group->getGID(); }, $groups);
+sort($groups2);
+$tmpl->assign('groups', $groups2);
 
 // add hardcoded forms from the template
 $l = OC_L10N::get('settings');
-$formsAndMore = array();
-$formsAndMore[]= array( 'anchor' => 'passwordform', 'section-name' => $l->t('Personal Info') );
+$formsAndMore = [];
+$formsAndMore[]= ['anchor' => 'clientsbox', 'section-name' => $l->t('Sync clients')];
+$formsAndMore[]= ['anchor' => 'passwordform', 'section-name' => $l->t('Personal info')];
 
 $forms=OC_App::getForms('personal');
 
 $formsMap = array_map(function($form){
-	if (preg_match('%(<h2[^>]*>.*?</h2>)%i', $form, $regs)) {
-		$sectionName = str_replace('<h2>', '', $regs[0]);
+	if (preg_match('%(<h2(?P<class>[^>]*)>.*?</h2>)%i', $form, $regs)) {
+		$sectionName = str_replace('<h2'.$regs['class'].'>', '', $regs[0]);
 		$sectionName = str_replace('</h2>', '', $sectionName);
 		$anchor = strtolower($sectionName);
 		$anchor = str_replace(' ', '-', $anchor);
@@ -129,9 +158,6 @@ $formsAndMore = array_merge($formsAndMore, $formsMap);
 
 // add bottom hardcoded forms from the template
 $formsAndMore[]= array( 'anchor' => 'ssl-root-certificates', 'section-name' => $l->t('SSL root certificates') );
-if($enableDecryptAll) {
-	$formsAndMore[]= array( 'anchor' => 'encryption', 'section-name' => $l->t('Encryption') );
-}
 
 $tmpl->assign('forms', $formsAndMore);
 $tmpl->printPage();

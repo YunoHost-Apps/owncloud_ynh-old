@@ -1,20 +1,19 @@
 { "translations": {
     "Help" : "Ajuda",
     "Personal" : "Personal",
-    "Settings" : "Configuracion",
     "Users" : "Usancièrs",
     "Admin" : "Admin",
+    "Unknown filetype" : "Tipe de fichièr desconegut",
+    "Invalid image" : "Imatge pas valable",
     "today" : "uèi",
     "yesterday" : "ièr",
-    "_%n day ago_::_%n days ago_" : ["",""],
     "last month" : "mes passat",
-    "_%n month ago_::_%n months ago_" : ["",""],
     "last year" : "an passat",
-    "_%n year ago_::_%n years ago_" : ["",""],
-    "_%n hour ago_::_%n hours ago_" : ["",""],
-    "_%n minute ago_::_%n minutes ago_" : ["",""],
     "seconds ago" : "segonda a",
     "web services under your control" : "Services web jos ton contraròtle",
-    "Authentication error" : "Error d'autentificacion"
+    "Authentication error" : "Error d'autentificacion",
+    "A valid username must be provided" : "Un nom d'utilizaire valid deu èsser picat",
+    "A valid password must be provided" : "Un senhal valid deu èsser picat",
+    "This is probably caused by a cache/accelerator such as Zend OPcache or eAccelerator." : "La rason es probablament l'utilizacion d'un escondedor / accelerador tal coma Zend OPcache o eAccelerator."
 },"pluralForm" :"nplurals=2; plural=(n > 1);"
 }

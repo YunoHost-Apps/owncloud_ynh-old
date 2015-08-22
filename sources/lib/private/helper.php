@@ -1,25 +1,50 @@
 <?php
 /**
- * ownCloud
+ * @author Arthur Schiwon <blizzz@owncloud.com>
+ * @author Bart Visscher <bartv@thisnet.nl>
+ * @author Björn Schießle <schiessle@owncloud.com>
+ * @author Christopher Schäpers <kondou@ts.unde.re>
+ * @author Fabian Henze <flyser42@gmx.de>
+ * @author Felix Moeller <mail@felixmoeller.de>
+ * @author François Kubler <francois@kubler.org>
+ * @author Frank Karlitschek <frank@owncloud.org>
+ * @author Georg Ehrke <georg@owncloud.com>
+ * @author Jakob Sack <mail@jakobsack.de>
+ * @author Jan-Christoph Borchardt <hey@jancborchardt.net>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Michael Gapczynski <GapczynskiM@gmail.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Olivier Paroz <github@oparoz.com>
+ * @author Owen Winkler <a_github@midnightcircus.com>
+ * @author Pellaeon Lin <nfsmwlin@gmail.com>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
+ * @author Simon Könnecke <simonkoennecke@gmail.com>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Thomas Tanghus <thomas@tanghus.net>
+ * @author Valerio Ponte <valerio.ponte@gmail.com>
+ * @author Vincent Petry <pvince81@owncloud.com>
  *
- * @author Frank Karlitschek
- * @author Jakob Sack
- * @copyright 2012 Frank Karlitschek frank@owncloud.org
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
+use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * Collection of useful functions
@@ -39,8 +64,10 @@ class OC_Helper {
 		'application/coreldraw' => 'image',
 		'application/x-gimp' => 'image',
 		'application/x-photoshop' => 'image',
+		'application/x-dcraw' => 'image',
 
-		'application/x-font-ttf' => 'font',
+		'application/font-sfnt' => 'font',
+		'application/x-font' => 'font',
 		'application/font-woff' => 'font',
 		'application/vnd.ms-fontobject' => 'font',
 
@@ -48,6 +75,7 @@ class OC_Helper {
 		'application/x-perl' => 'text/code',
 		'application/x-php' => 'text/code',
 		'text/x-shellscript' => 'text/code',
+		'application/yaml' => 'text/code',
 		'application/xml' => 'text/html',
 		'text/css' => 'text/code',
 		'application/x-tex' => 'text',
@@ -101,10 +129,9 @@ class OC_Helper {
 	/**
 	 * Creates an url using a defined route
 	 * @param string $route
-	 * @param array $parameters
-	 * @return
-	 * @internal param array $args with param=>value, will be appended to the returned url
+	 * @param array $parameters with param=>value, will be appended to the returned url
 	 * @return string the url
+	 * @deprecated Use \OC::$server->getURLGenerator()->linkToRoute($route, $parameters)
 	 *
 	 * Returns a url to the given app and file.
 	 */
@@ -119,6 +146,7 @@ class OC_Helper {
 	 * @param array $args array with param=>value, will be appended to the returned url
 	 *    The value of $args will be urlencoded
 	 * @return string the url
+	 * @deprecated Use \OC::$server->getURLGenerator()->linkTo($app, $file, $args)
 	 *
 	 * Returns a url to the given app and file.
 	 */
@@ -129,6 +157,7 @@ class OC_Helper {
 	/**
 	 * @param string $key
 	 * @return string url to the online documentation
+	 * @deprecated Use \OC::$server->getURLGenerator()->linkToDocs($key)
 	 */
 	public static function linkToDocs($key) {
 		return OC::$server->getURLGenerator()->linkToDocs($key);
@@ -154,6 +183,7 @@ class OC_Helper {
 	 * Makes an $url absolute
 	 * @param string $url the url
 	 * @return string the absolute url
+	 * @deprecated Use \OC::$server->getURLGenerator()->getAbsoluteURL($url)
 	 *
 	 * Returns a absolute url to the given app and file.
 	 */
@@ -209,6 +239,7 @@ class OC_Helper {
 	 * @param string $app app
 	 * @param string $image image name
 	 * @return string the url
+	 * @deprecated Use \OC::$server->getURLGenerator()->imagePath($app, $image)
 	 *
 	 * Returns the path to the image.
 	 */
@@ -287,13 +318,8 @@ class OC_Helper {
 	 * @return bool avatar set or not
 	**/
 	public static function userAvatarSet($user) {
-		$avatar = new \OC_Avatar($user);
-		$image = $avatar->get(1);
-		if ($image instanceof \OC_Image) {
-			return true;
-		} else {
-			return false;
-		}
+		$avatar = new \OC\Avatar($user);
+		return $avatar->exists();
 	}
 
 	/**
@@ -368,6 +394,9 @@ class OC_Helper {
 	 */
 	public static function computerFileSize($str) {
 		$str = strtolower($str);
+		if (is_numeric($str)) {
+			return $str;
+		}
 
 		$bytes_array = array(
 			'b' => 1,
@@ -387,6 +416,8 @@ class OC_Helper {
 
 		if (preg_match('#([kmgtp]?b?)$#si', $str, $matches) && !empty($bytes_array[$matches[1]])) {
 			$bytes *= $bytes_array[$matches[1]];
+		} else {
+			return false;
 		}
 
 		$bytes = round($bytes);
@@ -666,6 +697,7 @@ class OC_Helper {
 				$match_length = strlen($matches[0][$last_match][0]);
 			} else {
 				$counter = 2;
+				$match_length = 0;
 				$offset = false;
 			}
 			do {
@@ -848,7 +880,7 @@ class OC_Helper {
 	/**
 	 * Calculate PHP upload limit
 	 *
-	 * @return PHP upload file size limit
+	 * @return int PHP upload file size limit
 	 */
 	public static function uploadLimit() {
 		$upload_max_filesize = OCP\Util::computerFileSize(ini_get('upload_max_filesize'));
@@ -899,9 +931,21 @@ class OC_Helper {
 		}
 		$result = null;
 		if (!\OC_Util::runningOnWindows() && self::is_function_enabled('exec')) {
-			exec('command -v ' . escapeshellarg($program) . ' 2> /dev/null', $output, $returnCode);
-			if ($returnCode === 0 && count($output) > 0) {
-				$result = escapeshellcmd($output[0]);
+			$exeSniffer = new ExecutableFinder();
+			// Returns null if nothing is found
+			$result = $exeSniffer->find($program);
+			if (empty($result)) {
+				$paths = getenv('PATH');
+				if (empty($paths)) {
+					$paths = '/usr/local/bin /usr/bin /opt/bin /bin';
+				} else {
+					$paths = str_replace(':',' ',getenv('PATH'));
+				}
+				$command = 'find ' . $paths . ' -name ' . escapeshellarg($program) . ' 2> /dev/null';
+				exec($command, $output, $returnCode);
+				if (count($output) > 0) {
+					$result = escapeshellcmd($output[0]);
+				}
 			}
 		}
 		$memcache->set($program, $result, 3600);
@@ -914,6 +958,7 @@ class OC_Helper {
 	 * @param string $path
 	 * @param \OCP\Files\FileInfo $rootInfo (optional)
 	 * @return array
+	 * @throws \OCP\Files\NotFoundException
 	 */
 	public static function getStorageInfo($path, $rootInfo = null) {
 		// return storage info without adding mount points
@@ -938,13 +983,13 @@ class OC_Helper {
 			$quota = OC_Util::getUserQuota(\OCP\User::getUser());
 			if ($quota !== \OCP\Files\FileInfo::SPACE_UNLIMITED) {
 				// always get free space / total space from root + mount points
-				$path = '';
 				return self::getGlobalStorageInfo();
 			}
 		}
 
 		// TODO: need a better way to get total space from storage
 		if ($storage->instanceOfStorage('\OC\Files\Storage\Wrapper\Quota')) {
+			/** @var \OC\Files\Storage\Wrapper\Quota $storage */
 			$quota = $storage->getQuota();
 		}
 		$free = $storage->free_space('');
@@ -963,7 +1008,21 @@ class OC_Helper {
 			$relative = 0;
 		}
 
-		return array('free' => $free, 'used' => $used, 'total' => $total, 'relative' => $relative);
+		$ownerId = $storage->getOwner($path);
+		$ownerDisplayName = '';
+		$owner = \OC::$server->getUserManager()->get($ownerId);
+		if($owner) {
+			$ownerDisplayName = $owner->getDisplayName();
+		}
+
+		return [
+			'free' => $free,
+			'used' => $used,
+			'total' => $total,
+			'relative' => $relative,
+			'owner' => $ownerId,
+			'ownerDisplayName' => $ownerDisplayName,
+		];
 	}
 
 	/**

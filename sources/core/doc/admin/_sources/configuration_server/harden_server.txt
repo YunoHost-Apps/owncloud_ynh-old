@@ -15,8 +15,19 @@ run ownCloud Server on Apache2 on a Linux environment.
    critical security-relevant options are missing. However, it is still up to 
    the server administrator to review and maintain system security.
 
+Limit on Password Length
+------------------------
+
+ownCloud uses the bcrypt algorithm and thus for security and performance reasons,
+e.g. Denial of Service as CPU demand increases exponentially, it only verifies
+the first 72 characters of passwords. This applies to all passwords that you use
+in ownCloud: user passwords, passwords on link shares, and passwords on external
+shares.
+
 Operating system
 ----------------
+
+.. _dev-urandom-label:
 
 Give PHP read accesss to ``/dev/urandom``
 *****************************************
@@ -26,14 +37,30 @@ that when generating a random number ownCloud will request multiple random
 numbers from different sources and derive from these the final random number.
 
 The random number generation also tries to request random numbers from 
-``/dev/urandom``, thus it is highly recommended to configure your setup in such 
-a way that PHP is able to read random data from it.
+``/dev/urandom``, thus it is **highly recommended** to configure your setup in
+such a way that PHP is able to read random data from it. Not granting PHP access
+to ``/dev/urandom`` may make your random numbers predictable and may make your
+ownCloud instance insecure as attackers might predict password reset tokens or
+other sensitive data.
+
+.. note:: When having an ``open_basedir`` configured within your ``php.ini``
+   make sure to include the folder ``/dev``.
 
 Enable hardening modules such as SELinux
 ****************************************
 It is highly recommend to enable hardening modules such as SELinux where 
 possible. See :doc:`../installation/selinux_configuration` to learn more about 
 SELinux.
+
+Use newest PHP version
+**********************
+Some security features and hardenings in PHP are only available in the latest
+PHP release and thus it is recommended to run the latest PHP version. You can
+find the latest version on http://php.net/.
+
+Some Linux distributions backport security patches, but this is not reliable as
+some get missed, or the backports are years late. It is always best to run the
+latest PHP version.
 
 Deployment
 ----------
@@ -58,6 +85,8 @@ setting the ``enable_previews`` switch to ``false`` in ``config.php``. As an
 administrator you are also able to manage which preview providers are enabled by 
 modifying the ``enabledPreviewProviders`` option switch.
 
+.. _use-https-label:
+
 Use HTTPS
 ---------
 Using ownCloud without using an encrypted HTTPS connection might allow attackers 
@@ -81,6 +110,8 @@ achieved by a setting such as the following in the Apache VirtualHosts config:
      Redirect permanent / https://cloud.owncloud.com/
   </VirtualHost>
 
+.. _enable-hsts-label:
+
 Enable HTTP Strict Transport Security
 *************************************
 While redirecting all traffic to HTTPS is already a good start it will often not 
@@ -97,10 +128,15 @@ VirtualHost file:
 
   <VirtualHost *:443>
      ServerName cloud.owncloud.com
-     Header always add Strict-Transport-Security "max-age=15768000"
+     Header always add Strict-Transport-Security "max-age=15768000; includeSubDomains; preload"
   </VirtualHost>
 
-It shall be noted that this requires that the ``mod_headers`` extension to be installed.
+Be aware that above policy will also apply for all subdomains, if you don't
+have HTTPS properly configured on all subdomains you mut remove the ``includeSubdomains``
+part.
+
+Furthermore it shall be noted that this requires that the ``mod_headers`` 
+extension is installed.
 
 Proper SSL configuration
 ************************
@@ -137,13 +173,16 @@ However, these headers are added by the applications code in PHP and thus not
 served on static resources and rely on the fact that there is no way to bypass 
 the intended response code path.
 
-For optimal security administrators are encouraged to serve these basic HTTP 
-headers by the web server to enforce them on response. To do this Apache has to 
-be configured to use the ``.htaccess`` file as well as the following Apache 
+For optimal security, administrators are encouraged to serve these basic HTTP 
+headers by the web server to enforce them on response.
+
+Apache has to be configured to use the ``.htaccess`` file as well as the following Apache 
 modules needs to be enabled:
 
 - mod_headers
 - mod_env
+
+For nginx, please see the nginx configuration example :ref:`nginx_configuration_example`
 
 Administrators can verify whether this security change is active by accessing a 
 static resource served by the web server and verify that above mentioned 

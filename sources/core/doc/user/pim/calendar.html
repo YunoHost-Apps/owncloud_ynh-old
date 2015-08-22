@@ -115,7 +115,7 @@
 									</ul>
                   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 User Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new.html">What&#8217;s New for Users in ownCloud 8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new.html">What&#8217;s New for Users in ownCloud 8.1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../webinterface.html">The ownCloud Web Interface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../files/index.html">Files &amp; Synchronization</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Contacts &amp; Calendar</a><ul class="current">
@@ -157,10 +157,11 @@
 						
   <div class="section" id="using-the-calendar-app">
 <h1>Using the Calendar App<a class="headerlink" href="#using-the-calendar-app" title="Permalink to this headline">¶</a></h1>
-<p>The Calendar app is not enabled in ownCloud 8, and is not
-supported. You may ask your ownCloud server admin to enable it, and if you are
-your own admin consult the <a class="reference external" href="https://doc.owncloud.org/server/8.0/admin_manual/installation/apps_management_installation.html">Installation &gt; Installing and Managing Apps</a>
-section of the <a class="reference external" href="https://doc.owncloud.org/server/8.0/admin_manual/html">ownCloud Server Administration Manual</a>.</p>
+<p>The Calendar app is not enabled by default in ownCloud 8 and needs to
+be enabled seperately. It is also not a supported core app. You may ask
+your ownCloud server admin to enable it, and if you are
+your own admin consult the <a class="reference external" href="https://doc.owncloud.org/server/8.1/admin_manual/installation/apps_management_installation.html">Installation &gt; Installing and Managing Apps</a>
+section of the <a class="reference external" href="https://doc.owncloud.org/server/8.1/admin_manual/html">ownCloud Server Administration Manual</a>.</p>
 <p>The ownCloud Calendar app enables you to create and edit events, synchronize to
 other calendars you might use, and create new, personalized calendars.</p>
 <p>By default, when you access the Calendar app for the first time, you get a
@@ -170,20 +171,29 @@ other calendars you might use, and create new, personalized calendars.</p>
 <p class="caption"><strong>Calendar app (default)</strong></p>
 </div>
 <p>The Calendar app contains the following fields and controls:</p>
-<ul class="simple">
-<li>Calendar Date Field &#8211; Provides the current date or enables you to select a
-date that you want to view.</li>
-<li>Calendar View Options &#8211; Enables you to choose between a day, week, or month
+<ul>
+<li><p class="first">Calendar Date Field &#8211; Provides the current date or enables you to select a
+date that you want to view.</p>
+</li>
+<li><p class="first">Calendar View Options &#8211; Enables you to choose between a day, week, or month
 view for the main Calendar app window.  Also provides a quick jump button to
-access the current day (Today).</li>
-<li>Calendar Selection &#8211; Enables you to choose the calendar that you want to view.</li>
-<li>Calendar Controls &#8211; Provides controls for each individual calendar.  These
+access the current day (Today).</p>
+</li>
+<li><p class="first">Calendar Selection &#8211; Enables you to choose the calendar that you want to view.</p>
+</li>
+<li><p class="first">Calendar Controls &#8211; Provides controls for each individual calendar.  These
 controls include sharing, obtaining an external URL link to the calendar, an
-export function, an edit function, and a delete (trash) button.</li>
-<li>Calendar Settings &#8211; Provides access to the calendar-specific settings.  These
+export function, an edit function, and a delete (trash) button.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Some Ad-Block plugins hide the &#8220;Share&#8221; button for calendars. If the &#8220;Share&#8221; button is missing, try disabling your Ad-Block plugin or add a whitelist-entry for your OwnCloud instance.</p>
+</div>
+</li>
+<li><p class="first">Calendar Settings &#8211; Provides access to the calendar-specific settings.  These
 settings include the calendar timezone selection, time format selection, week
 start day, cache setting, primary CalDAV address, and iOS/OS X CalDAV address
-settings.</li>
+settings.</p>
+</li>
 </ul>
 <div class="section" id="creating-a-new-calendar">
 <h2>Creating a New Calendar<a class="headerlink" href="#creating-a-new-calendar" title="Permalink to this headline">¶</a></h2>
@@ -239,37 +249,27 @@ CalDAV enables multiple clients to access the same information for use in
 cooperative planning and information sharing.</p>
 <p>The Calendar app provides both the Primary CalDAV address and the iOS/OSX CalDAV
 address.  Using these addresses, you can use CalDAV-compatible programs (for
-example, Kontact, Evolution, or Thunderbird) using the address provided.</p>
-<p>To better understand the URL creation, consider the following examples:</p>
-<p>Let&#8217;s assume you access your ownCloud web interface using the following address:</p>
-<div class="highlight-python"><pre>http://ADDRESS</pre>
-</div>
-<p>To access your ownCloud calendars using CalDAV-compatible programs like
-Kontact, Evolution, or Thunderbird, you would use the following URL:</p>
-<div class="highlight-python"><pre>http://ADDRESS/remote.php/caldav</pre>
-</div>
-<p>To access your ownCloud calendars using Apple iCal you would use the following
-URL, making sure to include the final slash:</p>
-<div class="highlight-python"><pre>http://ADDRESS/remote.php/caldav/principals/username/</pre>
-</div>
-<p>To access your ownCloud calendars using Mozilla Lightning you would use the
-following URL:</p>
-<div class="highlight-python"><pre>https://ADDRESS/remote.php/caldav/calendars/USERNAME/CALENDARNAME</pre>
-</div>
+example, Kontact, Evolution, or Mozilla Thunderbird with the Lightning Add-on)
+using the address provided.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Mozilla Lightning doesn&#8217;t support using multiple accounts on a single
+<p class="last">The Lightning Add-on doesn&#8217;t support using multiple accounts on a single
 server as a default. You need to set <tt class="docutils literal"><span class="pre">calendar.network.multirealm</span></tt> to <tt class="docutils literal"><span class="pre">true</span></tt>
-in the Config Editor of Thunderbird to be able to use multiple accounts.</p>
+in the Config Editor of Mozilla Thunderbird to be able to use multiple accounts.</p>
 </div>
-<p>The following is an example showing the completed URL where the calendar name is
-<tt class="docutils literal"><span class="pre">defaultcalendar</span></tt> and the username is <tt class="docutils literal"><span class="pre">test</span></tt>:</p>
-<div class="highlight-python"><pre>https://localhost/owncloud/remote.php/caldav/calendars/test/defaultcalendar</pre>
+<div class="section" id="getting-the-caldav-link">
+<h3>Getting the CalDAV link<a class="headerlink" href="#getting-the-caldav-link" title="Permalink to this headline">¶</a></h3>
+<p>The GUI of ownCloud provides you the needed links which can be used in your CalDAV-compatible
+program. Open up the Calendar App and use the <img alt="caldavlink" src="../_images/calendar_caldav_icon.png" /> icon next to the calendar name as
+shown in the figure below:</p>
+<div class="figure">
+<img alt="../_images/calendar_caldav_link.png" src="../_images/calendar_caldav_link.png" />
 </div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Calendar names are lowercase and any spaces are removed. They are not
-URL-encoded.</p>
+<p>Furthermore you can get the Primary CalDAV address as well as the iOS/OS X CalDAV address by
+using the <img alt="gear" src="../_images/gear.png" /> icon on the bottom left of the Calendar app as shown in the figure below:</p>
+<div class="figure">
+<img alt="../_images/calendar_caldav_ios.png" src="../_images/calendar_caldav_ios.png" />
+</div>
 </div>
 </div>
 <div class="section" id="creating-events">

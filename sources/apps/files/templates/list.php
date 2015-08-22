@@ -12,9 +12,6 @@
 						data-type="folder" data-newname="<?php p($l->t('New folder')) ?>">
 						<p><?php p($l->t('Folder'));?></p>
 					</li>
-					<li class="icon-link svg" data-type="web">
-						<p><?php p($l->t('From link'));?></p>
-					</li>
 				</ul>
 			</div>
 			<?php endif;?>
@@ -56,11 +53,11 @@
 
 <div id="emptycontent" class="hidden">
 	<div class="icon-folder"></div>
-	<h2><?php p($l->t('No files yet')); ?></h2>
-	<p><?php p($l->t('Upload some content or sync with your devices!')); ?></p>
+	<h2><?php p($l->t('No files in here')); ?></h2>
+	<p class="uploadmessage hidden"><?php p($l->t('Upload some content or sync with your devices!')); ?></p>
 </div>
 
-<div class="nofilterresults hidden">
+<div class="nofilterresults emptycontent hidden">
 	<div class="icon-search"></div>
 	<h2><?php p($l->t('No entries found in this folder')); ?></h2>
 	<p></p>

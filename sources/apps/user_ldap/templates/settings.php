@@ -1,3 +1,56 @@
+<?php
+
+vendor_script('user_ldap', 'ui-multiselect/src/jquery.multiselect');
+
+vendor_style('user_ldap', 'ui-multiselect/jquery.multiselect');
+
+script('user_ldap', [
+	'wizard/controller',
+	'wizard/configModel',
+	'wizard/view',
+	'wizard/wizardObject',
+	'wizard/wizardTabGeneric',
+	'wizard/wizardTabElementary',
+	'wizard/wizardTabAbstractFilter',
+	'wizard/wizardTabUserFilter',
+	'wizard/wizardTabLoginFilter',
+	'wizard/wizardTabGroupFilter',
+	'wizard/wizardTabAdvanced',
+	'wizard/wizardTabExpert',
+	'wizard/wizardDetectorQueue',
+	'wizard/wizardDetectorGeneric',
+	'wizard/wizardDetectorPort',
+	'wizard/wizardDetectorBaseDN',
+	'wizard/wizardDetectorFeatureAbstract',
+	'wizard/wizardDetectorUserObjectClasses',
+	'wizard/wizardDetectorGroupObjectClasses',
+	'wizard/wizardDetectorGroupsForUsers',
+	'wizard/wizardDetectorGroupsForGroups',
+	'wizard/wizardDetectorSimpleRequestAbstract',
+	'wizard/wizardDetectorFilterUser',
+	'wizard/wizardDetectorFilterLogin',
+	'wizard/wizardDetectorFilterGroup',
+	'wizard/wizardDetectorUserCount',
+	'wizard/wizardDetectorGroupCount',
+	'wizard/wizardDetectorEmailAttribute',
+	'wizard/wizardDetectorUserDisplayNameAttribute',
+	'wizard/wizardDetectorUserGroupAssociation',
+	'wizard/wizardDetectorAvailableAttributes',
+	'wizard/wizardDetectorTestAbstract',
+	'wizard/wizardDetectorTestLoginName',
+	'wizard/wizardDetectorTestBaseDN',
+	'wizard/wizardDetectorTestConfiguration',
+	'wizard/wizardDetectorClearUserMappings',
+	'wizard/wizardDetectorClearGroupMappings',
+	'wizard/wizardFilterOnType',
+	'wizard/wizardFilterOnTypeFactory',
+	'wizard/wizard'
+]);
+
+style('user_ldap', 'settings');
+
+?>
+
 <form id="ldap" class="section" action="#" method="post">
 	<h2><?php p($l->t('LDAP')); ?></h2>
 
@@ -60,10 +113,11 @@
 		<p class="ldapIndent"><label for="ldap_expert_uuid_user_attr"><?php p($l->t('UUID Attribute for Users:'));?></label><input type="text" id="ldap_expert_uuid_user_attr" name="ldap_expert_uuid_user_attr" data-default="<?php p($_['ldap_expert_uuid_user_attr_default']); ?>" /></p>
 		<p class="ldapIndent"><label for="ldap_expert_uuid_group_attr"><?php p($l->t('UUID Attribute for Groups:'));?></label><input type="text" id="ldap_expert_uuid_group_attr" name="ldap_expert_uuid_group_attr" data-default="<?php p($_['ldap_expert_uuid_group_attr_default']); ?>" /></p>
 		<p><strong><?php p($l->t('Username-LDAP User Mapping'));?></strong></p>
-		<p class="ldapIndent"><?php p($l->t('Usernames are used to store and assign (meta) data. In order to precisely identify and recognize users, each LDAP user will have a internal username. This requires a mapping from username to LDAP user. The created username is mapped to the UUID of the LDAP user. Additionally the DN is cached as well to reduce LDAP interaction, but it is not used for identification. If the DN changes, the changes will be found. The internal username is used all over. Clearing the mappings will have leftovers everywhere. Clearing the mappings is not configuration sensitive, it affects all LDAP configurations! Never clear the mappings in a production environment, only in a testing or experimental stage.'));?></p>
+		<p class="ldapIndent"><?php p($l->t('Usernames are used to store and assign (meta) data. In order to precisely identify and recognize users, each LDAP user will have an internal username. This requires a mapping from username to LDAP user. The created username is mapped to the UUID of the LDAP user. Additionally the DN is cached as well to reduce LDAP interaction, but it is not used for identification. If the DN changes, the changes will be found. The internal username is used all over. Clearing the mappings will have leftovers everywhere. Clearing the mappings is not configuration sensitive, it affects all LDAP configurations! Never clear the mappings in a production environment, only in a testing or experimental stage.'));?></p>
 		<p class="ldapIndent"><button type="button" id="ldap_action_clear_user_mappings" name="ldap_action_clear_user_mappings"><?php p($l->t('Clear Username-LDAP User Mapping'));?></button><br/><button type="button" id="ldap_action_clear_group_mappings" name="ldap_action_clear_group_mappings"><?php p($l->t('Clear Groupname-LDAP Group Mapping'));?></button></p>
 		<?php print_unescaped($_['settingControls']); ?>
 	</fieldset>
 	</div>
-
+	<!-- Spinner Template -->
+	<img class="ldapSpinner hidden" src="<?php p(\OCP\Util::imagePath('core', 'loading.gif')); ?>">
 </form>

@@ -1,23 +1,31 @@
 <?php
 /**
- * ownCloud
+ * @author Arthur Schiwon <blizzz@owncloud.com>
+ * @author Bart Visscher <bartv@thisnet.nl>
+ * @author Jakob Sack <mail@jakobsack.de>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @author Scrutinizer Auto-Fixer <auto-fixer@scrutinizer-ci.com>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
  *
- * @author Frank Karlitschek
- * @author Jakob Sack
- * @copyright 2012 Frank Karlitschek frank@owncloud.org
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
 /*
@@ -35,13 +43,14 @@
 
 namespace OC;
 
-use \OC\DB\Connection;
+use OC\DB\Connection;
+use OCP\IAppConfig;
 
 /**
  * This class provides an easy way for apps to store config values in the
  * database.
  */
-class AppConfig implements \OCP\IAppConfig {
+class AppConfig implements IAppConfig {
 	/**
 	 * @var \OC\DB\Connection $conn
 	 */
@@ -57,7 +66,7 @@ class AppConfig implements \OCP\IAppConfig {
 	private $apps = null;
 
 	/**
-	 * @param \OC\DB\Connection $conn
+	 * @param Connection $conn
 	 */
 	public function __construct(Connection $conn) {
 		$this->conn = $conn;
@@ -165,27 +174,31 @@ class AppConfig implements \OCP\IAppConfig {
 	}
 
 	/**
-	 * sets a value in the appconfig
+	 * Sets a value. If the key did not exist before it will be created.
 	 *
 	 * @param string $app app
 	 * @param string $key key
 	 * @param string $value value
-	 *
-	 * Sets a value. If the key did not exist before it will be created.
+	 * @return void
 	 */
 	public function setValue($app, $key, $value) {
+		$inserted = false;
 		// Does the key exist? no: insert, yes: update.
 		if (!$this->hasKey($app, $key)) {
-			$data = array(
+			$inserted = (bool) $this->conn->insertIfNotExist('*PREFIX*appconfig', [
 				'appid' => $app,
 				'configkey' => $key,
 				'configvalue' => $value,
-			);
-			$this->conn->insert('*PREFIX*appconfig', $data);
-		} else {
+			], [
+				'appid',
+				'configkey',
+			]);
+		}
+
+		if (!$inserted) {
 			$oldValue = $this->getValue($app, $key);
 			if($oldValue === strval($value)) {
-				return true;
+				return;
 			}
 			$data = array(
 				'configvalue' => $value,
@@ -245,7 +258,7 @@ class AppConfig implements \OCP\IAppConfig {
 	 *
 	 * @param string|false $app
 	 * @param string|false $key
-	 * @return array
+	 * @return array|false
 	 */
 	public function getValues($app, $key) {
 		if (($app !== false) == ($key !== false)) {

@@ -1,25 +1,24 @@
 <?php
-
 /**
- * ownCloud
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Tom Needham <tom@owncloud.com>
+ * @author Vincent Petry <pvince81@owncloud.com>
  *
- * @copyright (C) 2014 ownCloud, Inc.
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * @author Tom <tom@owncloud.com>
- * @author Thomas Müller <deepdiver@owncloud.com>
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
 
@@ -38,7 +37,7 @@ class AppsTest extends TestCase {
 		$result = \OCA\provisioning_API\Apps::getAppInfo(array('appid' => 'not_provisioning_api'));
 		$this->assertInstanceOf('OC_OCS_Result', $result);
 		$this->assertFalse($result->succeeded());
-		$this->assertEquals(\OC_API::RESPOND_NOT_FOUND, $result->getStatusCode());
+		$this->assertEquals(\OCP\API::RESPOND_NOT_FOUND, $result->getStatusCode());
 
 	}
 
@@ -46,7 +45,7 @@ class AppsTest extends TestCase {
 
 		$user = $this->generateUsers();
 		\OC_Group::addToGroup($user, 'admin');
-		\OC_User::setUserId($user);
+		self::loginAsUser($user);
 
 		$result = \OCA\provisioning_API\Apps::getApps(array());
 

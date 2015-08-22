@@ -1,9 +1,30 @@
 <?php
 /**
- * Copyright (c) 2012 Bart Visscher <bartv@thisnet.nl>
- * This file is licensed under the Affero General Public License version 3 or
- * later.
- * See the COPYING-README file.
+ * @author Bart Visscher <bartv@thisnet.nl>
+ * @author Felix Moeller <mail@felixmoeller.de>
+ * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Scrutinizer Auto-Fixer <auto-fixer@scrutinizer-ci.com>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Thomas Tanghus <thomas@tanghus.net>
+ * @author Vincent Petry <pvince81@owncloud.com>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 
 
@@ -168,8 +189,7 @@ class OC_FileChunking {
 		$absolutePath = \OC\Files\Filesystem::normalizePath(\OC\Files\Filesystem::getView()->getAbsolutePath($path));
 		$data = '';
 		// use file_put_contents as method because that best matches what this function does
-		if (OC_FileProxy::runPreProxies('file_put_contents', $absolutePath, $data)
-			&& \OC\Files\Filesystem::isValidPath($path)) {
+		if (\OC\Files\Filesystem::isValidPath($path)) {
 			$path = \OC\Files\Filesystem::getView()->getRelativePath($absolutePath);
 			$exists = \OC\Files\Filesystem::file_exists($path);
 			$run = true;
@@ -210,7 +230,6 @@ class OC_FileChunking {
 					\OC\Files\Filesystem::signal_post_write,
 					array( \OC\Files\Filesystem::signal_param_path => $path)
 				);
-				OC_FileProxy::runPostProxies('file_put_contents', $absolutePath, $count);
 				return $count > 0;
 			}else{
 				return false;

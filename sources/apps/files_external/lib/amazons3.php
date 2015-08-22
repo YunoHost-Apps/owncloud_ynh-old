@@ -1,25 +1,35 @@
 <?php
-
 /**
- * ownCloud
+ * @author André Gaul <gaul@web-yard.de>
+ * @author Arthur Schiwon <blizzz@owncloud.com>
+ * @author Bart Visscher <bartv@thisnet.nl>
+ * @author Christian Berendt <berendt@b1-systems.de>
+ * @author Christopher T. Johnson <ctjctj@gmail.com>
+ * @author Johan Björk <johanimon@gmail.com>
+ * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Michael Gapczynski <GapczynskiM@gmail.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Philipp Kapfer <philipp.kapfer@gmx.at>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Vincent Petry <pvince81@owncloud.com>
  *
- * @author Michael Gapczynski
- * @author Christian Berendt
- * @copyright 2012 Michael Gapczynski mtgap@owncloud.com
- * @copyright 2013 Christian Berendt berendt@b1-systems.de
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 
 namespace OC\Files\Storage;
@@ -264,6 +274,10 @@ class AmazonS3 extends \OC\Files\Storage\Common {
 			), array('return_prefixes' => true));
 
 			foreach ($result as $object) {
+				if (isset($object['Key']) && $object['Key'] === $path) {
+					// it's the directory itself, skip
+					continue;
+				}
 				$file = basename(
 					isset($object['Key']) ? $object['Key'] : $object['Prefix']
 				);
@@ -429,9 +443,12 @@ class AmazonS3 extends \OC\Files\Storage\Common {
 		$path = $this->normalizePath($path);
 
 		$metadata = array();
-		if (!is_null($mtime)) {
-			$metadata = array('lastmodified' => $mtime);
+		if (is_null($mtime)) {
+			$mtime = time();
 		}
+		$metadata = [
+			'lastmodified' => gmdate(\Aws\Common\Enum\DateFormat::RFC1123, $mtime)
+		];
 
 		$fileType = $this->filetype($path);
 		try {
@@ -439,22 +456,24 @@ class AmazonS3 extends \OC\Files\Storage\Common {
 				if ($fileType === 'dir' && ! $this->isRoot($path)) {
 					$path .= '/';
 				}
-				$this->getConnection()->copyObject(array(
+				$this->getConnection()->copyObject([
 					'Bucket' => $this->bucket,
 					'Key' => $this->cleanKey($path),
 					'Metadata' => $metadata,
-					'CopySource' => $this->bucket . '/' . $path
-				));
+					'CopySource' => $this->bucket . '/' . $path,
+					'MetadataDirective' => 'REPLACE',
+				]);
 				$this->testTimeout();
 			} else {
 				$mimeType = \OC_Helper::getMimetypeDetector()->detectPath($path);
-				$this->getConnection()->putObject(array(
+				$this->getConnection()->putObject([
 					'Bucket' => $this->bucket,
 					'Key' => $this->cleanKey($path),
 					'Metadata' => $metadata,
 					'Body' => '',
-					'ContentType' => $mimeType
-				));
+					'ContentType' => $mimeType,
+					'MetadataDirective' => 'REPLACE',
+				]);
 				$this->testTimeout();
 			}
 		} catch (S3Exception $e) {
@@ -627,11 +646,7 @@ class AmazonS3 extends \OC\Files\Storage\Common {
 	 * check if curl is installed
 	 */
 	public static function checkDependencies() {
-		if (function_exists('curl_init')) {
-			return true;
-		} else {
-			return array('curl');
-		}
+		return true;
 	}
 
 }

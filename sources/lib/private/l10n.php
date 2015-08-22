@@ -1,15 +1,40 @@
 <?php
 /**
- * ownCloud
+ * @author Andreas Ergenzinger <andreas.ergenzinger@gmx.de>
+ * @author Andreas Fischer <bantu@owncloud.com>
+ * @author Bart Visscher <bartv@thisnet.nl>
+ * @author Bernhard Posselt <dev@bernhard-posselt.com>
+ * @author Christopher Schäpers <kondou@ts.unde.re>
+ * @author Felix Moeller <mail@felixmoeller.de>
+ * @author Jakob Sack <mail@jakobsack.de>
+ * @author Jan-Christoph Borchardt <hey@jancborchardt.net>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Lennart Rosam <lennart.rosam@medien-systempartner.de>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @author Scrutinizer Auto-Fixer <auto-fixer@scrutinizer-ci.com>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Thomas Tanghus <thomas@tanghus.net>
+ * @author Vincent Petry <pvince81@owncloud.com>
  *
- * @author Frank Karlitschek
- * @author Jakob Sack
- * @copyright 2012 Frank Karlitschek frank@owncloud.org
- * @copyright 2013 Jakob Sack
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * This file is licensed under the Affero General Public License version 3 or
- * later.
- * See the COPYING-README file.
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 
 /**
@@ -77,6 +102,49 @@ class OC_L10N implements \OCP\IL10N {
 	public function __construct($app, $lang = null) {
 		$this->app = $app;
 		$this->lang = $lang;
+	}
+
+	/**
+	 * @param $app
+	 * @return string
+	 */
+	public static function setLanguageFromRequest($app = null) {
+		if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+			if (is_array($app)) {
+				$available = $app;
+			} else {
+				$available = self::findAvailableLanguages($app);
+			}
+
+			// E.g. make sure that 'de' is before 'de_DE'.
+			sort($available);
+
+			$preferences = preg_split('/,\s*/', strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE']));
+			foreach ($preferences as $preference) {
+				list($preferred_language) = explode(';', $preference);
+				$preferred_language = str_replace('-', '_', $preferred_language);
+				foreach ($available as $available_language) {
+					if ($preferred_language === strtolower($available_language)) {
+						if (!is_array($app)) {
+							self::$language = $available_language;
+						}
+						return $available_language;
+					}
+				}
+				foreach ($available as $available_language) {
+					if (substr($preferred_language, 0, 2) === $available_language) {
+						if (!is_array($app)) {
+							self::$language = $available_language;
+						}
+						return $available_language;
+					}
+				}
+			}
+		}
+
+		self::$language = 'en';
+		// Last try: English
+		return 'en';
 	}
 
 	/**
@@ -238,7 +306,7 @@ class OC_L10N implements \OCP\IL10N {
 		$this->init();
 		$identifier = "_${text_singular}_::_${text_plural}_";
 		if( array_key_exists($identifier, $this->translations)) {
-			return new OC_L10N_String($this, $identifier, $parameters, $count, array($text_singular, $text_plural));
+			return new OC_L10N_String( $this, $identifier, $parameters, $count );
 		}else{
 			if($count === 1) {
 				return new OC_L10N_String($this, $text_singular, $parameters, $count);
@@ -317,19 +385,17 @@ class OC_L10N implements \OCP\IL10N {
 		if ($locale === null) {
 			$locale = self::findLanguage();
 		}
+		$locale = $this->transformToCLDRLocale($locale);
 
 		$options = array_merge(array('width' => 'long'), $options);
 		$width = $options['width'];
 		switch($type) {
 			case 'date':
 				return Punic\Calendar::formatDate($value, $width, $locale);
-				break;
 			case 'datetime':
 				return Punic\Calendar::formatDatetime($value, $width, $locale);
-				break;
 			case 'time':
 				return Punic\Calendar::formatTime($value, $width, $locale);
-				break;
 			default:
 				return false;
 		}
@@ -358,23 +424,14 @@ class OC_L10N implements \OCP\IL10N {
 		self::$language = $lang;
 	}
 
-
 	/**
-	 * find the best language
+	 * The code (en, de, ...) of the language that is used for this OC_L10N object
 	 *
-	 * @param array|string $app details below
-	 *
-	 * If $app is an array, ownCloud assumes that these are the available
-	 * languages. Otherwise ownCloud tries to find the files in the l10n
-	 * folder.
-	 *
-	 * If nothing works it returns 'en'
 	 * @return string language
 	 */
-	public function getLanguageCode($app=null) {
-		return self::findLanguage($app);
+	public function getLanguageCode() {
+		return $this->lang ? $this->lang : self::findLanguage();
 	}
-
 
 	/**
 	 * find the best language
@@ -412,41 +469,7 @@ class OC_L10N implements \OCP\IL10N {
 			return $default_language;
 		}
 
-		if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-			if(is_array($app)) {
-				$available = $app;
-			} else {
-				$available = self::findAvailableLanguages($app);
-			}
-
-			// E.g. make sure that 'de' is before 'de_DE'.
-			sort($available);
-
-			$preferences = preg_split('/,\s*/', strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE']));
-			foreach($preferences as $preference) {
-				list($preferred_language) = explode(';', $preference);
-				$preferred_language = str_replace('-', '_', $preferred_language);
-				foreach($available as $available_language) {
-					if ($preferred_language === strtolower($available_language)) {
-						if (is_null($app)) {
-							self::$language = $available_language;
-						}
-						return $available_language;
-					}
-				}
-				foreach($available as $available_language) {
-					if (substr($preferred_language, 0, 2) === $available_language) {
-						if (is_null($app)) {
-							self::$language = $available_language;
-						}
-						return $available_language;
-					}
-				}
-			}
-		}
-
-		// Last try: English
-		return 'en';
+		return self::setLanguageFromRequest($app);
 	}
 
 	/**
@@ -515,7 +538,8 @@ class OC_L10N implements \OCP\IL10N {
 	 * @throws \Punic\Exception\ValueNotInList
 	 */
 	public function getDateFormat() {
-		$locale = self::findLanguage();
+		$locale = $this->getLanguageCode();
+		$locale = $this->transformToCLDRLocale($locale);
 		return Punic\Calendar::getDateFormat('short', $locale);
 	}
 
@@ -523,7 +547,16 @@ class OC_L10N implements \OCP\IL10N {
 	 * @return int
 	 */
 	public function getFirstWeekDay() {
-		$locale = self::findLanguage();
+		$locale = $this->getLanguageCode();
+		$locale = $this->transformToCLDRLocale($locale);
 		return Punic\Calendar::getFirstWeekday($locale);
+	}
+
+	private function transformToCLDRLocale($locale) {
+		if ($locale === 'sr@latin') {
+			return 'sr_latn';
+		}
+
+		return $locale;
 	}
 }

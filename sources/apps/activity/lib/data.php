@@ -31,28 +31,15 @@ use OCP\Util;
 /**
  * @brief Class for managing the data in the activities
  */
-class Data
-{
-	const TYPE_SHARED = 'shared';
-	const TYPE_SHARE_EXPIRED = 'share_expired';
-	const TYPE_SHARE_UNSHARED = 'share_unshared';
-
-	const TYPE_SHARE_CREATED = 'file_created';
-	const TYPE_SHARE_CHANGED = 'file_changed';
-	const TYPE_SHARE_DELETED = 'file_deleted';
-	const TYPE_SHARE_RESHARED = 'file_reshared';
-	const TYPE_SHARE_RESTORED = 'file_restored';
-
-	const TYPE_SHARE_DOWNLOADED = 'file_downloaded';
-	const TYPE_SHARE_UPLOADED = 'file_uploaded';
-
-	const TYPE_STORAGE_QUOTA_90 = 'storage_quota_90';
-	const TYPE_STORAGE_FAILURE = 'storage_failure';
+class Data {
 
 	/** @var \OCP\Activity\IManager */
 	protected $activityManager;
 
-	public function __construct(\OCP\Activity\IManager $activityManager){
+	/**
+	 * @param \OCP\Activity\IManager $activityManager
+	 */
+	public function __construct(\OCP\Activity\IManager $activityManager) {
 		$this->activityManager = $activityManager;
 	}
 
@@ -63,32 +50,13 @@ class Data
 	 * @return array Array "stringID of the type" => "translated string description for the setting"
 	 */
 	public function getNotificationTypes(\OCP\IL10N $l) {
-		if (isset($this->notificationTypes[$l->getLanguageCode()]))
-		{
+		if (isset($this->notificationTypes[$l->getLanguageCode()])) {
 			return $this->notificationTypes[$l->getLanguageCode()];
 		}
 
-		$notificationTypes = array(
-			self::TYPE_SHARED => $l->t('A file or folder has been <strong>shared</strong>'),
-//			self::TYPE_SHARE_UNSHARED => $l->t('Previously shared file or folder has been <strong>unshared</strong>'),
-//			self::TYPE_SHARE_EXPIRED => $l->t('Expiration date of shared file or folder <strong>expired</strong>'),
-			self::TYPE_SHARE_CREATED => $l->t('A new file or folder has been <strong>created</strong>'),
-			self::TYPE_SHARE_CHANGED => $l->t('A file or folder has been <strong>changed</strong>'),
-			self::TYPE_SHARE_DELETED => $l->t('A file or folder has been <strong>deleted</strong>'),
-//			self::TYPE_SHARE_RESHARED => $l->t('A file or folder has been <strong>reshared</strong>'),
-			self::TYPE_SHARE_RESTORED => $l->t('A file or folder has been <strong>restored</strong>'),
-//			self::TYPE_SHARE_DOWNLOADED => $l->t('A file or folder shared via link has been <strong>downloaded</strong>'),
-//			self::TYPE_SHARE_UPLOADED => $l->t('A file has been <strong>uploaded</strong> into a folder shared via link'),
-//			self::TYPE_STORAGE_QUOTA_90 => $l->t('<strong>Storage usage</strong> is at 90%%'),
-//			self::TYPE_STORAGE_FAILURE => $l->t('An <strong>external storage</strong> has an error'),
-		);
-
-		// Allow other apps to add new notification types
-		$additionalNotificationTypes = $this->activityManager->getNotificationTypes($l->getLanguageCode());
-		$notificationTypes = array_merge($notificationTypes, $additionalNotificationTypes);
-
+		// Allow apps to add new notification types
+		$notificationTypes = $this->activityManager->getNotificationTypes($l->getLanguageCode());
 		$this->notificationTypes[$l->getLanguageCode()] = $notificationTypes;
-
 		return $notificationTypes;
 	}
 
@@ -119,7 +87,7 @@ class Data
 
 		// store in DB
 		$query = DB::prepare('INSERT INTO `*PREFIX*activity`(`app`, `subject`, `subjectparams`, `message`, `messageparams`, `file`, `link`, `user`, `affecteduser`, `timestamp`, `priority`, `type`)' . ' VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )');
-		$query->execute(array($app, $subject, serialize($subjectparams), $message, serialize($messageparams), $file, $link, $user, $auser, $timestamp, $prio, $type));
+		$query->execute(array($app, $subject, json_encode($subjectparams), $message, json_encode($messageparams), $file, $link, $user, $auser, $timestamp, $prio, $type));
 
 		// fire a hook so that other apps like notification systems can connect
 		Util::emitHook('OC_Activity', 'post_event', array('app' => $app, 'subject' => $subject, 'user' => $user, 'affecteduser' => $affecteduser, 'message' => $message, 'file' => $file, 'link'=> $link, 'prio' => $prio, 'type' => $type));
@@ -148,7 +116,7 @@ class Data
 		$query->execute(array(
 			$app,
 			$subject,
-			serialize($subjectParams),
+			json_encode($subjectParams),
 			$affectedUser,
 			$timestamp,
 			$type,
@@ -170,71 +138,48 @@ class Data
 	}
 
 	/**
-	 * Filter the activity types
-	 *
-	 * @param array $types
-	 * @param string $filter
-	 * @return array
-	 */
-	public function filterNotificationTypes($types, $filter) {
-		switch ($filter) {
-			case 'shares':
-				return array_intersect(array(
-					Data::TYPE_SHARED,
-				), $types);
-		}
-
-		// Allow other apps to add new notification types
-		return $this->activityManager->filterNotificationTypes($types, $filter);
-	}
-
-	/**
 	 * @brief Read a list of events from the activity stream
 	 * @param GroupHelper $groupHelper Allows activities to be grouped
 	 * @param UserSettings $userSettings Gets the settings of the user
 	 * @param int $start The start entry
 	 * @param int $count The number of statements to read
 	 * @param string $filter Filter the activities
+	 * @param string $user User for whom we display the stream
 	 * @return array
 	 */
-	public function read(GroupHelper $groupHelper, UserSettings $userSettings, $start, $count, $filter = 'all') {
+	public function read(GroupHelper $groupHelper, UserSettings $userSettings, $start, $count, $filter = 'all', $user = '') {
 		// get current user
-		$user = User::getUser();
+		$user = ($user !== '') ? $user : User::getUser();
+		$groupHelper->setUser($user);
+
 		$enabledNotifications = $userSettings->getNotificationTypes($user, 'stream');
-		$enabledNotifications = $this->filterNotificationTypes($enabledNotifications, $filter);
+		$enabledNotifications = $this->activityManager->filterNotificationTypes($enabledNotifications, $filter);
+		$parameters = array_unique($enabledNotifications);
 
 		// We don't want to display any activities
-		if (empty($enabledNotifications)) {
+		if (empty($parameters)) {
 			return array();
 		}
 
-		$parameters = array($user);
-		$limitActivities = " AND `type` IN ('" . implode("','", $enabledNotifications) . "')";
+		$placeholders = implode(',', array_fill(0, sizeof($parameters), '?'));
+		$limitActivities = " AND `type` IN (" . $placeholders . ")";
+		array_unshift($parameters, $user);
 
 		if ($filter === 'self') {
 			$limitActivities .= ' AND `user` = ?';
 			$parameters[] = $user;
 		}
-		else if ($filter === 'by') {
+		else if ($filter === 'by' || $filter === 'all' && !$userSettings->getUserSetting($user, 'setting', 'self')) {
 			$limitActivities .= ' AND `user` <> ?';
 			$parameters[] = $user;
 		}
-		else if ($filter !== 'all') {
-			switch ($filter) {
-				case 'files':
-					$limitActivities .= ' AND `app` = ?';
-					$parameters[] = 'files';
-				break;
 
-				default:
-					list($condition, $params) = $this->activityManager->getQueryForFilter($filter);
-					if (!is_null($condition)) {
-						$limitActivities .= ' ';
-						$limitActivities .= $condition;
-						if (is_array($params)) {
-							$parameters = array_merge($parameters, $params);
-						}
-					}
+		list($condition, $params) = $this->activityManager->getQueryForFilter($filter);
+		if (!is_null($condition)) {
+			$limitActivities .= ' ';
+			$limitActivities .= $condition;
+			if (is_array($params)) {
+				$parameters = array_merge($parameters, $params);
 			}
 		}
 
@@ -270,33 +215,9 @@ class Data
 	}
 
 	/**
-	 * Get the casted page number from $_GET
-	 * @return int
-	 */
-	public function getPageFromParam() {
-		if (isset($_GET['page'])) {
-			return (int) $_GET['page'];
-		}
-
-		return 1;
-	}
-
-	/**
-	 * Get the filter from $_GET
-	 * @return string
-	 * @deprecated Use validateFilter() instead
-	 */
-	public function getFilterFromParam() {
-		if (!isset($_GET['filter']))
-			return 'all';
-
-		return $this->validateFilter($_GET['filter']);
-	}
-
-	/**
 	 * Verify that the filter is valid
 	 *
-	 * @param string $filter
+	 * @param string $filterValue
 	 * @return string
 	 */
 	public function validateFilter($filterValue) {
@@ -307,9 +228,7 @@ class Data
 		switch ($filterValue) {
 			case 'by':
 			case 'self':
-			case 'shares':
 			case 'all':
-			case 'files':
 				return $filterValue;
 			default:
 				if ($this->activityManager->isFilterValid($filterValue)) {

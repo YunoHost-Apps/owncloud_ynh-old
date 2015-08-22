@@ -1,12 +1,18 @@
-<?php $TRANSLATIONS = array(
+<?php
+$TRANSLATIONS = array(
+"Can not read the file." => "Αδυναμία ανάγνωσης αρχείου.",
+"Invalid file path supplied." => "Έχει δοθεί άκυρη διαδρομή για το αρχείο.",
+"Cannot save file as it has been modified since opening" => "Δεν είναι δυνατή η αποθήκευση του αρχείου, όπως έχει τροποποιηθεί από το άνοιγμα.",
+"Insufficient permissions" => "Μη επαρκή δικαιώματα",
+"File path not supplied" => "Η διαδρομή του αρχείου δεν παρέχεται.",
+"File mtime not supplied" => "Ο χρόνος τροποποίησης  του αρχείου δεν παρέχεται",
 "Save" => "Αποθήκευση",
 "Search" => "Αναζήτηση",
-"Close" => "Κλείσιμο",
 "Next" => "Επόμενο",
 "Clear" => "Εκκαθάριση",
 "Saving..." => "Γίνεται αποθήκευση...",
-"Failed to save file" => "Αποτυχία αποθήκευσης αρχείου",
 "An error occurred!" => "Παρουσιάστηκε σφάλμα!",
 "There are unsaved changes in the text editor" => "Υπάρχουν μη αποθηκευμένες αλλαγές στον επεξεργαστή κειμένου",
 "There were unsaved changes, click here to go back" => "Υπάρχουν μη αποθηκευμένες αλλαγές, κάντε κλικ εδώ για να επιστρέψετε πίσω"
 );
+$PLURAL_FORMS = "nplurals=2; plural=(n != 1);";

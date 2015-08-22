@@ -1,14 +1,17 @@
+=============================
 User Authentication with LDAP
 =============================
 
-ownCloud ships with an LDAP application so that your existing LDAP users may 
-have access to your ownCloud server without creating separate ownCloud user 
-accounts.
+ownCloud ships with an LDAP application to allow LDAP users (including Active 
+Directory) to appear in your ownCloud user listings. These users will 
+authenticate to ownCloud with their LDAP credentials, so you don't have to 
+create separate ownCloud user accounts for them. You will manage their ownCloud 
+group memberships, quotas, and sharing permissions just like any other ownCloud 
+user.
 
-.. Note:: For performance reasons, we recommend using PHP 5.4 or greater to use 
-   the LDAP application with more than 500 users. The PHP LDAP module is 
-   required; this is supplied by ``php5-ldap`` on Debian/Ubuntu, and 
-   ``php-ldap`` on CentOS/Red Hat/Fedora.
+.. Note:: The PHP LDAP module is required; this is supplied by ``php5-ldap`` on 
+   Debian/Ubuntu, and ``php-ldap`` on CentOS/Red Hat/Fedora. PHP 5.4+ is 
+   required in ownCloud 8.1.
 
 The LDAP application supports:
 
@@ -23,8 +26,11 @@ The LDAP application supports:
   port number
 * Read-only access to your LDAP (no edit or delete of users on your LDAP) 
 
-.. Note:: The LDAP app is not compatible with the ``WebDAV user backend`` app. 
-   You cannot use both of them at the same time. 
+.. Note:: The LDAP app is not compatible with the ``User backend using remote HTTP servers`` app. 
+   You cannot use both of them at the same time.
+
+.. note:: A non-blocking or correctly configured SELinux setup is needed
+   for the LDAP backend to work. Please refer to the :ref:`selinux-config-label`.
 
 Configuration
 -------------
@@ -99,8 +105,11 @@ Base DN:
 User Filter
 ~~~~~~~~~~~
 
-Use this to control which LDAP users have access to your ownCloud server. You 
-may bypass the form fields and enter a raw LDAP filter if you prefer.
+Use this to control which LDAP users are listed as ownCloud users on your 
+ownCloud server. In order to control which LDAP users can login to your ownCloud 
+server use the Login filter. Those LDAP users who have access but are not listed 
+as users (if there are any) will be hidden users. You may bypass the form fields 
+and enter a raw LDAP filter if you prefer.
 
 .. figure:: ../images/ldap-wizard-2-user.png
 
@@ -113,7 +122,7 @@ only those object classes:
 only from those groups:
   If your LDAP server supports the ``member-of-overlay`` in LDAP filters, you 
   can define that only users from one or more certain groups are allowed to
-  appear and log in into ownCloud. By default, no value will be selected. You
+  appear in user listings in ownCloud. By default, no value will be selected. You
   may select multiple groups.
 
   If your LDAP server does not support the member-of-overlay in LDAP filters,
@@ -125,20 +134,19 @@ Edit raw filter instead:
   
   Example:
 
-  * *objectClass=inetOrgPerson*
+  * *(&(objectClass=inetOrgPerson)(memberOf=cn=owncloudusers,ou=groups,dc=example,dc=com))*
 
 x users found:
   This is an indicator that tells you approximately how many users will be
-  allowed to access ownCloud. The number updates automatically after any 
-  changes.
+  listed in ownCloud. The number updates automatically after any changes.
 
 Login Filter
 ~~~~~~~~~~~~
 
-The settings in the Login Filter tab determine what the user's login will be, 
-for example an LDAP username, or an email address. You may select multiple user 
-details. (You may bypass the form fields and enter a raw LDAP filter if you 
-prefer.)
+The settings in the Login Filter tab determine which LDAP users can log in to your
+ownCloud system and which attribute or attributes the provided login name is matched
+against (e.g. LDAP/AD username, email address). You may select multiple user details.
+(You may bypass the form fields and enter a raw LDAP filter if you prefer.)
 
 You may override your User Filter settings on the User Filter tab by using a raw 
 LDAP filter.
@@ -169,8 +177,8 @@ Edit raw filter instead:
 
   Examples:
 
-  * only username: *uid=%uid*
-  * username or email address: *(|(uid=%uid)(mail=$uid))*
+  * only username: (&(objectClass=inetOrgPerson)(memberOf=cn=owncloudusers,ou=groups,dc=example,dc=com)(uid=%uid)*
+  * username or email address: *((&(objectClass=inetOrgPerson)(memberOf=cn=owncloudusers,ou=groups,dc=example,dc=com)(|(uid=%uid)(mail=%uid)))*
 
 Group Filter
 ~~~~~~~~~~~~
@@ -458,23 +466,12 @@ Testing the configuration
 The **Test Configuration** button checks the values as currently given in the 
 input fields. You do not need to save before testing. By clicking on the 
 button, ownCloud will try to bind to the ownCloud server using the
-settings currently given in the input fields. The response will look like this:
+settings currently given in the input fields. If the binding fails you'll see a 
+yellow banner with the error message "The configuration is invalid. Please have 
+a look at the logs for further details." 
 
-.. figure:: ../images/ldap-settings-invalid-oc45.png
-
-   Failure
-
-In case the configuration fails, you can see details in ownCloud's log, which
-is in the data directory and called **owncloud.log** or on the bottom the
-**Settings -- Admin page**. You must refresh the Admin page to see the new log 
-entries.
-
-.. figure:: ../images/ldap-settings-valid-oc45.png
-
-   Success
-
-In this case, Save the settings. You can check if the users and groups are
-fetched correctly on the Users page.
+When the configuration test reports success, save your settings and check if the 
+users and groups are fetched correctly on the Users page.
 
 ownCloud Avatar integration
 ---------------------------
@@ -512,8 +509,12 @@ If you have trouble with certificate validation make sure that
 
 * You have the certificate of the server installed on the ownCloud server
 * The certificate is announced in the system's LDAP configuration file (usually
-  */etc/ldap/ldap.conf* on Linux, *C:\\openldap\\sysconf\\ldap.conf* or
-  *C:\\ldap.conf* on Windows) using a **TLS_CACERT /path/to/cert** line.
+  */etc/ldap/ldap.conf*
+  
+.. commenting out windows section as windows server is not supported  
+..  *C:\\openldap\\sysconf\\ldap.conf* or
+..  *C:\\ldap.conf* on Windows) using a **TLS_CACERT /path/to/cert** line.
+
 * Using LDAPS, also make sure that the port is correctly configured (by default
   636)
 
@@ -568,16 +569,43 @@ testing, you can empty the tables any time. Do not do this in production.
 Caching
 -------
 
+The LDAP cache has changed in ownCloud 8.1. There is no more file cache, but 
+only a memory cache, and you must install and configure the memory cache. The 
+simplest memory cache to use is APCu. This is supplied by the ``php5-apcu`` 
+package on Debian/Ubuntu/Mint, and by ``php-pecl-apcu`` on Red 
+Hat/CentOS/Fedora.
+
+After installing APCu you must modify ``config.php`` to select APCu as the 
+ownCloud cache::
+
+ 'memcache.local' => '\OC\Memcache\APCu',
+ 
 The ownCloud  **Cache** helps to speed up user interactions and sharing. It is 
 populated on demand, and remains populated until the **Cache Time-To-Live** for 
 each unique request expires. User logins are not cached, so if you need to
 improve login times set up a slave LDAP server to share the load.
 
-Another significant performance enhancement is to install the Alternative PHP 
-Cache (APC). APC is an OPcache, which is several times faster than a file 
-cache. APC improves PHP performance by storing precompiled script bytecode in 
-shared memory, which reduces the overhead of loading and parsing scripts on 
-each request. (See http://php.net/manual/en/book.apc.php for more information.)
+The Redis key-value cache and store is an excellent fast and robust cache, and 
+if you are using the new experimental file locking (see 
+:doc:`../configuration_files/files_locking_transactional`) then you must use 
+Redis. Redis configuration looks like this::
+
+ 'filelocking.enabled' => 'true',
+ 'memcache.local' => '\OC\Memcache\Redis',
+ 'redis' => array(
+       'host' => 'localhost',
+       // can also be a unix domain socket:
+       '/tmp/redis.sock'
+       'port' => 6379,
+       'timeout' => 0.0,
+       // Optional, if undefined SELECT will not run and will use Redis
+       // Server's default DB Index.
+       'dbindex' => 0,
+ ),
+
+Redis is supplied by the ``redis-server`` and ``php5-redis`` packages on 
+Debian/Ubuntu/Mint, and on Red Hat/CentOS/Fedroa by ``redis`` and 
+``php-pecl-redis`` from the EPEL repository.
 
 You can adjust the **Cache Time-To-Live** value to balance performance and 
 freshness of LDAP data. All LDAP requests will be cached for 10 minutes by 

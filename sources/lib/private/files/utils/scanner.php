@@ -1,9 +1,26 @@
 <?php
 /**
- * Copyright (c) 2013 Robin Appelman <icewind@owncloud.com>
- * This file is licensed under the Affero General Public License version 3 or
- * later.
- * See the COPYING-README file.
+ * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Scrutinizer Auto-Fixer <auto-fixer@scrutinizer-ci.com>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 
 namespace OC\Files\Utils;
@@ -59,11 +76,10 @@ class Scanner extends PublicEmitter {
 		//TODO: move to the node based fileapi once that's done
 		\OC_Util::tearDownFS();
 		\OC_Util::setupFS($this->user);
-		$absolutePath = Filesystem::getView()->getAbsolutePath($dir);
 
 		$mountManager = Filesystem::getMountManager();
-		$mounts = $mountManager->findIn($absolutePath);
-		$mounts[] = $mountManager->find($absolutePath);
+		$mounts = $mountManager->findIn($dir);
+		$mounts[] = $mountManager->find($dir);
 		$mounts = array_reverse($mounts); //start with the mount of $dir
 
 		return $mounts;
@@ -115,6 +131,9 @@ class Scanner extends PublicEmitter {
 	 * @throws \OC\ForbiddenException
 	 */
 	public function scan($dir = '') {
+		if (!Filesystem::isValidPath($dir)) {
+			throw new \InvalidArgumentException('Invalid path to scan');
+		}
 		$mounts = $this->getMounts($dir);
 		foreach ($mounts as $mount) {
 			if (is_null($mount->getStorage())) {

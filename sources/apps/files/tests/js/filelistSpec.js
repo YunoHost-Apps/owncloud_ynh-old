@@ -87,7 +87,8 @@ describe('OCA.Files.FileList tests', function() {
 			'<tbody id="fileList"></tbody>' +
 			'<tfoot></tfoot>' +
 			'</table>' +
-			'<div id="emptycontent">Empty content message</div>' +
+			// TODO: move to handlebars template
+			'<div id="emptycontent"><h2>Empty content message</h2><p class="uploadmessage">Upload message</p></div>' +
 			'<div class="nofilterresults hidden"></div>' +
 			'</div>'
 		);
@@ -358,6 +359,25 @@ describe('OCA.Files.FileList tests', function() {
 			expect($('#filestable thead th').hasClass('hidden')).toEqual(false);
 			expect($('#emptycontent').hasClass('hidden')).toEqual(true);
 			expect(fileList.isEmpty).toEqual(false);
+		});
+		it('correctly adds the extension markup and show hidden files completely in gray', function() {
+			var $tr;
+			var testDataAndExpectedResult = [
+				{file: {type: 'file', name: 'ZZZ.txt'}, extension: '.txt'},
+				{file: {type: 'file', name: 'ZZZ.tar.gz'}, extension: '.gz'},
+				{file: {type: 'file', name: 'test.with.some.dots.in.it.txt'}, extension: '.txt'},
+				// we render hidden files completely in gray
+				{file: {type: 'file', name: '.test.with.some.dots.in.it.txt'}, extension: '.test.with.some.dots.in.it.txt'},
+				{file: {type: 'file', name: '.hidden'}, extension: '.hidden'},
+			];
+			fileList.setFiles(testFiles);
+
+			for(var i = 0; i < testDataAndExpectedResult.length; i++) {
+				var testSet = testDataAndExpectedResult[i];
+				var fileData = testSet['file'];
+				$tr = fileList.add(fileData);
+				expect($tr.find('.nametext .extension').text()).toEqual(testSet['extension']);
+			}
 		});
 	});
 	describe('Removing files from the list', function() {
@@ -826,13 +846,15 @@ describe('OCA.Files.FileList tests', function() {
 			fileList.setFiles([]);
 			expect($('#filestable thead th').hasClass('hidden')).toEqual(true);
 			expect($('#emptycontent').hasClass('hidden')).toEqual(false);
+			expect($('#emptycontent .uploadmessage').hasClass('hidden')).toEqual(false);
 			expect(fileList.$el.find('.summary').hasClass('hidden')).toEqual(true);
 		});
-		it('hides headers, empty content message, and summary when list is empty and user has no creation permission', function(){
+		it('hides headers, upload message, and summary when list is empty and user has no creation permission', function(){
 			$('#permissions').val(0);
 			fileList.setFiles([]);
 			expect($('#filestable thead th').hasClass('hidden')).toEqual(true);
-			expect($('#emptycontent').hasClass('hidden')).toEqual(true);
+			expect($('#emptycontent').hasClass('hidden')).toEqual(false);
+			expect($('#emptycontent .uploadmessage').hasClass('hidden')).toEqual(true);
 			expect(fileList.$el.find('.summary').hasClass('hidden')).toEqual(true);
 		});
 		it('calling findFileEl() can find existing file element', function() {
@@ -1221,7 +1243,7 @@ describe('OCA.Files.FileList tests', function() {
 						"Content-Type": "application/json"
 					},
 					JSON.stringify(data)
-			]);
+				]);
 		});
 		it('fetches file list from server and renders it when reload() is called', function() {
 			fileList.reload();
@@ -1242,12 +1264,38 @@ describe('OCA.Files.FileList tests', function() {
 			expect(OC.parseQueryString(query)).toEqual({'dir': '/anothersubdir', sort: 'name', sortdirection: 'asc'});
 			fakeServer.respond();
 		});
+		it('converts backslashes to slashes when calling changeDirectory()', function() {
+			fileList.changeDirectory('/another\\subdir');
+			expect(fileList.getCurrentDirectory()).toEqual('/another/subdir');
+		});
 		it('switches to root dir when current directory does not exist', function() {
 			fakeServer.respondWith(/\/index\.php\/apps\/files\/ajax\/list.php\?dir=%2funexist/, [
 					404, {
 						"Content-Type": "application/json"
 					},
 					''
+			]);
+			fileList.changeDirectory('/unexist');
+			fakeServer.respond();
+			expect(fileList.getCurrentDirectory()).toEqual('/');
+		});
+		it('switches to root dir when current directory is forbidden', function() {
+			fakeServer.respondWith(/\/index\.php\/apps\/files\/ajax\/list.php\?dir=%2funexist/, [
+				403, {
+					"Content-Type": "application/json"
+				},
+				''
+			]);
+			fileList.changeDirectory('/unexist');
+			fakeServer.respond();
+			expect(fileList.getCurrentDirectory()).toEqual('/');
+		});
+		it('switches to root dir when current directory is unavailable', function() {
+			fakeServer.respondWith(/\/index\.php\/apps\/files\/ajax\/list.php\?dir=%2funexist/, [
+				500, {
+					"Content-Type": "application/json"
+				},
+				''
 			]);
 			fileList.changeDirectory('/unexist');
 			fakeServer.respond();
@@ -1305,7 +1353,7 @@ describe('OCA.Files.FileList tests', function() {
 			fileList.changeDirectory('/subdir/two/three with space/four/five');
 			fakeServer.respond();
 			var changeDirStub = sinon.stub(fileList, 'changeDirectory');
-			fileList.breadcrumb.$el.find('.crumb:eq(0)').click();
+			fileList.breadcrumb.$el.find('.crumb:eq(0)').trigger({type: 'click', which: 1});
 
 			expect(changeDirStub.calledOnce).toEqual(true);
 			expect(changeDirStub.getCall(0).args[0]).toEqual('/');
@@ -1315,7 +1363,7 @@ describe('OCA.Files.FileList tests', function() {
 			fileList.changeDirectory('/subdir/two/three with space/four/five');
 			fakeServer.respond();
 			var changeDirStub = sinon.stub(fileList, 'changeDirectory');
-			fileList.breadcrumb.$el.find('.crumb:eq(3)').click();
+			fileList.breadcrumb.$el.find('.crumb:eq(3)').trigger({type: 'click', which: 1});
 
 			expect(changeDirStub.calledOnce).toEqual(true);
 			expect(changeDirStub.getCall(0).args[0]).toEqual('/subdir/two/three with space');

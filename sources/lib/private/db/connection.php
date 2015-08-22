@@ -1,9 +1,26 @@
 <?php
 /**
- * Copyright (c) 2013 Bart Visscher <bartv@thisnet.nl>
- * This file is licensed under the Affero General Public License version 3 or
- * later.
- * See the COPYING-README file.
+ * @author Bart Visscher <bartv@thisnet.nl>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
+ *
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
 
 namespace OC\DB;
@@ -30,7 +47,7 @@ class Connection extends \Doctrine\DBAL\Connection implements IDBConnection {
 			return parent::connect();
 		} catch (DBALException $e) {
 			// throw a new exception to prevent leaking info from the stacktrace
-			throw new DBALException($e->getMessage(), $e->getCode());
+			throw new DBALException('Failed to connect to the database: ' . $e->getMessage(), $e->getCode());
 		}
 	}
 
@@ -81,8 +98,6 @@ class Connection extends \Doctrine\DBAL\Connection implements IDBConnection {
 		if (!is_null($limit)) {
 			$platform = $this->getDatabasePlatform();
 			$statement = $platform->modifyLimitQuery($statement, $limit, $offset);
-		} else {
-			$origStatement = $statement;
 		}
 		$statement = $this->replaceTablePrefix($statement);
 		$statement = $this->adapter->fixupStatement($statement);
@@ -94,17 +109,19 @@ class Connection extends \Doctrine\DBAL\Connection implements IDBConnection {
 	}
 
 	/**
-	 * Executes an, optionally parameterized, SQL query.
+	 * Executes an, optionally parametrized, SQL query.
 	 *
-	 * If the query is parameterized, a prepared statement is used.
+	 * If the query is parametrized, a prepared statement is used.
 	 * If an SQLLogger is configured, the execution is logged.
 	 *
-	 * @param string $query The SQL query to execute.
-	 * @param string[] $params The parameters to bind to the query, if any.
-	 * @param array $types The types the previous parameters are in.
-	 * @param QueryCacheProfile $qcp
+	 * @param string                                      $query  The SQL query to execute.
+	 * @param array                                       $params The parameters to bind to the query, if any.
+	 * @param array                                       $types  The types the previous parameters are in.
+	 * @param \Doctrine\DBAL\Cache\QueryCacheProfile|null $qcp    The query cache profile, optional.
+	 *
 	 * @return \Doctrine\DBAL\Driver\Statement The executed statement.
-	 * @internal PERF: Directly prepares a driver statement, not a wrapper.
+	 *
+	 * @throws \Doctrine\DBAL\DBALException
 	 */
 	public function executeQuery($query, array $params = array(), $types = array(), QueryCacheProfile $qcp = null)
 	{
@@ -119,11 +136,13 @@ class Connection extends \Doctrine\DBAL\Connection implements IDBConnection {
 	 *
 	 * This method supports PDO binding types as well as DBAL mapping types.
 	 *
-	 * @param string $query The SQL query.
-	 * @param array $params The query parameters.
-	 * @param array $types The parameter types.
+	 * @param string $query  The SQL query.
+	 * @param array  $params The query parameters.
+	 * @param array  $types  The parameter types.
+	 *
 	 * @return integer The number of affected rows.
-	 * @internal PERF: Directly prepares a driver statement, not a wrapper.
+	 *
+	 * @throws \Doctrine\DBAL\DBALException
 	 */
 	public function executeUpdate($query, array $params = array(), array $types = array())
 	{

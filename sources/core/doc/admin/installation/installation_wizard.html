@@ -30,7 +30,7 @@
     <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="Installation" href="index.html" />
     <link rel="next" title="ownCloud Appliances" href="appliance_installation.html" />
-    <link rel="prev" title="Preferred Linux Installation Method" href="linux_installation.html" />
+    <link rel="prev" title="Installing ownCloud From the Command Line" href="command_line_installation.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -116,9 +116,10 @@
                   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Installation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="linux_installation.html">Preferred Linux Installation Method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_installation.html">Installing ownCloud From the Command Line</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Installation Wizard</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#required-settings">Required Settings</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#storage-database">Storage &amp; Database</a></li>
@@ -146,13 +147,13 @@
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../videos/index.html">ownCloud Videos</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Custom and Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
 </ul>
 
 								</ul>
@@ -169,18 +170,15 @@
 <h1>Installation Wizard<a class="headerlink" href="#installation-wizard" title="Permalink to this headline">¶</a></h1>
 <p>When ownCloud prerequisites are fulfilled and all ownCloud files are installed on the server, the last step to complete the
 installation is running the Installation Wizard.</p>
-<blockquote>
-<div><ul class="simple">
+<p><a class="reference external" href="https://youtu.be/8QeJKGyhFhk">Video: Your first minute with ownCloud Server 8.1</a></p>
+<div class="figure">
+<a class="reference external image-reference" href="https://youtu.be/8QeJKGyhFhk"><img alt="../_images/video_firstminute.png" src="../_images/video_firstminute.png" /></a>
+</div>
+<ul class="simple">
 <li>If you are installing ownCloud on the same machine as you are accessing the
 install wizard from, the URL will be <tt class="docutils literal"><span class="pre">http://localhost/owncloud</span></tt>, or <tt class="docutils literal"><span class="pre">https://localhost/owncloud</span></tt> if you have enabled SSL.</li>
-<li>If you are installing ownCloud on a different machine, you&#8217;ll have to access
-it by its hostname or IP address, e.g. <tt class="docutils literal"><span class="pre">http://example.com/owncloud</span></tt>.</li>
-<li>If you are using a self-signed certificate, you will be presented with a
-security warning about the issuer of the certificate not being trusted which
-you can ignore.</li>
-</ul>
-</div></blockquote>
-<ul class="simple">
+<li>If you are installing ownCloud on a different machine, you&#8217;ll have to access it by its hostname or IP address, e.g. <tt class="docutils literal"><span class="pre">http://example.com/owncloud</span></tt>.</li>
+<li>If you are using a self-signed certificate, you will be presented with a security warning about the issuer of the certificate not being trusted, which you can ignore.</li>
 <li>You will be presented with the setup screen:</li>
 </ul>
 <a class="reference internal image-reference" href="../_images/install-wizard.png"><img alt="../_images/install-wizard.png" src="../_images/install-wizard.png" style="width: 261.75px; height: 418.5px;" /></a>
@@ -235,7 +233,7 @@ documentation</a> for details).</li>
 </ul>
 </div>
 <div class="section" id="setting-strong-directory-permissions">
-<h2>Setting Strong Directory Permissions<a class="headerlink" href="#setting-strong-directory-permissions" title="Permalink to this headline">¶</a></h2>
+<span id="strong-perms"></span><h2>Setting Strong Directory Permissions<a class="headerlink" href="#setting-strong-directory-permissions" title="Permalink to this headline">¶</a></h2>
 <p>For hardened security we recommend setting the permissions on your ownCloud
 directory as strictly as possible. This should be done immediately after the
 initial installation. Your HTTP user must own the <tt class="docutils literal"><span class="pre">config/</span></tt>, <tt class="docutils literal"><span class="pre">data/</span></tt> and
@@ -244,9 +242,23 @@ ownCloud, create, modify and delete your data files, and install apps via the
 ownCloud Web interface.</p>
 <p>You can find your HTTP user in your HTTP server configuration files. Or you can
 create a PHP page to find it for you. To do this, create a plain text file with
-a single line in it:</p>
-<blockquote>
-<div><tt class="docutils literal"><span class="pre">&lt;?php</span> <span class="pre">echo</span> <span class="pre">exec('whoami');</span> <span class="pre">?&gt;</span></tt></div></blockquote>
+the following lines in it:</p>
+<div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
+<span class="k">echo</span> <span class="s2">&quot;User: &quot;</span> <span class="o">.</span> <span class="nb">exec</span><span class="p">(</span><span class="s1">&#39;whoami&#39;</span><span class="p">);</span>
+<span class="k">echo</span> <span class="s2">&quot;Group: &quot;</span> <span class="o">.</span> <span class="nb">exec</span><span class="p">(</span><span class="s1">&#39;groups&#39;</span><span class="p">);</span>
+<span class="cp">?&gt;</span><span class="x"></span>
+</pre></div>
+</div>
+<p>If the exec php function is disabled (getting a white page with the script above)
+you can also try to use a script like:</p>
+<div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
+<span class="nv">$processUser</span> <span class="o">=</span> <span class="nb">posix_getpwuid</span><span class="p">(</span><span class="nb">posix_geteuid</span><span class="p">());</span>
+<span class="k">echo</span> <span class="s2">&quot;User: &quot;</span> <span class="o">.</span> <span class="nv">$processUser</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">];</span>
+<span class="nv">$processGroup</span> <span class="o">=</span> <span class="nb">posix_getgrgid</span><span class="p">(</span><span class="nv">$processUser</span><span class="p">[</span><span class="s1">&#39;gid&#39;</span><span class="p">]);</span>
+<span class="k">echo</span> <span class="s2">&quot; Group: &quot;</span> <span class="o">.</span> <span class="nv">$processGroup</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">];</span>
+<span class="cp">?&gt;</span><span class="x"></span>
+</pre></div>
+</div>
 <p>Name it <tt class="docutils literal"><span class="pre">whoami.php</span></tt> and place it in your <tt class="docutils literal"><span class="pre">/var/www/html</span></tt> directory, and
 then open it in a Web browser, for example <tt class="docutils literal"><span class="pre">http://localhost/whoami.php</span></tt>. You
 should see a single line in your browser page with the HTTP user name.</p>
@@ -264,20 +276,20 @@ proper permissions for ownCloud to write to the directory. Changing
 ownership as above could result in some issues if the NFS mount is
 lost.</p>
 </div>
-<p>The easy way to set the correct permissions is to copy and run this
-script. Replace the <tt class="docutils literal"><span class="pre">ocpath</span></tt> variable with the path to your ownCloud
-directory, and replace the <tt class="docutils literal"><span class="pre">htuser</span></tt> variable with your own HTTP user:</p>
+<p>The easy way to set the correct permissions is to copy and run this script. Replace the <tt class="docutils literal"><span class="pre">ocpath</span></tt> variable with the path to your ownCloud directory, and replace the <tt class="docutils literal"><span class="pre">htuser</span></tt> and <tt class="docutils literal"><span class="pre">htgroup</span></tt> variables with your HTTP user and group:</p>
 <div class="highlight-python"><pre>#!/bin/bash
 ocpath='/var/www/owncloud'
 htuser='www-data'
+htgroup='www-data'
 
 find ${ocpath}/ -type f -print0 | xargs -0 chmod 0640
 find ${ocpath}/ -type d -print0 | xargs -0 chmod 0750
 
 chown -R root:${htuser} ${ocpath}/
-chown -R ${htuser}:${htuser} ${ocpath}/apps/
-chown -R ${htuser}:${htuser} ${ocpath}/config/
-chown -R ${htuser}:${htuser} ${ocpath}/data/
+chown -R ${htuser}:${htgroup} ${ocpath}/apps/
+chown -R ${htuser}:${htgroup} ${ocpath}/config/
+chown -R ${htuser}:${htgroup} ${ocpath}/data/
+chown -R ${htuser}:${htgroup} ${ocpath}/themes/
 
 chown root:${htuser} ${ocpath}/.htaccess
 chown root:${htuser} ${ocpath}/data/.htaccess
@@ -287,7 +299,7 @@ chmod 0644 ${ocpath}/data/.htaccess</pre>
 </div>
 <p>If you have customized your ownCloud installation and your filepaths are
 different than the standard installation, then modify this script accordingly.</p>
-<p>These are the recommended modes and ownership for your ownCloud directories
+<p>This lists the recommended modes and ownership for your ownCloud directories
 and files:</p>
 <ul class="simple">
 <li>All files should be read-write for the file owner, read-only for the
@@ -295,12 +307,13 @@ group owner, and zero for the world</li>
 <li>All directories should be executable (because directories always need the
 executable bit set), read-write for the directory owner, and read-only for
 the group owner</li>
-<li>The <tt class="file docutils literal"><span class="pre">/</span></tt> directory should be owned by <tt class="docutils literal"><span class="pre">root:[HTTP</span> <span class="pre">user]</span></tt></li>
-<li>The <tt class="file docutils literal"><span class="pre">apps/</span></tt> directory should be owned by <tt class="docutils literal"><span class="pre">[HTTP</span> <span class="pre">user]:[HTTP</span> <span class="pre">user]</span></tt></li>
-<li>The <tt class="file docutils literal"><span class="pre">config/</span></tt> directory should be owned by <tt class="docutils literal"><span class="pre">[HTTP</span> <span class="pre">user]:[HTTP</span> <span class="pre">user]</span></tt></li>
-<li>The <tt class="file docutils literal"><span class="pre">data/</span></tt> directory should be owned by <tt class="docutils literal"><span class="pre">[HTTP</span> <span class="pre">user]:[HTTP</span> <span class="pre">user]</span></tt></li>
-<li>The <tt class="file docutils literal"><span class="pre">[ocpath]/.htaccess</span></tt> file should be owned by <tt class="docutils literal"><span class="pre">root:[HTTP</span> <span class="pre">user]</span></tt></li>
-<li>The <tt class="file docutils literal"><span class="pre">data/.htaccess</span></tt> file should be owned by <tt class="docutils literal"><span class="pre">root:[HTTP</span> <span class="pre">user]</span></tt></li>
+<li>The <tt class="file docutils literal"><span class="pre">/</span></tt> directory should be owned by <tt class="docutils literal"><span class="pre">root:[HTTP</span> <span class="pre">group]</span></tt></li>
+<li>The <tt class="file docutils literal"><span class="pre">apps/</span></tt> directory should be owned by <tt class="docutils literal"><span class="pre">[HTTP</span> <span class="pre">user]:[HTTP</span> <span class="pre">group]</span></tt></li>
+<li>The <tt class="file docutils literal"><span class="pre">config/</span></tt> directory should be owned by <tt class="docutils literal"><span class="pre">[HTTP</span> <span class="pre">user]:[HTTP</span> <span class="pre">group]</span></tt></li>
+<li>The <tt class="file docutils literal"><span class="pre">themes/</span></tt> directory should be owned by <tt class="docutils literal"><span class="pre">[HTTP</span> <span class="pre">user]:[HTTP</span> <span class="pre">group]</span></tt></li>
+<li>The <tt class="file docutils literal"><span class="pre">data/</span></tt> directory should be owned by <tt class="docutils literal"><span class="pre">[HTTP</span> <span class="pre">user]:[HTTP</span> <span class="pre">group]</span></tt></li>
+<li>The <tt class="file docutils literal"><span class="pre">[ocpath]/.htaccess</span></tt> file should be owned by <tt class="docutils literal"><span class="pre">root:[HTTP</span> <span class="pre">group]</span></tt></li>
+<li>The <tt class="file docutils literal"><span class="pre">data/.htaccess</span></tt> file should be owned by <tt class="docutils literal"><span class="pre">root:[HTTP</span> <span class="pre">group]</span></tt></li>
 <li>Both <tt class="file docutils literal"><span class="pre">.htaccess</span></tt> files are read-write file owner, read-only group and
 world</li>
 </ul>

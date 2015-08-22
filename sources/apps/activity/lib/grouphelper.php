@@ -23,7 +23,8 @@
 
 namespace OCA\Activity;
 
-use \OCP\Activity\IManager;
+use OCP\Activity\IManager;
+use OCP\IL10N;
 
 class GroupHelper
 {
@@ -61,20 +62,27 @@ class GroupHelper
 	}
 
 	/**
+	 * @param string $user
+	 */
+	public function setUser($user) {
+		$this->dataHelper->setUser($user);
+	}
+
+	/**
+	 * @param IL10N $l
+	 */
+	public function setL10n(IL10N $l) {
+		$this->dataHelper->setL10n($l);
+	}
+
+	/**
 	 * Add an activity to the internal array
 	 *
 	 * @param array $activity
 	 */
 	public function addActivity($activity) {
-		$activity['subjectparams_array'] = unserialize($activity['subjectparams']);
-		if (!is_array($activity['subjectparams_array'])) {
-			$activity['subjectparams_array'] = array($activity['subjectparams_array']);
-		}
-
-		$activity['messageparams_array'] = unserialize($activity['messageparams']);
-		if (!is_array($activity['messageparams_array'])) {
-			$activity['messageparams_array'] = array($activity['messageparams_array']);
-		}
+		$activity['subjectparams_array'] = $this->dataHelper->getParameters($activity['subjectparams']);
+		$activity['messageparams_array'] = $this->dataHelper->getParameters($activity['messageparams']);
 
 		if (!$this->getGroupKey($activity)) {
 			if (!empty($this->openGroup)) {
@@ -126,26 +134,21 @@ class GroupHelper
 		if ($this->getGroupParameter($activity) === false) {
 			return false;
 		}
+
+		// FIXME
+		// Non-local users are currently not distinguishable, so grouping them might
+		// remove the information how many different users performed the same action.
+		// So we do not group them anymore, until we found another solution.
+		if ($activity['user'] === '') {
+			return false;
+		}
+
 		return $activity['app'] . '|' . $activity['user'] . '|' . $activity['subject'];
 	}
 
 	protected function getGroupParameter($activity) {
 		if (!$this->allowGrouping) {
 			return false;
-		}
-
-		if ($activity['app'] === 'files') {
-			switch ($activity['subject']) {
-				case 'created_self':
-				case 'created_by':
-				case 'changed_self':
-				case 'changed_by':
-				case 'deleted_self':
-				case 'deleted_by':
-				case 'restored_self':
-				case 'restored_by':
-					return 0;
-			}
 		}
 
 		// Allow other apps to group their notifications
@@ -167,7 +170,7 @@ class GroupHelper
 			$activity = $this->dataHelper->formatStrings($activity, 'subject');
 			$activity = $this->dataHelper->formatStrings($activity, 'message');
 
-			$activity['typeicon'] = $this->dataHelper->getTypeIcon($activity['type']);
+			$activity['typeicon'] = $this->activityManager->getTypeIcon($activity['type']);
 			$return[] = $activity;
 		}
 

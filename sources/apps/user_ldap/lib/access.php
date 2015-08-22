@@ -1,23 +1,34 @@
 <?php
-
 /**
- * ownCloud – LDAP Access
+ * @author Alexander Bergolth <leo@strike.wu.ac.at>
+ * @author Andreas Fischer <bantu@owncloud.com>
+ * @author Arthur Schiwon <blizzz@owncloud.com>
+ * @author Bart Visscher <bartv@thisnet.nl>
+ * @author Benjamin Diele <benjamin@diele.be>
+ * @author Christopher Schäpers <kondou@ts.unde.re>
+ * @author Donald Buczek <buczek@molgen.mpg.de>
+ * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Lorenzo M. Catucci <lorenzo@sancho.ccd.uniroma2.it>
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Lyonel Vincent <lyonel@ezix.org>
+ * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @author Scrutinizer Auto-Fixer <auto-fixer@scrutinizer-ci.com>
  *
- * @author Arthur Schiwon
- * @copyright 2012, 2013 Arthur Schiwon blizzz@owncloud.com
+ * @copyright Copyright (c) 2015, ownCloud, Inc.
+ * @license AGPL-3.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License, version 3,
+ * as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License, version 3,
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
 
@@ -303,7 +314,7 @@ class Access extends LDAPUtility implements user\IUserTools {
 	/**
 	 * returns the LDAP DN for the given internal ownCloud name of the user
 	 * @param string $name the ownCloud name in question
-	 * @return string with the LDAP DN on success, otherwise false
+	 * @return string|false with the LDAP DN on success, otherwise false
 	 */
 	public function username2dn($name) {
 		$fdn = $this->userMapper->getDNbyName($name);
@@ -322,7 +333,7 @@ class Access extends LDAPUtility implements user\IUserTools {
 	 * returns the internal ownCloud name for the given LDAP DN of the group, false on DN outside of search DN or failure
 	 * @param string $fdn the dn of the group object
 	 * @param string $ldapName optional, the display name of the object
-	 * @return string with the name to use in ownCloud, false on DN outside of search DN
+	 * @return string|false with the name to use in ownCloud, false on DN outside of search DN
 	 */
 	public function dn2groupname($fdn, $ldapName = null) {
 		//To avoid bypassing the base DN settings under certain circumstances
@@ -336,10 +347,48 @@ class Access extends LDAPUtility implements user\IUserTools {
 	}
 
 	/**
+	 * accepts an array of group DNs and tests whether they match the user
+	 * filter by doing read operations against the group entries. Returns an
+	 * array of DNs that match the filter.
+	 *
+	 * @param string[] $groupDNs
+	 * @return string[]
+	 */
+	public function groupsMatchFilter($groupDNs) {
+		$validGroupDNs = [];
+		foreach($groupDNs as $dn) {
+			$cacheKey = 'groupsMatchFilter-'.$dn;
+			if($this->connection->isCached($cacheKey)) {
+				if($this->connection->getFromCache($cacheKey)) {
+					$validGroupDNs[] = $dn;
+				}
+				continue;
+			}
+
+			// Check the base DN first. If this is not met already, we don't
+			// need to ask the server at all.
+			if(!$this->isDNPartOfBase($dn, $this->connection->ldapBaseGroups)) {
+				$this->connection->writeToCache($cacheKey, false);
+				continue;
+			}
+
+			$result = $this->readAttribute($dn, 'cn', $this->connection->ldapGroupFilter);
+			if(is_array($result)) {
+				$this->connection->writeToCache($cacheKey, true);
+				$validGroupDNs[] = $dn;
+			} else {
+				$this->connection->writeToCache($cacheKey, false);
+			}
+
+		}
+		return $validGroupDNs;
+	}
+
+	/**
 	 * returns the internal ownCloud name for the given LDAP DN of the user, false on DN outside of search DN or failure
 	 * @param string $dn the dn of the user object
 	 * @param string $ldapName optional, the display name of the object
-	 * @return string with with the name to use in ownCloud
+	 * @return string|false with with the name to use in ownCloud
 	 */
 	public function dn2username($fdn, $ldapName = null) {
 		//To avoid bypassing the base DN settings under certain circumstances
@@ -357,7 +406,7 @@ class Access extends LDAPUtility implements user\IUserTools {
 	 * @param string $dn the dn of the user object
 	 * @param string $ldapName optional, the display name of the object
 	 * @param bool $isUser optional, whether it is a user object (otherwise group assumed)
-	 * @return string with with the name to use in ownCloud
+	 * @return string|false with with the name to use in ownCloud
 	 */
 	public function dn2ocname($fdn, $ldapName = null, $isUser = true) {
 		if($isUser) {
@@ -508,7 +557,7 @@ class Access extends LDAPUtility implements user\IUserTools {
 	/**
 	 * creates a unique name for internal ownCloud use for users. Don't call it directly.
 	 * @param string $name the display name of the object
-	 * @return string with with the name to use in ownCloud or false if unsuccessful
+	 * @return string|false with with the name to use in ownCloud or false if unsuccessful
 	 *
 	 * Instead of using this method directly, call
 	 * createAltInternalOwnCloudName($name, true)
@@ -530,7 +579,7 @@ class Access extends LDAPUtility implements user\IUserTools {
 	/**
 	 * creates a unique name for internal ownCloud use for groups. Don't call it directly.
 	 * @param string $name the display name of the object
-	 * @return string with with the name to use in ownCloud or false if unsuccessful.
+	 * @return string|false with with the name to use in ownCloud or false if unsuccessful.
 	 *
 	 * Instead of using this method directly, call
 	 * createAltInternalOwnCloudName($name, false)
@@ -569,7 +618,7 @@ class Access extends LDAPUtility implements user\IUserTools {
 	 * creates a unique name for internal ownCloud use.
 	 * @param string $name the display name of the object
 	 * @param boolean $isUser whether name should be created for a user (true) or a group (false)
-	 * @return string with with the name to use in ownCloud or false if unsuccessful
+	 * @return string|false with with the name to use in ownCloud or false if unsuccessful
 	 */
 	private function createAltInternalOwnCloudName($name, $isUser) {
 		$originalTTL = $this->connection->ldapCacheTTL;
@@ -582,6 +631,22 @@ class Access extends LDAPUtility implements user\IUserTools {
 		$this->connection->setConfiguration(array('ldapCacheTTL' => $originalTTL));
 
 		return $altName;
+	}
+
+	/**
+	 * fetches a list of users according to a provided loginName and utilizing
+	 * the login filter.
+	 *
+	 * @param string $loginName
+	 * @param array $attributes optional, list of attributes to read
+	 * @return array
+	 */
+	public function fetchUsersByLoginName($loginName, $attributes = array('dn')) {
+		$loginName = $this->escapeFilterPart($loginName);
+		$filter = \OCP\Util::mb_str_replace(
+			'%uid', $loginName, $this->connection->ldapLoginFilter, 'UTF-8');
+		$users = $this->fetchListOfUsers($filter, $attributes);
+		return $users;
 	}
 
 	/**
@@ -673,6 +738,17 @@ class Access extends LDAPUtility implements user\IUserTools {
 	 */
 	public function countGroups($filter, $attr = array('dn'), $limit = null, $offset = null) {
 		return $this->count($filter, $this->connection->ldapBaseGroups, $attr, $limit, $offset);
+	}
+
+	/**
+	 * returns the number of available objects on the base DN
+	 *
+	 * @param int|null $limit
+	 * @param int|null $offset
+	 * @return int|bool
+	 */
+	public function countObjects($limit = null, $offset = null) {
+		return $this->count('objectclass=*', $this->connection->ldapBase, array('dn'), $limit, $offset);
 	}
 
 	/**
@@ -958,7 +1034,7 @@ class Access extends LDAPUtility implements user\IUserTools {
 	/**
 	* escapes (user provided) parts for LDAP filter
 	* @param string $input, the provided value
-	* @param bool $allowAsterisk wether in * at the beginning should be preserved
+	* @param bool $allowAsterisk whether in * at the beginning should be preserved
 	* @return string the escaped string
 	*/
 	public function escapeFilterPart($input, $allowAsterisk = false) {
