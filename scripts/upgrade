@@ -44,7 +44,9 @@ sudo cp -a $final_path/old_apps/* $final_path/apps/ \
 
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo cp ../conf/php-fpm.conf /etc/php5/fpm/pool.d/owncloud.conf
-sudo cp ../conf/20-apc.ini /etc/php5/cli/conf.d/20-apc.ini
+sudo ls /usr/lib/php5/2*/ | grep apc.so \
+  && sudo cp ../conf/20-apc.ini /etc/php5/cli/conf.d/20-apc.ini \
+  || sudo cp ../conf/20-apcu.ini /etc/php5/cli/conf.d/20-apcu.ini
 sudo cp ../conf/mount.json $data_path
 sudo chown -hR owncloud:www-data $final_path
 sudo chown -hR owncloud:www-data $data_path
