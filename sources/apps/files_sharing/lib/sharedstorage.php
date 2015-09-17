@@ -55,6 +55,10 @@ class Shared extends \OC\Files\Storage\Common implements ISharedStorage {
 		$this->ownerView = $arguments['ownerView'];
 	}
 
+	private function init() {
+		Filesystem::initMountPoints($this->share['uid_owner']);
+	}
+
 	/**
 	 * get id of the mount point
 	 *
@@ -80,17 +84,18 @@ class Shared extends \OC\Files\Storage\Common implements ISharedStorage {
 	 * @return array Returns array with the keys path, permissions, and owner or false if not found
 	 */
 	public function getFile($target) {
+		$this->init();
 		if (!isset($this->files[$target])) {
 			// Check for partial files
 			if (pathinfo($target, PATHINFO_EXTENSION) === 'part') {
-				$source = \OC_Share_Backend_File::getSource(substr($target, 0, -5), $this->getMountPoint(), $this->getItemType());
+				$source = \OC_Share_Backend_File::getSource(substr($target, 0, -5), $this->getShare());
 				if ($source) {
 					$source['path'] .= '.part';
 					// All partial files have delete permission
 					$source['permissions'] |= \OCP\Constants::PERMISSION_DELETE;
 				}
 			} else {
-				$source = \OC_Share_Backend_File::getSource($target, $this->getMountPoint(), $this->getItemType());
+				$source = \OC_Share_Backend_File::getSource($target, $this->getShare());
 			}
 			$this->files[$target] = $source;
 		}
@@ -319,7 +324,7 @@ class Shared extends \OC\Files\Storage\Common implements ISharedStorage {
 	}
 
 	public function rename($path1, $path2) {
-
+		$this->init();
 		// we need the paths relative to data/user/files
 		$relPath1 = $this->getMountPoint() . '/' . $path1;
 		$relPath2 = $this->getMountPoint() . '/' . $path2;

@@ -177,7 +177,7 @@ Object Notation) format. At the moment two different types of entries exist:</p>
 users.</li>
 </ul>
 <p>For each type, there is a JSON array with the user/group name as key, and an
-array of configuration entries as value. Each entry consist of the class name
+array of configuration entries as value. Each entry consists of the class name
 of the storage backend and an array of backend specific options and will be
 replaced by the user login. The template <strong>$user</strong> can be used in the mount
 point or backend options. As of writing the following storage backends are
@@ -222,21 +222,22 @@ administrator panel to add, remove or modify mount options to prevent any proble
 <h2>Using self-signed certificates<a class="headerlink" href="#using-self-signed-certificates" title="Permalink to this headline">¶</a></h2>
 <p>When using self-signed certificates for external storage mounts the certificate
 needs to be imported in the personal settings of the user. Please refer to <a class="reference external" href="http://ownclouden.blogspot.de/2014/11/owncloud-https-external-mount.html">this</a>
-blogpost for more informations.</p>
+blogpost for more information.</p>
 </div>
 <div class="section" id="adding-files-to-external-storages">
 <h2>Adding files to external storages<a class="headerlink" href="#adding-files-to-external-storages" title="Permalink to this headline">¶</a></h2>
 <p>In general it is recommended to configure the background job <tt class="docutils literal"><span class="pre">Webcron</span></tt> or
 <tt class="docutils literal"><span class="pre">Cron</span></tt> as described in <a class="reference internal" href="../configuration_server/background_jobs_configuration.html"><em>Defining Background Jobs</em></a>
 so ownCloud is able to detect files added to your external storages without the need
-that a users is browsing your ownCloud installation.</p>
+for a user to be browsing your ownCloud installation.</p>
 <p>Please also be aware that ownCloud might not always be able to find out what has been
-changed remotely (files changes without going through ownCloud), especially
+changed remotely (files changed without going through ownCloud), especially
 when it&#8217;s very deep in the folder hierarchy of the external storage.</p>
-<p>You might need to setup a cron job that runs <tt class="docutils literal"><span class="pre">sudo</span> <span class="pre">-u</span> <span class="pre">www-data</span> <span class="pre">php</span> <span class="pre">occ</span> <span class="pre">files:scan</span> <span class="pre">--all</span></tt>
-(or replace &#8220;&#8211;all&#8221; with the user name, see also <a class="reference internal" href="../configuration_server/occ_command.html"><em>Using the occ Command</em></a>)
-to trigger a rescan of the user&#8217;s files periodically (for example every 15 minutes), which includes
-the mounted external storage.</p>
+<p>You might need to setup a cron job that runs <tt class="docutils literal"><span class="pre">sudo</span> <span class="pre">-u</span> <span class="pre">www-data</span> <span class="pre">php</span> <span class="pre">occ</span>
+<span class="pre">files:scan</span> <span class="pre">--all</span></tt> (or replace &#8220;&#8211;all&#8221; with the user name, see also
+<a class="reference internal" href="../configuration_server/occ_command.html"><em>Using the occ Command</em></a>) to trigger a rescan of the user&#8217;s
+files periodically (for example every 15 minutes), which includes the mounted
+external storage.</p>
 </div>
 <div class="section" id="example">
 <h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
@@ -321,8 +322,8 @@ to be used is <strong>\OC\Files\Storage\FTP</strong> and takes the following
 options:</p>
 <ul class="simple">
 <li><strong>host</strong>: the hostname of the ftp server, and optionally the port number</li>
-<li><strong>user</strong>: the username used to login on the ftp server</li>
-<li><strong>password</strong>: the password to login on the ftp server</li>
+<li><strong>user</strong>: the username used to login to the ftp server</li>
+<li><strong>password</strong>: the password to login to the ftp server</li>
 <li><strong>secure</strong>: whether to use ftps:// (FTP over TLS) to connect to the ftp
 server instead of ftp:// (optional, defaults to false)</li>
 <li><strong>root</strong>: the remote subfolder inside the ftp server to mount (optional, defaults
@@ -344,7 +345,7 @@ to ‘/’)</li>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">PHP needs to be build with FTP support for this backend to work.</p>
+<p class="last">PHP needs to be built with FTP support for this backend to work.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -363,7 +364,7 @@ options:</p>
 <ul class="simple">
 <li><strong>host</strong>: the hostname of the SSH server</li>
 <li><strong>user</strong>: the username used to login to the SSH server</li>
-<li><strong>password</strong>: the password to login on the SSH server</li>
+<li><strong>password</strong>: the password to login to the SSH server</li>
 <li><strong>root</strong>: the remote subfolder inside the SSH server to mount (optional, defaults
 to ‘/’)</li>
 </ul>
@@ -382,7 +383,7 @@ to ‘/’)</li>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">PHP needs to be build with SFTP support for this backend to work.</p>
+<p class="last">PHP needs to be built with SFTP support for this backend to work.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -395,13 +396,14 @@ not set to <tt class="docutils literal"><span class="pre">0</span></tt> in your 
 <div class="section" id="smb">
 <h3>SMB<a class="headerlink" href="#smb" title="Permalink to this headline">¶</a></h3>
 <p>The SMB backend mounts a folder on a remote Samba server, a NAS appliance or
-a Windows machine into the virtual file system. It is part of the ‘External
+a Windows machine into the virtual file system. This requires
+<tt class="docutils literal"><span class="pre">php5-libsmbclient</span></tt> (<a class="reference external" href="https://software.opensuse.org/download.html?project=isv%3AownCloud%3Acommunity%3A8.1&amp;package=php5-libsmbclient">installation instructions</a>). It is part of the ‘External
 storage support’ app, the class to be used is <strong>\OC\Files\Storage\SMB</strong> and
 takes the following options:</p>
 <ul class="simple">
 <li><strong>host</strong>: the host name of the samba server</li>
-<li><strong>user</strong>: the username or domain/username to login on the samba server</li>
-<li><strong>password</strong>: the password to login on the samba server</li>
+<li><strong>user</strong>: the username or domain/username to login to the samba server</li>
+<li><strong>password</strong>: the password to login to the samba server</li>
 <li><strong>share</strong>: the share on the samba server to mount</li>
 <li><strong>root</strong>: the remote subfolder inside the samba share to mount (optional, defaults
 to ‘/’). To assign the ownCloud logon username automatically to the subfolder, use <tt class="docutils literal"><span class="pre">$user</span></tt> instead of a particular subfolder name.</li>
@@ -444,8 +446,8 @@ the class to be used is <strong>\OC\Files\Storage\DAV</strong> and takes the
 following options:</p>
 <ul class="simple">
 <li><strong>host</strong>: the hostname of the webdav server.</li>
-<li><strong>user</strong>: the username used to login on the webdav server</li>
-<li><strong>password</strong>: the password to login on the webdav server</li>
+<li><strong>user</strong>: the username used to login to the webdav server</li>
+<li><strong>password</strong>: the password to login to the webdav server</li>
 <li><strong>secure</strong>: whether to use <a class="reference external" href="https://">https://</a> to connect to the webdav server
 instead of <a class="reference external" href="http://">http://</a> (optional, defaults to false)</li>
 <li><strong>root</strong>: the remote subfolder inside the webdav server to mount (optional,
@@ -557,8 +559,8 @@ the following options:</p>
 <ul class="simple">
 <li><strong>host</strong>: the hostname of the authentication server for the swift
 storage.</li>
-<li><strong>user</strong>: the username used to login on the swift server</li>
-<li><strong>token</strong>: the authentication token to login on the swift server</li>
+<li><strong>user</strong>: the username used to login to the swift server</li>
+<li><strong>token</strong>: the authentication token to login to the swift server</li>
 <li><strong>secure</strong>: whether to use ftps:// to connect to the swift server instead
 of ftp:// (optional, defaults to false)</li>
 <li><strong>root</strong>: the container inside the swift server to mount (optional,

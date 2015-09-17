@@ -199,7 +199,7 @@ accessible via <a class="reference external" href="http://webchat.freenode.net/?
 <p>In a standard ownCloud installation the log level is set to <tt class="docutils literal"><span class="pre">Normal</span></tt>. To find
 any issues you need to raise the log level to <tt class="docutils literal"><span class="pre">All</span></tt> from the Admin page.
 Please see <a class="reference internal" href="../configuration_server/logging_configuration.html"><em>Logging Configuration</em></a> for more
-informations on this log levels.</p>
+information on these log levels.</p>
 <p>Some logging - for example JavaScript console logging - needs manually editing the
 configuration file.
 Edit <tt class="file docutils literal"><span class="pre">config/config.php</span></tt> and add <tt class="docutils literal"><span class="pre">define('DEBUG',</span> <span class="pre">true);</span></tt>:</p>
@@ -214,7 +214,7 @@ have decent developer tools for viewing the console, and you usually access them
 pressing F-12. For Firefox it is recommended to install the <a class="reference external" href="https://getfirebug.com/">Firebug extension</a>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The logfile of ownCloud is located in the datadirectory
+<p class="last">The logfile of ownCloud is located in the data directory
 <tt class="docutils literal"><span class="pre">/var/www/owncloud/data/owncloud.log</span></tt>.</p>
 </div>
 </div>
@@ -255,16 +255,16 @@ line client like <tt class="docutils literal"><span class="pre">cadaver</span></
 <ul class="simple">
 <li><tt class="docutils literal"><span class="pre">SQLSTATE[HY000]</span> <span class="pre">[1040]</span> <span class="pre">Too</span> <span class="pre">many</span> <span class="pre">connections</span></tt> -&gt; You need to increase the
 connection limit of your database, please refer to the manual of your database
-for more informations.</li>
+for more information.</li>
 <li><tt class="docutils literal"><span class="pre">SQLSTATE[HY000]:</span> <span class="pre">General</span> <span class="pre">error:</span> <span class="pre">5</span> <span class="pre">database</span> <span class="pre">is</span> <span class="pre">locked</span></tt> -&gt; You&#8217;re using <tt class="docutils literal"><span class="pre">SQLite</span></tt>
 which can&#8217;t handle a lot of parallel requests. Please consider converting to
 another database like described in <a class="reference internal" href="../configuration_database/db_conversion.html"><em>Converting Database Type</em></a>.</li>
 <li><tt class="docutils literal"><span class="pre">SQLSTATE[HY000]:</span> <span class="pre">General</span> <span class="pre">error:</span> <span class="pre">2006</span> <span class="pre">MySQL</span> <span class="pre">server</span> <span class="pre">has</span> <span class="pre">gone</span> <span class="pre">away</span></tt> -&gt; The database
 request takes too long and therefore the MySQL server times out. Its also possible
-that the server is dropping a too large packet. Please refer to the manual of your
-database how to raise the config options <tt class="docutils literal"><span class="pre">wait_timeout</span></tt> and/or <tt class="docutils literal"><span class="pre">max_allowed_packet</span></tt>.</li>
+that the server is dropping a packet that is too large. Please refer to the manual of your
+database for how to raise the config options <tt class="docutils literal"><span class="pre">wait_timeout</span></tt> and/or <tt class="docutils literal"><span class="pre">max_allowed_packet</span></tt>.</li>
 <li><tt class="docutils literal"><span class="pre">SQLSTATE[HY000]</span> <span class="pre">[2002]</span> <span class="pre">No</span> <span class="pre">such</span> <span class="pre">file</span> <span class="pre">or</span> <span class="pre">directory</span></tt> -&gt; There is a problem
-accessing your SQLite database file in your datadirectory (<tt class="docutils literal"><span class="pre">data/owncloud.db</span></tt>).
+accessing your SQLite database file in your data directory (<tt class="docutils literal"><span class="pre">data/owncloud.db</span></tt>).
 Please check the permissions of this folder/file or if it exists at all. If you&#8217;re
 using MySQL please start your database.</li>
 <li><tt class="docutils literal"><span class="pre">Connection</span> <span class="pre">closed</span> <span class="pre">/</span> <span class="pre">Operation</span> <span class="pre">cancelled</span></tt> -&gt; This could be caused by wrong <tt class="docutils literal"><span class="pre">KeepAlive</span></tt>
@@ -291,13 +291,13 @@ operating systems they can differ.</p>
 You need to set the directive <tt class="docutils literal"><span class="pre">log_errors</span></tt> to <tt class="docutils literal"><span class="pre">On</span></tt> and choose the path
 to store the logfile in the <tt class="docutils literal"><span class="pre">error_log</span></tt> directive. After those changes you
 need to restart your Webserver.</li>
-<li>The logfile of ownCloud is located in the datadirectory <tt class="docutils literal"><span class="pre">/var/www/owncloud/data/owncloud.log</span></tt>.</li>
+<li>The logfile of ownCloud is located in the data directory <tt class="docutils literal"><span class="pre">/var/www/owncloud/data/owncloud.log</span></tt>.</li>
 </ul>
 </div>
 <div class="section" id="webserver-and-php-modules">
 <h3>Webserver and PHP modules<a class="headerlink" href="#webserver-and-php-modules" title="Permalink to this headline">¶</a></h3>
 <p>There are some Webserver or PHP modules which are known to cause various problems
-like broken up-/downloads. The following shows a draft overview over this modules:</p>
+like broken up-/downloads. The following shows a draft overview of these modules:</p>
 <ol class="arabic simple">
 <li>Apache</li>
 </ol>
@@ -360,7 +360,7 @@ clients, and possible problems with each one)</li>
 (Describes problems with Finder on various webservers)</li>
 </ul>
 <p>There is also a well maintained FAQ thread available at the <a class="reference external" href="https://forum.owncloud.org/viewtopic.php?f=17&amp;t=7536">ownCloud Forums</a>
-which contains various additional informations about WebDAV problems.</p>
+which contains various additional information about WebDAV problems.</p>
 </div>
 <div class="section" id="troubleshooting-contacts-calendar">
 <h2>Troubleshooting Contacts &amp; Calendar<a class="headerlink" href="#troubleshooting-contacts-calendar" title="Permalink to this headline">¶</a></h2>
@@ -373,10 +373,10 @@ configured to use it.</p>
 </div>
 <div class="section" id="apple-ios">
 <h3>Apple iOS<a class="headerlink" href="#apple-ios" title="Permalink to this headline">¶</a></h3>
-<p>Below is what have proven to work with iOS including iOS 7.</p>
+<p>Below is what has been proven to work with iOS including iOS 7.</p>
 <p>If your ownCloud instance is installed in a subfolder under the web server&#8217;s document root and
 the client has difficulties finding the Cal- or CardDAV end-points, configure your web server to
-redirect from a &#8220;well-know&#8221; URL to the one used by ownCloud.
+redirect from a &#8220;well-known&#8221; URL to the one used by ownCloud.
 When using the Apache web server this is easily achieved using a <tt class="file docutils literal"><span class="pre">.htaccess</span></tt> file in the document
 root of your site.</p>
 <p>Say your instance is located in the <tt class="docutils literal"><span class="pre">owncloud</span></tt> folder, so the URL to it is <tt class="docutils literal"><span class="pre">ADDRESS/owncloud</span></tt>,
@@ -384,7 +384,7 @@ create or edit the <tt class="file docutils literal"><span class="pre">.htaccess
 <div class="highlight-python"><pre>Redirect 301 /.well-known/carddav /owncloud/remote.php/carddav
 Redirect 301 /.well-known/caldav /owncloud/remote.php/caldav</pre>
 </div>
-<p>If you use lighttpd as web server, the setting looks something like:</p>
+<p>If you use lighttpd as the web server, the setting looks something like:</p>
 <div class="highlight-python"><pre>url.redirect = (
     "^/.well-known/carddav" =&gt; "/owncloud/remote.php/carddav",
     "^/.well-known/caldav" =&gt; "/owncloud/remote.php/caldav",

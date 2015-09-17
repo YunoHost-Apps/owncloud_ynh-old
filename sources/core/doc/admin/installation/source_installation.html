@@ -234,7 +234,7 @@ of non-ASCII characters)</li>
 <p>Required for specific apps:</p>
 <ul class="simple">
 <li>PHP module ldap (for LDAP integration)</li>
-<li>smbclient (for external user authentication)</li>
+<li><a class="reference external" href="https://software.opensuse.org/download.html?project=isv%3AownCloud%3Acommunity%3A8.1&amp;package=php5-libsmbclient">php5-libsmbclient</a></li>
 <li>PHP module ftp (for FTP storage / external user authentication)</li>
 <li>PHP module imap (for external user authentication)</li>
 </ul>
@@ -368,7 +368,7 @@ in the <tt class="docutils literal"><span class="pre">&lt;Directory</span></tt> 
 <div class="highlight-python"><pre>Satisfy Any</pre>
 </div>
 </li>
-<li><p class="first">When using SSL, take special note on the ServerName. You should specify one in
+<li><p class="first">When using SSL, take special note of the ServerName. You should specify one in
 the  server configuration, as well as in the CommonName field of the
 certificate. If you want your ownCloud to be reachable via the internet, then
 set both of these to the domain you want to reach your ownCloud server.</p>
@@ -387,9 +387,9 @@ user&#8217;s logins and data in transit.</p>
 </div>
 <div class="section" id="enabling-ssl">
 <span id="enabling-ssl-label"></span><h2>Enabling SSL<a class="headerlink" href="#enabling-ssl" title="Permalink to this headline">¶</a></h2>
-<p>An Apache installed under Ubuntu comes already set-up with a simple
+<p>Apache installed under Ubuntu comes already set-up with a simple
 self-signed certificate. All you have to do is to enable the ssl module and
-the according site. Open a terminal and run:</p>
+the default site. Open a terminal and run:</p>
 <div class="highlight-python"><pre>a2enmod ssl
 a2ensite default-ssl
 service apache2 reload</pre>
@@ -398,7 +398,7 @@ service apache2 reload</pre>
 <p class="first admonition-title">Note</p>
 <p class="last">Self-signed certificates have their drawbacks - especially when you
 plan to make your ownCloud server publicly accessible. You might want
-to consider getting a certificate signed by commercial signing
+to consider getting a certificate signed by a commercial signing
 authority. Check with your domain name registrar or hosting service,
 if you&#8217;re using one, for good deals on commercial certificates.</p>
 </div>
@@ -424,7 +424,7 @@ SELinux-enabled distributions such as Fedora and CentOS.</p>
 <div class="section" id="configuration-notes-to-php-ini-files">
 <h2>Configuration notes to php.ini files<a class="headerlink" href="#configuration-notes-to-php-ini-files" title="Permalink to this headline">¶</a></h2>
 <p>Keep in mind that changes to <tt class="docutils literal"><span class="pre">php.ini</span></tt> may have to be done on more than one
-ini file. This can be the case, as example, for the <tt class="docutils literal"><span class="pre">date.timezone</span></tt> setting.</p>
+ini file. This can be the case, for example, for the <tt class="docutils literal"><span class="pre">date.timezone</span></tt> setting.</p>
 <p><strong>php.ini - used by the webserver:</strong></p>
 <div class="highlight-python"><pre>  /etc/php5/apache2/php.ini
 or
@@ -437,6 +437,10 @@ or ...</pre>
 </div>
 <div class="section" id="configuration-notes-to-php-fpm">
 <span id="using-php-fpm"></span><h2>Configuration notes to php-fpm<a class="headerlink" href="#configuration-notes-to-php-fpm" title="Permalink to this headline">¶</a></h2>
+<p><strong>Security: Use at least PHP =&gt; 5.5.22 or &gt;= 5.6.6,</strong></p>
+<p>Due to <a class="reference external" href="https://bugs.php.net/bug.php?id=64938">a bug with security implications</a>
+in older PHP releases with the handling of XML data you are highly encouraged to run
+at least PHP 5.5.22 or 5.6.6 when in a threaded environment.</p>
 <p><strong>System environment variables</strong></p>
 <p>When you are using <tt class="docutils literal"><span class="pre">php-fpm</span></tt>, system environment variables like
 PATH, TMP or others are not automatically populated in the same way as

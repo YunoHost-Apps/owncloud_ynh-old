@@ -149,10 +149,10 @@
 <li class="toctree-l2"><a class="reference internal" href="language_configuration.html">Language Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="logging_configuration.html">Logging Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="harden_server.html">Hardening and Security Guidance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html">Server Tuning &amp; Performance Tips</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reverse_proxy_configuration.html">Reverse Proxy Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="search_configuration.html">Enabling Full-Text Search</a></li>
 <li class="toctree-l2"><a class="reference internal" href="thirdparty_php_configuration.html">Using Third Party PHP Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html">Server Tuning &amp; Performance Tips</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
@@ -195,7 +195,7 @@ your ownCloud files and directories.</p>
 <div class="section" id="run-occ-as-your-http-user">
 <span id="http-user"></span><h2>Run occ As Your HTTP User<a class="headerlink" href="#run-occ-as-your-http-user" title="Permalink to this headline">¶</a></h2>
 <p>The HTTP user is different on the various Linux distributions. See
-<a class="reference internal" href="../installation/installation_wizard.html#strong-perms"><em>Setting Strong Directory Permissions</em></a> to learn how to find your HTTP user</p>
+<a class="reference internal" href="../installation/installation_wizard.html#strong-perms"><em>Setting Strong Directory Permissions</em></a> to learn how to find your HTTP user.</p>
 <ul class="simple">
 <li>The HTTP user and group in Debian/Ubuntu is www-data.</li>
 <li>The HTTP user and group in Fedora/CentOS is apache.</li>
@@ -347,7 +347,7 @@ oc_database</pre>
 <h2>Encryption<a class="headerlink" href="#encryption" title="Permalink to this headline">¶</a></h2>
 <p>When you are using encryption, you must manually migrate your encryption
 keys after upgrading your ownCloud server:</p>
-<div class="highlight-python"><pre>$ sudo -u www-data php occ encryption:migrate-keys</pre>
+<div class="highlight-python"><pre>$ sudo -u www-data php occ encryption:migrate</pre>
 </div>
 </div>
 <div class="section" id="file-operations">
@@ -509,7 +509,7 @@ connected to an LDAP server:</p>
 </div>
 <p><tt class="docutils literal"><span class="pre">ldap:check-user</span></tt> will not run a check when it finds a disabled LDAP
 connection. This prevents users that exist on disabled LDAP connections from
-being marked as deleted. If you know for certain that user you are searching for
+being marked as deleted. If you know for certain that the user you are searching for
 is not in one of the disabled connections, and exists on an active connection,
 use the <tt class="docutils literal"><span class="pre">--force</span></tt> option to force it to check all active LDAP connections:</p>
 <div class="highlight-python"><pre>$ sudo -u www-data php occ ldap:check-user --force robert</pre>

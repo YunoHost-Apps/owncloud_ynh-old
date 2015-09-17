@@ -29,8 +29,8 @@
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
     <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="ownCloud Server Configuration" href="index.html" />
-    <link rel="next" title="Reverse Proxy Configuration" href="reverse_proxy_configuration.html" />
-    <link rel="prev" title="Hardening and Security Guidance" href="harden_server.html" />
+    <link rel="next" title="Database Configuration" href="../configuration_database/index.html" />
+    <link rel="prev" title="Using Third Party PHP Components" href="thirdparty_php_configuration.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -135,21 +135,20 @@
 <li class="toctree-l2"><a class="reference internal" href="language_configuration.html">Language Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="logging_configuration.html">Logging Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="harden_server.html">Hardening and Security Guidance</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Server Tuning &amp; Performance Tips</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#php-version-and-information">PHP Version and Information</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#general-linux-tuning">General Linux tuning</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#owncloud-server-tuning">ownCloud Server Tuning</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ssl-encryption-app">SSL / Encryption App</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#webserver-tips">Webserver Tips</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#apache-tuning">Apache Tuning</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#database-best-practice">Database Best Practice</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#scalability-notes">Scalability notes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#nginx-caching-owncloud-gallery-thumbnails-with-fastcgi-cache-purge">Nginx: caching ownCloud gallery thumbnails with fastcgi_cache_purge</a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="reverse_proxy_configuration.html">Reverse Proxy Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="search_configuration.html">Enabling Full-Text Search</a></li>
 <li class="toctree-l2"><a class="reference internal" href="thirdparty_php_configuration.html">Using Third Party PHP Components</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Server Tuning &amp; Performance Tips</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#php-version-and-information">PHP Version and Information</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#owncloud-server-tuning">ownCloud Server Tuning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#caching">Caching</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#webserver-tips">Webserver Tips</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apache-tuning">Apache Tuning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nginx-caching-owncloud-gallery-thumbnails">Nginx: caching ownCloud gallery thumbnails</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#database-best-practice">Database Best Practice</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ssl-encryption-app">SSL / Encryption App</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
@@ -178,16 +177,14 @@
   <div class="section" id="server-tuning-performance-tips">
 <h1>Server Tuning &amp; Performance Tips<a class="headerlink" href="#server-tuning-performance-tips" title="Permalink to this headline">¶</a></h1>
 <p>There are a number of options to tune the ownCloud installation and enable a
-high level of performance. The database, for example, needs indexes in the most
-active tables. The number of live Apache connections needs to be turned up to
-1000 or more, and the number of allowed MySQL connections also has to be
-increased to the same. Turning on the Alternative PHP Cache (APC) will also
-increase performance on the app servers, and there are likely a number of
-environment and policy specific configurations needed as well in any given
-deployment.</p>
-<p>This chapter gives a few hands-on tips on how to achieve this.</p>
+higher level of performance. This chapter gives a few hands-on tips on
+configuring your database, and LAMP stack to improve performance. This chapter
+is community-maintained and unsupported; test these tips carefully before
+deploying them on production servers.</p>
+<p>If you wish to add tips to this page, please put them in the relevant section.
+If there isn&#8217;t an appropriate section then start a new one.</p>
 <div class="section" id="php-version-and-information">
-<h2>PHP Version and Information<a class="headerlink" href="#php-version-and-information" title="Permalink to this headline">¶</a></h2>
+<span id="phpinfo"></span><h2>PHP Version and Information<a class="headerlink" href="#php-version-and-information" title="Permalink to this headline">¶</a></h2>
 <p>You will need to know your PHP version and configurations. To do this, create a
 plain-text file named <strong>phpinfo.php</strong> and place it in your Web root, for
 example <tt class="docutils literal"><span class="pre">/var/www/html/phpinfo.php</span></tt>. (Your Web root may be in a different
@@ -195,7 +192,8 @@ location; your Linux distribution documentation will tell you where.) This file
 contains just this line:</p>
 <div class="highlight-python"><pre>&lt;?php phpinfo(); ?&gt;</pre>
 </div>
-<p>Open this file in a Web browser:</p>
+<p>Open this file in a Web browser by pointing your browser to
+<tt class="docutils literal"><span class="pre">localhost/phpinfo.php</span></tt>:</p>
 <div class="figure">
 <img alt="../_images/phpinfo.png" src="../_images/phpinfo.png" />
 </div>
@@ -205,25 +203,26 @@ When you are finished reviewing your information you must delete
 <tt class="docutils literal"><span class="pre">phpinfo.php</span></tt>, or move it outside of your Web directory, because it is a
 security risk to expose such sensitive data.</p>
 </div>
-<div class="section" id="general-linux-tuning">
-<h2>General Linux tuning<a class="headerlink" href="#general-linux-tuning" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="system-configuration-overview">
-<h3>System configuration overview<a class="headerlink" href="#system-configuration-overview" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-console"><div class="highlight"><pre><span class="gp">#</span> cat /etc/sysctl.conf
-<span class="go">...</span>
-<span class="go">net.core.somaxconn = 4096</span>
-<span class="go">net.ipv4.tcp_max_syn_backlog = 2048</span>
-<span class="go">...</span>
-<span class="gp">#</span> <span class="nb">ulimit</span> -nH 4096
-</pre></div>
+<div class="section" id="owncloud-server-tuning">
+<h2>ownCloud Server Tuning<a class="headerlink" href="#owncloud-server-tuning" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="serving-static-files-via-web-server">
+<h3>Serving static files via web server<a class="headerlink" href="#serving-static-files-via-web-server" title="Permalink to this headline">¶</a></h3>
+<p>See <a class="reference internal" href="../configuration_files/serving_static_files_configuration.html"><em>Serving Static Files for Better Performance</em></a> for a
+description and the benefits.</p>
 </div>
-<p>Make sure that your <tt class="docutils literal"><span class="pre">/tmp</span></tt> is in ramdisk which improves session handling
-performance. To do so, add the following to <tt class="docutils literal"><span class="pre">/etc/fstab</span></tt>:</p>
-<div class="highlight-python"><pre>none /tmp tmpfs,size=6g defaults</pre>
+<div class="section" id="using-cron-to-perform-background-jobs">
+<h3>Using cron to perform background jobs<a class="headerlink" href="#using-cron-to-perform-background-jobs" title="Permalink to this headline">¶</a></h3>
+<p>See <a class="reference internal" href="background_jobs_configuration.html"><em>Defining Background Jobs</em></a> for a description and the
+benefits.</p>
+</div>
+<div class="section" id="enable-javascript-and-css-asset-management">
+<h3>Enable JavaScript and CSS Asset Management<a class="headerlink" href="#enable-javascript-and-css-asset-management" title="Permalink to this headline">¶</a></h3>
+<p>See <a class="reference internal" href="js_css_asset_management_configuration.html"><em>JavaScript and CSS Asset Management</em></a> for a description and the
+benefits.</p>
 </div>
 </div>
 <div class="section" id="caching">
-<span id="id1"></span><h3>Caching<a class="headerlink" href="#caching" title="Permalink to this headline">¶</a></h3>
+<span id="id1"></span><h2>Caching<a class="headerlink" href="#caching" title="Permalink to this headline">¶</a></h2>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Memory cache configuration for the ownCloud server is no longer
@@ -252,6 +251,10 @@ with PHP 5.5.0 and later, and is available in PECL for PHP versions 5.2, 5.3,
 and 5.4.</p>
 <p>APC is both an opcode cache and data store. OPCache is only an opcode cache, so
 for caching user data you should also install APCu.</p>
+<p>You can test the state of APC(u) by putting the testing file from the documentation
+in your server root. It is usually called &#8216;apc.php&#8217; and can be found in
+/usr/share/doc/php5-apcu/apc.php or /usr/share/doc/packages/php5-apcu/apc.php or
+a similar location, depending on your distribution.</p>
 <p>The Redis key-value cache and store is an excellent fast and robust cache. For
 configuration examples see <a class="reference internal" href="config_sample_php_parameters.html"><em>Config.php Parameters</em></a>.</p>
 <p>Distributed PHP environments should use Memcached. Memcached servers must be
@@ -263,123 +266,23 @@ specified in the <tt class="docutils literal"><span class="pre">memcached_server
 <p class="last">When a memory cache has been configured, but is unavailable due to a
 a missing extension or server downtime, ownCloud will be
 inaccessible, as a memory cache is considered to be a vital
-component.</p>
+component.
+This does not however affect <strong>occ</strong>, which will instead just print
+a warning to the logs.</p>
 </div>
 </div></blockquote>
 </div>
-<div class="section" id="tuning-system-parameters">
-<h3>Tuning System Parameters<a class="headerlink" href="#tuning-system-parameters" title="Permalink to this headline">¶</a></h3>
-<p>Configuration for more concurrent requests.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nb">echo</span> <span class="s2">&quot;2048 64512&quot;</span> &gt; /proc/sys/net/ipv4/ip_local_port_range
-<span class="nb">echo</span> <span class="s2">&quot;1&quot;</span> &gt; /proc/sys/net/ipv4/tcp_tw_recycle
-<span class="nb">echo</span> <span class="s2">&quot;1&quot;</span> &gt; /proc/sys/net/ipv4/tcp_tw_reuse
-<span class="nb">echo</span> <span class="s2">&quot;10&quot;</span> &gt; /proc/sys/net/ipv4/tcp_fin_timeout
-
-<span class="nb">echo</span> <span class="s2">&quot;65535&quot;</span> &gt; /proc/sys/net/core/somaxconn
-<span class="nb">echo</span> <span class="s2">&quot;65535&quot;</span> &gt; /proc/sys/net/ipv4/tcp_max_syn_backlog
-<span class="nb">echo</span> <span class="s2">&quot;262144&quot;</span> &gt; /proc/sys/net/netfilter/nf_conntrack_max
-</pre></div>
-</div>
-<p>Check if the values have been set accordingly:</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="gp">#</span> cat /proc/sys/net/ipv4/ip_local_port_range
-<span class="go">2048 64512</span>
-<span class="gp">#</span> cat /proc/sys/net/ipv4/tcp_tw_recycle
-<span class="go">1</span>
-<span class="gp">#</span> cat /proc/sys/net/ipv4/tcp_tw_reuse
-<span class="go">1</span>
-<span class="gp">#</span> cat /proc/sys/net/ipv4/tcp_fin_timeout
-<span class="go">10</span>
-<span class="gp">#</span> cat /proc/sys/net/core/somaxconn
-<span class="go">65535</span>
-<span class="gp">#</span> cat /proc/sys/net/ipv4/tcp_max_syn_backlog
-<span class="go">65535</span>
-<span class="gp">#</span> cat /proc/sys/net/netfilter/nf_conntrack_max
-<span class="go">262144</span>
-</pre></div>
-</div>
-<p>Next, persist the settings across reboots by adding them into <tt class="docutils literal"><span class="pre">/etc/sysctl.conf</span></tt>:</p>
-<div class="highlight-python"><pre>net.ipv4.ip_local_port_range = 2048 64512
-net.ipv4.tcp_tw_recycle = 1
-net.ipv4.tcp_tw_reuse = 1
-net.ipv4.tcp_fin_timeout = 10
-
-net.core.somaxconn = 65535
-net.ipv4.tcp_max_syn_backlog = 65535
-net.netfilter.nf_conntrack_max = 262144</pre>
-</div>
-</div>
-<div class="section" id="tuning-memory">
-<h3>Tuning Memory<a class="headerlink" href="#tuning-memory" title="Permalink to this headline">¶</a></h3>
-<p>Add RAM disk to fstab:</p>
-<div class="highlight-python"><pre>- none /var/www/html tmpfs defaults,size=6g</pre>
-</div>
-<p>Move PHP Code into RAM Disk:</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="gp">#</span> mv /var/www/html /var/www/html_fs
-</pre></div>
-</div>
-<p>Copy ownCloud installation to RAM Disk and symlink storage to ownCloud <tt class="docutils literal"><span class="pre">data</span></tt>
-directory.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">ram disks are not reboot-safe. You need to establish a way to persist them,
-for instance by using <tt class="docutils literal"><span class="pre">cp</span></tt> or <tt class="docutils literal"><span class="pre">rsync</span></tt> to transfer them from a location
-on the hard disk to the ram disk before apache starts.</p>
-</div>
-</div>
-</div>
-<div class="section" id="owncloud-server-tuning">
-<h2>ownCloud Server Tuning<a class="headerlink" href="#owncloud-server-tuning" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="serving-static-files-via-web-server">
-<h3>Serving static files via web server<a class="headerlink" href="#serving-static-files-via-web-server" title="Permalink to this headline">¶</a></h3>
-<p>See the section
-<a class="reference internal" href="../configuration_files/serving_static_files_configuration.html"><em>Serving Static Files for Better Performance</em></a> for a
-description and the benefits.</p>
-</div>
-<div class="section" id="using-cron-to-perform-background-jobs">
-<h3>Using cron to perform background jobs<a class="headerlink" href="#using-cron-to-perform-background-jobs" title="Permalink to this headline">¶</a></h3>
-<p>See the section <a class="reference internal" href="background_jobs_configuration.html"><em>Defining Background Jobs</em></a> for a description and the
-benefits.</p>
-</div>
-<div class="section" id="enable-javascript-and-css-asset-management">
-<h3>Enable JavaScript and CSS Asset Management<a class="headerlink" href="#enable-javascript-and-css-asset-management" title="Permalink to this headline">¶</a></h3>
-<p>See the section <a class="reference internal" href="js_css_asset_management_configuration.html"><em>JavaScript and CSS Asset Management</em></a> for a description and the
-benefits.</p>
-</div>
-</div>
-<div class="section" id="ssl-encryption-app">
-<h2>SSL / Encryption App<a class="headerlink" href="#ssl-encryption-app" title="Permalink to this headline">¶</a></h2>
-<p>SSL (HTTPS) and file encryption/decryption can be offloaded to a processor&#8217;s
-AES-NI extension. This can both speed up these operations while lowering
-processing overhead. This requires a processor with the <a class="reference external" href="http://wikipedia.org/wiki/AES_instruction_set">AES-NI instruction set</a>.</p>
-<p>Here are some examples how to check if your CPU / environment supports the
-AES-NI extension:</p>
-<ul class="simple">
-<li>For each CPU core present: <tt class="docutils literal"><span class="pre">grep</span> <span class="pre">flags</span> <span class="pre">/proc/cpuinfo</span></tt> or as a summary for
-all cores: <tt class="docutils literal"><span class="pre">grep</span> <span class="pre">-m</span> <span class="pre">1</span> <span class="pre">^flags</span> <span class="pre">/proc/cpuinfo</span></tt> If the result contains any
-<tt class="docutils literal"><span class="pre">aes</span></tt>, the extension is present.</li>
-</ul>
-<ul class="simple">
-<li>Search eg. on the Intel web if the processor used supports the extension
-<a class="reference external" href="http://ark.intel.com/MySearch.aspx?AESTech=true">Intel Processor Feature Filter</a> You may set a filter by
-<tt class="docutils literal"><span class="pre">&quot;AES</span> <span class="pre">New</span> <span class="pre">Instructions&quot;</span></tt> to get a reduced result set.</li>
-<li>For versions of openssl &gt;= 1.0.1, AES-NI does not work via an engine and
-will not show up in the <tt class="docutils literal"><span class="pre">openssl</span> <span class="pre">engine</span></tt> command. It is active by default
-on the supported hardware. You can check the openssl version via <tt class="docutils literal"><span class="pre">openssl</span>
-<span class="pre">version</span> <span class="pre">-a</span></tt></li>
-<li>If your processor supports AES-NI but it does not show up eg via grep or
-coreinfo, it is maybe disabled in the BIOS.</li>
-<li>If your environment runs virtualized, check the virtualization vendor for
-support.</li>
-</ul>
-<div class="section" id="ssl-session-reuse">
-<h3>SSL session reuse<a class="headerlink" href="#ssl-session-reuse" title="Permalink to this headline">¶</a></h3>
-<p>You should enable SSL session tickets or SSL session identifiers in your
-web server. This will lead to lower delay in connection setup time for
-TCP connections to the ownCloud.</p>
-</div>
-</div>
 <div class="section" id="webserver-tips">
 <h2>Webserver Tips<a class="headerlink" href="#webserver-tips" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="php-safe-mode">
+<h3>PHP safe mode<a class="headerlink" href="#php-safe-mode" title="Permalink to this headline">¶</a></h3>
+<p>PHP safe mode has to be turned off. It is deprecated and has been removed in
+newer PHP versions. Verify its status in <cite>phpinfo_</cite>, and look for <tt class="docutils literal"><span class="pre">safe_mode</span>
+<span class="pre">on/off</span></tt>. If it is on, then add this line to <tt class="docutils literal"><span class="pre">php.ini</span></tt> to turn it off:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">safe_mode</span> <span class="o">=</span> <span class="n">Off</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="enable-the-spdy-protocol">
 <h3>Enable the SPDY protocol<a class="headerlink" href="#enable-the-spdy-protocol" title="Permalink to this headline">¶</a></h3>
 <p>Your webserver can be configured to use the SPDY protocol which could improve
@@ -398,12 +301,11 @@ of this module to avoid problems after enabling it.</p>
 </div>
 <div class="section" id="apache-tuning">
 <h2>Apache Tuning<a class="headerlink" href="#apache-tuning" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="maximum-number-apache-processes">
-<h3>Maximum number Apache processes<a class="headerlink" href="#maximum-number-apache-processes" title="Permalink to this headline">¶</a></h3>
-<p>An Apache process is using around 12MB of RAM. Apache should be configured that
-the maximum number of HTTPD processes time 12MB is lower than the amount of
-RAM. Otherwise the system begins to swap and the performance goes down. In this
-case the maximum number is set to 6000.</p>
+<div class="section" id="maximum-number-of-apache-processes">
+<h3>Maximum number of Apache processes<a class="headerlink" href="#maximum-number-of-apache-processes" title="Permalink to this headline">¶</a></h3>
+<p>An Apache process uses around 12MB of RAM. Apache should be configured so that
+the maximum number of HTTPD processes times 12MB is lower than the amount of
+RAM. Otherwise the system begins to swap and the performance goes down.</p>
 </div>
 <div class="section" id="keepalive-should-be-configured-with-sensible-defaults">
 <h3>KeepAlive should be configured with sensible defaults<a class="headerlink" href="#keepalive-should-be-configured-with-sensible-defaults" title="Permalink to this headline">¶</a></h3>
@@ -417,11 +319,6 @@ case the maximum number is set to 6000.</p>
 <h3>mod_gzip<a class="headerlink" href="#mod-gzip" title="Permalink to this headline">¶</a></h3>
 <p><tt class="docutils literal"><span class="pre">mod_gzip</span></tt> should be used because it speeds up the transfer of data and
 helps to free server memory, and HTTP connections are closed faster.</p>
-</div>
-<div class="section" id="php-safe-mode">
-<h3>PHP safe mode<a class="headerlink" href="#php-safe-mode" title="Permalink to this headline">¶</a></h3>
-<p>PHP safe mode has to be turned off. It is deprecated and will be removed in
-newer PHP versions.</p>
 </div>
 <div class="section" id="mpm">
 <h3>MPM<a class="headerlink" href="#mpm" title="Permalink to this headline">¶</a></h3>
@@ -439,7 +336,8 @@ HostnameLookups off
 <div class="section" id="log-files">
 <h3>Log files<a class="headerlink" href="#log-files" title="Permalink to this headline">¶</a></h3>
 <p>Log files should be switched off for maximum performance.</p>
-<p>Comment out the <tt class="docutils literal"><span class="pre">CustomLog</span></tt> directive. Keep <tt class="docutils literal"><span class="pre">ErrorLog</span></tt> to be able to track down errors.</p>
+<p>Comment out the <tt class="docutils literal"><span class="pre">CustomLog</span></tt> directive. Keep <tt class="docutils literal"><span class="pre">ErrorLog</span></tt> to be able to track
+down errors.</p>
 </div>
 <div class="section" id="maxkeepaliverequests-4096">
 <h3>MaxKeepAliveRequests 4096<a class="headerlink" href="#maxkeepaliverequests-4096" title="Permalink to this headline">¶</a></h3>
@@ -459,80 +357,13 @@ HostnameLookups off
 </div>
 </div>
 </div>
-<div class="section" id="database-best-practice">
-<h2>Database Best Practice<a class="headerlink" href="#database-best-practice" title="Permalink to this headline">¶</a></h2>
-<p>Currently ownCloud supports the following relational database management systems:</p>
-<ul class="simple">
-<li>MySQL</li>
-<li>MariaDB</li>
-<li>PostgreSQL</li>
-<li>SQLite</li>
-<li>Oracle</li>
-</ul>
-<p>SQLite is not supported in the Enterprise edition, and is not recommended
-except for systems with very light workloads, and for testing ownCloud.</p>
-<p>We are using the <a class="reference external" href="http://www.doctrine-project.org/projects/dbal.html">doctrine database abstraction layer</a> and schema evolution
-with a <a class="reference external" href="https://raw2.github.com/pear/MDB2_Schema/master/docs/xml_schema_documentation.html">MDB2 Schema</a> based table description in XML.</p>
-<div class="section" id="using-mariadb-mysql-instead-of-sqlite">
-<h3>Using MariaDB/MySQL instead of SQLite<a class="headerlink" href="#using-mariadb-mysql-instead-of-sqlite" title="Permalink to this headline">¶</a></h3>
-<p>MySQL or MariaDB are preferred because of the <a class="reference external" href="http://www.sqlite.org/whentouse.html">performance limitations of
-SQLite with highly concurrent applications</a>, like ownCloud.</p>
-<p>On large instances you could consider <a class="reference external" href="https://github.com/major/MySQLTuner-perl/">running MySQLTuner</a> to optimize the database.</p>
-<p>See the section <a class="reference internal" href="../configuration_database/linux_database_configuration.html"><em>Database Configuration</em></a>
-how to configure ownCloud for MySQL or MariaDB. If your installation is already
-running on
-SQLite then it is possible to convert to MySQL or MariaDB using the steps
-provided in <a class="reference internal" href="../configuration_database/db_conversion.html"><em>Converting Database Type</em></a>.</p>
-</div>
-<div class="section" id="improve-slow-performance-with-mysql-on-windows">
-<h3>Improve slow performance with MySQL on Windows<a class="headerlink" href="#improve-slow-performance-with-mysql-on-windows" title="Permalink to this headline">¶</a></h3>
-<p>On Windows hosts running MySQL on the same system changing the parameter
-<tt class="docutils literal"><span class="pre">dbhost</span></tt> in your <tt class="docutils literal"><span class="pre">config/config.php</span></tt>
-from <tt class="docutils literal"><span class="pre">localhost</span></tt> to <tt class="docutils literal"><span class="pre">127.0.0.1</span></tt> could improve the page loading time.</p>
-<p>See also <a class="reference external" href="http://forum.owncloud.org/viewtopic.php?f=17&amp;t=7559">this forum thread</a>.</p>
-</div>
-<div class="section" id="other-performance-improvements">
-<h3>Other performance improvements<a class="headerlink" href="#other-performance-improvements" title="Permalink to this headline">¶</a></h3>
-<p>Mysql: compare <a class="reference external" href="https://tools.percona.com/wizard">https://tools.percona.com/wizard</a> to your current settings
-MariaDB: <a class="reference external" href="https://mariadb.com/kb/en/optimization-and-tuning/">https://mariadb.com/kb/en/optimization-and-tuning/</a></p>
-</div>
-<div class="section" id="postgresql">
-<h3>Postgresql<a class="headerlink" href="#postgresql" title="Permalink to this headline">¶</a></h3>
-<p>Alternative to MariaDB/MySQL. Used in production by a few core developers.</p>
-<p>Requires at least Postgresql 9.0</p>
-<div class="section" id="id2">
-<h4>Other performance improvements<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
-<p>See <a class="reference external" href="http://wiki.postgresql.org/wiki/Performance_Optimization">http://wiki.postgresql.org/wiki/Performance_Optimization</a></p>
-</div>
-</div>
-<div class="section" id="oracle-database">
-<h3>Oracle Database<a class="headerlink" href="#oracle-database" title="Permalink to this headline">¶</a></h3>
-<p>Usage scenario: Existing enterprise installations. Only core apps are supported
-and tested. Not recommended because it involves compiling the oci8</p>
-<div class="section" id="id3">
-<h4>Other performance improvements<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
-<p><a class="reference external" href="http://de.slideshare.net/cjorcl/best-practices-php-and-the-oracle-database">http://de.slideshare.net/cjorcl/best-practices-php-and-the-oracle-database</a> and ask your DBA.</p>
-</div>
-<div class="section" id="problems">
-<h4>Problems<a class="headerlink" href="#problems" title="Permalink to this headline">¶</a></h4>
-<p>When ORA-56600 occurs (Oracle Bug 8467564) set this php.ini setting:
-<cite>oci8.statement_cache_size=1000</cite>, see <a class="reference external" href="https://community.oracle.com/message/3468020#3468020">oracle forum discussion</a></p>
-</div>
-</div>
-</div>
-<div class="section" id="scalability-notes">
-<h2>Scalability notes<a class="headerlink" href="#scalability-notes" title="Permalink to this headline">¶</a></h2>
-<p>When multiple installations are an option due to geographical or task related separation, using the Federated Cloud Sharing functionality to run separate ownCloud instances which link to each other can be helpful when scaling to hundreds of thousands of users. See <a class="reference internal" href="../configuration_files/federated_cloud_sharing_configuration.html"><em>Configuring Federated Cloud Sharing</em></a>.</p>
-<p>In general, scalability of ownCloud goes up significantly in each release. For example, ownCloud 8.1 can sustain over 50% more users on the same hardware as ownCloud 8.0 could. If the ability to have many users on a single ownCloud server is an important consideration, use the latest ownCloud Server and client versions.</p>
-<p>Find more details and tips on deploying large ownCloud installations in <a class="reference internal" href="../operations/scaling_multiple_machines.html"><em>Scaling Across Multiple Machines</em></a>, the <a class="reference external" href="https://owncloud.com/whitepapers">ownCloud whitepapers</a> on owncloud.com and the <a class="reference external" href="https://owncloud.org/faq/#scaling">ownCloud FAQ</a>.</p>
-</div>
-<div class="section" id="nginx-caching-owncloud-gallery-thumbnails-with-fastcgi-cache-purge">
-<h2>Nginx: caching ownCloud gallery thumbnails with fastcgi_cache_purge<a class="headerlink" href="#nginx-caching-owncloud-gallery-thumbnails-with-fastcgi-cache-purge" title="Permalink to this headline">¶</a></h2>
-<p>One of the optimisations for ownCloud when using Nginx as webserver is to
+<div class="section" id="nginx-caching-owncloud-gallery-thumbnails">
+<h2>Nginx: caching ownCloud gallery thumbnails<a class="headerlink" href="#nginx-caching-owncloud-gallery-thumbnails" title="Permalink to this headline">¶</a></h2>
+<p>One of the optimisations for ownCloud when using Nginx as the webserver is to
 combine FastCGI caching with &#8220;Cache Purge&#8221;, a <a class="reference external" href="http://wiki.nginx.org/3rdPartyModules">3rdparty Nginx module</a>  that adds the ability to purge
 content from <cite>FastCGI</cite>, <cite>proxy</cite>, <cite>SCGI</cite> and <cite>uWSGI</cite> caches. This mechanism
 speeds up thumbnail presentation as it shifts requests to Nginx and minimizes
-php invocations which else would take place for every thumbnail presented every
+php invocations which otherwise would take place for every thumbnail presented every
 time.</p>
 <p>The following procedure is based on an Ubuntu 14.04 system. You may need to
 adapt it according your OS type and release.</p>
@@ -551,7 +382,7 @@ documentation.</p>
 <div class="highlight-python"><pre>nginx -V 2&gt;&amp;1 | grep ngx_cache_purge -o</pre>
 </div>
 <p>If your output contains <tt class="docutils literal"><span class="pre">ngx_cache_purge</span></tt>, you can continue with the
-configuration, else you need to manually compile Nginx with the module needed.</p>
+configuration, otherwise you need to manually compile Nginx with the module needed.</p>
 </div>
 <div class="section" id="compile-nginx-with-the-nginx-cache-purge-module">
 <h3>Compile Nginx with the <tt class="docutils literal"><span class="pre">nginx-cache-purge</span></tt> module<a class="headerlink" href="#compile-nginx-with-the-nginx-cache-purge-module" title="Permalink to this headline">¶</a></h3>
@@ -564,7 +395,7 @@ sudo apt-key add nginx_signing.key
 sudo vi /etc/apt/sources.list.d/nginx.list
 </pre></div>
 </div>
-<p>Add following lines (in case, replace <tt class="docutils literal"><span class="pre">{trusty}</span></tt> by your distribution
+<p>Add the following lines (if different, replace <tt class="docutils literal"><span class="pre">{trusty}</span></tt> by your distribution
 name):</p>
 <div class="highlight-python"><pre>deb http://nginx.org/packages/mainline/ubuntu/ trusty nginx
 deb -src http://nginx.org/packages/mainline/ubuntu/ trusty nginx</pre>
@@ -608,11 +439,11 @@ sudo vi /opt/nginx-<span class="o">{</span>release<span class="o">}</span>/debia
 <div class="highlight-python"><pre>#export DH_VERBOSE=1:
 MODULESDIR = $(CURDIR)/debian/modules</pre>
 </div>
-<p>And the end of every <tt class="docutils literal"><span class="pre">configure</span></tt> command add:</p>
+<p>And at the end of every <tt class="docutils literal"><span class="pre">configure</span></tt> command add:</p>
 <div class="highlight-python"><pre>--add-module=$(MODULESDIR)/ngx_cache_purge</pre>
 </div>
 <p>Don&#8217;t forget to escape preceeding lines with a backslash <tt class="docutils literal"><span class="pre">\</span></tt>.
-The parameters may now look:</p>
+The parameters may now look like:</p>
 <div class="highlight-python"><pre>$(WITH_SPDY) \
 --with-cc-opt="$(CFLAGS)" \
 --with-ld-opt="$(LDFLAGS)" \
@@ -635,7 +466,7 @@ was successful</strong></li>
 <div class="highlight-bash"><div class="highlight"><pre>nginx -V 2&gt;&amp;1 | grep ngx_cache_purge -o
 </pre></div>
 </div>
-<p>It should show now: <tt class="docutils literal"><span class="pre">ngx_cache_purge</span></tt></p>
+<p>It should now show: <tt class="docutils literal"><span class="pre">ngx_cache_purge</span></tt></p>
 <p>Show Nginx version including all features compiled and installed:</p>
 <div class="highlight-python"><pre>nginx -V 2&gt;&amp;1 | sed s/" --"/"\n\t--"/g</pre>
 </div>
@@ -650,7 +481,7 @@ was successful</strong></li>
 <li><strong>Regular checks for nginx updates</strong></li>
 </ol>
 <p>Do a regular visit on the <a class="reference external" href="http://nginx.org">Nginx news page</a> and proceed
-in case of updates with item 2 to 5.</p>
+in case of updates with items 2 to 5.</p>
 </div>
 <div class="section" id="configure-nginx-with-the-nginx-cache-purge-module">
 <h3>Configure Nginx with the <tt class="docutils literal"><span class="pre">nginx-cache-purge</span></tt> module<a class="headerlink" href="#configure-nginx-with-the-nginx-cache-purge-module" title="Permalink to this headline">¶</a></h3>
@@ -719,6 +550,96 @@ Your thumbnails should appear more or less immediately.</li>
 the high load before.</li>
 </ul>
 </div>
+</div>
+<div class="section" id="database-best-practice">
+<h2>Database Best Practice<a class="headerlink" href="#database-best-practice" title="Permalink to this headline">¶</a></h2>
+<p>Currently ownCloud supports the following relational database management
+systems:</p>
+<ul class="simple">
+<li>MySQL</li>
+<li>MariaDB</li>
+<li>PostgreSQL</li>
+<li>SQLite</li>
+<li>Oracle</li>
+</ul>
+<p>SQLite is not supported in the Enterprise edition, and is not recommended
+except for systems with very light workloads, and for testing ownCloud.</p>
+<p>We are using the <a class="reference external" href="http://www.doctrine-project.org/projects/dbal.html">doctrine database abstraction layer</a> and schema evolution
+with a <a class="reference external" href="https://raw2.github.com/pear/MDB2_Schema/master/docs/xml_schema_documentation.html">MDB2 Schema</a> based table description in XML.</p>
+<div class="section" id="using-mariadb-mysql-instead-of-sqlite">
+<h3>Using MariaDB/MySQL instead of SQLite<a class="headerlink" href="#using-mariadb-mysql-instead-of-sqlite" title="Permalink to this headline">¶</a></h3>
+<p>MySQL or MariaDB are preferred because of the <a class="reference external" href="http://www.sqlite.org/whentouse.html">performance limitations of
+SQLite with highly concurrent applications</a>, like ownCloud.</p>
+<p>On large instances you could consider <a class="reference external" href="https://github.com/major/MySQLTuner-perl/">running MySQLTuner</a> to optimize the database.</p>
+<p>See the section <a class="reference internal" href="../configuration_database/linux_database_configuration.html"><em>Database Configuration</em></a>
+for how to configure ownCloud for MySQL or MariaDB. If your installation is
+already
+running on
+SQLite then it is possible to convert to MySQL or MariaDB using the steps
+provided in <a class="reference internal" href="../configuration_database/db_conversion.html"><em>Converting Database Type</em></a>.</p>
+</div>
+<div class="section" id="improve-slow-performance-with-mysql-on-windows">
+<h3>Improve slow performance with MySQL on Windows<a class="headerlink" href="#improve-slow-performance-with-mysql-on-windows" title="Permalink to this headline">¶</a></h3>
+<p>On Windows hosts running MySQL on the same system changing the parameter
+<tt class="docutils literal"><span class="pre">dbhost</span></tt> in your <tt class="docutils literal"><span class="pre">config/config.php</span></tt>
+from <tt class="docutils literal"><span class="pre">localhost</span></tt> to <tt class="docutils literal"><span class="pre">127.0.0.1</span></tt> could improve the page loading time.</p>
+<p>See also <a class="reference external" href="http://forum.owncloud.org/viewtopic.php?f=17&amp;t=7559">this forum thread</a>.</p>
+</div>
+<div class="section" id="other-performance-improvements">
+<h3>Other performance improvements<a class="headerlink" href="#other-performance-improvements" title="Permalink to this headline">¶</a></h3>
+<p>Mysql: compare <a class="reference external" href="https://tools.percona.com/wizard">https://tools.percona.com/wizard</a> to your current settings
+MariaDB: <a class="reference external" href="https://mariadb.com/kb/en/optimization-and-tuning/">https://mariadb.com/kb/en/optimization-and-tuning/</a></p>
+</div>
+<div class="section" id="postgresql">
+<h3>Postgresql<a class="headerlink" href="#postgresql" title="Permalink to this headline">¶</a></h3>
+<p>Alternative to MariaDB/MySQL. Used in production by a few core developers.</p>
+<p>Requires at least Postgresql 9.0</p>
+<div class="section" id="id2">
+<h4>Other performance improvements<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<p>See <a class="reference external" href="http://wiki.postgresql.org/wiki/Performance_Optimization">http://wiki.postgresql.org/wiki/Performance_Optimization</a></p>
+</div>
+</div>
+<div class="section" id="oracle-database">
+<h3>Oracle Database<a class="headerlink" href="#oracle-database" title="Permalink to this headline">¶</a></h3>
+<p>Usage scenario: Existing enterprise installations. Only core apps are supported
+and tested. Not recommended because it involves compiling the oci8</p>
+<div class="section" id="id3">
+<h4>Other performance improvements<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<p><a class="reference external" href="http://de.slideshare.net/cjorcl/best-practices-php-and-the-oracle-database">http://de.slideshare.net/cjorcl/best-practices-php-and-the-oracle-database</a> and
+ask your DBA.</p>
+</div>
+<div class="section" id="problems">
+<h4>Problems<a class="headerlink" href="#problems" title="Permalink to this headline">¶</a></h4>
+<p>When ORA-56600 occurs (Oracle Bug 8467564) set this php.ini setting:
+<cite>oci8.statement_cache_size=1000</cite>, see <a class="reference external" href="https://community.oracle.com/message/3468020#3468020">oracle forum discussion</a></p>
+</div>
+</div>
+</div>
+<div class="section" id="ssl-encryption-app">
+<h2>SSL / Encryption App<a class="headerlink" href="#ssl-encryption-app" title="Permalink to this headline">¶</a></h2>
+<p>SSL (HTTPS) and file encryption/decryption can be offloaded to a processor&#8217;s
+AES-NI extension. This can both speed up these operations while lowering
+processing overhead. This requires a processor with the <a class="reference external" href="http://wikipedia.org/wiki/AES_instruction_set">AES-NI instruction set</a>.</p>
+<p>Here are some examples how to check if your CPU / environment supports the
+AES-NI extension:</p>
+<ul class="simple">
+<li>For each CPU core present: <tt class="docutils literal"><span class="pre">grep</span> <span class="pre">flags</span> <span class="pre">/proc/cpuinfo</span></tt> or as a summary for
+all cores: <tt class="docutils literal"><span class="pre">grep</span> <span class="pre">-m</span> <span class="pre">1</span> <span class="pre">^flags</span> <span class="pre">/proc/cpuinfo</span></tt> If the result contains any
+<tt class="docutils literal"><span class="pre">aes</span></tt>, the extension is present.</li>
+</ul>
+<ul class="simple">
+<li>Search eg. on the Intel web if the processor used supports the extension
+<a class="reference external" href="http://ark.intel.com/MySearch.aspx?AESTech=true">Intel Processor Feature Filter</a> You may set a filter by
+<tt class="docutils literal"><span class="pre">&quot;AES</span> <span class="pre">New</span> <span class="pre">Instructions&quot;</span></tt> to get a reduced result set.</li>
+<li>For versions of openssl &gt;= 1.0.1, AES-NI does not work via an engine and
+will not show up in the <tt class="docutils literal"><span class="pre">openssl</span> <span class="pre">engine</span></tt> command. It is active by default
+on the supported hardware. You can check the openssl version via <tt class="docutils literal"><span class="pre">openssl</span>
+<span class="pre">version</span> <span class="pre">-a</span></tt></li>
+<li>If your processor supports AES-NI but it does not show up eg via grep or
+coreinfo, it is maybe disabled in the BIOS.</li>
+<li>If your environment runs virtualized, check the virtualization vendor for
+support.</li>
+</ul>
 </div>
 </div>
 

@@ -30,7 +30,7 @@
     <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="ownCloud Server Configuration" href="index.html" />
     <link rel="next" title="Enabling Full-Text Search" href="search_configuration.html" />
-    <link rel="prev" title="Server Tuning &amp; Performance Tips" href="performance_tuning.html" />
+    <link rel="prev" title="Hardening and Security Guidance" href="harden_server.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -135,7 +135,6 @@
 <li class="toctree-l2"><a class="reference internal" href="language_configuration.html">Language Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="logging_configuration.html">Logging Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="harden_server.html">Hardening and Security Guidance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html">Server Tuning &amp; Performance Tips</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Reverse Proxy Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#parameters">Parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
@@ -143,6 +142,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="search_configuration.html">Enabling Full-Text Search</a></li>
 <li class="toctree-l2"><a class="reference internal" href="thirdparty_php_configuration.html">Using Third Party PHP Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html">Server Tuning &amp; Performance Tips</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
@@ -171,11 +171,11 @@
   <div class="section" id="reverse-proxy-configuration">
 <h1>Reverse Proxy Configuration<a class="headerlink" href="#reverse-proxy-configuration" title="Permalink to this headline">¶</a></h1>
 <p>The automatic hostname, protocol or webroot detection of ownCloud can fail in
-certain reverse proxy situations. This configuration allows to manually override
-the automatic detection.</p>
+certain reverse proxy situations. This configuration allows the automatic detection
+to be manually overridden.</p>
 <div class="section" id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
-<p>If ownCloud fails to automatically detected the hostname, protocol or webroot
+<p>If ownCloud fails to automatically detect the hostname, protocol or webroot
 you can use the <strong>overwrite</strong> parameters inside the <tt class="file docutils literal"><span class="pre">config/config.php</span></tt>.
 The <strong>overwritehost</strong> parameter is used to set the hostname of the proxy. You
 can also specify a port. The <strong>overwriteprotocol</strong> parameter is used to set the
@@ -209,7 +209,7 @@ you can set the following parameters inside the <tt class="file docutils literal
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If you want to use the SSL proxy during installation you have to
-create the <tt class="file docutils literal"><span class="pre">config/config.php</span></tt> otherwise you have to extend to existing
+create the <tt class="file docutils literal"><span class="pre">config/config.php</span></tt> otherwise you have to extend the existing
 <strong>$CONFIG</strong> array.</p>
 </div>
 </div>

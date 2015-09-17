@@ -76,6 +76,11 @@ Not Supported With any ownCloud Version
 
 Changes in 8.1
 --------------
+
+SMB external storage now based on ``php5-libsmbclient``, which must be downloaded 
+from the ownCloud software repositories (`installation instructions 
+<https://software.opensuse.org/download.html?project=isv%3AownCloud%3Acommunity% 
+3A8.1&package=php5-libsmbclient>`_).
   
 "Download from link" feature has been removed.
 
@@ -109,9 +114,9 @@ see :ref:`caching`.
 The OC_User_HTTP backend has been removed. Administrators are encouraged to use 
 the ``user_webdavauth`` application instead.
 
-ownCloud ships now with its own root certificate bundle derived from the 
-Mozilla. The system root certificate bundle will not be used anymore for most 
-requests.
+ownCloud ships now with its own root certificate bundle derived from Mozilla's 
+root certificates file. The system root certificate bundle will not be used 
+anymore for most requests.
   
 When you upgrade from ownCloud 8.0, with encryption enabled, to 8.1, you must 
 enable the new encryption backend and migrate your encryption keys. See 
@@ -121,8 +126,8 @@ Encryption can no longer be disabled in ownCloud 8.1. It is planned to re-add
 this feature to the command line client for a future release.
 
 It is not recommended to upgrade encryption-enabled systems from ownCloud Server 8.0
-to version 8.1.0 as there is a chance the migration will break. We recommend to
-migrate to the first bugfix release, ownCloud Server 8.1.1.
+to version 8.1.0 as there is a chance the migration will break. We recommend 
+migrating to the first bugfix release, ownCloud Server 8.1.1.
 
 Due to various technical issues, by default desktop sync clients older than 
 1.7 are not allowed to connect and sync with the ownCloud server. This is 
@@ -139,6 +144,8 @@ apps page and try again, and the update will succeed.
 
 The ``forcessl`` option within the ``config.php`` and the ``Enforce SSL`` option within the
 Admin-Backend was removed. This now needs to be configured like described in :ref:`use-https-label`.
+
+WebDAV file locking was removed in oC 8.1 which causes Finder on Mac OS X to mount WebDAV read-only.
 
 Enterprise 8.1 Only
 -------------------
@@ -177,7 +184,7 @@ Manually Migrate Encryption Keys after Upgrade
 If you are using the Encryption app and upgrading from older versions of 
 ownCloud to ownCloud 8.0, you must manually migrate your encryption keys with 
 the *occ* command after the upgrade is complete, like this example for CentOS: 
-*sudo -u apache php occ encryption:migrate-keys* You must run *occ* as your HTTP 
+*sudo -u apache php occ encryption:migrate* You must run *occ* as your HTTP 
 user. See :doc:`../configuration_server/occ_command` to learn more about *occ*
 
 Windows Server Not Supported

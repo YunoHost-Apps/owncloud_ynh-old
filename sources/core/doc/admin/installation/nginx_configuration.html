@@ -124,7 +124,10 @@
 <li class="toctree-l2"><a class="reference internal" href="appliance_installation.html">ownCloud Appliances</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apps_management_installation.html">Installing and Managing Apps</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hiawatha_configuration.html">Hiawatha Configuration</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Nginx Configuration</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Nginx Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#suppressing-log-messages">Suppressing Log Messages</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="source_installation.html">Manual Installation on Linux</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ucs_installation.html">Univention Corporate Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="yaws_configuration.html">Yaws Configuration</a></li>
@@ -279,6 +282,19 @@ user&#8217;s logins and data in transit.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If you are using php-fpm please read <a class="reference internal" href="source_installation.html#using-php-fpm"><em>Configuration notes to php-fpm</em></a></p>
+</div>
+<div class="section" id="suppressing-log-messages">
+<h2>Suppressing Log Messages<a class="headerlink" href="#suppressing-log-messages" title="Permalink to this headline">¶</a></h2>
+<p>If you&#8217;re seeing meaningless messages in your logfile, for example <cite>client
+denied by server configuration: /var/www/data/htaccesstest.txt
+&lt;https://forum.owncloud.org/viewtopic.php?f=17&amp;t=20217&gt;_</cite>, add this section to
+your Nginx configuration to suppress them:</p>
+<div class="highlight-python"><pre> location = /data/htaccesstest.txt {
+    allow all;
+    log_not_found off;
+    access_log off;
+}</pre>
+</div>
 </div>
 </div>
 

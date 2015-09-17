@@ -119,8 +119,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Installation</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="">Preferred Linux Installation Method</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#recommend-setup-and-supported-platforms">Recommend Setup and Supported Platforms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#recommended-setup-and-supported-platforms">Recommended Setup and Supported Platforms</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#installing-owncloud-enterprise-subscription">Installing ownCloud Enterprise Subscription</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#downgrading-not-supported">Downgrading Not Supported</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#supported-distribution-packages">Supported Distribution Packages</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#additional-installation-guides-and-notes">Additional Installation Guides and Notes</a></li>
 </ul>
@@ -166,8 +167,8 @@
 						
   <div class="section" id="preferred-linux-installation-method">
 <h1>Preferred Linux Installation Method<a class="headerlink" href="#preferred-linux-installation-method" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="recommend-setup-and-supported-platforms">
-<h2>Recommend Setup and Supported Platforms<a class="headerlink" href="#recommend-setup-and-supported-platforms" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="recommended-setup-and-supported-platforms">
+<h2>Recommended Setup and Supported Platforms<a class="headerlink" href="#recommended-setup-and-supported-platforms" title="Permalink to this headline">¶</a></h2>
 <p>See the <a class="reference internal" href="../release_notes.html"><em>ownCloud 8.1 Release Notes</em></a> for the recommended ownCloud setup and supported
 platforms.</p>
 </div>
@@ -175,6 +176,14 @@ platforms.</p>
 <h2>Installing ownCloud Enterprise Subscription<a class="headerlink" href="#installing-owncloud-enterprise-subscription" title="Permalink to this headline">¶</a></h2>
 <p>See <a class="reference internal" href="../enterprise_installation/linux_installation.html"><em>Installing ownCloud Enterprise Subscription on Linux</em></a> for instructions on
 installing ownCloud Enterprise Subscription.</p>
+</div>
+<div class="section" id="downgrading-not-supported">
+<h2>Downgrading Not Supported<a class="headerlink" href="#downgrading-not-supported" title="Permalink to this headline">¶</a></h2>
+<p>Downgrading is not supported and risks corrupting your data! If you want to
+revert to an older ownCloud version, install it from scratch and then restore
+your data from backup. Before doing this, file a support ticket (if you have
+paid support) or ask for help in the ownCloud forums to see if your issue can be
+resolved without downgrading.</p>
 </div>
 <div class="section" id="supported-distribution-packages">
 <h2>Supported Distribution Packages<a class="headerlink" href="#supported-distribution-packages" title="Permalink to this headline">¶</a></h2>
@@ -189,7 +198,7 @@ ownCloud. Then run the Installation Wizard to complete your installation. (see
 <a class="reference internal" href="installation_wizard.html"><em>Installation Wizard</em></a>).</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Please don&#8217;t move the folders provided by this packages after the installation.
+<p class="last">Please don&#8217;t move the folders provided by these packages after the installation.
 This will break further updates.</p>
 </div>
 <p>If your distribution is not listed, your Linux distribution may maintain its own
@@ -202,9 +211,9 @@ ownCloud packages, or you may prefer to install from source code (see
 SELinux-enabled distributions such as Fedora and CentOS.</p>
 <p><strong>Archlinux:</strong> The current <a class="reference external" href="https://www.archlinux.org/packages/community/any/owncloud">stable version</a> is in the
 official community repository, and more packages are in
-in <a class="reference external" href="https://aur.archlinux.org/packages/?O=0&amp;K=owncloud">the Arch User Repository</a>.</p>
+the <a class="reference external" href="https://aur.archlinux.org/packages/?O=0&amp;K=owncloud">Arch User Repository</a>.</p>
 <p><strong>Mageia:</strong> The <a class="reference external" href="https://wiki.mageia.org/en/OwnCloud">Mageia Wiki</a> has a good page on installing ownCloud from the Mageia software repository.</p>
-<p><strong>Debian/Ubuntu:</strong> The package is installing an additional Apache config file to <tt class="docutils literal"><span class="pre">/etc/apache2/conf.d/owncloud.conf</span></tt>
+<p><strong>Debian/Ubuntu:</strong> The package installs an additional Apache config file to <tt class="docutils literal"><span class="pre">/etc/apache2/conf.d/owncloud.conf</span></tt>
 which contains an <tt class="docutils literal"><span class="pre">Alias</span></tt> to the owncloud installation directory as well as some more needed configuration options.</p>
 </div>
 </div>

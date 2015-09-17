@@ -177,9 +177,9 @@
 						
   <div class="section" id="configuring-external-storage-gui">
 <h1>Configuring External Storage (GUI)<a class="headerlink" href="#configuring-external-storage-gui" title="Permalink to this headline">¶</a></h1>
-<p>The External Storage Support application enables you to mount external storage services
-and devices as secondary ownCloud storage devices. You may also allow users to
-mount their own external storage services.</p>
+<p>The External Storage Support application enables you to mount external storage
+services and devices as secondary ownCloud storage devices. You may also allow
+users to mount their own external storage services.</p>
 <p>All of these connect to a LAN ownCloud server that is not publicly accessible,
 with one exception: Google Drive requires an ownCloud server with a registered
 domain name that is accessible over the Internet.</p>
@@ -251,16 +251,16 @@ permissions just like any other ownCloud share.</p>
 <h2>Using self-signed certificates<a class="headerlink" href="#using-self-signed-certificates" title="Permalink to this headline">¶</a></h2>
 <p>When using self-signed certificates for external storage mounts the certificate
 needs to be imported in the personal settings of the user. Please refer to <a class="reference external" href="http://ownclouden.blogspot.de/2014/11/owncloud-https-external-mount.html">this</a>
-blogpost for more informations.</p>
+blogpost for more information.</p>
 </div>
 <div class="section" id="adding-files-to-external-storages">
 <h2>Adding files to external storages<a class="headerlink" href="#adding-files-to-external-storages" title="Permalink to this headline">¶</a></h2>
 <p>In general it is recommended to configure the background job <tt class="docutils literal"><span class="pre">Webcron</span></tt> or
 <tt class="docutils literal"><span class="pre">Cron</span></tt> as described in <a class="reference internal" href="../configuration_server/background_jobs_configuration.html"><em>Defining Background Jobs</em></a>
 so ownCloud is able to detect files added to your external storages without the need
-that a users is browsing your ownCloud installation.</p>
+for a user to be browsing your ownCloud installation.</p>
 <p>Please also be aware that ownCloud might not always be able to find out what has been
-changed remotely (files changes without going through ownCloud), especially
+changed remotely (files changed without going through ownCloud), especially
 when it&#8217;s very deep in the folder hierarchy of the external storage.</p>
 <p>You might need to setup a cron job that runs <tt class="docutils literal"><span class="pre">sudo</span> <span class="pre">-u</span> <span class="pre">www-data</span> <span class="pre">php</span> <span class="pre">occ</span> <span class="pre">files:scan</span> <span class="pre">--all</span></tt>
 (or replace &#8220;&#8211;all&#8221; with the user name, see also <a class="reference internal" href="../configuration_server/occ_command.html"><em>Using the occ Command</em></a>)
@@ -331,19 +331,6 @@ form on your ownCloud Admin page.</p>
 <div class="figure">
 <img alt="../_images/external-storage-dropbox-configapp.png" src="../_images/external-storage-dropbox-configapp.png" />
 </div>
-<p>You need two <tt class="docutils literal"><span class="pre">Redirect</span> <span class="pre">URIs</span></tt>. You may use <tt class="docutils literal"><span class="pre">localhost</span></tt> as the hostname for
-testing because you don&#8217;t need to use HTTPS, but this is not recommended for
-production use because it sends all traffic in the clear:</p>
-<div class="highlight-python"><pre>http://localhost/owncloud/index.php/settings/personal
-http://localhost/owncloud/index.php/settings/admin</pre>
-</div>
-<p>HTTPS is recommended for production use to encrypt your sessions:</p>
-<div class="highlight-python"><pre>https://localhost/owncloud/index.php/settings/personal
-https://localhost/owncloud/index.php/settings/admin
-
-https://example.com/owncloud/index.php/settings/personal
-https://example.com/owncloud/index.php/settings/admin</pre>
-</div>
 <p>Your ownCloud configuration requires only the local mount name, the App Key and
 the App Secret, and which users or groups have access to the share.</p>
 <div class="figure">
@@ -395,7 +382,7 @@ safely tucked inside an SSH tunnel. To connect an SFTP server you need:</p>
 <h2>Google Drive<a class="headerlink" href="#google-drive" title="Permalink to this headline">¶</a></h2>
 <p>All applications that access a Google API must be registered through the
 <a class="reference external" href="https://console.developers.google.com/">Google Cloud Console</a>. Follow along carefully
-because the Google is a bit of a maze and it&#8217;s easy to get lost.</p>
+because the Google interface is a bit of a maze and it&#8217;s easy to get lost.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Your ownCloud server must have a registered domain name and be
@@ -404,70 +391,82 @@ server.</p>
 </div>
 <p>If you already have a Google account, such as Groups, Drive, or Mail, you can
 use your existing login to log into the Google Cloud Console. After logging in
-click <tt class="docutils literal"><span class="pre">Go</span> <span class="pre">to</span> <span class="pre">my</span> <span class="pre">console</span></tt>, and then click the <tt class="docutils literal"><span class="pre">Create</span> <span class="pre">Project</span></tt> button. It
-takes a minute or two to create your new project.</p>
+click  the <tt class="docutils literal"><span class="pre">Create</span> <span class="pre">Project</span></tt> button.</p>
 <div class="figure">
 <img alt="../_images/external-storage-google-drive.png" src="../_images/external-storage-google-drive.png" />
 </div>
-<p>In the next screen give your project a name, accept the default <tt class="docutils literal"><span class="pre">Project</span> <span class="pre">ID</span></tt>
-or create your own, click the Terms of Service box, and click the <tt class="docutils literal"><span class="pre">Create</span></tt>
-button.</p>
+<p>Give your project a name, and either accept the default <tt class="docutils literal"><span class="pre">Project</span> <span class="pre">ID</span></tt> or create
+your own, then click the <tt class="docutils literal"><span class="pre">Create</span></tt> button.</p>
 <div class="figure">
 <img alt="../_images/external-storage-google-drive1.png" src="../_images/external-storage-google-drive1.png" />
 </div>
-<p>The next screen is your <tt class="docutils literal"><span class="pre">Project</span> <span class="pre">Dashboard</span></tt>. In the left sidebar click <tt class="docutils literal"><span class="pre">APIs</span>
-<span class="pre">&amp;</span> <span class="pre">Auth</span> <span class="pre">&gt;</span> <span class="pre">APIs</span></tt>, and then enable the <tt class="docutils literal"><span class="pre">Drive</span> <span class="pre">API</span></tt> and <tt class="docutils literal"><span class="pre">Drive</span> <span class="pre">SDK</span></tt> by
-toggling the boxes in the far-right <tt class="docutils literal"><span class="pre">Status</span></tt> column to the green On buttons.</p>
+<p>The next screen is your <tt class="docutils literal"><span class="pre">Project</span> <span class="pre">Dashboard</span></tt>. The Activities screen on the
+bottom left shows your current status. In the left sidebar click <tt class="docutils literal"><span class="pre">APIs</span>
+<span class="pre">&amp;</span> <span class="pre">Auth</span> <span class="pre">&gt;</span> <span class="pre">APIs</span></tt>, and then click <tt class="docutils literal"><span class="pre">Google</span> <span class="pre">Apps</span> <span class="pre">APIs</span> <span class="pre">&gt;</span> <span class="pre">Drive</span> <span class="pre">API</span></tt>.</p>
 <div class="figure">
 <img alt="../_images/external-storage-google-drive2.png" src="../_images/external-storage-google-drive2.png" />
 </div>
-<p>This brings you to the <tt class="docutils literal"><span class="pre">Google</span> <span class="pre">Drive</span> <span class="pre">SDK</span></tt> screen. Click <tt class="docutils literal"><span class="pre">API</span> <span class="pre">Access</span></tt>.</p>
+<p>Before you click <tt class="docutils literal"><span class="pre">Enable</span> <span class="pre">API</span></tt> you might want to click on <tt class="docutils literal"><span class="pre">Learn</span> <span class="pre">more</span></tt> or
+<tt class="docutils literal"><span class="pre">Explore</span> <span class="pre">this</span> <span class="pre">API</span></tt>. Then click <tt class="docutils literal"><span class="pre">Enable</span> <span class="pre">API</span></tt>.</p>
 <div class="figure">
-<img alt="../_images/external-storage-google-drive-sdk.png" src="../_images/external-storage-google-drive-sdk.png" />
+<img alt="../_images/external-storage-google-drive3.png" src="../_images/external-storage-google-drive3.png" />
 </div>
-<p>This opens the <tt class="docutils literal"><span class="pre">API</span> <span class="pre">Access</span></tt> screen. Click the <tt class="docutils literal"><span class="pre">Create</span> <span class="pre">a</span> <span class="pre">0Auth</span> <span class="pre">2.0</span> <span class="pre">Client</span>
-<span class="pre">ID</span></tt> button.</p>
+<p><tt class="docutils literal"><span class="pre">Enable</span> <span class="pre">API</span></tt> takes you to the Drive API dashboard, with tabs for
+<tt class="docutils literal"><span class="pre">Overview,</span> <span class="pre">Usage,</span> <span class="pre">Quota</span></tt>, and <tt class="docutils literal"><span class="pre">Drive</span> <span class="pre">UI</span> <span class="pre">Integration</span></tt>. Feel free to
+explore, and then go to <tt class="docutils literal"><span class="pre">APIs</span> <span class="pre">&amp;</span> <span class="pre">Auth</span> <span class="pre">&gt;</span> <span class="pre">Credentials</span></tt>. This screen has two
+sections: <tt class="docutils literal"><span class="pre">0Auth</span></tt> and <tt class="docutils literal"><span class="pre">Public</span> <span class="pre">API</span> <span class="pre">Access</span></tt>.</p>
 <div class="figure">
-<img alt="../_images/external-storage-google-drive-0auth.png" src="../_images/external-storage-google-drive-0auth.png" />
+<img alt="../_images/external-storage-google-drive4.png" src="../_images/external-storage-google-drive4.png" />
 </div>
-<p>The next screen that opens is <tt class="docutils literal"><span class="pre">Create</span> <span class="pre">Client</span> <span class="pre">ID:</span> <span class="pre">Branding</span> <span class="pre">Information</span></tt>. Google
-requires to you to fill this out. When you&#8217;re finished move on to the <tt class="docutils literal"><span class="pre">Create</span>
-<span class="pre">Client</span> <span class="pre">ID:</span> <span class="pre">Client</span> <span class="pre">ID</span> <span class="pre">Settings</span></tt> screen.</p>
+<p>Click <tt class="docutils literal"><span class="pre">0Auth</span> <span class="pre">&gt;</span> <span class="pre">Create</span> <span class="pre">New</span> <span class="pre">Client</span> <span class="pre">ID</span></tt>. The next screen that opens is <tt class="docutils literal"><span class="pre">Create</span>
+<span class="pre">Client</span> <span class="pre">ID</span></tt>. Check <tt class="docutils literal"><span class="pre">Web</span> <span class="pre">Application</span></tt> and click the <tt class="docutils literal"><span class="pre">Configure</span> <span class="pre">Consent</span>
+<span class="pre">Screen</span></tt> button. You&#8217;ll see the consent screen the first time you create a
+mountpoint for your Google Drive in owncloud.</p>
 <div class="figure">
 <img alt="../_images/external-storage-google-drive5.png" src="../_images/external-storage-google-drive5.png" />
 </div>
-<p>The <tt class="docutils literal"><span class="pre">Application</span> <span class="pre">Type</span></tt> is Web application.</p>
-<p>Click <tt class="docutils literal"><span class="pre">Your</span> <span class="pre">site</span> <span class="pre">or</span> <span class="pre">hostname</span> <span class="pre">(more</span> <span class="pre">options)</span></tt> to expose  <tt class="docutils literal"><span class="pre">Authorized</span>
-<span class="pre">Redirect</span> <span class="pre">URIs</span></tt>. Enter two Redirect URIs like these examples, replacing
-<tt class="docutils literal"><span class="pre">https://example.com/owncloud/</span></tt> with your own ownCloud server
-URL. You must use a registered domain name, and you cannot use the server&#8217;s
-IP address.</p>
-<blockquote>
-<div><a class="reference external" href="https://example.com/owncloud/index.php/settings/personal">https://example.com/owncloud/index.php/settings/personal</a>
-<a class="reference external" href="https://example.com/owncloud/index.php/settings/admin">https://example.com/owncloud/index.php/settings/admin</a></div></blockquote>
-<p>Click <tt class="docutils literal"><span class="pre">Create</span> <span class="pre">client</span> <span class="pre">ID</span></tt> and you&#8217;ll see a screen like this:</p>
+<p>There are just a few required fields on the Consent Screen form: the email
+address of your Google account and your app name. The optional fields include
+your site URL, a link to your logo, and links to your privacy and terms of
+service policies. Your logo must be a hosted file because there is no upload
+dialogue. Click <tt class="docutils literal"><span class="pre">Save</span></tt> when you&#8217;re finished.</p>
 <div class="figure">
-<img alt="../_images/external-storage-google-drive-9.png" src="../_images/external-storage-google-drive-9.png" />
+<img alt="../_images/external-storage-google-drive6.png" src="../_images/external-storage-google-drive6.png" />
 </div>
-<p>This contains your <tt class="docutils literal"><span class="pre">Client</span> <span class="pre">ID</span></tt> and <tt class="docutils literal"><span class="pre">Client</span> <span class="pre">Secret</span></tt>, which you need to set up
-your ownCloud connection. Go to your <tt class="docutils literal"><span class="pre">Admin</span></tt> page in ownCloud, create your new
-folder name, enter the Client ID and Client Secret, select your users and
-groups, and click <tt class="docutils literal"><span class="pre">Grant</span> <span class="pre">Access</span></tt>.</p>
+<p>Now you should be on the <tt class="docutils literal"><span class="pre">Edit</span> <span class="pre">Client</span> <span class="pre">Settings</span></tt> screen. The <tt class="docutils literal"><span class="pre">Authorized</span>
+<span class="pre">JavaScript</span> <span class="pre">Origins</span></tt> is your root domain, for example
+<tt class="docutils literal"><span class="pre">https://www.example.com</span></tt>. You need two <tt class="docutils literal"><span class="pre">Authorized</span> <span class="pre">Redirect</span> <span class="pre">URIs</span></tt>, which
+must be in the following form:</p>
+<div class="highlight-python"><pre>https://example.com/owncloud/index.php/settings/personal
+https://example.com/owncloud/index.php/settings/admin</pre>
+</div>
+<p>Replace <tt class="docutils literal"><span class="pre">https://example.com/owncloud/</span></tt> with your own ownCloud server URL,
+then click <tt class="docutils literal"><span class="pre">Save</span></tt>.</p>
+<div class="figure">
+<img alt="../_images/external-storage-google-drive10.png" src="../_images/external-storage-google-drive10.png" />
+</div>
+<p>This should take you back to the 0Auth screen, with a summary of your settings
+and editing buttons. This contains your <tt class="docutils literal"><span class="pre">Client</span> <span class="pre">ID</span></tt> and <tt class="docutils literal"><span class="pre">Client</span> <span class="pre">Secret</span></tt>,
+which you need to set up your ownCloud connection.</p>
+<div class="figure">
+<img alt="../_images/external-storage-google-drive11.png" src="../_images/external-storage-google-drive11.png" />
+</div>
+<p>Go to your <tt class="docutils literal"><span class="pre">Admin</span></tt> page in ownCloud, create your new folder name, enter the
+Client ID and Client Secret, select your users and groups, and click <tt class="docutils literal"><span class="pre">Grant</span>
+<span class="pre">Access</span></tt>.</p>
 <div class="figure">
 <img alt="../_images/external-storage-google-drive8.png" src="../_images/external-storage-google-drive8.png" />
 </div>
 <p>Google will open a dialogue asking for permission to connect to ownCloud. Click
-<tt class="docutils literal"><span class="pre">Accept</span></tt> and you&#8217;re finished.</p>
-<div class="figure">
-<img alt="../_images/external-storage-google-drive7.png" src="../_images/external-storage-google-drive7.png" />
-</div>
+<tt class="docutils literal"><span class="pre">Accept</span></tt>. When you see the green light confirming a successful connection
+you&#8217;re finished.</p>
 </div>
 <div class="section" id="smb-cifs">
 <h2>SMB/CIFS<a class="headerlink" href="#smb-cifs" title="Permalink to this headline">¶</a></h2>
 <p>You can mount SMB/CIFS file shares on ownCloud servers that run on Linux. This
-only works on Linux ownCloud servers because you must have <tt class="docutils literal"><span class="pre">smbclient</span></tt>
-installed. SMB/CIFS file servers include any Windows file share, Samba servers
-on Linux and other Unix-type operating systems, and NAS appliances.</p>
+requires <tt class="docutils literal"><span class="pre">php5-libsmbclient</span></tt> (<a class="reference external" href="https://software.opensuse.org/download.html?project=isv%3AownCloud%3Acommunity%3A8.1&amp;package=php5-libsmbclient">installation instructions</a>). SMB/CIFS file servers include any Windows
+file share, Samba servers on Linux and other Unix-type operating systems, and
+NAS appliances.</p>
 <p>You need the following information:</p>
 <ul class="simple">
 <li>Folder name &#8211; Whatever name you want for your local mountpoint.</li>
@@ -475,10 +474,12 @@ on Linux and other Unix-type operating systems, and NAS appliances.</p>
 <li>Username &#8211; The username or domain/username used to login to the Samba server.</li>
 <li>Password &#8211; The password to login to the Samba server.</li>
 <li>Share &#8211; The share on the Samba server to mount.</li>
-<li>Remote Subfolder &#8211; The remote subfolder inside the Samba share to mount (optional, defaults to
-<tt class="docutils literal"><span class="pre">/</span></tt>). To assign the ownCloud logon username automatically to the subfolder, use <tt class="docutils literal"><span class="pre">$user</span></tt> instead of a particular subfolder name.</li>
+<li>Remote Subfolder &#8211; The remote subfolder inside the Samba share to mount
+(optional, defaults to <tt class="docutils literal"><span class="pre">/</span></tt>). To assign the ownCloud logon username
+automatically to the subfolder, use <tt class="docutils literal"><span class="pre">$user</span></tt> instead of a particular
+subfolder name. And finally, the ownCloud users and groups who get access
+to the share.</li>
 </ul>
-<p>And finally, the ownCloud users and groups who get access to the share.</p>
 <div class="figure">
 <img alt="../_images/external-storage-smb.png" src="../_images/external-storage-smb.png" />
 </div>
@@ -511,6 +512,11 @@ security)</li>
 </ul>
 <div class="figure">
 <img alt="../_images/external-storage-webdav.png" src="../_images/external-storage-webdav.png" />
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">CPanel users should install <a class="reference external" href="https://documentation.cpanel.net/display/ALD/Web+Disk">Web Disk</a> to enable WebDAV
+functionality.</p>
 </div>
 </div>
 <div class="section" id="openstack-object-storage">

@@ -144,10 +144,10 @@
 <li class="toctree-l2"><a class="reference internal" href="language_configuration.html">Language Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="logging_configuration.html">Logging Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="harden_server.html">Hardening and Security Guidance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html">Server Tuning &amp; Performance Tips</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reverse_proxy_configuration.html">Reverse Proxy Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="search_configuration.html">Enabling Full-Text Search</a></li>
 <li class="toctree-l2"><a class="reference internal" href="thirdparty_php_configuration.html">Using Third Party PHP Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html">Server Tuning &amp; Performance Tips</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
@@ -294,7 +294,7 @@ The following examples are for SMTP, PHP, Sendmail, and Qmail.</p>
 <p>If you want to send email using a local or remote SMTP server it is necessary
 to enter the name or IP address of the server, optionally followed by a colon
 separated port number, e.g. <strong>:425</strong>. If this value is not given the default
-port 25/tcp will be used unless you will change that by modifying the
+port 25/tcp will be used unless you change that by modifying the
 <strong>mail_smtpport</strong> parameter. Multiple servers can be entered, separated by
 semicolons:</p>
 <div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
@@ -436,7 +436,7 @@ be able to send email out of the box.</p>
 <div class="section" id="send-a-test-email">
 <h2>Send a Test Email<a class="headerlink" href="#send-a-test-email" title="Permalink to this headline">¶</a></h2>
 <p>To test your email configuration, save your email address in your personal
-settings and then use the <strong>Send email</strong> button in <em>Email Server</em> section
+settings and then use the <strong>Send email</strong> button in the <em>Email Server</em> section
 of the Admin settings page.</p>
 </div>
 <div class="section" id="troubleshooting">
@@ -468,7 +468,7 @@ parameter:</p>
 reset email) having the domain part of the sender address appear as follows:</p>
 <div class="highlight-python"><pre>no-reply@example.com</pre>
 </div>
-<p><strong>Question</strong>: How can I find out if a SMTP server is reachable?</p>
+<p><strong>Question</strong>: How can I find out if an SMTP server is reachable?</p>
 <p><strong>Answer</strong>: Use the ping command to check the server availability:</p>
 <div class="highlight-python"><pre>ping smtp.server.dom</pre>
 </div>

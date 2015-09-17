@@ -163,10 +163,18 @@
   <div class="section" id="upgrading-your-owncloud-server">
 <h1>Upgrading Your ownCloud Server<a class="headerlink" href="#upgrading-your-owncloud-server" title="Permalink to this headline">¶</a></h1>
 <p>It is best to keep your ownCloud server upgraded regularly, and to install all
-point releases and major releases without skipping any of them, as skipping releases
-increases the risk of errors. Major releases are 6.0, 7.0, and 8.0, and point releases
-are intermediate releases for each major release. For example, 8.0.1 and 8.0.2 are point
-releases.</p>
+point releases and major releases without skipping any of them, as skipping
+releases increases the risk of errors. Major releases are 6.0, 7.0, and 8.0, and
+point releases are intermediate releases for each major release. For example,
+8.0.1 and 8.0.2 are point releases.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><strong>Downgrading</strong> is not supported and risks corrupting your data! If
+you want to revert to an older ownCloud version, install it from scratch
+and then restore your data from backup. Before doing this, file a support
+ticket (if you have paid support) or ask for help in the ownCloud forums to
+see if your issue can be resolved without downgrading.</p>
+</div>
 <p>Version numbering changed with ownCloud 8.0. Major releases are now indicated
 by the second number, so 8.0. 8.1, and 8.2 are major releases. The third number
 indicates an intermediate release, e.g. 8.0.5.</p>
@@ -176,7 +184,7 @@ indicates an intermediate release, e.g. 8.0.5.</p>
 versions of ownCloud to ownCloud 8.0, you must manually migrate your
 encryption keys with the <em>occ</em> command after the upgrade is complete, like
 this example for CentOS:
-<em>sudo -u apache php occ encryption:migrate-keys</em>
+<em>sudo -u apache php occ encryption:migrate</em>
 You must run <em>occ</em> as your HTTP user. See
 <a class="reference internal" href="../configuration_server/occ_command.html"><em>Using the occ Command</em></a> to learn more about <em>occ</em></p>
 </div>
@@ -300,7 +308,7 @@ section of <a class="reference internal" href="../installation/installation_wiza
 8.0, you must review all third party applications (not core apps), for
 compatibility with your new ownCloud version. Then disable all of them
 before starting the upgrade.</p>
-<p>Next putting your server in maintenance mode. This prevents new logins,
+<p>Next put your server in maintenance mode. This prevents new logins,
 locks the sessions of logged-in users, and displays a status screen so users
 know what is happening. There are two ways to do this, and the preferred method
 is to use the <tt class="docutils literal"><span class="pre">occ</span></tt> command, which you must run as your HTTP user. This example

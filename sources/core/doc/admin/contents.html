@@ -216,8 +216,9 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="installation/index.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="installation/linux_installation.html">Preferred Linux Installation Method</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="installation/linux_installation.html#recommend-setup-and-supported-platforms">Recommend Setup and Supported Platforms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation/linux_installation.html#recommended-setup-and-supported-platforms">Recommended Setup and Supported Platforms</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation/linux_installation.html#installing-owncloud-enterprise-subscription">Installing ownCloud Enterprise Subscription</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation/linux_installation.html#downgrading-not-supported">Downgrading Not Supported</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation/linux_installation.html#supported-distribution-packages">Supported Distribution Packages</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation/linux_installation.html#additional-installation-guides-and-notes">Additional Installation Guides and Notes</a></li>
 </ul>
@@ -247,7 +248,10 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="installation/hiawatha_configuration.html">Hiawatha Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation/nginx_configuration.html">Nginx Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/nginx_configuration.html">Nginx Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation/nginx_configuration.html#suppressing-log-messages">Suppressing Log Messages</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="installation/source_installation.html">Manual Installation on Linux</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="installation/source_installation.html#prerequisites">Prerequisites</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation/source_installation.html#example-installation-on-ubuntu-14-04-lts-server">Example installation on Ubuntu 14.04 LTS Server</a></li>
@@ -527,18 +531,6 @@
 <li class="toctree-l3"><a class="reference internal" href="configuration_server/harden_server.html#serve-security-related-headers-by-the-web-server">Serve security related Headers by the web server</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_server/performance_tuning.html">Server Tuning &amp; Performance Tips</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#php-version-and-information">PHP Version and Information</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#general-linux-tuning">General Linux tuning</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#owncloud-server-tuning">ownCloud Server Tuning</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#ssl-encryption-app">SSL / Encryption App</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#webserver-tips">Webserver Tips</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#apache-tuning">Apache Tuning</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#database-best-practice">Database Best Practice</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#scalability-notes">Scalability notes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#nginx-caching-owncloud-gallery-thumbnails-with-fastcgi-cache-purge">Nginx: caching ownCloud gallery thumbnails with fastcgi_cache_purge</a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="configuration_server/reverse_proxy_configuration.html">Reverse Proxy Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="configuration_server/reverse_proxy_configuration.html#parameters">Parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration_server/reverse_proxy_configuration.html#example">Example</a></li>
@@ -547,6 +539,17 @@
 <li class="toctree-l2"><a class="reference internal" href="configuration_server/search_configuration.html">Enabling Full-Text Search</a></li>
 <li class="toctree-l2"><a class="reference internal" href="configuration_server/thirdparty_php_configuration.html">Using Third Party PHP Components</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="configuration_server/thirdparty_php_configuration.html#managing-third-party-parameters">Managing Third Party Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_server/performance_tuning.html">Server Tuning &amp; Performance Tips</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#php-version-and-information">PHP Version and Information</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#owncloud-server-tuning">ownCloud Server Tuning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#caching">Caching</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#webserver-tips">Webserver Tips</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#apache-tuning">Apache Tuning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#nginx-caching-owncloud-gallery-thumbnails">Nginx: caching ownCloud gallery thumbnails</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#database-best-practice">Database Best Practice</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration_server/performance_tuning.html#ssl-encryption-app">SSL / Encryption App</a></li>
 </ul>
 </li>
 </ul>
@@ -749,13 +752,6 @@
 <li class="toctree-l3"><a class="reference internal" href="enterprise_user_management/user_auth_shibboleth.html#encryption">Encryption</a></li>
 <li class="toctree-l3"><a class="reference internal" href="enterprise_user_management/user_auth_shibboleth.html#other-login-mechanisms">Other Login Mechanisms</a></li>
 <li class="toctree-l3"><a class="reference internal" href="enterprise_user_management/user_auth_shibboleth.html#session-timeout">Session Timeout</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="enterprise_user_management/file_firewall_configuration.html">File Firewall</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="enterprise_user_management/file_firewall_configuration.html#configuration">Configuration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="enterprise_user_management/file_firewall_configuration.html#rule-definitions">Rule Definitions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="enterprise_user_management/file_firewall_configuration.html#available-criteria">Available Criteria</a></li>
-<li class="toctree-l3"><a class="reference internal" href="enterprise_user_management/file_firewall_configuration.html#example-rule-sets">Example Rule sets</a></li>
 </ul>
 </li>
 </ul>

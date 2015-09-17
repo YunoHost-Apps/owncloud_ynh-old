@@ -233,7 +233,7 @@ listed above. The Provisioning API app is enabled by default.</p>
 </div>
 <div class="section" id="users-getusers">
 <h2>users / getusers<a class="headerlink" href="#users-getusers" title="Permalink to this headline">¶</a></h2>
-<p>Retrieves a list of users from the cloud server. Authentication is done by sending a Basic HTTP Authorization header.</p>
+<p>Retrieves a list of users from the ownCloud server. Authentication is done by sending a Basic HTTP Authorization header.</p>
 <p><strong>Syntax: ocs/v1.php/cloud/users</strong></p>
 <ul class="simple">
 <li>HTTP method: GET</li>
@@ -349,7 +349,7 @@ listed above. The Provisioning API app is enabled by default.</p>
 </div>
 <div class="section" id="users-deleteuser">
 <h2>users / deleteuser<a class="headerlink" href="#users-deleteuser" title="Permalink to this headline">¶</a></h2>
-<p>Deletes a user from the cloud server. Authentication is done by sending a Basic HTTP Authorization header.</p>
+<p>Deletes a user from the ownCloud server. Authentication is done by sending a Basic HTTP Authorization header.</p>
 <p><strong>Syntax: ocs/v1.php/cloud/users/{userid}</strong></p>
 <ul class="simple">
 <li>HTTP method: DELETE</li>
@@ -364,7 +364,7 @@ listed above. The Provisioning API app is enabled by default.</p>
 <blockquote>
 <div><ul class="simple">
 <li>DELETE <tt class="docutils literal"><span class="pre">http://admin:secret&#64;example.com/ocs/v1.php/cloud/users/Frank</span></tt></li>
-<li>Deletes the use <tt class="docutils literal"><span class="pre">Frank</span></tt></li>
+<li>Deletes the user <tt class="docutils literal"><span class="pre">Frank</span></tt></li>
 </ul>
 </div></blockquote>
 </div>
@@ -474,8 +474,8 @@ listed above. The Provisioning API app is enabled by default.</p>
 <ul class="simple">
 <li>100 - successful</li>
 <li>101 - no group specified</li>
-<li>102 - group doesnt exist</li>
-<li>103 - user doesn&#8217;t exist</li>
+<li>102 - group does not exist</li>
+<li>103 - user does not exist</li>
 <li>104 - insufficient privileges</li>
 <li>105 - failed to remove user from group</li>
 </ul>
@@ -516,7 +516,7 @@ listed above. The Provisioning API app is enabled by default.</p>
 <li>100 - successful</li>
 <li>101 - user does not exist</li>
 <li>102 - group does not exist</li>
-<li>103 - unkown failure</li>
+<li>103 - unknown failure</li>
 </ul>
 <div class="section" id="id15">
 <h3>Example<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
@@ -591,7 +591,7 @@ listed above. The Provisioning API app is enabled by default.</p>
 <ul class="simple">
 <li>100 - successful</li>
 <li>101 - user does not exist</li>
-<li>102 - unkown failure</li>
+<li>102 - unknown failure</li>
 </ul>
 <div class="section" id="id19">
 <h3>Example<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
@@ -621,7 +621,7 @@ listed above. The Provisioning API app is enabled by default.</p>
 </div>
 <div class="section" id="groups-getgroups">
 <h2>groups / getgroups<a class="headerlink" href="#groups-getgroups" title="Permalink to this headline">¶</a></h2>
-<p>Retrieves a list of groups from the cloud server. Authentication is done by sending a Basic HTTP Authorization header.</p>
+<p>Retrieves a list of groups from the ownCloud server. Authentication is done by sending a Basic HTTP Authorization header.</p>
 <p><strong>Syntax: ocs/v1.php/cloud/groups</strong></p>
 <ul class="simple">
 <li>HTTP method: GET</li>
@@ -748,7 +748,7 @@ sending a Basic HTTP Authorization header.</p>
 <p>Status codes:</p>
 <ul class="simple">
 <li>100 - successful</li>
-<li>101 - group doesn&#8217;t exist</li>
+<li>101 - group does not exist</li>
 <li>102 - unknown failure</li>
 </ul>
 <div class="section" id="id27">
@@ -788,7 +788,7 @@ sending a Basic HTTP Authorization header.</p>
 <p>Status codes:</p>
 <ul class="simple">
 <li>100 - successful</li>
-<li>101 - group doesn&#8217;t exist</li>
+<li>101 - group does not exist</li>
 <li>102 - failed to delete group</li>
 </ul>
 <div class="section" id="id29">
@@ -816,7 +816,7 @@ sending a Basic HTTP Authorization header.</p>
 </div>
 <div class="section" id="apps-getapps">
 <h2>apps / getapps<a class="headerlink" href="#apps-getapps" title="Permalink to this headline">¶</a></h2>
-<p>Returns a list of apps installed on the cloud server. Authentication is done by sending a Basic HTTP Authorization
+<p>Returns a list of apps installed on the ownCloud server. Authentication is done by sending a Basic HTTP Authorization
 header.</p>
 <p><strong>Syntax: ocs/v1.php/cloud/apps/</strong></p>
 <ul class="simple">

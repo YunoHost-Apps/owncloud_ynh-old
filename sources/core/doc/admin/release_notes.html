@@ -278,6 +278,8 @@ includes:</p>
 </div>
 <div class="section" id="changes-in-8-1">
 <h2>Changes in 8.1<a class="headerlink" href="#changes-in-8-1" title="Permalink to this headline">¶</a></h2>
+<p>SMB external storage now based on <tt class="docutils literal"><span class="pre">php5-libsmbclient</span></tt>, which must be downloaded
+from the ownCloud software repositories (<a class="reference external" href="https://software.opensuse.org/download.html?project=isv%3AownCloud%3Acommunity%3A8.1&amp;package=php5-libsmbclient">installation instructions</a>).</p>
 <p>&#8220;Download from link&#8221; feature has been removed.</p>
 <p>The <tt class="docutils literal"><span class="pre">.htaccess</span></tt> and <tt class="docutils literal"><span class="pre">index.html</span></tt> files in the <tt class="docutils literal"><span class="pre">data/</span></tt> directory are now
 updated after every update. If you make any modifications to these files they
@@ -301,17 +303,17 @@ ownCloud server is no longer automatic, requiring configuration in
 see <a class="reference internal" href="configuration_server/performance_tuning.html#caching"><em>Caching</em></a>.</p>
 <p>The OC_User_HTTP backend has been removed. Administrators are encouraged to use
 the <tt class="docutils literal"><span class="pre">user_webdavauth</span></tt> application instead.</p>
-<p>ownCloud ships now with its own root certificate bundle derived from the
-Mozilla. The system root certificate bundle will not be used anymore for most
-requests.</p>
+<p>ownCloud ships now with its own root certificate bundle derived from Mozilla&#8217;s
+root certificates file. The system root certificate bundle will not be used
+anymore for most requests.</p>
 <p>When you upgrade from ownCloud 8.0, with encryption enabled, to 8.1, you must
 enable the new encryption backend and migrate your encryption keys. See
 <a class="reference internal" href="configuration_files/encryption_configuration.html"><em>Encryption Configuration</em></a></p>
 <p>Encryption can no longer be disabled in ownCloud 8.1. It is planned to re-add
 this feature to the command line client for a future release.</p>
 <p>It is not recommended to upgrade encryption-enabled systems from ownCloud Server 8.0
-to version 8.1.0 as there is a chance the migration will break. We recommend to
-migrate to the first bugfix release, ownCloud Server 8.1.1.</p>
+to version 8.1.0 as there is a chance the migration will break. We recommend
+migrating to the first bugfix release, ownCloud Server 8.1.1.</p>
 <p>Due to various technical issues, by default desktop sync clients older than
 1.7 are not allowed to connect and sync with the ownCloud server. This is
 configurable via the <tt class="docutils literal"><span class="pre">minimum.supported.desktop.version</span></tt> switch in
@@ -323,6 +325,7 @@ via the <tt class="docutils literal"><span class="pre">preview_max_x</span></tt>
 apps page and try again, and the update will succeed.</p>
 <p>The <tt class="docutils literal"><span class="pre">forcessl</span></tt> option within the <tt class="docutils literal"><span class="pre">config.php</span></tt> and the <tt class="docutils literal"><span class="pre">Enforce</span> <span class="pre">SSL</span></tt> option within the
 Admin-Backend was removed. This now needs to be configured like described in <a class="reference internal" href="configuration_server/harden_server.html#use-https-label"><em>Use HTTPS</em></a>.</p>
+<p>WebDAV file locking was removed in oC 8.1 which causes Finder on Mac OS X to mount WebDAV read-only.</p>
 </div>
 <div class="section" id="enterprise-8-1-only">
 <h2>Enterprise 8.1 Only<a class="headerlink" href="#enterprise-8-1-only" title="Permalink to this headline">¶</a></h2>
@@ -351,7 +354,7 @@ manually.</p>
 <p>If you are using the Encryption app and upgrading from older versions of
 ownCloud to ownCloud 8.0, you must manually migrate your encryption keys with
 the <em>occ</em> command after the upgrade is complete, like this example for CentOS:
-<em>sudo -u apache php occ encryption:migrate-keys</em> You must run <em>occ</em> as your HTTP
+<em>sudo -u apache php occ encryption:migrate</em> You must run <em>occ</em> as your HTTP
 user. See <a class="reference internal" href="configuration_server/occ_command.html"><em>Using the occ Command</em></a> to learn more about <em>occ</em></p>
 </div>
 <div class="section" id="windows-server-not-supported">

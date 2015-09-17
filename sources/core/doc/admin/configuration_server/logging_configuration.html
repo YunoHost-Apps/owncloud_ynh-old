@@ -138,10 +138,10 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="harden_server.html">Hardening and Security Guidance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html">Server Tuning &amp; Performance Tips</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reverse_proxy_configuration.html">Reverse Proxy Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="search_configuration.html">Enabling Full-Text Search</a></li>
 <li class="toctree-l2"><a class="reference internal" href="thirdparty_php_configuration.html">Using Third Party PHP Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html">Server Tuning &amp; Performance Tips</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
@@ -169,55 +169,43 @@
 						
   <div class="section" id="logging-configuration">
 <h1>Logging Configuration<a class="headerlink" href="#logging-configuration" title="Permalink to this headline">¶</a></h1>
-<p>To get an idea of how the current status of an ownCloud system is or to
-solve issues log information is a good point to start with. ownCloud allows
-to configure the way how and which depth of information should be logged.</p>
+<p>Use your ownCloud log to review system status, or to help debug problems. You may adjust logging levels, and choose between using the ownCloud log or your syslog.</p>
 <div class="section" id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
-<p>First you need to decide in which way logging should be done. You can
-choose between the two options <strong>owncloud</strong> and <strong>syslog</strong>. Then you need
-to configure the log level which directly influences how much information
-will be logged. You can choose between:</p>
+<p>Logging levels range from <strong>DEBUG</strong>, which logs all activity, to <strong>FATAL</strong>, which logs only fatal errors.</p>
 <ul class="simple">
-<li><strong>0</strong>: DEBUG</li>
-<li><strong>1</strong>: INFO</li>
-<li><strong>2</strong>: WARN</li>
-<li><strong>3</strong>: ERROR</li>
-<li><strong>4</strong>: FATAL</li>
+<li><strong>0</strong>: DEBUG: All activity; the most detailed logging.</li>
+<li><strong>1</strong>: INFO:  Activity such as user logins and file activities, plus warnings, errors, and fatal errors.</li>
+<li><strong>2</strong>: WARN:  Operations succeed, but with warnings of potential problems, plus errors and fatal errors.</li>
+<li><strong>3</strong>: ERROR: An operation fails, but other services and operations continue, plus fatal errors.</li>
+<li><strong>4</strong>:  FATAL: The server stops.</li>
 </ul>
-<p>The most detailed information will be written if <strong>0</strong> (DEBUG) is set, the
-least information will be written if <strong>3</strong> (ERROR) is set. Keep in mind that
-it might slow down the whole system if a too detailed logging will has been
-configured. By default the log level is set to <strong>2</strong> (WARN).</p>
-<p>This parameters can be set in the <tt class="file docutils literal"><span class="pre">config/config.php</span></tt></p>
+<p>By default the log level is set to <strong>2</strong> (WARN). Use <strong>DEBUG</strong> when you have a problem to diagnose, and then reset your log level to a less-verbose level as <strong>DEBUG</strong> outputs a lot of information, and can affect your server performance.</p>
+<p>Logging level parameters are set in the <tt class="file docutils literal"><span class="pre">config/config.php</span></tt> file, or on the Admin page of your ownCloud Web GUI.</p>
 <div class="section" id="owncloud">
 <h3>ownCloud<a class="headerlink" href="#owncloud" title="Permalink to this headline">¶</a></h3>
 <p>All log information will be written to a separate log file which can be
-viewed using the log menu in the admin menu of ownCloud. By default a log
+viewed using the log viewer on your Admin page. By default, a log
 file named <strong>owncloud.log</strong> will be created in the directory which has
-been configured by the <strong>datadirectory</strong> parameter.</p>
-<p>The desired date format can optionally be defined using the <strong>logdateformat</strong>.
-By default the <a class="reference external" href="http://www.php.net/manual/en/function.date.php">PHP date function</a> parameter &#8220;<em>c</em>&#8221; is used and therefore the
+been configured by the <strong>datadirectory</strong> parameter in <tt class="file docutils literal"><span class="pre">config/config.php</span></tt>.</p>
+<p>The desired date format can optionally be defined using the <strong>logdateformat</strong> parameter in <tt class="file docutils literal"><span class="pre">config/config.php</span></tt>.
+By default the <a class="reference external" href="http://www.php.net/manual/en/function.date.php">PHP date function</a> parameter &#8220;<em>c</em>&#8221; is used, and therefore the
 date/time is written in the format &#8220;<em>2013-01-10T15:20:25+02:00</em>&#8221;. By using the
-date format in the example the date/time format will be written in the format
+date format in the example below, the date/time format will be written in the format
 &#8220;<em>January 10, 2013 15:20:25</em>&#8221;.</p>
-<div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
-
-  <span class="s2">&quot;log_type&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;owncloud&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;logfile&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;owncloud.log&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;loglevel&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;3&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;logdateformat&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;F d, Y H:i:s&quot;</span><span class="p">,</span>
+<div class="highlight-php"><div class="highlight"><pre><span class="x">&quot;log_type&quot; =&gt; &quot;owncloud&quot;,</span>
+<span class="x">&quot;logfile&quot; =&gt; &quot;owncloud.log&quot;,</span>
+<span class="x">&quot;loglevel&quot; =&gt; &quot;3&quot;,</span>
+<span class="x">&quot;logdateformat&quot; =&gt; &quot;F d, Y H:i:s&quot;,</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="syslog">
 <h3>syslog<a class="headerlink" href="#syslog" title="Permalink to this headline">¶</a></h3>
-<p>All log information will be send to the default syslog daemon of a system.</p>
-<div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
-
-  <span class="s2">&quot;log_type&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;syslog&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;logfile&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;loglevel&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;3&quot;</span><span class="p">,</span>
+<p>All log information will be sent to your default syslog daemon.</p>
+<div class="highlight-php"><div class="highlight"><pre><span class="x">&quot;log_type&quot; =&gt; &quot;syslog&quot;,</span>
+<span class="x">&quot;logfile&quot; =&gt; &quot;&quot;,</span>
+<span class="x">&quot;loglevel&quot; =&gt; &quot;3&quot;,</span>
 </pre></div>
 </div>
 </div>

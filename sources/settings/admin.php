@@ -46,7 +46,10 @@ $entriesRemaining = count($entries) > $numEntriesToLoad;
 $entries = array_slice($entries, 0, $numEntriesToLoad);
 $logFilePath = OC_Log_Owncloud::getLogFilePath();
 $doesLogFileExist = file_exists($logFilePath);
-$logFileSize = filesize($logFilePath);
+$logFileSize = 0;
+if($doesLogFileExist) {
+	$logFileSize = filesize($logFilePath);
+}
 $config = \OC::$server->getConfig();
 $appConfig = \OC::$server->getAppConfig();
 $request = \OC::$server->getRequest();
@@ -119,6 +122,7 @@ $template->assign('allowPublicUpload', $appConfig->getValue('core', 'shareapi_al
 $template->assign('allowResharing', $appConfig->getValue('core', 'shareapi_allow_resharing', 'yes'));
 $template->assign('allowPublicMailNotification', $appConfig->getValue('core', 'shareapi_allow_public_notification', 'no'));
 $template->assign('allowMailNotification', $appConfig->getValue('core', 'shareapi_allow_mail_notification', 'no'));
+$template->assign('allowShareDialogUserEnumeration', $appConfig->getValue('core', 'shareapi_allow_share_dialog_user_enumeration', 'yes'));
 $template->assign('onlyShareWithGroupMembers', \OC\Share\Share::shareWithGroupMembersOnly());
 $databaseOverload = (strpos(\OCP\Config::getSystemValue('dbtype'), 'sqlite') !== false);
 $template->assign('databaseOverload', $databaseOverload);

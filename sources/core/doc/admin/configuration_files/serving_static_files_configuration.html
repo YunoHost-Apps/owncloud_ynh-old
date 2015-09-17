@@ -206,8 +206,8 @@ For versions below 0.10 (Debian squeeze ships with 0.9)</p>
 <ul class="simple">
 <li><strong>SetEnv MOD_X_SENDFILE_ENABLED</strong>: tells ownCloud scripts that they should add the X-Sendfile header when serving files</li>
 <li><strong>XSendFile</strong>: enables web server handling of X-Sendfile headers (and therefore file serving) for the specified Directory</li>
-<li><strong>XSendFileAllowAbove (&lt;0.10)</strong>: enables file serving through web server on path outside the specified Directory. This is needed for configured local mounts which may reside outside data directory</li>
-<li><strong>XSendFilePath (&gt;=0.10)</strong>: a white list of paths that the web server is allowed to serve outside of the specified Directory. Other paths which correspond to local mounts should be configured here as well. For a more in-depth documentation of this directive refer to mod_xsendfile website linked above</li>
+<li><strong>XSendFileAllowAbove (&lt;0.10)</strong>: enables file serving through the web server on a path outside the specified Directory. This is needed for configured local mounts which may reside outside the data directory.</li>
+<li><strong>XSendFilePath (&gt;=0.10)</strong>: a white list of paths that the web server is allowed to serve outside of the specified Directory. Other paths which correspond to local mounts should be configured here as well. For a more in-depth documentation of this directive refer to the mod_xsendfile website linked above.</li>
 </ul>
 </div>
 </div>
@@ -247,7 +247,7 @@ The header used by Nginx is X-Accel-Redirect.</p>
 </div>
 <div class="section" id="configuration-method-1">
 <h3>Configuration - Method 1<a class="headerlink" href="#configuration-method-1" title="Permalink to this headline">¶</a></h3>
-<p>Method 1 is prefered because it limits what files can be served through X-Accel.</p>
+<p>Method 1 is preferred because it limits what files can be served through X-Accel.</p>
 <div class="highlight-python"><pre>location ~ \.php(?:$|/) {
     ...
     fastcgi_param MOD_X_ACCEL_REDIRECT_ENABLED on;
@@ -264,7 +264,7 @@ location ^~ /data {
 #        alias /path/to/local-mountpoint;
 #    }
 
-#    A 'Local' External Storage Mountpoint available to mulitple users
+#    A 'Local' External Storage Mountpoint available to multiple users
 #    location ~ ^/data/(?:USER1|USER2)/files/LOCAL-FS-MOUNT-NAME/(.+)$ {
 #        alias /path/to/local-mountpoint/$1;
 #    }
@@ -290,7 +290,7 @@ location ^~ /data {
 <div class="section" id="configuration-method-2">
 <h3>Configuration - Method 2<a class="headerlink" href="#configuration-method-2" title="Permalink to this headline">¶</a></h3>
 <p>Method 2 is simpler to setup when using local external storage mounts, especially when they are available to many, but not all users.
-This method may be prefered if you are regularly adding users that should not all have access to the same local external storage mount(s).</p>
+This method may be preferred if you are regularly adding users that should not all have access to the same local external storage mount(s).</p>
 <div class="highlight-python"><pre>location ~ \.php(?:$|/) {
     ...
     fastcgi_param MOD_X_ACCEL_REDIRECT_ENABLED on;
@@ -304,7 +304,7 @@ location ^~ /xaccel {
 </div>
 <ul class="simple">
 <li><strong>fastcgi_param MOD_X_ACCEL_REDIRECT_ENABLED</strong> ~ Tells ownCloud scripts that they should add the X-Accel-Redirect header when serving files.</li>
-<li><strong>fastcgi_param MOD_X_ACCEL_REDIRECT_PREFIX</strong> ~ A prefix to internally serve files from, in this example &#8220;/xaccel&#8221; is used but this is configurabl.e</li>
+<li><strong>fastcgi_param MOD_X_ACCEL_REDIRECT_PREFIX</strong> ~ A prefix to internally serve files from, in this example &#8220;/xaccel&#8221; is used but this is configurable.</li>
 <li><strong>location ^~ /xaccel</strong> ~ The location to internally serve files from, must match MOD_X_ACCEL_REDIRECT_PREFIX.</li>
 </ul>
 </div>

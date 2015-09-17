@@ -471,7 +471,7 @@ Basic setting. You can specify multiple base trees, one on each line.</p>
 </dd>
 <dt>User Search Attributes:</dt>
 <dd><p class="first">These attributes are used when searches for users are performed, for example
-in the in the share dialogue. The user display name attribute is the
+in the share dialogue. The user display name attribute is the
 default. You may list multiple attributes, one per line.</p>
 <p>If an attribute is not available on a user object, the user will not be
 listed, and will be unable to login. This also affects the display name
@@ -510,7 +510,7 @@ Basic setting. You can specify multiple base trees, one in each line.</p>
 <dt>Group Search Attributes:</dt>
 <dd><p class="first">These attributes are used when a search for groups is done, for example in
 the share dialogue. By default the group display name attribute as specified
-above is being used. Multiple attributes can be given, one in each line.</p>
+above is used. Multiple attributes can be given, one in each line.</p>
 <p>If you override the default, the group display name attribute will not be
 taken into account, unless you specify it as well.</p>
 <ul class="last">
@@ -649,7 +649,7 @@ users and groups are fetched correctly on the Users page.</p>
 </div>
 <div class="section" id="owncloud-avatar-integration">
 <h2>ownCloud Avatar integration<a class="headerlink" href="#owncloud-avatar-integration" title="Permalink to this headline">¶</a></h2>
-<p>ownCloud support user profile pictures, which are also called avatars. If a user
+<p>ownCloud supports user profile pictures, which are also called avatars. If a user
 has a photo stored in the <em>jpegPhoto</em> or <em>thumbnailPhoto</em> attribute on your LDAP
 server, it will be used as their avatar. In this case the user cannot alter their
 avatar (on their Personal page) as it must be changed in LDAP. <em>jpegPhoto</em> is
@@ -663,7 +663,7 @@ users can upload and manage their avatars on their ownCloud Personal pages.
 Avatars managed in ownCloud are not stored in LDAP.</p>
 <p>The <em>jpegPhoto</em> or <em>thumbnailPhoto</em> attribute is fetched once a day to make
 sure the current photo from LDAP is used in ownCloud. LDAP avatars override
-ownCloud avatars, and when an LDAP avatar is deleted it the most recent
+ownCloud avatars, and when an LDAP avatar is deleted then the most recent
 ownCloud avatar replaces it.</p>
 <p>Photos served from LDAP are automatically cropped and resized in ownCloud. This
 affects only the presentation, and the original image is not changed.</p>
@@ -718,9 +718,9 @@ group name is created and mapped to the LDAP DN and UUID. If the DN changes in
 LDAP it will be detected, and there will be no conflicts.</p>
 <p>Those mappings are done in the database table <tt class="docutils literal"><span class="pre">ldap_user_mapping</span></tt> and
 <tt class="docutils literal"><span class="pre">ldap_group_mapping</span></tt>. The user name is also used for the user&#8217;s folder (except
-something else is specified in <em>User Home Folder Naming Rule</em>), which
+if something else is specified in <em>User Home Folder Naming Rule</em>), which
 contains files and meta data.</p>
-<p>As of ownCloud 5 internal user name and a visible display name are separated.
+<p>As of ownCloud 5 the internal user name and a visible display name are separated.
 This is not the case for group names, yet, i.e. a group name cannot be altered.</p>
 <p>That means that your LDAP configuration should be good and ready before putting
 it into production. The mapping tables are filled early, but as long as you are
@@ -759,7 +759,7 @@ Redis. Redis configuration looks like this:</p>
 ),</pre>
 </div>
 <p>Redis is supplied by the <tt class="docutils literal"><span class="pre">redis-server</span></tt> and <tt class="docutils literal"><span class="pre">php5-redis</span></tt> packages on
-Debian/Ubuntu/Mint, and on Red Hat/CentOS/Fedroa by <tt class="docutils literal"><span class="pre">redis</span></tt> and
+Debian/Ubuntu/Mint, and on Red Hat/CentOS/Fedora by <tt class="docutils literal"><span class="pre">redis</span></tt> and
 <tt class="docutils literal"><span class="pre">php-pecl-redis</span></tt> from the EPEL repository.</p>
 <p>You can adjust the <strong>Cache Time-To-Live</strong> value to balance performance and
 freshness of LDAP data. All LDAP requests will be cached for 10 minutes by
@@ -787,7 +787,7 @@ case the other servers will also receive the request.</p>
 <p>When ownCloud is not able to contact the main LDAP server, ownCloud assumes it
 is offline and will not try to connect again for the time specified in <strong>Cache
 Time-To-Live</strong>. If you have a backup server configured ownCloud will connect to
-instead. When you have a scheduled downtime, check <strong>Disable Main Server</strong>  to
+it instead. When you have scheduled downtime, check <strong>Disable Main Server</strong>  to
 avoid unnecessary connection attempts.</p>
 </div>
 </div>

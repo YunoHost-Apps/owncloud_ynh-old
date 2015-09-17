@@ -29,7 +29,7 @@
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
     <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
     <link rel="up" title="ownCloud Server Configuration" href="index.html" />
-    <link rel="next" title="Server Tuning &amp; Performance Tips" href="performance_tuning.html" />
+    <link rel="next" title="Reverse Proxy Configuration" href="reverse_proxy_configuration.html" />
     <link rel="prev" title="Logging Configuration" href="logging_configuration.html" />
 <script type="text/javascript">
 (function () {
@@ -143,10 +143,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#serve-security-related-headers-by-the-web-server">Serve security related Headers by the web server</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html">Server Tuning &amp; Performance Tips</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reverse_proxy_configuration.html">Reverse Proxy Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="search_configuration.html">Enabling Full-Text Search</a></li>
 <li class="toctree-l2"><a class="reference internal" href="thirdparty_php_configuration.html">Using Third Party PHP Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html">Server Tuning &amp; Performance Tips</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
@@ -175,12 +175,10 @@
   <div class="section" id="hardening-and-security-guidance">
 <h1>Hardening and Security Guidance<a class="headerlink" href="#hardening-and-security-guidance" title="Permalink to this headline">¶</a></h1>
 <p>ownCloud aims to ship with secure defaults that do not need to get modified by
-administrators. However, in some cases some additional security hardening can
-only be applied in scenarios were the administrator have complete control over
-the ownCloud instance.</p>
-<p>This document lists some security hardenings which require manual interaction by
-administrators. The whole document content is based on the assumption that you
-run ownCloud Server on Apache2 on a Linux environment.</p>
+administrators. However, in some cases some additional security hardening can be
+applied in scenarios were the administrator has complete control over
+the ownCloud instance. This page assumes that you run ownCloud Server on Apache2
+in a Linux environment.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">ownCloud will warn you in the administration interface if some
@@ -189,11 +187,11 @@ the server administrator to review and maintain system security.</p>
 </div>
 <div class="section" id="limit-on-password-length">
 <h2>Limit on Password Length<a class="headerlink" href="#limit-on-password-length" title="Permalink to this headline">¶</a></h2>
-<p>ownCloud uses the bcrypt algorithm and thus for security and performance reasons,
-e.g. Denial of Service as CPU demand increases exponentially, it only verifies
-the first 72 characters of passwords. This applies to all passwords that you use
-in ownCloud: user passwords, passwords on link shares, and passwords on external
-shares.</p>
+<p>ownCloud uses the bcrypt algorithm, and thus for security and performance
+reasons, e.g. Denial of Service as CPU demand increases exponentially, it only
+verifies the first 72 characters of passwords. This applies to all passwords
+that you use in ownCloud: user passwords, passwords on link shares, and
+passwords on external shares.</p>
 </div>
 <div class="section" id="operating-system">
 <h2>Operating system<a class="headerlink" href="#operating-system" title="Permalink to this headline">¶</a></h2>
@@ -204,41 +202,28 @@ mixer to generate cryptographically secure pseudo-random numbers. This means
 that when generating a random number ownCloud will request multiple random
 numbers from different sources and derive from these the final random number.</p>
 <p>The random number generation also tries to request random numbers from
-<tt class="docutils literal"><span class="pre">/dev/urandom</span></tt>, thus it is <strong>highly recommended</strong> to configure your setup in
-such a way that PHP is able to read random data from it. Not granting PHP access
-to <tt class="docutils literal"><span class="pre">/dev/urandom</span></tt> may make your random numbers predictable and may make your
-ownCloud instance insecure as attackers might predict password reset tokens or
-other sensitive data.</p>
+<tt class="docutils literal"><span class="pre">/dev/urandom</span></tt>, thus it is highly recommended to configure your setup in such
+a way that PHP is able to read random data from it.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">When having an <tt class="docutils literal"><span class="pre">open_basedir</span></tt> configured within your <tt class="docutils literal"><span class="pre">php.ini</span></tt>
+<p class="last">When having an <tt class="docutils literal"><span class="pre">open_basedir</span></tt> configured within your <tt class="docutils literal"><span class="pre">php.ini</span></tt> file,
 make sure to include the folder <tt class="docutils literal"><span class="pre">/dev</span></tt>.</p>
 </div>
 </div>
 <div class="section" id="enable-hardening-modules-such-as-selinux">
 <h3>Enable hardening modules such as SELinux<a class="headerlink" href="#enable-hardening-modules-such-as-selinux" title="Permalink to this headline">¶</a></h3>
-<p>It is highly recommend to enable hardening modules such as SELinux where
+<p>It is highly recommended to enable hardening modules such as SELinux where
 possible. See <a class="reference internal" href="../installation/selinux_configuration.html"><em>SELinux Configuration</em></a> to learn more about
 SELinux.</p>
-</div>
-<div class="section" id="use-newest-php-version">
-<h3>Use newest PHP version<a class="headerlink" href="#use-newest-php-version" title="Permalink to this headline">¶</a></h3>
-<p>Some security features and hardenings in PHP are only available in the latest
-PHP release and thus it is recommended to run the latest PHP version. You can
-find the latest version on <a class="reference external" href="http://php.net/">http://php.net/</a>.</p>
-<p>Some Linux distributions backport security patches, but this is not reliable as
-some get missed, or the backports are years late. It is always best to run the
-latest PHP version.</p>
 </div>
 </div>
 <div class="section" id="deployment">
 <h2>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="move-data-directory-outside-of-the-web-root">
-<h3>Move data directory outside of the web root<a class="headerlink" href="#move-data-directory-outside-of-the-web-root" title="Permalink to this headline">¶</a></h3>
-<p>It is highly recommended to move the data directory (where ownCloud stores its
-data) outside of the web root (i.e. outside of <tt class="docutils literal"><span class="pre">/var/www</span></tt>) It is possible to
-do this by moving the folder manually, and then adjusting the
-<tt class="docutils literal"><span class="pre">'datadirectory'</span></tt> parameter in <tt class="docutils literal"><span class="pre">config.php</span></tt>.</p>
+<div class="section" id="place-data-directory-outside-of-the-web-root">
+<h3>Place data directory outside of the web root<a class="headerlink" href="#place-data-directory-outside-of-the-web-root" title="Permalink to this headline">¶</a></h3>
+<p>It is highly recommended to place your data directory outside of the Web root
+(i.e. outside of <tt class="docutils literal"><span class="pre">/var/www</span></tt>). It is easiest to do this on a new
+installation.</p>
 </div>
 <div class="section" id="disable-preview-image-generation">
 <h3>Disable preview image generation<a class="headerlink" href="#disable-preview-image-generation" title="Permalink to this headline">¶</a></h3>
@@ -246,7 +231,7 @@ do this by moving the folder manually, and then adjusting the
 or text files. By default the preview generation for some file types that we
 consider secure enough for deployment is enabled by default. However,
 administrators should be aware that these previews are generated using PHP
-libraries written in C which might be vulnerable to vulnerable attack vectors.</p>
+libraries written in C which might be vulnerable to attack vectors.</p>
 <p>For high security deployments we recommend disabling the preview generation by
 setting the <tt class="docutils literal"><span class="pre">enable_previews</span></tt> switch to <tt class="docutils literal"><span class="pre">false</span></tt> in <tt class="docutils literal"><span class="pre">config.php</span></tt>. As an
 administrator you are also able to manage which preview providers are enabled by
@@ -255,16 +240,16 @@ modifying the <tt class="docutils literal"><span class="pre">enabledPreviewProvi
 </div>
 <div class="section" id="use-https">
 <span id="use-https-label"></span><h2>Use HTTPS<a class="headerlink" href="#use-https" title="Permalink to this headline">¶</a></h2>
-<p>Using ownCloud without using an encrypted HTTPS connection might allow attackers
-in a man-in-the-middle (MITM) situation to intercept your users data and
-passwords. Thus ownCloud always recommends to setup ownCloud behind HTTPS.</p>
-<p>How to setup HTTPS on your web server depends on your setup, we recommend to
-check your distribution&#8217;s vendor information on how to configure and setup
-HTTPS.</p>
+<p>Using ownCloud without using an encrypted HTTPS connection opens up your server
+to a man-in-the-middle (MITM) attack, and risks the interception of user data
+and passwords. It is a best practice, and highly recommended, to always use
+HTTPS on production servers, and to never allow unencrypted HTTP.</p>
+<p>How to setup HTTPS on your Web server depends on your setup; please consult the
+documentation for your HTTP server. The following examples are for Apache.</p>
 <div class="section" id="redirect-all-unencrypted-traffic-to-https">
 <h3>Redirect all unencrypted traffic to HTTPS<a class="headerlink" href="#redirect-all-unencrypted-traffic-to-https" title="Permalink to this headline">¶</a></h3>
 <p>To redirect all HTTP traffic to HTTPS administrators are encouraged to issue a
-permanent redirect using the 301 status code, when using Apache this can be
+permanent redirect using the 301 status code. When using Apache this can be
 achieved by a setting such as the following in the Apache VirtualHosts config:</p>
 <div class="highlight-none"><div class="highlight"><pre>&lt;VirtualHost *:80&gt;
    ServerName cloud.owncloud.com
@@ -275,36 +260,32 @@ achieved by a setting such as the following in the Apache VirtualHosts config:</
 </div>
 <div class="section" id="enable-http-strict-transport-security">
 <span id="enable-hsts-label"></span><h3>Enable HTTP Strict Transport Security<a class="headerlink" href="#enable-http-strict-transport-security" title="Permalink to this headline">¶</a></h3>
-<p>While redirecting all traffic to HTTPS is already a good start it will often not
-completely prevent man-in-the-middle attacks for a regular user. Thus
-administrators are encouraged to set the HTTP Strict Transport Security header
-which will instruct browsers to not allow any connection to the ownCloud
-instance anymore using HTTPS and a invalid certificate warning will often not be
-able to get bypassed.</p>
+<p>While redirecting all traffic to HTTPS is good, it may not completely prevent
+man-in-the-middle attacks. Thus administrators are encouraged to set the HTTP
+Strict Transport Security header, which instructs browsers to not allow any
+connection to the ownCloud instance using HTTP, and it attempts to prevent site
+visitors from bypassing invalid certificate warnings.</p>
 <p>This can be achieved by setting the following settings within the Apache
 VirtualHost file:</p>
 <div class="highlight-none"><div class="highlight"><pre>&lt;VirtualHost *:443&gt;
    ServerName cloud.owncloud.com
-   Header always add Strict-Transport-Security &quot;max-age=15768000; includeSubDomains; preload&quot;
+   Header always add Strict-Transport-Security &quot;max-age=15768000&quot;
 &lt;/VirtualHost&gt;
 </pre></div>
 </div>
-<p>Be aware that above policy will also apply for all subdomains, if you don&#8217;t
-have HTTPS properly configured on all subdomains you mut remove the <tt class="docutils literal"><span class="pre">includeSubdomains</span></tt>
-part.</p>
-<p>Furthermore it shall be noted that this requires that the <tt class="docutils literal"><span class="pre">mod_headers</span></tt>
-extension is installed.</p>
+<p>This requires the <tt class="docutils literal"><span class="pre">mod_headers</span></tt> extension in Apache.</p>
 </div>
 <div class="section" id="proper-ssl-configuration">
 <h3>Proper SSL configuration<a class="headerlink" href="#proper-ssl-configuration" title="Permalink to this headline">¶</a></h3>
-<p>Default SSL configurations by web servers are often not state of the art and
+<p>Default SSL configurations by Web servers are often not state-of-the-art, and
 require fine-tuning for an optimal performance and security experience. The
-available SSL ciphers and options depends completely on your environment and
+available SSL ciphers and options depend completely on your environment and
 thus giving a generic recommendation is not really possible.</p>
-<p>We recommend to use the <a class="reference external" href="https://mozilla.github.io/server-side-tls/ssl-config-generator/">Mozilla SSL Configuration Generator</a> to generate a
-suitable configuration suited for your environment, furthermore the free <a class="reference external" href="https://www.ssllabs.com/ssltest/">Qualys
-SSL Labs Tests</a> give a good guidance whether the SSL server was correctly
+<p>We recommend using the <a class="reference external" href="https://mozilla.github.io/server-side-tls/ssl-config-generator/">Mozilla SSL Configuration Generator</a> to generate a
+suitable configuration suited for your environment, and the free <a class="reference external" href="https://www.ssllabs.com/ssltest/">Qualys
+SSL Labs Tests</a> gives good guidance on whether your SSL server is correctly
 configured.</p>
+<p>Also ensure that HTTP compression is disabled to mitigate the BREACH attack.</p>
 </div>
 </div>
 <div class="section" id="use-a-dedicated-domain-for-owncloud">
@@ -315,12 +296,13 @@ Same-Origin-Policy.</p>
 </div>
 <div class="section" id="serve-security-related-headers-by-the-web-server">
 <h2>Serve security related Headers by the web server<a class="headerlink" href="#serve-security-related-headers-by-the-web-server" title="Permalink to this headline">¶</a></h2>
-<p>Basic security headers are served by ownCloud already in a default environment. These includes:</p>
+<p>Basic security headers are served by ownCloud already in a default environment.
+These include:</p>
 <ul>
 <li><dl class="first docutils">
 <dt><tt class="docutils literal"><span class="pre">X-Content-Type-Options:</span> <span class="pre">nosniff</span></tt></dt>
 <dd><ul class="first last simple">
-<li>Instructs some browsers to not sniff the mimetype of files. This is used for example to prevent browsers to interpret text files as JavaScript.</li>
+<li>Instructs some browsers to not sniff the mimetype of files. This is used for example to prevent browsers from interpreting text files as JavaScript.</li>
 </ul>
 </dd>
 </dl>
@@ -328,7 +310,7 @@ Same-Origin-Policy.</p>
 <li><dl class="first docutils">
 <dt><tt class="docutils literal"><span class="pre">X-XSS-Protection:</span> <span class="pre">1;</span> <span class="pre">mode=block</span></tt></dt>
 <dd><ul class="first last simple">
-<li>Enforces the browsers to enable their browser side Cross-Site-Scripting filter.</li>
+<li>Instructs browsers to enable their browser side Cross-Site-Scripting filter.</li>
 </ul>
 </dd>
 </dl>
@@ -336,7 +318,7 @@ Same-Origin-Policy.</p>
 <li><dl class="first docutils">
 <dt><tt class="docutils literal"><span class="pre">X-Robots-Tag:</span> <span class="pre">none</span></tt></dt>
 <dd><ul class="first last simple">
-<li>Instructs search machines to not index these page.</li>
+<li>Instructs search machines to not index these pages.</li>
 </ul>
 </dd>
 </dl>
@@ -344,26 +326,24 @@ Same-Origin-Policy.</p>
 <li><dl class="first docutils">
 <dt><tt class="docutils literal"><span class="pre">X-Frame-Options:</span> <span class="pre">SAMEORIGIN</span></tt></dt>
 <dd><ul class="first last simple">
-<li>Prevents to embed the ownCloud instance within an iframe from other domains to prevent Clickjacking and other similiar attacks.</li>
+<li>Prevents embedding of the ownCloud instance within an iframe from other domains to prevent Clickjacking and other similiar attacks.</li>
 </ul>
 </dd>
 </dl>
 </li>
 </ul>
-<p>However, these headers are added by the applications code in PHP and thus not
-served on static resources and rely on the fact that there is no way to bypass
-the intended response code path.</p>
+<p>These headers are hard-coded into the ownCloud server, and need no intervention
+by the server administrator.</p>
 <p>For optimal security, administrators are encouraged to serve these basic HTTP
-headers by the web server to enforce them on response.</p>
-<p>Apache has to be configured to use the <tt class="docutils literal"><span class="pre">.htaccess</span></tt> file as well as the following Apache
-modules needs to be enabled:</p>
+headers by the web server to enforce them on response. To do this Apache has to
+be configured to use the <tt class="docutils literal"><span class="pre">.htaccess</span></tt> file and the following Apache
+modules need to be enabled:</p>
 <ul class="simple">
 <li>mod_headers</li>
 <li>mod_env</li>
 </ul>
-<p>For nginx, please see the nginx configuration example <a class="reference internal" href="../installation/nginx_configuration.html#nginx-configuration-example"><em>Nginx Configuration</em></a></p>
 <p>Administrators can verify whether this security change is active by accessing a
-static resource served by the web server and verify that above mentioned
+static resource served by the web server and verify that the above mentioned
 security headers are shipped.</p>
 </div>
 </div>

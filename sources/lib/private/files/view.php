@@ -642,10 +642,10 @@ class View {
 			}
 
 			$run = true;
-			if ($this->shouldEmitHooks() && (Cache\Scanner::isPartialFile($path1) && !Cache\Scanner::isPartialFile($path2))) {
+			if ($this->shouldEmitHooks($path1) && (Cache\Scanner::isPartialFile($path1) && !Cache\Scanner::isPartialFile($path2))) {
 				// if it was a rename from a part file to a regular file it was a write and not a rename operation
 				$this->emit_file_hooks_pre($exists, $path2, $run);
-			} elseif ($this->shouldEmitHooks()) {
+			} elseif ($this->shouldEmitHooks($path1)) {
 				\OC_Hook::emit(
 					Filesystem::CLASSNAME, Filesystem::signal_rename,
 					array(
@@ -1087,6 +1087,11 @@ class View {
 			return true;
 		}
 		$fullPath = $this->getAbsolutePath($path);
+
+		if ($fullPath === $defaultRoot) {
+			return true;
+		}
+
 		return (strlen($fullPath) > strlen($defaultRoot)) && (substr($fullPath, 0, strlen($defaultRoot) + 1) === $defaultRoot . '/');
 	}
 
@@ -1354,7 +1359,7 @@ class View {
 
 							// if sharing was disabled for the user we remove the share permissions
 							if (\OCP\Util::isSharingDisabledForUser()) {
-								$content['permissions'] = $content['permissions'] & ~\OCP\Constants::PERMISSION_SHARE;
+								$rootEntry['permissions'] = $rootEntry['permissions'] & ~\OCP\Constants::PERMISSION_SHARE;
 							}
 
 							$files[] = new FileInfo($path . '/' . $rootEntry['name'], $subStorage, '', $rootEntry, $mount);
@@ -1656,11 +1661,11 @@ class View {
 		}
 
 		// verify database - e.g. mysql only 3-byte chars
-		if (preg_match('%^(?:
+		if (preg_match('%(?:
       \xF0[\x90-\xBF][\x80-\xBF]{2}      # planes 1-3
     | [\xF1-\xF3][\x80-\xBF]{3}          # planes 4-15
     | \xF4[\x80-\x8F][\x80-\xBF]{2}      # plane 16
-)*$%xs', $fileName)) {
+)%xs', $fileName)) {
 			throw new InvalidPathException($l10n->t('4-byte characters are not supported in file names'));
 		}
 
