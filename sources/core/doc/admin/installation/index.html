@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installation &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>Installation &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,9 +27,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
-    <link rel="next" title="Preferred Linux Installation Method" href="linux_installation.html" />
-    <link rel="prev" title="What’s New for Admins in ownCloud 8.1" href="../whats_new_admin.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
+    <link rel="next" title="System Requirements" href="system_requirements.html" />
+    <link rel="prev" title="What’s New for Admins in ownCloud 8.2" href="../whats_new_admin.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -113,28 +113,31 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.2</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="system_requirements.html">System Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="linux_installation.html">Preferred Linux Installation Method</a></li>
-<li class="toctree-l2"><a class="reference internal" href="command_line_installation.html">Installing ownCloud From the Command Line</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation_wizard.html">Installation Wizard</a></li>
-<li class="toctree-l2"><a class="reference internal" href="appliance_installation.html">ownCloud Appliances</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_installation.html">Installing ownCloud From the Command Line</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apps_management_installation.html">Installing and Managing Apps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hiawatha_configuration.html">Hiawatha Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nginx_configuration.html">Nginx Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="source_installation.html">Manual Installation on Linux</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ucs_installation.html">Univention Corporate Server</a></li>
-<li class="toctree-l2"><a class="reference internal" href="yaws_configuration.html">Yaws Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appliance_installation.html">ownCloud Community Appliance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="php_54_installation.html">Installing PHP 5.4 on RHEL 6 and CentOS 6</a></li>
 <li class="toctree-l2"><a class="reference internal" href="selinux_configuration.html">SELinux Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nginx_configuration.html">Nginx Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ucs_installation.html">Univention Corporate Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hiawatha_configuration.html">Hiawatha Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="yaws_configuration.html">Yaws Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="macos_installation.html">Mac OS X</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_server/index.html">ownCloud Server Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../configuration_server/index.html">ownCloud Server Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_mimetypes/index.html">Mimetypes Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
@@ -142,6 +145,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_server_branding/index.html">Enterprise Server Branding (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
@@ -161,28 +165,28 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="system_requirements.html">System Requirements</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="system_requirements.html#memory">Memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="system_requirements.html#recommended-setup-for-running-owncloud">Recommended Setup for Running ownCloud</a></li>
+<li class="toctree-l2"><a class="reference internal" href="system_requirements.html#supported-platforms">Supported Platforms</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="linux_installation.html">Preferred Linux Installation Method</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="linux_installation.html#recommended-setup-and-supported-platforms">Recommended Setup and Supported Platforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="linux_installation.html#installation-quick-start">Installation Quick Start</a></li>
 <li class="toctree-l2"><a class="reference internal" href="linux_installation.html#installing-owncloud-enterprise-subscription">Installing ownCloud Enterprise Subscription</a></li>
 <li class="toctree-l2"><a class="reference internal" href="linux_installation.html#downgrading-not-supported">Downgrading Not Supported</a></li>
-<li class="toctree-l2"><a class="reference internal" href="linux_installation.html#supported-distribution-packages">Supported Distribution Packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="linux_installation.html#additional-installation-guides-and-notes">Additional Installation Guides and Notes</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="command_line_installation.html">Installing ownCloud From the Command Line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation_wizard.html">Installation Wizard</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="installation_wizard.html#required-settings">Required Settings</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation_wizard.html#storage-database">Storage &amp; Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation_wizard.html#quick-start">Quick Start</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation_wizard.html#data-directory-location">Data Directory Location</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation_wizard.html#database-choice">Database Choice</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation_wizard.html#finish-installation">Finish Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation_wizard.html#setting-strong-directory-permissions">Setting Strong Directory Permissions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation_wizard.html#trusted-domains">Trusted Domains</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation_wizard.html#setting-strong-directory-permissions">Setting Strong Directory Permissions</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="appliance_installation.html">ownCloud Appliances</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="appliance_installation.html#software-appliances">Software Appliances</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="command_line_installation.html">Installing ownCloud From the Command Line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apps_management_installation.html">Installing and Managing Apps</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="apps_management_installation.html#enterprise-subscription-supported-apps">Enterprise Subscription Supported Apps</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apps_management_installation.html#viewing-enabled-apps">Viewing Enabled Apps</a></li>
@@ -191,11 +195,6 @@
 <li class="toctree-l2"><a class="reference internal" href="apps_management_installation.html#adding-third-party-apps">Adding Third Party Apps</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apps_management_installation.html#using-custom-app-directories">Using Custom App Directories</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apps_management_installation.html#using-your-own-appstore">Using Your Own Appstore</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="hiawatha_configuration.html">Hiawatha Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="nginx_configuration.html">Nginx Configuration</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="nginx_configuration.html#suppressing-log-messages">Suppressing Log Messages</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="source_installation.html">Manual Installation on Linux</a><ul>
@@ -212,14 +211,16 @@
 <li class="toctree-l2"><a class="reference internal" href="source_installation.html#other-web-servers">Other Web Servers</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="ucs_installation.html">Univention Corporate Server</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="ucs_installation.html#pre-configuration">Pre configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ucs_installation.html#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ucs_installation.html#postconfiguration-optional">Postconfiguration (optional)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ucs_installation.html#using-owncloud">Using ownCloud</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appliance_installation.html">ownCloud Community Appliance</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="appliance_installation.html#instructions-for-virtualbox-and-ova">Instructions for VirtualBox and OVA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appliance_installation.html#software-appliances">Software Appliances</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="yaws_configuration.html">Yaws Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="php_54_installation.html">Installing PHP 5.4 on RHEL 6 and CentOS 6</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="php_54_installation.html#rhel-6">RHEL 6</a></li>
+<li class="toctree-l2"><a class="reference internal" href="php_54_installation.html#centos-6">CentOS 6</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="selinux_configuration.html">SELinux Configuration</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="selinux_configuration.html#allow-access-to-a-remote-database">Allow access to a remote database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="selinux_configuration.html#allow-access-to-ldap-server">Allow access to LDAP server</a></li>
@@ -227,6 +228,20 @@
 <li class="toctree-l2"><a class="reference internal" href="selinux_configuration.html#allow-access-to-smtp-sendmail">Allow access to SMTP/sendmail</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="nginx_configuration.html">Nginx Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="nginx_configuration.html#suppressing-log-messages">Suppressing Log Messages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nginx_configuration.html#javascript-js-or-css-css-files-not-served-properly">JavaScript (.js) or CSS (.css) files not served properly</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ucs_installation.html">Univention Corporate Server</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ucs_installation.html#pre-configuration">Pre configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ucs_installation.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ucs_installation.html#postconfiguration-optional">Postconfiguration (optional)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ucs_installation.html#using-owncloud">Using ownCloud</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hiawatha_configuration.html">Hiawatha Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="yaws_configuration.html">Yaws Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="macos_installation.html">Mac OS X</a></li>
 </ul>
 </div>

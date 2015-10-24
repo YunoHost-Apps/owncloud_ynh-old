@@ -2,6 +2,7 @@
 /**
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Robin Appelman <icewind@owncloud.com>
+ * @author Vincent Petry <pvince81@owncloud.com>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
  * @license AGPL-3.0
@@ -47,6 +48,7 @@ class Disable extends Command {
 				$output->writeln($appId . ' disabled');
 			} catch(\Exception $e) {
 				$output->writeln($e->getMessage());
+				return 2;
 			}
 		} else {
 			$output->writeln('No such app enabled: ' . $appId);

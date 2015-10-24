@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Transactional File Locking &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>Transactional File Locking &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,9 +27,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
     <link rel="up" title="File Sharing and Management" href="index.html" />
-    <link rel="next" title="Configuring Federated Cloud Sharing" href="federated_cloud_sharing_configuration.html" />
+    <link rel="next" title="Previews Configuration" href="previews_configuration.html" />
     <link rel="prev" title="Using the Files Locking App" href="files_locking_enabling.html" />
 <script type="text/javascript">
 (function () {
@@ -114,28 +114,29 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_server/index.html">ownCloud Server Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">File Sharing and Management</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="file_sharing_configuration.html">File Sharing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="federated_cloud_sharing_configuration.html">Configuring Federated Cloud Sharing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="big_file_upload_configuration.html">Uploading big files &gt; 512MB</a></li>
 <li class="toctree-l2"><a class="reference internal" href="collaborative_documents_configuration.html">Configuring the Collaborative Documents App</a></li>
 <li class="toctree-l2"><a class="reference internal" href="default_files_configuration.html">Providing Default Files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="external_storage_configuration_gui.html">Configuring External Storage (GUI)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="external_storage_configuration.html">Configuring External Storage (Configuration File)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="external_storage/auth_mechanisms.html">External Storage Authentication mechanisms</a></li>
 <li class="toctree-l2"><a class="reference internal" href="encryption_configuration.html">Encryption Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="files_locking_enabling.html">Using the Files Locking App</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Transactional File Locking</a></li>
-<li class="toctree-l2"><a class="reference internal" href="federated_cloud_sharing_configuration.html">Configuring Federated Cloud Sharing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="previews_configuration.html">Previews Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="serving_static_files_configuration.html">Serving Static Files for Better Performance</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../configuration_server/index.html">ownCloud Server Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_mimetypes/index.html">Mimetypes Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
@@ -143,6 +144,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_server_branding/index.html">Enterprise Server Branding (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
@@ -161,9 +163,10 @@
   <div class="section" id="transactional-file-locking">
 <h1>Transactional File Locking<a class="headerlink" href="#transactional-file-locking" title="Permalink to this headline">¶</a></h1>
 <p>ownCloud&#8217;s new transactional file locking mechanism operates differently than
-the old File Locking application, and will eventually replace it. If you elect
-to use the new file locking mechanism make sure you disable the File Locking
-app.</p>
+the old File Locking application, and will eventually replace it. The purpose
+of this mechanism is to avoid file corruption during normal operation. If you
+elect to use the new file locking mechanism make sure you disable the File
+Locking app.</p>
 <p>The new file locking mechanism has these capabilities:</p>
 <ul class="simple">
 <li>Operates at a higher level than the filesystem, so you don&#8217;t need to use a
@@ -177,28 +180,39 @@ from multiple users</li>
 <li>Manages locks correctly on external storage mounts</li>
 <li>Manages encrypted files correctly</li>
 </ul>
-<p>You must install the Redis server and <tt class="docutils literal"><span class="pre">php-redis</span></tt> module for the new file
-locking to work. On Debian/Ubuntu/Mint this is <tt class="docutils literal"><span class="pre">redis-server</span></tt> and
-<tt class="docutils literal"><span class="pre">php5-redis</span></tt>, and on Red Hat/CentOS/Fedora is it <tt class="docutils literal"><span class="pre">redis</span></tt>
-and <tt class="docutils literal"><span class="pre">php-pecl-redis</span></tt> from the EPEL repository. After installing Redis and its
-corresponding PHP module, restart your HTTP server.</p>
-<p>After installing Redis you must enter a simple configuration in your
-<tt class="docutils literal"><span class="pre">config.php</span></tt> file, like this example:</p>
+<p>You must install the Redis server and corresponding PHP module for the new file
+locking to work. (See <a class="reference internal" href="../configuration_server/caching_configuration.html"><em>Configuring Memory Caching</em></a>.)</p>
+<p>After installing Redis you must enter a configuration in your <tt class="docutils literal"><span class="pre">config.php</span></tt>
+file like this example:</p>
 <div class="highlight-python"><pre>'filelocking.enabled' =&gt; 'true',
 'memcache.locking' =&gt; '\OC\Memcache\Redis',
 'redis' =&gt; array(
      'host' =&gt; 'localhost',
-     // can also be a unix domain socket:
-     '/tmp/redis.sock',
      'port' =&gt; 6379,
      'timeout' =&gt; 0.0,
-     // Optional, if undefined SELECT will not run and will use Redis
-     // Server's default DB Index.
-     //'dbindex' =&gt; 0,
-   ),</pre>
+      ),</pre>
+</div>
+<p>If you want to connect to Redis configured to listen on an unix socket (which is
+recommended if Redis is running on the same system as ownCloud) use this example
+<tt class="docutils literal"><span class="pre">config.php</span></tt> configuration:</p>
+<div class="highlight-python"><pre>'filelocking.enabled' =&gt; 'true',
+'memcache.locking' =&gt; '\OC\Memcache\Redis',
+'redis' =&gt; array(
+     'host' =&gt; '/var/run/redis/redis.sock',
+     'port' =&gt; 0,
+     'timeout' =&gt; 0.0,
+      ),</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Large installations especially benefit from setting
+<tt class="docutils literal"><span class="pre">memcache.locking</span></tt>. File locking is enabled by default, which uses the
+database locking backend. This places a significant load on your database.
+Using <tt class="docutils literal"><span class="pre">memcache.locking</span></tt> relieves the database load and improves
+performance.</p>
 </div>
 <p>The <strong>Server status</strong> section on your ownCloud Admin page indicates whether
-transactional file locking is enabled or disabled.</p>
+experimental file locking is enabled or disabled.</p>
 <div class="figure">
 <img alt="../_images/transactional-locking-1.png" src="../_images/transactional-locking-1.png" />
 </div>

@@ -4,6 +4,7 @@
  * @author Lukas Reschke <lukas@owncloud.com>
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
  * @author Vincent Petry <pvince81@owncloud.com>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
@@ -39,7 +40,7 @@ class NaturalSort {
 		// or inject an instance of \OC\NaturalSort_DefaultCollator to force using Owncloud's default collator
 		if (isset($injectedCollator)) {
 			$this->collator = $injectedCollator;
-			\OC_Log::write('core', 'forced use of '.get_class($injectedCollator), \OC_Log::DEBUG);
+			\OCP\Util::writeLog('core', 'forced use of '.get_class($injectedCollator), \OCP\Util::DEBUG);
 		}
 	}
 

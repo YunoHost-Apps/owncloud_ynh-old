@@ -6,6 +6,7 @@
  * @author Robin Appelman <icewind@owncloud.com>
  * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
  * @author Scrutinizer Auto-Fixer <auto-fixer@scrutinizer-ci.com>
+ * @author tbartenstein <tbartenstein@users.noreply.github.com>
  * @author Thomas Müller <thomas.mueller@tmit.eu>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
@@ -252,7 +253,7 @@ class FileInfo implements \OCP\Files\FileInfo, \ArrayAccess {
 		$sid = $this->getStorage()->getId();
 		if (!is_null($sid)) {
 			$sid = explode(':', $sid);
-			return ($sid[0] !== 'local' and $sid[0] !== 'home' and $sid[0] !== 'shared');
+			return ($sid[0] !== 'home' and $sid[0] !== 'shared');
 		}
 
 		return false;

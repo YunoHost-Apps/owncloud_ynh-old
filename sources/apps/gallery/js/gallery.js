@@ -1,310 +1,534 @@
-/* global Album, GalleryImage, SlideShow, Thumbnail, oc_requesttoken */
-var Gallery = {};
-Gallery.images = [];
-Gallery.currentAlbum = '';
-Gallery.users = [];
-Gallery.albumMap = {};
-Gallery.imageMap = {};
+/* global Album, GalleryImage */
+(function ($, OC, t) {
+	"use strict";
+	var Gallery = {
+		currentAlbum: null,
+		config: {},
+		/** Map of the whole gallery, built as we navigate through folders */
+		albumMap: {},
+		/** Used to pick an image based on the URL */
+		imageMap: {},
+		appName: 'gallery',
+		token: undefined,
+		activeSlideShow: null,
+		buttonsWidth: 320,
+		browserToolbarHeight: 150,
 
-Gallery.getAlbum = function (path, token) {
-	if (!Gallery.albumMap[path]) {
-		Gallery.albumMap[path] = new Album(path, [], [], OC.basename(path), token);
-		if (path !== '') {
-			var parent = OC.dirname(path);
-			if (parent === path) {
-				parent = '';
+		/**
+		 * Refreshes the view and starts the slideshow if required
+		 *
+		 * @param {string} path
+		 * @param {string} albumPath
+		 */
+		refresh: function (path, albumPath) {
+			if (Gallery.currentAlbum !== albumPath) {
+				Gallery.view.init(albumPath);
 			}
-			Gallery.getAlbum(parent, token).subAlbums.push(Gallery.albumMap[path]);
-		}
-	}
-	return Gallery.albumMap[path];
-};
 
-// fill the albums from Gallery.images
-Gallery.fillAlbums = function () {
-	var sortFunction = function (a, b) {
-		return a.path.toLowerCase().localeCompare(b.path.toLowerCase());
-	};
-	var token = $('#gallery').data('token');
-	var album, image;
-	return $.getJSON(OC.generateUrl('apps/gallery/ajax/images'), {token: token}).then(function (data) {
-		Gallery.images = data;
-
-		var path = null;
-		for (var i = 0; i < Gallery.images.length; i++) {
-			path = Gallery.images[i];
-			image = new GalleryImage(Gallery.images[i], path, token);
-			var dir = OC.dirname(path);
-			if (dir === path) {
-				dir = '';
+			// If the path is mapped, that means that it's an albumPath
+			if (Gallery.albumMap[path]) {
+				if (Gallery.activeSlideShow) {
+					Gallery.activeSlideShow.stop();
+				}
+			} else if (Gallery.imageMap[path] && Gallery.activeSlideShow.active === false) {
+				Gallery.view.startSlideshow(path, albumPath);
 			}
-			album = Gallery.getAlbum(dir, token);
-			album.images.push(image);
-			Gallery.imageMap[image.path] = image;
-		}
+		},
 
-		for (path in Gallery.albumMap) {
-			Gallery.albumMap[path].images.sort(sortFunction);
-			Gallery.albumMap[path].subAlbums.sort(sortFunction);
-		}
-	});
-};
+		/**
+		 * Retrieves information about all the images and albums located in the current folder
+		 *
+		 * @param {string} currentLocation
+		 *
+		 * @returns {*}
+		 */
+		getFiles: function (currentLocation) {
+			// Cache the sorting order of the current album before loading new files
+			if (!$.isEmptyObject(Gallery.albumMap)) {
+				Gallery.albumMap[Gallery.currentAlbum].sorting = Gallery.config.albumSorting;
+			}
+			// Checks if we've visited this location before ands saves the etag to use for
+			// comparison later
+			var albumEtag;
+			var albumCache = Gallery.albumMap[decodeURIComponent(currentLocation)];
+			if (!$.isEmptyObject(albumCache)) {
+				albumEtag = albumCache.etag;
+			}
 
-Gallery.getAlbumInfo = function (album) {
-	if (album === $('#gallery').data('token')) {
-		return [];
-	}
-	if (!Gallery.getAlbumInfo.cache[album]) {
-		var def = new $.Deferred();
-		Gallery.getAlbumInfo.cache[album] = def;
-		$.getJSON(OC.generateUrl('apps/gallery/ajax/gallery?gallery={gallery}', {gallery: album}), function (data) {
-			def.resolve(data);
-		});
-	}
-	return Gallery.getAlbumInfo.cache[album];
-};
-Gallery.getAlbumInfo.cache = {};
-Gallery.getImage = function (image) {
-	var token = ($('#gallery').data('token')) ? $('#gallery').data('token') : '';
-	return OC.generateUrl('apps/gallery/ajax/image?file={file}&token={token}', {
-		file: image,
-		token: token
-	});
-};
-Gallery.share = function (event) {
-	if (!OC.Share.droppedDown) {
-		event.preventDefault();
-		event.stopPropagation();
-
-		(function () {
-			var target = OC.Share.showLink;
-			OC.Share.showLink = function () {
-				var r = target.apply(this, arguments);
-				$('#linkText').val($('#linkText').val().replace('/s/', '/apps/gallery/public/'));
-				return r;
+			// Sends the request to the server
+			var params = {
+				location: currentLocation,
+				mediatypes: Gallery.config.getMediaTypes(),
+				features: Gallery.config.getFeatures(),
+				etag: albumEtag
 			};
-		})();
-
-		Gallery.getAlbumInfo(Gallery.currentAlbum).then(function (info) {
-			$('a.share').data('item', info.fileid).data('link', true)
-				.data('possible-permissions', info.permissions).
-				click();
-			if (!$('#linkCheckbox').is(':checked')) {
-				$('#linkText').hide();
-			}
-		});
-	}
-};
-Gallery.view = {};
-Gallery.view.element = null;
-Gallery.view.clear = function () {
-	Gallery.view.element.empty();
-	Gallery.showLoading();
-};
-Gallery.view.cache = {};
-
-
-Gallery.view.viewAlbum = function (albumPath) {
-	var i, crumbs, path;
-	albumPath = albumPath || '';
-	if (!Gallery.albumMap[albumPath]) {
-		return;
-	}
-
-	Gallery.view.clear();
-	if (albumPath !== Gallery.currentAlbum) {
-		Gallery.view.loadVisibleRows.loading = false;
-	}
-	Gallery.currentAlbum = albumPath;
-
-	if (albumPath === '' || $('#gallery').data('token')) {
-		$('button.share').hide();
-	} else {
-		$('button.share').show();
-	}
-
-	OC.Breadcrumb.clear();
-	var albumName = $('#content').data('albumname');
-	if (!albumName) {
-		albumName = t('gallery', 'Pictures');
-	}
-	OC.Breadcrumb.push(albumName, '#').click(function () {
-		Gallery.view.viewAlbum('');
-	});
-	path = '';
-	crumbs = albumPath.split('/');
-	for (i = 0; i < crumbs.length; i++) {
-		if (crumbs[i]) {
-			if (path) {
-				path += '/' + crumbs[i];
-			} else {
-				path += crumbs[i];
-			}
-			Gallery.view.pushBreadCrumb(crumbs[i], path);
-		}
-	}
-
-	Gallery.getAlbumInfo(Gallery.currentAlbum); //preload album info
-
-	Gallery.albumMap[albumPath].viewedItems = 0;
-	setTimeout(function () {
-		Gallery.view.loadVisibleRows.activeIndex = 0;
-		Gallery.view.loadVisibleRows(Gallery.albumMap[Gallery.currentAlbum], Gallery.currentAlbum);
-	}, 0);
-};
-
-Gallery.view.loadVisibleRows = function (album, path) {
-	if (Gallery.view.loadVisibleRows.loading && Gallery.view.loadVisibleRows.loading.state() !== 'resolved') {
-		return Gallery.view.loadVisibleRows.loading;
-	}
-	// load 2 windows worth of rows
-	var scroll = $('#content-wrapper').scrollTop() + $(window).scrollTop();
-	var targetHeight = ($(window).height() * 2) + scroll;
-	var showRows = function (album) {
-		if (!(album.viewedItems < album.subAlbums.length + album.images.length)) {
-			Gallery.view.loadVisibleRows.loading = null;
-			return;
-		}
-		return album.getNextRow($(window).width()).then(function (row) {
-			return row.getDom().then(function (dom) {
-				// defer removal of loading class to trigger CSS3 animation
-				_.defer(function () {
-					dom.removeClass('loading');
-				});
-				if (Gallery.currentAlbum !== path) {
-					Gallery.view.loadVisibleRows.loading = null;
-					return; //throw away the row if the user has navigated away in the meantime
-				}
-				if (Gallery.view.element.length === 1) {
-					Gallery.showNormal();
-				}
-				Gallery.view.element.append(dom);
-				if (album.viewedItems < album.subAlbums.length + album.images.length &&
-					Gallery.view.element.height() < targetHeight) {
-					return showRows(album);
+			// Only use the folder as a GET parameter and not as part of the URL
+			var url = Gallery.utility.buildGalleryUrl('files', '/list', params);
+			return $.getJSON(url).then(function (/**{{albuminfo:Object, files:Array}}*/ data) {
+				/**@type {{
+				 * 	fileid: number,
+				 * 	permissions: number,
+				 * 	path: string,
+				 * 	etag: string
+				 * 	information,
+				 * 	sorting,
+				 * 	error: string
+				 * }}*/
+				var albumInfo = data.albuminfo;
+				Gallery.config.setAlbumConfig(albumInfo);
+				// Both the folder and the etag have to match
+				if ((decodeURIComponent(currentLocation) === albumInfo.path)
+					&& (albumInfo.etag === albumEtag)) {
+					Gallery.imageMap = albumCache.imageMap;
 				} else {
-					Gallery.view.loadVisibleRows.loading = null;
+					Gallery._mapFiles(data);
 				}
+
+				// Restore the previous sorting order for this album
+				if (!$.isEmptyObject(Gallery.albumMap[albumInfo.path].sorting)) {
+					Gallery.config.updateAlbumSorting(Gallery.albumMap[albumInfo.path].sorting);
+				}
+
 			}, function () {
-				Gallery.view.loadVisibleRows.loading = null;
+				// Triggered if we couldn't find a working folder
+				Gallery.view.element.empty();
+				Gallery.showEmpty();
+				Gallery.currentAlbum = null;
 			});
-		});
+		},
+
+		/**
+		 * Sorts albums and images based on user preferences
+		 */
+		sorter: function () {
+			var sortType = 'name';
+			var sortOrder = 'asc';
+			var albumSortType = 'name';
+			var albumSortOrder = 'asc';
+			if (this.id === 'sort-date-button') {
+				sortType = 'date';
+
+			}
+			var currentSort = Gallery.config.albumSorting;
+			if (currentSort.type === sortType && currentSort.order === sortOrder) {
+				sortOrder = 'des';
+			}
+
+			// Update the controls
+			Gallery.view.sortControlsSetup(sortType, sortOrder);
+
+			// We can't currently sort by album creation time
+			if (sortType === 'name') {
+				albumSortOrder = sortOrder;
+			}
+
+			// FIXME Rendering is still happening while we're sorting...
+
+			// Clear before sorting
+			Gallery.view.clear();
+
+			// Sort the images
+			Gallery.albumMap[Gallery.currentAlbum].images.sort(Gallery.utility.sortBy(sortType,
+				sortOrder));
+			Gallery.albumMap[Gallery.currentAlbum].subAlbums.sort(Gallery.utility.sortBy(albumSortType,
+				albumSortOrder));
+
+			// Save the new settings
+			var sortConfig = {
+				type: sortType,
+				order: sortOrder,
+				albumOrder: albumSortOrder
+			};
+			Gallery.config.updateAlbumSorting(sortConfig);
+
+			// Refresh the view
+			Gallery.view.viewAlbum(Gallery.currentAlbum);
+		},
+
+		/**
+		 * Switches to the Files view
+		 *
+		 * @param event
+		 */
+		switchToFilesView: function (event) {
+			event.stopPropagation();
+
+			var subUrl = '';
+			var params = {path: '/' + Gallery.currentAlbum};
+			if (Gallery.token) {
+				params.token = Gallery.token;
+				subUrl = 's/{token}?path={path}';
+			} else {
+				subUrl = 'apps/files?dir={path}';
+			}
+
+			var button = $('#filelist-button');
+			button.children('#button-loading').addClass('loading');
+			OC.redirect(OC.generateUrl(subUrl, params));
+		},
+
+		/**
+		 * Populates the share dialog with the needed information
+		 *
+		 * @param event
+		 */
+		share: function (event) {
+			// Clicking on share button does not trigger automatic slide-up
+			$('.album-info-container').slideUp();
+
+			if (!OC.Share.droppedDown) {
+				event.preventDefault();
+				event.stopPropagation();
+
+				(function () {
+					var target = OC.Share.showLink;
+					OC.Share.showLink = function () {
+						var r = target.apply(this, arguments);
+						$('#linkText').val($('#linkText').val().replace('index.php/s/',
+							'index.php/apps/' +
+							Gallery.appName + '/s/'));
+
+						return r;
+					};
+				})();
+
+				var albumPermissions = Gallery.config.albumPermissions;
+				$('a.share').data('item', albumPermissions.fileid).data('link', true)
+					.data('possible-permissions', albumPermissions.permissions).
+					click();
+				if (!$('#linkCheckbox').is(':checked')) {
+					$('#linkText').hide();
+				}
+			}
+		},
+
+		/**
+		 * Sends an archive of the current folder to the browser
+		 *
+		 * @param event
+		 */
+		download: function (event) {
+			event.preventDefault();
+
+			var path = $('#content').data('albumname');
+			var files = Gallery.currentAlbum;
+			var downloadUrl = Gallery.utility.buildFilesUrl(path, files);
+
+			OC.redirect(downloadUrl);
+		},
+
+		/**
+		 * Shows an information box to the user
+		 *
+		 * @param event
+		 */
+		showInfo: function (event) {
+			event.stopPropagation();
+			Gallery.infoBox.showInfo();
+		},
+
+		/**
+		 * Lets the user add the shared files to his ownCloud
+		 */
+		showSaveForm: function () {
+			$(this).hide();
+			$('.save-form').css('display', 'inline');
+			$('#remote_address').focus();
+		},
+
+		/**
+		 * Sends the shared files to the viewer's ownCloud
+		 *
+		 * @param event
+		 */
+		saveForm: function (event) {
+			event.preventDefault();
+
+			var saveElement = $('#save');
+			var remote = $(this).find('input[type="text"]').val();
+			var owner = saveElement.data('owner');
+			var name = saveElement.data('name');
+			var isProtected = saveElement.data('protected');
+			Gallery._saveToOwnCloud(remote, Gallery.token, owner, name, isProtected);
+		},
+
+		/**
+		 * Hide the search button while we wait for core to fix the templates
+		 */
+		hideSearch: function () {
+			$('form.searchbox').hide();
+		},
+
+		/**
+		 * Shows an empty gallery message
+		 */
+		showEmpty: function () {
+			var emptyContentElement = $('#emptycontent');
+			var message = '<div class="icon-gallery"></div>';
+			message += '<h2>' + t('gallery',
+				'No pictures found') + '</h2>';
+			message += '<p>' + t('gallery',
+				'Upload pictures in the files app to display them here') + '</p>';
+			emptyContentElement.html(message);
+			emptyContentElement.removeClass('hidden');
+			$('#controls').addClass('hidden');
+			$('#loading-indicator').hide();
+		},
+
+		/**
+		 * Shows an empty gallery message
+		 */
+		showEmptyFolder: function () {
+			var emptyContentElement = $('#emptycontent');
+			var message = '<div class="icon-gallery"></div>';
+			message += '<h2>' + t('gallery',
+				'Nothing in here') + '</h2>';
+			message += '<p>' + t('gallery',
+				'No media files found in this folder') + '</p>';
+			emptyContentElement.html(message);
+			emptyContentElement.removeClass('hidden');
+		},
+
+		/**
+		 * Shows the infamous loading spinner
+		 */
+		showLoading: function () {
+			$('#emptycontent').addClass('hidden');
+			$('#controls').removeClass('hidden');
+		},
+
+		/**
+		 * Shows thumbnails
+		 */
+		showNormal: function () {
+			$('#emptycontent').addClass('hidden');
+			$('#controls').removeClass('hidden');
+		},
+
+		/**
+		 * Creates a new slideshow using the images found in the current folder
+		 *
+		 * @param {Array} images
+		 * @param {string} startImage
+		 * @param {bool} autoPlay
+		 *
+		 * @returns {boolean}
+		 */
+		slideShow: function (images, startImage, autoPlay) {
+			if (startImage === undefined) {
+				OC.Notification.showTemporary(t('gallery',
+					'Aborting preview. Could not find the file'));
+				return false;
+			}
+			var start = images.indexOf(startImage);
+			images = images.filter(function (image, index) {
+				// If the slideshow is loaded before we get a thumbnail, we have to accept all
+				// images
+				if (!image.thumbnail) {
+					return image;
+				} else {
+					if (image.thumbnail.valid) {
+						return image;
+					} else if (index < images.indexOf(startImage)) {
+						start--;
+					}
+				}
+			}).map(function (image) {
+				var name = OC.basename(image.path);
+				var previewUrl = Gallery.utility.getPreviewUrl(image.fileId, image.etag);
+				var params = {
+					c: image.etag,
+					requesttoken: oc_requesttoken
+				};
+				var downloadUrl = Gallery.utility.buildGalleryUrl('files', '/download/' + image.fileId,
+					params);
+
+				return {
+					name: name,
+					path: image.path,
+					file: image.fileId,
+					mimeType: image.mimeType,
+					url: previewUrl,
+					downloadUrl: downloadUrl
+				};
+			});
+			Gallery.activeSlideShow.setImages(images, autoPlay);
+			Gallery.activeSlideShow.onStop = function () {
+				$('#content').show();
+				if (Gallery.currentAlbum !== '') {
+					// Only modern browsers can manipulate history
+					if (history && history.replaceState) {
+						history.replaceState('', '',
+							'#' + encodeURIComponent(Gallery.currentAlbum));
+					} else {
+						location.hash = '#' + encodeURIComponent(Gallery.currentAlbum);
+					}
+				} else {
+					// Only modern browsers can manipulate history
+					if (history && history.replaceState) {
+						history.replaceState('', '', '#');
+					} else {
+						location.hash = '#';
+					}
+				}
+			};
+			Gallery.activeSlideShow.show(start);
+
+			// Resets the last focused element
+			document.activeElement.blur();
+		},
+
+		/**
+		 * Builds the album's model
+		 *
+		 * @param {{albuminfo:Object, files:Array}} data
+		 * @private
+		 */
+		_mapFiles: function (data) {
+			Gallery.imageMap = {};
+			var image = null;
+			var path = null;
+			var fileId = null;
+			var mimeType = null;
+			var mTime = null;
+			var etag = null;
+			var albumInfo = data.albuminfo;
+			var currentLocation = albumInfo.path;
+			// This adds a new node to the map for each parent album
+			Gallery._mapStructure(currentLocation);
+			var files = data.files;
+			if (files.length > 0) {
+				var subAlbumCache = {};
+				var albumCache = Gallery.albumMap[currentLocation]
+					= new Album(currentLocation, [], [], OC.basename(currentLocation));
+				for (var i = 0; i < files.length; i++) {
+					path = files[i].path;
+					fileId = files[i].fileid;
+					mimeType = files[i].mimetype;
+					mTime = files[i].mtime;
+					etag = files[i].etag;
+
+					image = new GalleryImage(path, path, fileId, mimeType, mTime, etag);
+
+					// Determines the folder name for the image
+					var dir = OC.dirname(path);
+					if (dir === path) {
+						dir = '';
+					}
+					if (dir === currentLocation) {
+						// The image belongs to the current album, so we can add it directly
+						albumCache.images.push(image);
+					} else {
+						// The image belongs to a sub-album, so we create a sub-album cache if it
+						// doesn't exist and add images to it
+						if (!subAlbumCache[dir]) {
+							subAlbumCache[dir] = new Album(dir, [], [],
+								OC.basename(dir));
+						}
+						subAlbumCache[dir].images.push(image);
+
+						// The sub-album also has to be added to the global map
+						if (!Gallery.albumMap[dir]) {
+							Gallery.albumMap[dir] = {};
+						}
+					}
+					Gallery.imageMap[image.path] = image;
+				}
+				// Adds the sub-albums to the current album
+				Gallery._mapAlbums(albumCache, subAlbumCache);
+
+				// Caches the information which is not already cached
+				albumCache.etag = albumInfo.etag;
+				albumCache.imageMap = Gallery.imageMap;
+			}
+		},
+
+		/**
+		 * Adds every album leading the current folder to a global album map
+		 *
+		 * Per example, if you have Root/Folder1/Folder2/CurrentFolder then the map will contain:
+		 *    * Root
+		 *    * Folder1
+		 *    * Folder2
+		 *    * CurrentFolder
+		 *
+		 *  Every time a new location is loaded, the map is completed
+		 *
+		 *
+		 * @param {string} path
+		 *
+		 * @returns {Album}
+		 * @private
+		 */
+		_mapStructure: function (path) {
+			if (!Gallery.albumMap[path]) {
+				Gallery.albumMap[path] = {};
+				// Builds relationships between albums
+				if (path !== '') {
+					var parent = OC.dirname(path);
+					if (parent === path) {
+						parent = '';
+					}
+					Gallery._mapStructure(parent);
+				}
+			}
+			return Gallery.albumMap[path];
+		},
+
+		/**
+		 * Adds the sub-albums to the current album
+		 *
+		 * @param {Album} albumCache
+		 * @param {{Album}} subAlbumCache
+		 * @private
+		 */
+		_mapAlbums: function (albumCache, subAlbumCache) {
+			for (var j = 0, keys = Object.keys(subAlbumCache); j <
+			keys.length; j++) {
+				albumCache.subAlbums.push(subAlbumCache[keys[j]]);
+			}
+		},
+
+		/**
+		 * Saves the folder to a remote ownCloud installation
+		 *
+		 * Our location is the remote for the other server
+		 *
+		 * @param {string} remote
+		 * @param {string}token
+		 * @param {string}owner
+		 * @param {string}name
+		 * @param {bool} isProtected
+		 * @private
+		 */
+		_saveToOwnCloud: function (remote, token, owner, name, isProtected) {
+			var location = window.location.protocol + '//' + window.location.host + OC.webroot;
+			var isProtectedInt = (isProtected) ? 1 : 0;
+			var url = remote + '/index.php/apps/files#' + 'remote=' + encodeURIComponent(location)
+				+ "&token=" + encodeURIComponent(token) + "&owner=" + encodeURIComponent(owner) +
+				"&name=" +
+				encodeURIComponent(name) + "&protected=" + isProtectedInt;
+
+			if (remote.indexOf('://') > 0) {
+				OC.redirect(url);
+			} else {
+				// if no protocol is specified, we automatically detect it by testing https and
+				// http
+				// this check needs to happen on the server due to the Content Security Policy
+				// directive
+				$.get(OC.generateUrl('apps/files_sharing/testremote'),
+					{remote: remote}).then(function (protocol) {
+						if (protocol !== 'http' && protocol !== 'https') {
+							OC.dialogs.alert(t('files_sharing',
+									'No ownCloud installation (7 or higher) found at {remote}',
+									{remote: remote}),
+								t('files_sharing', 'Invalid ownCloud url'));
+						} else {
+							OC.redirect(protocol + '://' + url);
+						}
+					});
+			}
+		}
 	};
-	if (Gallery.view.element.height() < targetHeight) {
-		Gallery.view.loadVisibleRows.loading = true;
-		Gallery.view.loadVisibleRows.loading = showRows(album);
-		return Gallery.view.loadVisibleRows.loading;
-	}
-};
-Gallery.view.loadVisibleRows.loading = false;
-
-Gallery.view.pushBreadCrumb = function (text, path) {
-	OC.Breadcrumb.push(text, '#' + path).click(function () {
-		Gallery.view.viewAlbum(path);
-	});
-};
-
-Gallery.showEmpty = function () {
-	$('#controls').addClass('hidden');
-	$('#emptycontent').removeClass('hidden');
-	$('#content').removeClass('icon-loading');
-};
-
-Gallery.showLoading = function () {
-	$('#emptycontent').addClass('hidden');
-	$('#controls').removeClass('hidden');
-	$('#content').addClass('icon-loading');
-};
-
-Gallery.showNormal = function () {
-	$('#emptycontent').addClass('hidden');
-	$('#controls').removeClass('hidden');
-	$('#content').removeClass('icon-loading');
-};
-
-Gallery.slideShow = function (images, startImage, autoPlay) {
-	var start = images.indexOf(startImage);
-
-	images = images.map(function (image) {
-		return {
-			name: OC.basename(image.path),
-			url: Gallery.getImage(image.src),
-			path: image.path
-		};
-	});
-
-	var slideShow = new SlideShow($('#slideshow'), images);
-	Thumbnail.concurrent = 1;
-	slideShow.onStop = function () {
-		Gallery.activeSlideShow = null;
-		$('#content').show();
-		location.hash = encodeURI(Gallery.currentAlbum);
-		Thumbnail.concurrent = 3;
-	};
-	Gallery.activeSlideShow = slideShow;
-
-	slideShow.init(autoPlay);
-	slideShow.show(start);
-};
-
-Gallery.activeSlideShow = null;
-
-$(document).ready(function () {
-	Gallery.showLoading();
-
-	Gallery.view.element = $('#gallery');
-	Gallery.fillAlbums().then(function () {
-		if (Gallery.images.length === 0) {
-			Gallery.showEmpty();
-		}
-		OC.Breadcrumb.container = $('#breadcrumbs');
-		window.onhashchange();
-		$('button.share').click(Gallery.share);
-	});
-
-	$('#openAsFileListButton').click(function () {
-		window.location.href = OC.generateUrl('s/{token}', {
-			token: $('#gallery').data('token')
-		});
-	});
-
-	$(window).scroll(function () {
-		Gallery.view.loadVisibleRows(Gallery.albumMap[Gallery.currentAlbum], Gallery.currentAlbum);
-	});
-	$('#content-wrapper').scroll(function () {
-		Gallery.view.loadVisibleRows(Gallery.albumMap[Gallery.currentAlbum], Gallery.currentAlbum);
-	});
-
-	$(window).resize(_.throttle(function () {
-		Gallery.view.viewAlbum(Gallery.currentAlbum);
-	}, 500));
-
-	if ($('#gallery').data('requesttoken')) {
-		oc_requesttoken = $('#gallery').data('requesttoken');
-	}
-});
-
-window.onhashchange = function () {
-	var path = decodeURIComponent(location.hash).substr(1);
-	if (Gallery.albumMap[path]) {
-		if (Gallery.activeSlideShow) {
-			Gallery.activeSlideShow.stop();
-		}
-		path = decodeURIComponent(path);
-		if (Gallery.currentAlbum !== path || path === '') {
-			Gallery.view.viewAlbum(path);
-		}
-	} else if (!Gallery.activeSlideShow) {
-		var albumPath = OC.dirname(path);
-		if (albumPath === path) {
-			albumPath = '';
-		}
-		if (Gallery.currentAlbum !== albumPath || albumPath === '') {
-			Gallery.view.viewAlbum(albumPath);
-		}
-		var album = Gallery.albumMap[albumPath];
-		var images = album.images;
-		var startImage = Gallery.imageMap[path];
-		Gallery.slideShow(images, startImage);
-	}
-};
+	window.Gallery = Gallery;
+})(jQuery, OC, t);

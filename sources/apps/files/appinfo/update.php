@@ -2,6 +2,7 @@
 /**
  * @author Björn Schießle <schiessle@owncloud.com>
  * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Morris Jobke <hey@morrisjobke.de>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
  * @license AGPL-3.0
@@ -57,8 +58,8 @@ if ($installedVersion === '1.1.9' && (
 		// 8.1.0.x
 		(((int) $ocVersion[0]) === 8 && ((int) $ocVersion[1]) === 1 && ((int) $ocVersion[2]) === 0)
 		||
-		// < 8.1.1.1
-		(((int) $ocVersion[0]) === 8 && ((int) $ocVersion[1]) === 1 && ((int) $ocVersion[2]) === 1 && ((int) $ocVersion[3]) < 1)
+		// < 8.2.0.3
+		(((int) $ocVersion[0]) === 8 && ((int) $ocVersion[1]) === 2 && ((int) $ocVersion[2]) === 0 && ((int) $ocVersion[3]) < 3)
 	)) {
 
 	// Encryption is not enabled
@@ -93,4 +94,13 @@ if ($installedVersion === '1.1.9' && (
 			}
 		}
 	}
+}
+
+/**
+ * migrate old constant DEBUG to new config value 'debug'
+ *
+ * TODO: remove this in ownCloud 8.3
+ */
+if(defined('DEBUG') && DEBUG === true) {
+	\OC::$server->getConfig()->setSystemValue('debug', true);
 }

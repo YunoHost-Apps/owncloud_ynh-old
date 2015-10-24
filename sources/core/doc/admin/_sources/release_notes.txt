@@ -2,80 +2,36 @@
 ownCloud |version| Release Notes
 ================================
 
-Recommended Setup for Running ownCloud
---------------------------------------
+Changes in 8.2
+--------------
 
-For best performance, stability, support, and full functionality we recommend:
+``filesystem_check_changes`` in ``config.php`` is set to 0 by default. This 
+prevents unnecessary update checks and improves performance. If you are using 
+external storage mounts such as NFS on a remote storage server, set this to 1 
+so that ownCloud will detect remote file changes.
 
-* LAMP stack with a Web server and separate database/storage server
-* PHP 5.4+ with APC cache enabled
-* MySQL with InnoDB, and buffer cache increased to 16MB
-* MySQL Query Cache enabled
-* Windows 7 or Mac 10.8 desktop clients
-* Webkit browser (Firefox, Chrome, Safari)
-* Mobile apps on Android 4+, iOS 7+
-* WebDAV Clients: Cyber Duck and NetDrive (for mounting via a Windows drive 
-  letter)
+XSendFile support has been removed, so there is no longer support for `serving 
+static files
+<https://doc.owncloud.org/server/8.1/admin_manual/configuration_files/
+serving_static_files_configuration.html>`_ from your ownCloud server.
 
-Supported Server Platforms
---------------------------
+LDAP issue: 8.2 uses the ``memberof`` attribute by default. If this is not 
+activated on your LDAP server your user groups will not be detected, and you 
+will see this message in your ownCloud log: ``Error PHP Array to string 
+conversion at /var/www/html/owncloud/lib/private/template/functions.php#36``. 
+Fix this by disabling the ``memberof`` attribute on your ownCloud server with 
+the ``occ`` command, like this example on Ubuntu Linux::
 
-Full Packages:
-
-* Debian 7, 8
-* RHEL / Centos 6.5, 6.6 and 7
-* Ubuntu 14.04 LTS and 15.04
-* SLES 12 (once PHP dependencies (e.g. posix) are added)
-    
-Only as .tar files:
-
-* Ubuntu 12.04 LTS
-* SLES 11 sp3
-
-Other server components:
-
-* PHP 5.4 + required
-* Databases: MySQL/MariaDB 5.x; Oracle 11g; PostgreSQL
-* Hypervisors: Hyper-V, VMware ESX, Xen, KVM
-
-Supported Desktop Platforms
----------------------------
-
-In general, we will support the most recent two releases of operating systems 
-that are still supported by upstream or by the publisher. Currently this 
-includes:
-
-* Windows 7+
-* Mac OS X 10.7+ (64-bit only)
-* CentOS 6.6, 7 (7 is 64 bit only)
-* Ubuntu 14.04 LTS, 15.04
-* Fedora 21, 22
-* Debian 7,8
-* openSUSE 13.1, 13.2
-
-Supported Mobile Platforms
---------------------------
-
-* iOS 7+
-* Android 4+
-
-Supported Web Browsers
-----------------------
-
-* IE8+ (except compatibility mode)
-* Firefox v35+
-* Chrome v40+, 
-* Safari v5+
-
-Not Supported With any ownCloud Version
----------------------------------------
-
-* Native Windows WebDAV clients
-* Windows RT
-* SQLite in production
+ sudo -u www-data php occ ldap:set-config "s01" useMemberOfToDetectMembership 0
+ 
+Run ``sudo -u www-data php occ ldap:show-config`` to find the correct ``sNN`` 
+value; if there is not one then use empty quotes, ``""``. (See 
+:doc:`configuration_server/occ_command`.)
 
 Changes in 8.1
 --------------
+
+Use APCu only if available in version 4.0.6 and higher. If you install an older version, you will see a ``APCu below version 4.0.6 is installed, for stability and performance reasons we recommend to update to a newer APCu version`` warning on your ownCloud admin page.
 
 SMB external storage now based on ``php5-libsmbclient``, which must be downloaded 
 from the ownCloud software repositories (`installation instructions 
@@ -107,9 +63,9 @@ PHP or contact your vendor if you receive these errors.
 The persistent file-based cache (e.g. used by LDAP integration) has been dropped and 
 replaced with a memory-only cache, which must be explicitly configured. See 
 :doc:`configuration_user/user_auth_ldap`. Memory cache configuration for the 
-ownCloud server is no longer automatic, requiring configuration in 
-``config.php`` with the keys ``memcache.local`` and/or ``memcache.distributed``;
-see :ref:`caching`. 
+ownCloud server is no longer automatic, requiring installation of 
+your desired cache backend and configuration in 
+``config.php`` (see :doc:`configuration_server/caching_configuration`.) 
 
 The OC_User_HTTP backend has been removed. Administrators are encouraged to use 
 the ``user_webdavauth`` application instead.

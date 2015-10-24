@@ -50,13 +50,34 @@ class Shared extends \OC\Files\Storage\Common implements ISharedStorage {
 	 */
 	private $ownerView;
 
+	/**
+	 * @var \OCA\Files_Sharing\Propagation\PropagationManager
+	 */
+	private $propagationManager;
+
+	/**
+	 * @var string
+	 */
+	private $user;
+
+	private $initialized = false;
+
 	public function __construct($arguments) {
 		$this->share = $arguments['share'];
 		$this->ownerView = $arguments['ownerView'];
+		$this->propagationManager = $arguments['propagationManager'];
+		$this->user = $arguments['user'];
 	}
 
 	private function init() {
+		if ($this->initialized) {
+			return;
+		}
+		$this->initialized = true;
 		Filesystem::initMountPoints($this->share['uid_owner']);
+
+		// for updating our etags when changes are made to the share from the owners side (probably indirectly by us trough another share)
+		$this->propagationManager->listenToOwnerChanges($this->share['uid_owner'], $this->user);
 	}
 
 	/**
@@ -562,9 +583,6 @@ class Shared extends \OC\Files\Storage\Common implements ISharedStorage {
 	}
 
 	public function getETag($path) {
-		if ($path == '') {
-			$path = $this->getMountPoint();
-		}
 		if ($source = $this->getSourcePath($path)) {
 			list($storage, $internalPath) = \OC\Files\Filesystem::resolvePath($source);
 			return $storage->getETag($internalPath);
@@ -666,5 +684,23 @@ class Shared extends \OC\Files\Storage\Common implements ISharedStorage {
 		/** @var \OCP\Files\Storage $targetStorage */
 		list($targetStorage, $targetInternalPath) = $this->resolvePath($path);
 		$targetStorage->changeLock($targetInternalPath, $type, $provider);
+	}
+
+	/**
+	 * @return array [ available, last_checked ]
+	 */
+	public function getAvailability() {
+		// shares do not participate in availability logic
+		return [
+			'available' => true,
+			'last_checked' => 0
+		];
+	}
+
+	/**
+	 * @param bool $available
+	 */
+	public function setAvailability($available) {
+		// shares do not participate in availability logic
 	}
 }

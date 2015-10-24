@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Troubleshooting &mdash; ownCloud User Manual 8.1 documentation</title>
+    <title>Troubleshooting &mdash; ownCloud User Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud User Manual 8.1 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud User Manual 8.2 documentation" href="../index.html" />
     <link rel="up" title="Contacts &amp; Calendar" href="index.html" />
     <link rel="next" title="Collaborative Document Editing" href="../documents.html" />
     <link rel="prev" title="Thunderbird - Synchronize Addressbook" href="sync_thunderbird.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 User Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new.html">What&#8217;s New for Users in ownCloud 8.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 User Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new.html">What&#8217;s New for Users in ownCloud 8.2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../webinterface.html">The ownCloud Web Interface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../files/index.html">Files &amp; Synchronization</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Contacts &amp; Calendar</a><ul class="current">
@@ -151,13 +151,15 @@
 <h1>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="blackberry-os-10-2">
 <h2>BlackBerry OS 10.2<a class="headerlink" href="#blackberry-os-10-2" title="Permalink to this headline">¶</a></h2>
-<p>BlackBerry OS up to 10.2.2102 does not accept a URL with protocol <tt class="docutils literal"><span class="pre">https://</span></tt> in front of the server address.
-It will always tell you, that it cannot login on your server. So instead of writing</p>
-<blockquote>
-<div><a class="reference external" href="https://address/remote.php/carddav/principals/username">https://address/remote.php/carddav/principals/username</a></div></blockquote>
-<p>in the server address field, you have to write</p>
-<blockquote>
-<div>address/remote.php/carddav/principals/username</div></blockquote>
+<p>BlackBerry OS up to 10.2.2102 does not accept a URL with protocol <tt class="docutils literal"><span class="pre">https://</span></tt>
+in front of the server address. It will always tell you that it cannot login on
+your server. So instead of writing:</p>
+<div class="highlight-python"><pre>https://address/remote.php/carddav/principals/username</pre>
+</div>
+<p>in the server address field, you have to write:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">address</span><span class="o">/</span><span class="n">remote</span><span class="o">.</span><span class="n">php</span><span class="o">/</span><span class="n">carddav</span><span class="o">/</span><span class="n">principals</span><span class="o">/</span><span class="n">username</span>
+</pre></div>
+</div>
 </div>
 </div>
 

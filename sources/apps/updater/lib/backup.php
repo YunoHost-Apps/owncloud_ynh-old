@@ -13,7 +13,6 @@
 namespace OCA\Updater;
 
 class Backup {
-
 	/**
 	 * Path to the current Backup instance
 	 * @var string
@@ -74,7 +73,7 @@ class Backup {
 				}
 			}
 		} catch (\Exception $e){
-			App::log('Backup creation failed. Disk full?');
+			\OC::$server->getLogger()->error('Backup creation failed. Disk full?', ['app' => 'updater']);
 			self::cleanUp();
 			throw new FsException($e->getMessage());
 		}
@@ -89,8 +88,8 @@ class Backup {
 	 */
 	public static function getPath() {
 		if (!self::$path) {
-			$backupBase = App::getBackupBase();
-			$currentVersion = \OCP\Config::getSystemValue('version', '0.0.0');
+			$backupBase = self::getBackupBase();
+			$currentVersion = \OC::$server->getConfig()->getSystemValue('version', '0.0.0');
 			$path = $backupBase . $currentVersion . '-';
 
 			do {
@@ -106,6 +105,16 @@ class Backup {
 		if (self::$path) {
 			Helper::removeIfExists(self::$path);
 		}
-		Helper::removeIfExists(App::getTempBase());
+		Helper::removeIfExists(self::getTempBase());
+	}
+	
+	protected static function getTempBase(){
+		$app = new \OCA\Updater\AppInfo\Application();
+		return $app->getContainer()->query('Config')->getTempBase();
+	}
+	
+	protected static function getBackupBase(){
+		$app = new \OCA\Updater\AppInfo\Application();
+		return $app->getContainer()->query('Config')->getBackupBase();
 	}
 }

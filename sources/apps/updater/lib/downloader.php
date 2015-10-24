@@ -16,10 +16,10 @@ class Downloader {
 
 	const PACKAGE_ROOT = 'owncloud';
 
-	protected static $package = false;
+	protected static $package;
 
 	public static function getPackage($url, $version) {
-		self::$package = App::getBackupBase() . $version;
+		self::$package = self::getBackupBase() . $version;
 		if (preg_match('/\.zip$/i', $url)) {
 			$type = '.zip';
 		} elseif (preg_match('/(\.tgz|\.tar\.gz)$/i', $url)) {
@@ -35,12 +35,23 @@ class Downloader {
 		try {
 			// Reuse already downloaded package
 			if (!file_exists(self::$package)){
-				if (self::fetch($url)===false) {
-					throw new \Exception("Error storing package content");
-				}
-				App::log('Downloaded ' . filesize(self::$package) . ' bytes.' , \OCP\Util::DEBUG);
+				$client = \OC::$server->getHTTPClientService()->newClient();
+				$client->get($url, 
+					[
+						'save_to' => self::$package,
+						'timeout' => 10*60,
+					]
+				);
+
+				\OC::$server->getLogger()->debug(
+					'Downloaded ' . filesize(self::$package) . ' bytes.',
+					['app' => 'updater']
+				);
 			} else {
-				App::log('Use already downloaded package ' . self::$package . '. Size is ' . filesize(self::$package) . ' bytes.' , \OCP\Util::DEBUG);
+				\OC::$server->getLogger()->debug(
+					'Use already downloaded package ' . self::$package . '. Size is ' . filesize(self::$package) . ' bytes.',
+					['app' => 'updater']
+				);
 			}
 			
 			$extractDir = self::getPackageDir($version);
@@ -52,7 +63,7 @@ class Downloader {
 			}
 			
 		} catch (\Exception $e){
-			App::log('Retrieving ' . $url);
+			\OC::$server->getLogger()->error('Retrieving ' . $url, ['app' => 'updater']);
 			self::cleanUp($version);
 			throw $e;
 		}
@@ -61,10 +72,18 @@ class Downloader {
 		//  to have '3rdparty', 'apps' and 'core' subdirectories
 		$baseDir = $extractDir. '/' . self::PACKAGE_ROOT;
 		if (!file_exists($baseDir)){
-			App::log('Expected fresh sources in ' . $baseDir . '. Nothing is found. Something is wrong with OC_Archive.');
-			App::log($extractDir  . ' content: ' . implode(' ', scandir($extractDir)));
+			\OC::$server->getLogger()->error(
+				'Expected fresh sources in ' . $baseDir . '. Nothing is found. Something is wrong with OC_Archive.',
+				['app' => 'updater']
+			);
+			\OC::$server->getLogger()->error(
+				$extractDir  . ' content: ' . implode(' ', scandir($extractDir)),
+				['app' => 'updater']
+				
+			);
 			if ($type === '.zip' && !extension_loaded('zip')){
-				$hint = App::$l10n->t('Please ask your server administrator to enable PHP zip extension.');
+				$l10n = \OC::$server->getL10N('updater');
+				$hint = $l10n->t('Please ask your server administrator to enable PHP zip extension.');
 			}
 			throw new \Exception(self::$package . " extraction error. " . $hint);
 		}
@@ -77,41 +96,10 @@ class Downloader {
 		rename($baseDir . '/' . Helper::APP_DIRNAME, $sources[Helper::APP_DIRNAME]);
 		rename($baseDir, $sources[Helper::CORE_DIRNAME]);
 	}
-	
-	public static function fetch($url){
-		
-		$urlFopen = ini_get('allow_url_fopen');
-		$allowed = array('on', 'yes', 'true', 1);
-		
-		if (\in_array($urlFopen, $allowed)){
-			$result = @file_put_contents(self::$package, fopen($url, 'r'));
-		} elseif  (function_exists('curl_init')) {
-			$curl = curl_init();
-			curl_setopt($curl, CURLOPT_HEADER, 0);
-			curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 0);
-			curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 1);
-			curl_setopt($curl, CURLOPT_URL, $url);
-			curl_setopt($curl, CURLOPT_USERAGENT, "ownCloud Server Crawler");
-			
-			$result = @file_put_contents(self::$package, curl_exec($curl));
-			
-			curl_close($curl);
-		} else {
-			$ctx = stream_context_create(
-				array(
-					'http' => array('timeout' => 32000)
-				     )
-				);
-			
-			$result = @file_put_contents(self::$package, @file_get_contents($url, 0, $ctx));
-		}
-		return $result;
-	}
 
 	public static function cleanUp($version){
 		Helper::removeIfExists(self::getPackageDir($version));
-		Helper::removeIfExists(App::getTempBase());
+		Helper::removeIfExists(self::getTempBase());
 	}
 	
 	public static function isClean($version){
@@ -119,6 +107,16 @@ class Downloader {
 	}
 	
 	public static function getPackageDir($version) {
-		return App::getTempBase() . $version;
+		return self::getTempBase() . $version;
+	}
+	
+	protected static function getTempBase(){
+		$app = new \OCA\Updater\AppInfo\Application();
+		return $app->getContainer()->query('Config')->getTempBase();
+	}
+	
+	protected static function getBackupBase(){
+		$app = new \OCA\Updater\AppInfo\Application();
+		return $app->getContainer()->query('Config')->getBackupBase();
 	}
 }

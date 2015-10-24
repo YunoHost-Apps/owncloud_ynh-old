@@ -2,6 +2,7 @@
 /**
  * @author Bart Visscher <bartv@thisnet.nl>
  * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Thomas Müller <thomas.mueller@tmit.eu>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
  * @license AGPL-3.0
@@ -44,6 +45,6 @@ class Rotate extends \OC\BackgroundJob\Job {
 		$rotatedLogfile = $logfile.'.1';
 		rename($logfile, $rotatedLogfile);
 		$msg = 'Log file "'.$logfile.'" was over '.$this->max_log_size.' bytes, moved to "'.$rotatedLogfile.'"';
-		\OC_Log::write('OC\Log\Rotate', $msg, \OC_Log::WARN);
+		\OCP\Util::writeLog('OC\Log\Rotate', $msg, \OCP\Util::WARN);
 	}
 }

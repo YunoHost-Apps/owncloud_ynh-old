@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Shibboleth Integration (Enterprise Subscription only) &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>Shibboleth Integration (Enterprise Subscription only) &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
     <link rel="up" title="User Management (ES only)" href="index.html" />
     <link rel="next" title="Enabling Anonymous Uploads with Files Drop (ES Only)" href="../enterprise_files_drop/index.html" />
     <link rel="prev" title="User Management (ES only)" href="index.html" />
@@ -114,14 +114,15 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_server/index.html">ownCloud Server Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../configuration_server/index.html">ownCloud Server Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_mimetypes/index.html">Mimetypes Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
@@ -129,6 +130,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_server_branding/index.html">Enterprise Server Branding (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">User Management (ES only)</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="">Shibboleth Integration (Enterprise Subscription only)</a><ul>
@@ -141,6 +143,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#encryption">Encryption</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#other-login-mechanisms">Other Login Mechanisms</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#session-timeout">Session Timeout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#uid-considerations-and-windows-network-drive-compatability">UID Considerations and Windows Network Drive compatability</a></li>
 </ul>
 </li>
 </ul>
@@ -420,6 +423,57 @@ hour.</p>
 <p>The session timeout can be overridden in the service provider, but this
 requires a source code change of the Apache Shibboleth module. A patch can be
 provided by the ownCloud support team.</p>
+</div>
+<div class="section" id="uid-considerations-and-windows-network-drive-compatability">
+<h2>UID Considerations and Windows Network Drive compatability<a class="headerlink" href="#uid-considerations-and-windows-network-drive-compatability" title="Permalink to this headline">¶</a></h2>
+<p>When using <tt class="docutils literal"><span class="pre">user_shibboleth</span></tt> in single-sign on (SSO) only mode, together with
+<tt class="docutils literal"><span class="pre">user_ldap</span></tt>, both apps need to resolve to the same <tt class="docutils literal"><span class="pre">uid</span></tt>.
+<tt class="docutils literal"><span class="pre">user_shibboleth</span></tt> will do the authentication, and <tt class="docutils literal"><span class="pre">user_ldap</span></tt> will provide
+user details such as <tt class="docutils literal"><span class="pre">email</span></tt> and <tt class="docutils literal"><span class="pre">displayname</span></tt>. In the case of Active
+Directory, multiple attributes can be used as the <tt class="docutils literal"><span class="pre">uid</span></tt>. But they all have
+different implications to take into account.</p>
+<div class="section" id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h3>
+<p><strong>sAMAccountName</strong></p>
+<ul class="simple">
+<li><em>Example:</em> jfd</li>
+<li><em>Uniqueness:</em> Domain local, might change e.g. marriage</li>
+<li><em>Other implications:</em> Works with <tt class="docutils literal"><span class="pre">windows_network_drive</span></tt> app</li>
+</ul>
+<p><strong>userPrincipalName</strong></p>
+<ul class="simple">
+<li><em>Example:</em> <a class="reference external" href="mailto:jfd&#37;&#52;&#48;owncloud&#46;com">jfd<span>&#64;</span>owncloud<span>&#46;</span>com</a></li>
+<li><em>Uniqueness:</em> Forest local, might change on eg. marriage</li>
+<li><em>Other implications:</em> TODO check WND compatability</li>
+</ul>
+<p><strong>objectSid</strong></p>
+<ul class="simple">
+<li><em>Example:</em> S-1-5-21-2611707862-2219215769-354220275-1137</li>
+<li><em>Uniqueness:</em> Domain local, changes when the user is moved to a new domain</li>
+<li><em>Other implications:</em> Incompatible with <tt class="docutils literal"><span class="pre">windows_network_drive</span></tt> app</li>
+</ul>
+<p><strong>sIDHistory</strong></p>
+<ul class="simple">
+<li><em>Example:</em> Multi-value</li>
+<li><em>Uniqueness:</em> Contains previous objectSIDs</li>
+<li><em>Other implications:</em> Incompatible with <tt class="docutils literal"><span class="pre">windows_network_drive</span></tt> app</li>
+</ul>
+<p><strong>objectGUID</strong></p>
+<ul class="simple">
+<li><em>Example:</em> 47AB881D-0655-414D-982F-02998C905A28</li>
+<li><em>Uniqueness:</em> Globally unique</li>
+<li><em>Other implications:</em> Incompatible with <tt class="docutils literal"><span class="pre">windows_network_drive</span></tt> app</li>
+</ul>
+<p>Keep in mind that ownCloud will derive the home folder from the <tt class="docutils literal"><span class="pre">uid</span></tt>, unless
+a home folder naming rule is in place. The only truly stable attribute is the
+<tt class="docutils literal"><span class="pre">objectGUID</span></tt>, so that should be used. If not for the <tt class="docutils literal"><span class="pre">uid</span></tt> then at least as
+the home folder naming rule. The tradeoff here is that if you want to use
+<tt class="docutils literal"><span class="pre">windows_network_drive</span></tt> you are bound to the <tt class="docutils literal"><span class="pre">sAMAccountName</span></tt>, as that is
+used as the login.</p>
+<p>Also be aware that using <tt class="docutils literal"><span class="pre">user_shibboleth</span></tt> in Autoprovisioning mode will not
+allow you to use SSO for your <tt class="docutils literal"><span class="pre">user_ldap</span></tt> users, because <tt class="docutils literal"><span class="pre">uid</span></tt> collisions
+will be detected by <tt class="docutils literal"><span class="pre">user_ldap</span></tt>.</p>
+</div>
 </div>
 </div>
 

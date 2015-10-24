@@ -2,9 +2,9 @@ OC.L10N.register(
     "files",
     {
     "Unknown error" : "غیر معروف خرابی",
-    "Delete" : "حذف کریں",
-    "Unshare" : "شئیرنگ ختم کریں",
+    "Close" : "بند ",
     "Download" : "ڈاؤن لوڈ،",
+    "Delete" : "حذف کریں",
     "Error" : "ایرر",
     "Name" : "اسم",
     "Save" : "حفظ",

@@ -5,6 +5,7 @@
  * @author Christian Berendt <berendt@b1-systems.de>
  * @author Felix Moeller <mail@felixmoeller.de>
  * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Martin Mattel <martin.mattel@diemattels.at>
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Philipp Kapfer <philipp.kapfer@gmx.at>
  * @author Robin Appelman <icewind@owncloud.com>
@@ -32,6 +33,7 @@
 namespace OC\Files\Storage;
 
 use Guzzle\Http\Exception\ClientErrorResponseException;
+use Icewind\Streams\IteratorDirectory;
 use OpenCloud;
 use OpenCloud\Common\Exceptions;
 use OpenCloud\OpenStack;
@@ -174,7 +176,7 @@ class Swift extends \OC\Files\Storage\Common {
 
 		$dh = $this->opendir($path);
 		while ($file = readdir($dh)) {
-			if ($file === '.' || $file === '..') {
+			if (\OC\Files\Filesystem::isIgnoredDir($file)) {
 				continue;
 			}
 
@@ -222,8 +224,7 @@ class Swift extends \OC\Files\Storage\Common {
 				}
 			}
 
-			\OC\Files\Stream\Dir::register('swift' . $path, $files);
-			return opendir('fakedir://swift' . $path);
+			return IteratorDirectory::wrap($files);
 		} catch (\Exception $e) {
 			\OCP\Util::writeLog('files_external', $e->getMessage(), \OCP\Util::ERROR);
 			return false;
@@ -310,7 +311,7 @@ class Swift extends \OC\Files\Storage\Common {
 		switch ($mode) {
 			case 'r':
 			case 'rb':
-				$tmpFile = \OC_Helper::tmpFile();
+				$tmpFile = \OCP\Files::tmpFile();
 				self::$tmpFiles[$tmpFile] = $path;
 				try {
 					$object = $this->getContainer()->getObject($path);
@@ -348,7 +349,7 @@ class Swift extends \OC\Files\Storage\Common {
 				} else {
 					$ext = '';
 				}
-				$tmpFile = \OC_Helper::tmpFile($ext);
+				$tmpFile = \OCP\Files::tmpFile($ext);
 				\OC\Files\Stream\Close::registerCallback($tmpFile, array($this, 'writeBack'));
 				if ($this->file_exists($path)) {
 					$source = $this->fopen($path, 'r');
@@ -387,7 +388,7 @@ class Swift extends \OC\Files\Storage\Common {
 			$object->saveMetadata($metadata);
 			return true;
 		} else {
-			$mimeType = \OC_Helper::getMimetypeDetector()->detectPath($path);
+			$mimeType = \OC::$server->getMimeTypeDetector()->detectPath($path);
 			$customHeaders = array('content-type' => $mimeType);
 			$metadataHeaders = DataObject::stockHeaders($metadata);
 			$allHeaders = $customHeaders + $metadataHeaders;
@@ -429,7 +430,7 @@ class Swift extends \OC\Files\Storage\Common {
 
 			$dh = $this->opendir($path1);
 			while ($file = readdir($dh)) {
-				if ($file === '.' || $file === '..') {
+				if (\OC\Files\Filesystem::isIgnoredDir($file)) {
 					continue;
 				}
 

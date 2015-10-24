@@ -44,6 +44,8 @@
  * supported. User management operations are delegated to the configured backend for
  * execution.
  *
+ * Note that &run is deprecated and won't work anymore.
+ *
  * Hooks provided:
  *   pre_createUser(&run, uid, password)
  *   post_createUser(uid, password)
@@ -142,12 +144,16 @@ class OC_User {
 				case 'database':
 				case 'mysql':
 				case 'sqlite':
-					OC_Log::write('core', 'Adding user backend ' . $backend . '.', OC_Log::DEBUG);
+					\OCP\Util::writeLog('core', 'Adding user backend ' . $backend . '.', \OCP\Util::DEBUG);
 					self::$_usedBackends[$backend] = new OC_User_Database();
 					self::getManager()->registerBackend(self::$_usedBackends[$backend]);
 					break;
+				case 'dummy':
+					self::$_usedBackends[$backend] = new \Test\Util\User\Dummy();
+					self::getManager()->registerBackend(self::$_usedBackends[$backend]);
+					break;
 				default:
-					OC_Log::write('core', 'Adding default user backend ' . $backend . '.', OC_Log::DEBUG);
+					\OCP\Util::writeLog('core', 'Adding default user backend ' . $backend . '.', \OCP\Util::DEBUG);
 					$className = 'OC_USER_' . strToUpper($backend);
 					self::$_usedBackends[$backend] = new $className();
 					self::getManager()->registerBackend(self::$_usedBackends[$backend]);
@@ -184,10 +190,10 @@ class OC_User {
 					self::useBackend($backend);
 					self::$_setupedBackends[] = $i;
 				} else {
-					OC_Log::write('core', 'User backend ' . $class . ' already initialized.', OC_Log::DEBUG);
+					\OCP\Util::writeLog('core', 'User backend ' . $class . ' already initialized.', \OCP\Util::DEBUG);
 				}
 			} else {
-				OC_Log::write('core', 'User backend ' . $class . ' not found.', OC_Log::ERROR);
+				\OCP\Util::writeLog('core', 'User backend ' . $class . ' not found.', \OCP\Util::ERROR);
 			}
 		}
 	}
@@ -277,11 +283,13 @@ class OC_User {
 		OC_Hook::emit("OC_User", "pre_login", array("run" => &$run, "uid" => $uid));
 
 		if ($uid) {
-			self::setUserId($uid);
-			self::setDisplayName($uid);
-			self::getUserSession()->setLoginName($uid);
+			if (self::getUser() !== $uid) {
+				self::setUserId($uid);
+				self::setDisplayName($uid);
+				self::getUserSession()->setLoginName($uid);
 
-			OC_Hook::emit("OC_User", "post_login", array("uid" => $uid, 'password' => ''));
+				OC_Hook::emit("OC_User", "post_login", array("uid" => $uid, 'password' => ''));
+			}
 			return true;
 		}
 		return false;
@@ -405,7 +413,7 @@ class OC_User {
 			return $backend->getLogoutAttribute();
 		}
 
-		return 'href="' . link_to('', 'index.php') . '?logout=true&requesttoken=' . urlencode(OC_Util::callRegister()) . '"';
+		return 'href="' . link_to('', 'index.php') . '?logout=true&amp;requesttoken=' . urlencode(OC_Util::callRegister()) . '"';
 	}
 
 	/**

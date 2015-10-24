@@ -9,6 +9,8 @@
  * @author Lukas Reschke <lukas@owncloud.com>
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Robin Appelman <icewind@owncloud.com>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
  * @author Thomas Müller <thomas.mueller@tmit.eu>
  * @author Thomas Tanghus <thomas@tanghus.net>
  *
@@ -38,6 +40,7 @@
 // use OCP namespace for all classes that are considered public.
 // This means that they should be used by apps instead of the internal ownCloud classes
 namespace OCP;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 
 /**
@@ -99,6 +102,7 @@ interface IServerContainer {
 	 * @param string $userId user ID
 	 * @return \OCP\Files\Folder
 	 * @since 6.0.0 - parameter $userId was added in 8.0.0
+	 * @see getUserFolder in \OCP\Files\IRootFolder
 	 */
 	public function getUserFolder($userId = null);
 
@@ -189,6 +193,12 @@ interface IServerContainer {
 	 * @since 7.0.0
 	 */
 	public function getAppConfig();
+
+	/**
+	 * @return \OCP\L10N\IFactory
+	 * @since 8.2.0
+	 */
+	public function getL10NFactory();
 
 	/**
 	 * get an L10N instance
@@ -422,4 +432,42 @@ interface IServerContainer {
 	 * @since 8.1.0
 	 */
 	public function getLockingProvider();
+
+	/**
+	 * @return \OCP\Files\Mount\IMountManager
+	 * @since 8.2.0
+	 */
+	public function getMountManager();
+
+	/**
+	 * Get the MimeTypeDetector
+	 *
+	 * @return \OCP\Files\IMimeTypeDetector
+	 * @since 8.2.0
+	 */
+	public function getMimeTypeDetector();
+
+	/**
+	 * Get the MimeTypeLoader
+	 *
+	 * @return \OCP\Files\IMimeTypeLoader
+	 * @since 8.2.0
+	 */
+	public function getMimeTypeLoader();
+
+	/**
+	 * Get the EventDispatcher
+	 *
+	 * @return EventDispatcherInterface
+	 * @since 8.2.0
+	 */
+	public function getEventDispatcher();
+
+	/**
+	 * Get the Notification Manager
+	 *
+	 * @return \OC\Notification\IManager
+	 * @since 8.2.0
+	 */
+	public function getNotificationManager();
 }

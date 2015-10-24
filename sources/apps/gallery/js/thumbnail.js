@@ -1,117 +1,179 @@
-/* global Gallery */
-function Thumbnail (path, square, token) {
-	this.token = token;
+/* global $, DOMPurify, Gallery */
+/**
+ * A thumbnail is the actual image attached to the GalleryImage object
+ *
+ * @param {number} fileId
+ * @param {bool} square
+ * @constructor
+ */
+function Thumbnail (fileId, square) {
 	this.square = square;
-	this.path = path;
-	this.url = Thumbnail.getUrl(path, square, token);
+	this.fileId = fileId;
 	this.image = null;
 	this.loadingDeferred = new $.Deferred();
+	this.height = 200;
+	this.width = 400;
 	this.ratio = null;
+	this.valid = true;
+	this.status = 200;
 }
 
-Thumbnail.map = {};
-Thumbnail.squareMap = {};
-Thumbnail.height = 200;
-Thumbnail.width = 400;
+(function ($, OC, Gallery) {
+	"use strict";
+	var Thumbnails = {
+		map: {},
+		squareMap: {},
 
-Thumbnail.get = function (path, square, token) {
-	var map = (square) ? Thumbnail.squareMap : Thumbnail.map;
-	if (!map[path]) {
-		map[path] = new Thumbnail(path, square, token);
-	}
-	return map[path];
-};
+		/**
+		 * Retrieves the thumbnail linked to the given fileID
+		 *
+		 * @param {number} fileId
+		 * @param {bool} square
+		 *
+		 * @returns {Thumbnail}
+		 */
+		get: function (fileId, square) {
+			var map = {};
+			if (square === true) {
+				map = Thumbnails.squareMap;
+				square = true;
+			} else {
+				map = Thumbnails.map;
+				square = false;
+			}
+			if (!map[fileId]) {
+				map[fileId] = new Thumbnail(fileId, square);
+			}
 
-Thumbnail.getUrl = function (path, square, token) {
-	if (path.substr(path.length - 4) === '.svg' || path.substr(path.length - 5) === '.svgz') {
-		return Gallery.getImage(path);
-	}
-	return OC.generateUrl('apps/gallery/ajax/thumbnail?file={file}&scale={scale}&square={square}&token={token}', {
-		file: encodeURIComponent(path),
-		scale: window.devicePixelRatio,
-		square: (square) ? 1 : 0,
-		token: (token) ? token : ''
-	});
-};
+			return map[fileId];
+		},
 
-Thumbnail.loadBatch = function (paths, square, token) {
-	var map = (square) ? Thumbnail.squareMap : Thumbnail.map;
-	paths = paths.filter(function (path) {
-		return !map[path];
-	});
-	var thumbnails = {};
-	if (paths.length) {
-		paths.forEach(function (path) {
-			var thumb = new Thumbnail(path, square, token);
-			thumb.image = new Image();
-			map[path] = thumbnails[path] = thumb;
-		});
+		/**
+		 * Returns an icon of a specific type
+		 *
+		 * -1 is for a folder
+		 * -404 is for a broken file icon
+		 * -500 is for a media type icon
+		 *
+		 * @param {number} type
+		 *
+		 * @returns {Thumbnail}
+		 */
+		getStandardIcon: function (type) {
+			if (!Thumbnails.squareMap[type]) {
+				var icon = '';
+				// true means square
+				var thumb = new Thumbnail(type, true);
+				thumb.image = new Image();
+				thumb.image.onload = function () {
+					thumb.loadingDeferred.resolve(thumb.image);
+				};
 
-		var url = OC.generateUrl(
-			'apps/gallery/ajax/thumbnail/batch?token={token}&image={images}&scale={scale}&square={square}', {
-			images: paths.map(encodeURIComponent).join(';'),
-			scale: window.devicePixelRatio,
-			square: (square) ? 1 : 0,
-			token: (token) ? token : ''
-		}, {escape:false});
+				if (type === -1) {
+					icon = 'folder.svg';
+				}
+				thumb.image.src = OC.imagePath(Gallery.appName, icon);
 
-		var eventSource = new OC.EventSource(url);
-		eventSource.listen('done', function (data) {});
-		eventSource.listen('preview', function (data) {
-			var path = data.image;
-			var extension = path.substr(path.length - 3);
-			var thumb = thumbnails[path];
-			thumb.image.onload = function () {
-				Thumbnail.loadingCount--;
-				thumb.image.ratio = thumb.image.width / thumb.image.height;
-				thumb.image.originalWidth = 200 * thumb.image.ratio;
-				thumb.loadingDeferred.resolve(thumb.image);
-			};
-			thumb.image.src = 'data:image/' + extension + ';base64,' + data.preview;
-		});
-	}
-	return thumbnails;
-};
+				Thumbnails.squareMap[type] = thumb;
+			}
 
-Thumbnail.prototype.load = function () {
-	var that = this;
-	if (!this.image) {
-		this.image = new Image();
-		this.image.onload = function () {
-			Thumbnail.loadingCount--;
-			that.image.ratio = that.image.width / that.image.height;
-			that.image.originalWidth = that.image.width / window.devicePixelRatio;
-			that.loadingDeferred.resolve(that.image);
-			Thumbnail.processQueue();
-		};
-		this.image.onerror = function () {
-			Thumbnail.loadingCount--;
-			that.loadingDeferred.reject(that.image);
-			Thumbnail.processQueue();
-		};
-		Thumbnail.loadingCount++;
-		this.image.src = this.url;
-	}
-	return this.loadingDeferred;
-};
+			return Thumbnails.squareMap[type];
+		},
 
-Thumbnail.queue = [];
-Thumbnail.loadingCount = 0;
-Thumbnail.concurrent = 3;
-Thumbnail.paused = false;
+		/**
+		 * Loads thumbnails in batch, using EventSource
+		 *
+		 * @param {Array} ids
+		 * @param {bool} square
+		 *
+		 * @returns {{}}
+		 */
+		loadBatch: function (ids, square) {
+			var map = (square) ? Thumbnails.squareMap : Thumbnails.map;
+			// Purely here as a precaution
+			ids = ids.filter(function (id) {
+				return !map[id];
+			});
+			var batch = {};
+			var i, idsLength = ids.length;
+			if (idsLength) {
+				for (i = 0; i < idsLength; i++) {
+					var thumb = new Thumbnail(ids[i], square);
+					thumb.image = new Image();
+					map[ids[i]] = batch[ids[i]] = thumb;
 
-Thumbnail.processQueue = function () {
-	if (!Thumbnail.paused && Thumbnail.queue.length && Thumbnail.loadingCount < Thumbnail.concurrent) {
-		var next = Thumbnail.queue.shift();
-		next.load();
-		Thumbnail.processQueue();
-	}
-};
+				}
+				var params = {
+					ids: ids.join(';'),
+					scale: window.devicePixelRatio,
+					square: (square) ? 1 : 0
+				};
+				var url = Gallery.utility.buildGalleryUrl('thumbnails', '', params);
 
-Thumbnail.prototype.queue = function () {
-	if (!this.image) {
-		Thumbnail.queue.push(this);
-	}
-	Thumbnail.processQueue();
-	return this.loadingDeferred;
-};
+				var eventSource = new Gallery.EventSource(url);
+				eventSource.listen('preview',
+					function (/**{path, status, mimetype, preview}*/ preview) {
+						var id = preview.fileid;
+						var thumb = batch[id];
+						thumb.status = preview.status;
+						if (thumb.status === 404) {
+							thumb.valid = false;
+							thumb.loadingDeferred.resolve(null);
+						} else {
+							thumb.image.onload = function () {
+								// Fix for SVG files which can come in all sizes
+								if (square) {
+									thumb.image.width = 200;
+									thumb.image.height = 200;
+								}
+								thumb.ratio = thumb.image.width / thumb.image.height;
+								thumb.image.originalWidth = 200 * thumb.ratio;
+								thumb.loadingDeferred.resolve(thumb.image);
+							};
+							thumb.image.onerror = function () {
+								thumb.valid = false;
+								var icon = Thumbnails._getMimeIcon(preview.mimetype);
+								setTimeout(function(){ thumb.image.src = icon; }, 0);
+							};
+
+							if (thumb.status === 200) {
+								var imageData = preview.preview;
+								if (preview.mimetype === 'image/svg+xml') {
+									var pureSvg = DOMPurify.sanitize(window.atob(imageData));
+									imageData = window.btoa(pureSvg);
+								}
+								thumb.image.src =
+									'data:' + preview.mimetype + ';base64,' + imageData;
+							} else {
+								thumb.valid = false;
+								thumb.image.src = Thumbnails._getMimeIcon(preview.mimetype);
+							}
+						}
+					});
+			}
+
+			return batch;
+		},
+
+		/**
+		 * Returns the link to the media type icon
+		 *
+		 * Modern browsers get an SVG, older ones a PNG
+		 *
+		 * @param mimeType
+		 *
+		 * @returns {*|string}
+		 * @private
+		 */
+		_getMimeIcon: function (mimeType) {
+			var icon = OC.MimeType.getIconUrl(mimeType);
+			if (Gallery.ieVersion !== false) {
+				icon = icon.substr(0, icon.lastIndexOf(".")) + ".png";
+			}
+			return icon;
+		}
+
+	};
+
+	window.Thumbnails = Thumbnails;
+})(jQuery, OC, Gallery);

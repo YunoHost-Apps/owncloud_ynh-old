@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>User Authentication with LDAP &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>User Authentication with LDAP &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
     <link rel="up" title="User Management" href="index.html" />
     <link rel="next" title="LDAP User Cleanup" href="user_auth_ldap_cleanup.html" />
     <link rel="prev" title="User Authentication with IMAP, SMB, and FTP" href="user_auth_ftp_smb_imap.html" />
@@ -114,10 +114,11 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_server/index.html">ownCloud Server Configuration</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">User Management</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="user_configuration.html">User Management</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reset_admin_password.html">Resetting a Lost Admin Password</a></li>
@@ -131,11 +132,9 @@
 <li class="toctree-l3"><a class="reference internal" href="#troubleshooting-tips-and-tricks">Troubleshooting, Tips and Tricks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ssl-certificate-verification-ldaps-tls">SSL Certificate Verification (LDAPS, TLS)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#microsoft-active-directory">Microsoft Active Directory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#memberof-read-memberof-permissions">memberOf / Read MemberOf permissions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#duplicating-server-configurations">Duplicating Server Configurations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#owncloud-ldap-internals">ownCloud LDAP Internals</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#user-and-group-mapping">User and Group Mapping</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#caching">Caching</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#handling-with-backup-server">Handling with Backup Server</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="user_auth_ldap_cleanup.html">LDAP User Cleanup</a></li>
@@ -143,8 +142,8 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../configuration_server/index.html">ownCloud Server Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_mimetypes/index.html">Mimetypes Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
@@ -152,6 +151,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_server_branding/index.html">Enterprise Server Branding (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
@@ -274,9 +274,12 @@ Host, and you must enter it manually if ownCloud does not detect it.</p>
 <div class="section" id="user-filter">
 <h3>User Filter<a class="headerlink" href="#user-filter" title="Permalink to this headline">¶</a></h3>
 <p>Use this to control which LDAP users are listed as ownCloud users on your
-ownCloud server. In order to control which LDAP users can login to your ownCloud
-server use the Login filter. Those LDAP users who have access but are not listed
-as users (if there are any) will be hidden users. You may bypass the form fields
+ownCloud server. In order to control which LDAP users can login to your
+ownCloud
+server use the Login filter. Those LDAP users who have access but are not
+listed
+as users (if there are any) will be hidden users. You may bypass the form
+fields
 and enter a raw LDAP filter if you prefer.</p>
 <div class="figure">
 <img alt="../_images/ldap-wizard-2-user.png" src="../_images/ldap-wizard-2-user.png" />
@@ -288,20 +291,20 @@ user objects in your LDAP. ownCloud will automatically select the object
 class that returns the highest amount of users. You may select multiple
 object classes.</dd>
 <dt>only from those groups:</dt>
-<dd><p class="first">If your LDAP server supports the <tt class="docutils literal"><span class="pre">member-of-overlay</span></tt> in LDAP filters, you
+<dd>If your LDAP server supports the <tt class="docutils literal"><span class="pre">member-of-overlay</span></tt> in LDAP filters, you
 can define that only users from one or more certain groups are allowed to
-appear in user listings in ownCloud. By default, no value will be selected. You
-may select multiple groups.</p>
+appear in user listings in ownCloud. By default, no value will be selected.</dd>
+<dt>You</dt>
+<dd><p class="first">may select multiple groups.</p>
 <p class="last">If your LDAP server does not support the member-of-overlay in LDAP filters,
 the input field is disabled. Please contact your LDAP administrator.</p>
 </dd>
 <dt>Edit raw filter instead:</dt>
 <dd><p class="first">Clicking on this text toggles the filter mode and you can enter the raw LDAP
-filter directly.</p>
-<p>Example:</p>
-<ul class="last simple">
-<li><em>(&amp;(objectClass=inetOrgPerson)(memberOf=cn=owncloudusers,ou=groups,dc=example,dc=com))</em></li>
-</ul>
+filter directly. Example:</p>
+<div class="last highlight-python"><pre>(&amp;(objectClass=inetOrgPerson)(memberOf=cn=owncloudusers,ou=groups,
+dc=example,dc=com))</pre>
+</div>
 </dd>
 <dt>x users found:</dt>
 <dd>This is an indicator that tells you approximately how many users will be
@@ -310,11 +313,15 @@ listed in ownCloud. The number updates automatically after any changes.</dd>
 </div>
 <div class="section" id="login-filter">
 <h3>Login Filter<a class="headerlink" href="#login-filter" title="Permalink to this headline">¶</a></h3>
-<p>The settings in the Login Filter tab determine which LDAP users can log in to your
-ownCloud system and which attribute or attributes the provided login name is matched
-against (e.g. LDAP/AD username, email address). You may select multiple user details.
+<p>The settings in the Login Filter tab determine which LDAP users can log in to
+your
+ownCloud system and which attribute or attributes the provided login name is
+matched
+against (e.g. LDAP/AD username, email address). You may select multiple user
+details.
 (You may bypass the form fields and enter a raw LDAP filter if you prefer.)</p>
-<p>You may override your User Filter settings on the User Filter tab by using a raw
+<p>You may override your User Filter settings on the User Filter tab by using a
+raw
 LDAP filter.</p>
 <div class="figure">
 <img alt="../_images/ldap-wizard-3-login.png" src="../_images/ldap-wizard-3-login.png" />
@@ -338,9 +345,17 @@ filter directly.</p>
 <p>The <strong>%uid</strong> placeholder is replaced with the login name entered by the
 user upon login.</p>
 <p>Examples:</p>
-<ul class="last simple">
-<li>only username: (&amp;(objectClass=inetOrgPerson)(memberOf=cn=owncloudusers,ou=groups,dc=example,dc=com)(uid=%uid)*</li>
-<li>username or email address: <em>((&amp;(objectClass=inetOrgPerson)(memberOf=cn=owncloudusers,ou=groups,dc=example,dc=com)(|(uid=%uid)(mail=%uid)))</em></li>
+<ul class="last">
+<li><p class="first">only username:</p>
+<div class="highlight-python"><pre>(&amp;(objectClass=inetOrgPerson)(memberOf=cn=owncloudusers,ou=groups,
+dc=example,dc=com)(uid=%uid)</pre>
+</div>
+</li>
+<li><p class="first">username or email address:</p>
+<div class="highlight-python"><pre>((&amp;(objectClass=inetOrgPerson)(memberOf=cn=owncloudusers,ou=groups,
+dc=example,dc=com)(|(uid=%uid)(mail=%uid)))</pre>
+</div>
+</li>
 </ul>
 </dd>
 </dl>
@@ -381,7 +396,8 @@ The number updates automatically after any change.</dd>
 <div class="section" id="advanced-settings">
 <h2>Advanced Settings<a class="headerlink" href="#advanced-settings" title="Permalink to this headline">¶</a></h2>
 <p>The LDAP Advanced Setting section contains options that are not needed for a
-working connection. This provides controls to disable the current configuration,
+working connection. This provides controls to disable the current
+configuration,
 configure replica hosts, and various performance-enhancing options.</p>
 <p>The Advanced Settings are structured into three parts:</p>
 <ul class="simple">
@@ -421,8 +437,6 @@ but only a host, then the main port (as specified above) will be used.</p>
 <dt>Disable Main Server:</dt>
 <dd>You can manually override the main server and make ownCloud only connect to
 the backup server. This is useful for planned downtimes.</dd>
-<dt>Case insensitive LDAP server (Windows):</dt>
-<dd>When the LDAP server is running on a Windows Host.</dd>
 <dt>Turn off SSL certificate validation:</dt>
 <dd>Turns off SSL certificate checking. Use it for testing only!</dd>
 <dt>Cache Time-To-Live:</dt>
@@ -691,6 +705,12 @@ If you have trouble with certificate validation make sure that</p>
 make ownCloud work with Active Directory. ownCloud will automatically find the
 correct configuration in the set-up process.</p>
 </div>
+<div class="section" id="memberof-read-memberof-permissions">
+<h2>memberOf / Read MemberOf permissions<a class="headerlink" href="#memberof-read-memberof-permissions" title="Permalink to this headline">¶</a></h2>
+<p>If you want to use <tt class="docutils literal"><span class="pre">memberOf</span></tt> within your filter you might need to give your
+querying user the permissions to use it. For Microsoft Active Directory this
+is described <a class="reference external" href="https://serverfault.com/questions/167371/what-permissions-are-required-for-enumerating-users-groups-in-active-directory/167401#167401">here</a>.</p>
+</div>
 <div class="section" id="duplicating-server-configurations">
 <h2>Duplicating Server Configurations<a class="headerlink" href="#duplicating-server-configurations" title="Permalink to this headline">¶</a></h2>
 <p>In case you have a working configuration and want to create a similar one or
@@ -709,9 +729,8 @@ in the <em>Connection Settings</em>, so the new configuration is not used on Sav
 <div class="section" id="owncloud-ldap-internals">
 <h2>ownCloud LDAP Internals<a class="headerlink" href="#owncloud-ldap-internals" title="Permalink to this headline">¶</a></h2>
 <p>Some parts of how the LDAP backend works are described here.</p>
-</div>
 <div class="section" id="user-and-group-mapping">
-<h2>User and Group Mapping<a class="headerlink" href="#user-and-group-mapping" title="Permalink to this headline">¶</a></h2>
+<h3>User and Group Mapping<a class="headerlink" href="#user-and-group-mapping" title="Permalink to this headline">¶</a></h3>
 <p>In ownCloud the user or group name is used to have all relevant information in
 the database assigned. To work reliably a permanent internal user name and
 group name is created and mapped to the LDAP DN and UUID. If the DN changes in
@@ -727,40 +746,14 @@ it into production. The mapping tables are filled early, but as long as you are
 testing, you can empty the tables any time. Do not do this in production.</p>
 </div>
 <div class="section" id="caching">
-<h2>Caching<a class="headerlink" href="#caching" title="Permalink to this headline">¶</a></h2>
+<h3>Caching<a class="headerlink" href="#caching" title="Permalink to this headline">¶</a></h3>
 <p>The LDAP cache has changed in ownCloud 8.1. There is no more file cache, but
-only a memory cache, and you must install and configure the memory cache. The
-simplest memory cache to use is APCu. This is supplied by the <tt class="docutils literal"><span class="pre">php5-apcu</span></tt>
-package on Debian/Ubuntu/Mint, and by <tt class="docutils literal"><span class="pre">php-pecl-apcu</span></tt> on Red
-Hat/CentOS/Fedora.</p>
-<p>After installing APCu you must modify <tt class="docutils literal"><span class="pre">config.php</span></tt> to select APCu as the
-ownCloud cache:</p>
-<div class="highlight-python"><pre>'memcache.local' =&gt; '\OC\Memcache\APCu',</pre>
-</div>
-<p>The ownCloud  <strong>Cache</strong> helps to speed up user interactions and sharing. It is
-populated on demand, and remains populated until the <strong>Cache Time-To-Live</strong> for
-each unique request expires. User logins are not cached, so if you need to
-improve login times set up a slave LDAP server to share the load.</p>
-<p>The Redis key-value cache and store is an excellent fast and robust cache, and
-if you are using the new experimental file locking (see
-<a class="reference internal" href="../configuration_files/files_locking_transactional.html"><em>Transactional File Locking</em></a>) then you must use
-Redis. Redis configuration looks like this:</p>
-<div class="highlight-python"><pre>'filelocking.enabled' =&gt; 'true',
-'memcache.local' =&gt; '\OC\Memcache\Redis',
-'redis' =&gt; array(
-      'host' =&gt; 'localhost',
-      // can also be a unix domain socket:
-      '/tmp/redis.sock'
-      'port' =&gt; 6379,
-      'timeout' =&gt; 0.0,
-      // Optional, if undefined SELECT will not run and will use Redis
-      // Server's default DB Index.
-      'dbindex' =&gt; 0,
-),</pre>
-</div>
-<p>Redis is supplied by the <tt class="docutils literal"><span class="pre">redis-server</span></tt> and <tt class="docutils literal"><span class="pre">php5-redis</span></tt> packages on
-Debian/Ubuntu/Mint, and on Red Hat/CentOS/Fedora by <tt class="docutils literal"><span class="pre">redis</span></tt> and
-<tt class="docutils literal"><span class="pre">php-pecl-redis</span></tt> from the EPEL repository.</p>
+only a memory cache, and you must install and configure the memory cache (see
+<a class="reference internal" href="../configuration_server/caching_configuration.html"><em>Configuring Memory Caching</em></a>). The ownCloud  <strong>Cache</strong>
+helps to speed up user interactions and sharing. It is populated on demand,
+and remains populated until the <strong>Cache Time-To-Live</strong> for each unique request
+expires. User logins are not cached, so if you need to improve login times set
+up a slave LDAP server to share the load.</p>
 <p>You can adjust the <strong>Cache Time-To-Live</strong> value to balance performance and
 freshness of LDAP data. All LDAP requests will be cached for 10 minutes by
 default, and you can alter this with the <strong>Cache Time-To-Live</strong> setting. The
@@ -783,12 +776,13 @@ defunct, for example due to a server migration or unreachable server. In this
 case the other servers will also receive the request.</p>
 </div>
 <div class="section" id="handling-with-backup-server">
-<h2>Handling with Backup Server<a class="headerlink" href="#handling-with-backup-server" title="Permalink to this headline">¶</a></h2>
+<h3>Handling with Backup Server<a class="headerlink" href="#handling-with-backup-server" title="Permalink to this headline">¶</a></h3>
 <p>When ownCloud is not able to contact the main LDAP server, ownCloud assumes it
 is offline and will not try to connect again for the time specified in <strong>Cache
 Time-To-Live</strong>. If you have a backup server configured ownCloud will connect to
 it instead. When you have scheduled downtime, check <strong>Disable Main Server</strong>  to
 avoid unnecessary connection attempts.</p>
+</div>
 </div>
 </div>
 

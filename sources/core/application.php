@@ -27,6 +27,7 @@
 namespace OC\Core;
 
 use OC\AppFramework\Utility\SimpleContainer;
+use OC\AppFramework\Utility\TimeFactory;
 use \OCP\AppFramework\App;
 use OC\Core\LostPassword\Controller\LostController;
 use OC\Core\User\UserController;
@@ -63,7 +64,8 @@ class Application extends App {
 				$c->query('SecureRandom'),
 				$c->query('DefaultEmailAddress'),
 				$c->query('IsEncryptionEnabled'),
-				$c->query('Mailer')
+				$c->query('Mailer'),
+				$c->query('TimeFactory')
 			);
 		});
 		$container->registerService('UserController', function(SimpleContainer $c) {
@@ -82,7 +84,9 @@ class Application extends App {
 				$c->query('Cache'),
 				$c->query('L10N'),
 				$c->query('UserManager'),
-				$c->query('UserSession')
+				$c->query('UserSession'),
+				$c->query('UserFolder'),
+				$c->query('Logger')
 			);
 		});
 
@@ -116,13 +120,20 @@ class Application extends App {
 		$container->registerService('Cache', function(SimpleContainer $c) {
 			return $c->query('ServerContainer')->getCache();
 		});
-
-
+		$container->registerService('UserFolder', function(SimpleContainer $c) {
+			return $c->query('ServerContainer')->getUserFolder();
+		});
 		$container->registerService('Defaults', function() {
 			return new \OC_Defaults;
 		});
 		$container->registerService('Mailer', function(SimpleContainer $c) {
 			return $c->query('ServerContainer')->getMailer();
+		});
+		$container->registerService('Logger', function(SimpleContainer $c) {
+			return $c->query('ServerContainer')->getLogger();
+		});
+		$container->registerService('TimeFactory', function(SimpleContainer $c) {
+			return new TimeFactory();
 		});
 		$container->registerService('DefaultEmailAddress', function() {
 			return Util::getDefaultEmailAddress('lostpassword-noreply');

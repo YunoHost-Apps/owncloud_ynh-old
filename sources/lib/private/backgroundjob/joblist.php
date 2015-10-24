@@ -4,7 +4,6 @@
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Robin Appelman <icewind@owncloud.com>
  * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
- * @author Thomas Müller <thomas.mueller@tmit.eu>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
  * @license AGPL-3.0
@@ -26,6 +25,7 @@
 namespace OC\BackgroundJob;
 
 use OCP\BackgroundJob\IJobList;
+use OCP\AutoloadNotAllowedException;
 
 class JobList implements IJobList {
 	/**
@@ -87,6 +87,11 @@ class JobList implements IJobList {
 		}
 	}
 
+	protected function removeById($id) {
+		$query = $this->conn->prepare('DELETE FROM `*PREFIX*jobs` WHERE `id` = ?');
+		$query->execute([$id]);
+	}
+
 	/**
 	 * check if a job is in the list
 	 *
@@ -134,16 +139,24 @@ class JobList implements IJobList {
 		$query = $this->conn->prepare('SELECT `id`, `class`, `last_run`, `argument` FROM `*PREFIX*jobs` WHERE `id` > ? ORDER BY `id` ASC', 1);
 		$query->execute(array($lastId));
 		if ($row = $query->fetch()) {
-			return $this->buildJob($row);
+			$jobId = $row['id'];
+			$job = $this->buildJob($row);
 		} else {
 			//begin at the start of the queue
 			$query = $this->conn->prepare('SELECT `id`, `class`, `last_run`, `argument` FROM `*PREFIX*jobs` ORDER BY `id` ASC', 1);
 			$query->execute();
 			if ($row = $query->fetch()) {
-				return $this->buildJob($row);
+				$jobId = $row['id'];
+				$job = $this->buildJob($row);
 			} else {
 				return null; //empty job list
 			}
+		}
+		if (is_null($job)) {
+			$this->removeById($jobId);
+			return $this->getNext();
+		} else {
+			return $job;
 		}
 	}
 
@@ -172,15 +185,20 @@ class JobList implements IJobList {
 		/**
 		 * @var Job $job
 		 */
-		if (!class_exists($class)) {
-			// job from disabled app or old version of an app, no need to do anything
-			return null;
+		try {
+			if (!class_exists($class)) {
+				// job from disabled app or old version of an app, no need to do anything
+				return null;
+			}
+			$job = new $class();
+			$job->setId($row['id']);
+			$job->setLastRun($row['last_run']);
+			$job->setArgument(json_decode($row['argument'], true));
+			return $job;
+		} catch (AutoloadNotAllowedException $e) {
+			// job is from a disabled app, ignore
 		}
-		$job = new $class();
-		$job->setId($row['id']);
-		$job->setLastRun($row['last_run']);
-		$job->setArgument(json_decode($row['argument'], true));
-		return $job;
+		return null;
 	}
 
 	/**

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Accessing ownCloud Files Using WebDAV &mdash; ownCloud User Manual 8.1 documentation</title>
+    <title>Accessing ownCloud Files Using WebDAV &mdash; ownCloud User Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud User Manual 8.1 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud User Manual 8.2 documentation" href="../index.html" />
     <link rel="up" title="Files &amp; Synchronization" href="index.html" />
     <link rel="next" title="Managing Deleted Files" href="deleted_file_management.html" />
     <link rel="prev" title="Accessing your Files Using the ownCloud Web Interface" href="access_webgui.html" />
@@ -114,8 +114,8 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 User Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new.html">What&#8217;s New for Users in ownCloud 8.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 User Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new.html">What&#8217;s New for Users in ownCloud 8.2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../webinterface.html">The ownCloud Web Interface</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Files &amp; Synchronization</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="access_webgui.html">Accessing your Files Using the ownCloud Web Interface</a></li>
@@ -124,9 +124,11 @@
 <li class="toctree-l3"><a class="reference internal" href="#webdav-configuration">WebDAV Configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#accessing-files-using-linux">Accessing Files Using Linux</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#creating-webdav-mounts-on-the-linux-command-line">Creating WebDAV Mounts on the Linux Command Line</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#known-issues">Known Issues</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#accessing-files-using-mac-os-x">Accessing Files Using Mac OS X</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#accessing-files-using-microsoft-windows">Accessing Files Using Microsoft Windows</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#accessing-files-using-cyberduck">Accessing Files Using Cyberduck</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#known-problems">Known Problems</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="deleted_file_management.html">Managing Deleted Files</a></li>
@@ -158,23 +160,22 @@
 						
   <div class="section" id="accessing-owncloud-files-using-webdav">
 <h1>Accessing ownCloud Files Using WebDAV<a class="headerlink" href="#accessing-owncloud-files-using-webdav" title="Permalink to this headline">¶</a></h1>
-<p>ownCloud fully supports the WebDAV protocol, and you can
-connect and synchronize with your ownCloud files over WebDAV.  In this
-chapter you will learn how to connect Linux, Mac OS X, Windows, and mobile
-devices to your ownCloud server via WebDAV. Before we get into configuring
-WebDAV, let&#8217;s take a quick look at the recommended way of connecting client
-devices to your ownCloud servers.</p>
+<p>ownCloud fully supports the WebDAV protocol, and you can connect and synchronize
+with your ownCloud files over WebDAV.  In this chapter you will learn how to
+connect Linux, Mac OS X, Windows, and mobile devices to your ownCloud server via
+WebDAV. Before we get into configuring WebDAV, let&#8217;s take a quick look at the
+recommended way of connecting client devices to your ownCloud servers.</p>
 <div class="section" id="owncloud-desktop-and-mobile-clients">
 <h2>ownCloud Desktop and Mobile Clients<a class="headerlink" href="#owncloud-desktop-and-mobile-clients" title="Permalink to this headline">¶</a></h2>
 <p>The recommended method for keeping your desktop PC synchronized with your
-ownCloud server is by using the <a class="reference external" href="http://doc.owncloud.org/desktop/1.7/">ownCloud Desktop Client</a>. You can configure the ownCloud client
+ownCloud server is by using the <a class="reference external" href="https://owncloud.org/install/#install-clients">ownCloud Desktop Client</a>. You can configure the ownCloud client
 to save files in any local directory you want, and you choose which directories
 on the ownCloud server to sync with. The client displays the current connection
 status and logs all activity, so you always know which remote files have been
 downloaded to your PC, and you can verify that files created and updated on your
 local PC are properly synchronized with the server.</p>
 <p>The recommended method for syncing your ownCloud server with Android and
-Apple iOS devices is by using the <a class="reference external" href="http://owncloud.org/install/#mobile">ownCloud mobile apps</a>.</p>
+Apple iOS devices is by using the <a class="reference external" href="https://owncloud.org/install/#install-clients">ownCloud mobile apps</a>.</p>
 <p>To connect to your ownCloud server with the <strong>ownCloud</strong> mobile apps, use the
 base URL and folder only:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">example</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">owncloud</span>
@@ -204,18 +205,19 @@ URL of your ownCloud server installation.</p>
 </div>
 <div class="section" id="accessing-files-using-linux">
 <h2>Accessing Files Using Linux<a class="headerlink" href="#accessing-files-using-linux" title="Permalink to this headline">¶</a></h2>
-<p>You can access files in Linux operating systems using the following methods:</p>
-<div class="section" id="accessing-files-with-gnome-and-nautilus-file-manager">
-<h3>Accessing Files with GNOME and Nautilus File Manager<a class="headerlink" href="#accessing-files-with-gnome-and-nautilus-file-manager" title="Permalink to this headline">¶</a></h3>
+<p>You can access files in Linux operating systems using the following methods.</p>
+<div class="section" id="nautilus-file-manager">
+<h3>Nautilus File Manager<a class="headerlink" href="#nautilus-file-manager" title="Permalink to this headline">¶</a></h3>
 <p>Use the <tt class="docutils literal"><span class="pre">davs://</span></tt> protocol to connect the Nautilus file manager to your
 ownCloud share:</p>
 <div class="highlight-python"><pre>davs://example.org/owncloud/remote.php/webdav</pre>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If your server connection is not HTTPS-secured, use <cite>dav://</cite> instead of <cite>davs://</cite>.</p>
+<p class="last">If your server connection is not HTTPS-secured, use <cite>dav://</cite> instead
+of <cite>davs://</cite>.</p>
 </div>
-<img alt="../_images/webdav_gnome3_nautilus.png" src="../_images/webdav_gnome3_nautilus.png" />
+<img alt="screenshot of configuring Nautilus file manager to use WebDAV" src="../_images/webdav_gnome3_nautilus.png" />
 </div>
 <div class="section" id="accessing-files-with-kde-and-dolphin-file-manager">
 <h3>Accessing Files with KDE and Dolphin File Manager<a class="headerlink" href="#accessing-files-with-kde-and-dolphin-file-manager" title="Permalink to this headline">¶</a></h3>
@@ -223,7 +225,7 @@ ownCloud share:</p>
 the <tt class="docutils literal"><span class="pre">webdav://</span></tt> protocol:</p>
 <div class="highlight-python"><pre>webdav://example.org/owncloud/remote.php/webdav</pre>
 </div>
-<img alt="../_images/webdav_dolphin.png" src="../_images/webdav_dolphin.png" />
+<img alt="screenshot of configuring Dolphin file manager to use WebDAV" src="../_images/webdav_dolphin.png" />
 <p>You can create a permanent link to your ownCloud server:</p>
 <ol class="arabic simple">
 <li>Open Dolphin and click &#8220;Network&#8221; in the left hand &#8220;Places&#8221; column.</li>
@@ -256,37 +258,32 @@ automatically every time you log in to your Linux computer.</p>
 <li><p class="first">Install the <tt class="docutils literal"><span class="pre">davfs2</span></tt> WebDAV filesystem driver, which allows you to mount
 WebDAV shares just like any other remote filesystem. Use this command to
 install it on Debian/Ubuntu:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># apt-get install davfs2</span>
-</pre></div>
+<div class="highlight-python"><pre>apt-get install davfs2</pre>
 </div>
 </li>
 <li><p class="first">Use this command to install it on CentOS, Fedora, and openSUSE:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># yum install davfs2</span>
-</pre></div>
+<div class="highlight-python"><pre>yum install davfs2</pre>
 </div>
 </li>
 <li><p class="first">Add yourself to the <tt class="docutils literal"><span class="pre">davfs2</span></tt> group:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># usermod -aG davfs2 &lt;username&gt;</span>
-</pre></div>
+<div class="highlight-python"><pre>usermod -aG davfs2 &lt;username&gt;</pre>
 </div>
 </li>
 </ol>
 <ol class="arabic" start="3">
 <li><p class="first">Then create an <tt class="docutils literal"><span class="pre">owncloud</span></tt> directory in your home directory for the
 mountpoint, and <tt class="docutils literal"><span class="pre">.davfs2/</span></tt> for your personal configuration file:</p>
-<div class="highlight-python"><pre>$ mkdir ~/owncloud
-$ mkdir ~/.davfs2</pre>
+<div class="highlight-python"><pre>mkdir ~/owncloud
+mkdir ~/.davfs2</pre>
 </div>
 </li>
-<li><p class="first">Copy <tt class="docutils literal"><span class="pre">/etc/davfs2/secrets</span></tt> to <tt class="docutils literal"><span class="pre">~/.davfs2</span></tt></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># cp  /etc/davfs2/secrets ~/.davfs2/secrets</span>
-</pre></div>
+<li><p class="first">Copy <tt class="docutils literal"><span class="pre">/etc/davfs2/secrets</span></tt> to <tt class="docutils literal"><span class="pre">~/.davfs2</span></tt>:</p>
+<div class="highlight-python"><pre>cp  /etc/davfs2/secrets ~/.davfs2/secrets</pre>
 </div>
 </li>
 <li><p class="first">Set yourself as the owner and make the permissions read-write owner only:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># chown &lt;username&gt;:&lt;username&gt;  ~/.davfs2/secrets</span>
-<span class="c"># chmod 600 ~/.davfs2/secrets</span>
-</pre></div>
+<div class="highlight-python"><pre>chown &lt;username&gt;:&lt;username&gt;  ~/.davfs2/secrets
+chmod 600 ~/.davfs2/secrets</pre>
 </div>
 </li>
 <li><p class="first">Add your ownCloud login credentials to the end of the <tt class="docutils literal"><span class="pre">secrets</span></tt> file,
@@ -301,27 +298,38 @@ davfs user,rw,auto 0 0</pre>
 </li>
 <li><p class="first">Then test that it mounts and authenticates by running the following
 command. If you set it up correctly you won&#8217;t need root permissions:</p>
-<div class="highlight-python"><pre>$ mount ~/owncloud</pre>
+<div class="highlight-python"><pre>mount ~/owncloud</pre>
 </div>
 </li>
 <li><p class="first">You should also be able to unmount it:</p>
-<div class="highlight-python"><pre>$ umount ~/owncloud</pre>
+<div class="highlight-python"><pre>umount ~/owncloud</pre>
 </div>
 </li>
 </ol>
 <p>Now every time you login to your Linux system your ownCloud share should
-automatically mount via WebDAV in your <tt class="docutils literal"><span class="pre">~/owncloud</span></tt> directory. If you
-prefer to mount it manually, change <tt class="docutils literal"><span class="pre">auto</span></tt> to <tt class="docutils literal"><span class="pre">noauto</span></tt> in
-<tt class="docutils literal"><span class="pre">/etc/fstab</span></tt>.</p>
+automatically mount via WebDAV in your <tt class="docutils literal"><span class="pre">~/owncloud</span></tt> directory. If you prefer
+to mount it manually, change <tt class="docutils literal"><span class="pre">auto</span></tt> to <tt class="docutils literal"><span class="pre">noauto</span></tt> in <tt class="docutils literal"><span class="pre">/etc/fstab</span></tt>.</p>
+</div>
 <div class="section" id="known-issues">
-<h3>Known Issues<a class="headerlink" href="#known-issues" title="Permalink to this headline">¶</a></h3>
-<p><strong>Problem:</strong> Resource temporarily unavailable</p>
-<p><strong>Solution:</strong> If you experience trouble when you create a file in the directory,
+<h2>Known Issues<a class="headerlink" href="#known-issues" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="problem">
+<h3>Problem<a class="headerlink" href="#problem" title="Permalink to this headline">¶</a></h3>
+<p>Resource temporarily unavailable</p>
+</div>
+<div class="section" id="solution">
+<h3>Solution<a class="headerlink" href="#solution" title="Permalink to this headline">¶</a></h3>
+<p>If you experience trouble when you create a file in the directory,
 edit <tt class="docutils literal"><span class="pre">/etc/davfs2/davfs2.conf</span></tt> and add:</p>
 <div class="highlight-python"><pre>use_locks 0</pre>
 </div>
-<p><strong>Problem:</strong> Certificate warnings</p>
-<p><strong>Solution:</strong> If you use a self-signed certificate, you will get a warning. To
+</div>
+<div class="section" id="id1">
+<h3>Problem<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Certificate warnings</p>
+</div>
+<div class="section" id="id2">
+<h3>Solution<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>If you use a self-signed certificate, you will get a warning. To
 change this, you need to configure <tt class="docutils literal"><span class="pre">davfs2</span></tt> to recognize your certificate.
 Copy <tt class="docutils literal"><span class="pre">mycertificate.pem</span></tt> to <tt class="docutils literal"><span class="pre">/etc/davfs2/certs/</span></tt>. Then edit
 <tt class="docutils literal"><span class="pre">/etc/davfs2/davfs2.conf</span></tt> and uncomment the line <tt class="docutils literal"><span class="pre">servercert</span></tt>. Now add the
@@ -348,7 +356,7 @@ ownCloud server runs on <strong>Apache</strong> and <strong>mod_php</strong>.</p
 <li>Specify the address of the server in the <strong>Server Address</strong> field.</li>
 </ol>
 <blockquote>
-<div><img alt="../_images/osx_webdav1.png" src="../_images/osx_webdav1.png" />
+<div><img alt="Screenshot of entering your ownCloud server address on Mac OS X" src="../_images/osx_webdav1.png" />
 <p>For example, the URL used to connect to the ownCloud server
 from the Mac OS X Finder is:</p>
 <div class="highlight-python"><pre>http://example.org/owncloud/remote.php/webdav</pre>
@@ -437,8 +445,7 @@ connect to the ownCloud server as a different user, check <strong>Connect using
 different credentials</strong>.</p>
 </div>
 <div class="figure">
-<a class="reference internal image-reference" href="../_images/explorer_webdav.png"><img alt="../_images/explorer_webdav.png" src="../_images/explorer_webdav.png" style="width: 502.4px; height: 366.4px;" /></a>
-<p class="caption"><strong>Mapping WebDAV on Windows Explorer</strong></p>
+<a class="reference internal image-reference" href="../_images/explorer_webdav.png"><img alt="screenshot of mapping WebDAV on Windows Explorer" src="../_images/explorer_webdav.png" style="width: 502.4px; height: 366.4px;" /></a>
 </div>
 <ol class="arabic simple" start="5">
 <li>Click the <tt class="docutils literal"><span class="pre">Finish</span></tt> button.</li>
@@ -475,46 +482,90 @@ the &#8216;Path&#8217; field. For example:</p>
 <blockquote>
 <div><tt class="docutils literal"><span class="pre">remote.php/webdav</span></tt></div></blockquote>
 <p>Now Cyberduck enables file access to the ownCloud server.</p>
+</div>
 <div class="section" id="known-problems">
-<h3>Known Problems<a class="headerlink" href="#known-problems" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt><strong>Problem</strong></dt>
-<dd>Windows does not connect using HTTPS.</dd>
-<dt><strong>Solution 1</strong></dt>
-<dd>The Windows WebDAV Client might not support Server Name Indication (SNI) on
+<h2>Known Problems<a class="headerlink" href="#known-problems" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h3>Problem<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>Windows does not connect using HTTPS.</p>
+</div>
+<div class="section" id="solution-1">
+<h3>Solution 1<a class="headerlink" href="#solution-1" title="Permalink to this headline">¶</a></h3>
+<p>The Windows WebDAV Client might not support Server Name Indication (SNI) on
 encrypted connections. If you encounter an error mounting an SSL-encrypted
-ownCloud instance, contact your provider about assigning a dedicated IP
-address for your SSL-based server.</dd>
-<dt><strong>Solution 2</strong></dt>
-<dd>The Windows WebDAV Client might not support TSLv1.1 / TSLv1.2 connections.
-If you have restricted your server config to only provide TLSv1.1 and above
-the connection to your server might fail. Please refer to the <a class="reference external" href="https://msdn.microsoft.com/en-us/library/windows/desktop/aa382925.aspx#WinHTTP_5.1_Features">WinHTTP</a>
-documentation for further information.</dd>
-</dl>
-<dl class="docutils">
-<dt><strong>Problem</strong></dt>
-<dd>You receive the following error message:
-<strong>Error 0x800700DF: The file size exceeds the limit allowed and cannot be
-saved.</strong></dd>
-<dt><strong>Solution</strong></dt>
-<dd><p class="first">Windows limits the maximum size a file transferred from or to  a WebDAV share
+ownCloud instance, contact your provider about assigning a dedicated IP address
+for your SSL-based server.</p>
+</div>
+<div class="section" id="solution-2">
+<h3>Solution 2<a class="headerlink" href="#solution-2" title="Permalink to this headline">¶</a></h3>
+<p>The Windows WebDAV Client might not support TSLv1.1 / TSLv1.2 connections. If
+you have restricted your server config to only provide TLSv1.1 and above the
+connection to your server might fail. Please refer to the <a class="reference external" href="https://msdn.microsoft.com/en-us/library/windows/desktop/aa382925.aspx#WinHTTP_5.1_Features">WinHTTP</a> documentation
+for further information.</p>
+</div>
+<div class="section" id="id4">
+<h3>Problem<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>You receive the following error message: <strong>Error 0x800700DF: The file size
+exceeds the limit allowed and cannot be saved.</strong></p>
+</div>
+<div class="section" id="id5">
+<h3>Solution<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>Windows limits the maximum size a file transferred from or to  a WebDAV share
 may have.  You can increase the value <strong>FileSizeLimitInBytes</strong> in
-<strong>HKEY_LOCAL_MacHINE\SYSTEM\CurrentControlSet\Services\WebClient\Parameters</strong>
-by clicking on <strong>Modify</strong>.</p>
-<p class="last">To increase the limit to the maximum value of 4GB, select <strong>Decimal</strong>, enter
-a value of <strong>4294967295</strong>, and reboot Windows or restart the <strong>WebClient</strong>
+<strong>HKEY_LOCAL_MacHINE\SYSTEM\CurrentControlSet\Services\WebClient\Parameters
+** by clicking on **Modify</strong>.</p>
+<p>To increase the limit to the maximum value of 4GB, select <strong>Decimal</strong>, enter a
+value of <strong>4294967295</strong>, and reboot Windows or restart the <strong>WebClient</strong>
 service.</p>
-</dd>
-<dt><strong>Problem</strong></dt>
-<dd>Accessing your files from Microsoft Office via WebDAV fails.</dd>
-<dt><strong>Solution</strong></dt>
-<dd>Known problems and their solutions are documented in the <a class="reference external" href="https://support.microsoft.com/kb/2123563">KB2123563</a> article.</dd>
-<dt><strong>Problem</strong></dt>
-<dd>You cannot download more than 50 MB or upload large Files when the upload takes
-longer than 30 minutes using Web Client in Windows 7.</dd>
-<dt><strong>Solution</strong></dt>
-<dd>Workarounds are documented in the <a class="reference external" href="https://support.microsoft.com/kb/2668751">KB2668751</a> article.</dd>
-</dl>
+</div>
+<div class="section" id="id6">
+<h3>Problem<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<p>Accessing your files from Microsoft Office via WebDAV fails.</p>
+</div>
+<div class="section" id="id7">
+<h3>Solution<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<p>Known problems and their solutions are documented in the <a class="reference external" href="https://support.microsoft.com/kb/2123563">KB2123563</a> article.</p>
+</div>
+<div class="section" id="id8">
+<h3>Problem<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<p>Cannot map ownCloud as a WebDAV drive in Windows using self-signed certificate.</p>
+</div>
+<div class="section" id="id9">
+<h3>Solution<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Go to the your ownCloud instance via your favorite Web browser.</li>
+<li>Click through until you get to the certificate error in the browser status
+line.</li>
+<li>View the cert, then from the Details tab, select Copy to File.</li>
+<li>Save to the desktop with an arbitrary name, for example <tt class="docutils literal"><span class="pre">myOwnCloud.cer</span></tt>.</li>
+<li>Start, Run, MMC.</li>
+<li>File, Add/Remove Snap-In.</li>
+<li>Select Certificates, Click Add, My User Account, then Finish, then OK.</li>
+<li>Dig down to Trust Root Certification Authorities, Certificates.</li>
+<li>Right-Click Certificate, Select All Tasks, Import.</li>
+<li>Select the Save Cert from the Desktop.</li>
+<li>Select Place all Certificates in the following Store, Click Browse,</li>
+<li>Check the Box that says Show Physical Stores, Expand out Trusted Root
+Certification Authorities, and select Local Computer there, click OK,
+Complete the Import.</li>
+<li>Check the list to make sure it shows up. You will probably need to Refresh
+before you see it. Exit MMC.</li>
+<li>Open Browser, select Tools, Delete Browsing History.</li>
+<li>Select all but In Private Filtering Data, complete.</li>
+<li>Go to Internet Options, Content Tab, Clear SSL State.</li>
+<li>Close browser, then re-open and test.</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="id10">
+<h3>Problem<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<p>You cannot download more than 50 MB or upload large Files when the upload takes
+longer than 30 minutes using Web Client in Windows 7.</p>
+</div>
+<div class="section" id="id11">
+<h3>Solution<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<p>Workarounds are documented in the <a class="reference external" href="https://support.microsoft.com/kb/2668751">KB2668751</a> article.</p>
 </div>
 </div>
 </div>

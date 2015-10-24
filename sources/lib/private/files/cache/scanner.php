@@ -6,6 +6,7 @@
  * @author Martin Mattel <martin.mattel@diemattels.at>
  * @author Michael Gapczynski <GapczynskiM@gmail.com>
  * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Olivier Paroz <github@oparoz.com>
  * @author Owen Winkler <a_github@midnightcircus.com>
  * @author Robin Appelman <icewind@owncloud.com>
  * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
@@ -186,9 +187,9 @@ class Scanner extends BasicEmitter {
 				}
 				if (!empty($newData)) {
 					$data['fileid'] = $this->addToCache($file, $newData, $fileId);
-					$this->emit('\OC\Files\Cache\Scanner', 'postScanFile', array($file, $this->storageId));
-					\OC_Hook::emit('\OC\Files\Cache\Scanner', 'post_scan_file', array('path' => $file, 'storage' => $this->storageId));
 				}
+				$this->emit('\OC\Files\Cache\Scanner', 'postScanFile', array($file, $this->storageId));
+				\OC_Hook::emit('\OC\Files\Cache\Scanner', 'post_scan_file', array('path' => $file, 'storage' => $this->storageId));
 			} else {
 				$this->removeFromCache($file);
 			}
@@ -355,7 +356,7 @@ class Scanner extends BasicEmitter {
 				// might happen if inserting duplicate while a scanning
 				// process is running in parallel
 				// log and ignore
-				\OC_Log::write('core', 'Exception while scanning file "' . $child . '": ' . $ex->getMessage(), \OC_Log::DEBUG);
+				\OCP\Util::writeLog('core', 'Exception while scanning file "' . $child . '": ' . $ex->getMessage(), \OCP\Util::DEBUG);
 				$exceptionOccurred = true;
 			} catch (\OCP\Lock\LockedException $e) {
 				if ($this->useTransactions) {
@@ -377,7 +378,7 @@ class Scanner extends BasicEmitter {
 			// inserted mimetypes but those weren't available yet inside the transaction
 			// To make sure to have the updated mime types in such cases,
 			// we reload them here
-			$this->cache->loadMimetypes();
+			\OC::$server->getMimeTypeLoader()->reset();
 		}
 
 		foreach ($childQueue as $child => $childData) {
@@ -407,6 +408,10 @@ class Scanner extends BasicEmitter {
 		if (pathinfo($file, PATHINFO_EXTENSION) === 'part') {
 			return true;
 		}
+		if (strpos($file, '.part/') !== false) {
+			return true;
+		}
+
 		return false;
 	}
 
@@ -416,11 +421,21 @@ class Scanner extends BasicEmitter {
 	public function backgroundScan() {
 		$lastPath = null;
 		while (($path = $this->cache->getIncomplete()) !== false && $path !== $lastPath) {
-			$this->scan($path, self::SCAN_RECURSIVE, self::REUSE_ETAG);
-			\OC_Hook::emit('Scanner', 'correctFolderSize', array('path' => $path));
-			if ($this->cacheActive) {
-				$this->cache->correctFolderSize($path);
+			try {
+				$this->scan($path, self::SCAN_RECURSIVE, self::REUSE_ETAG);
+				\OC_Hook::emit('Scanner', 'correctFolderSize', array('path' => $path));
+				if ($this->cacheActive) {
+					$this->cache->correctFolderSize($path);
+				}
+			} catch (\OCP\Files\StorageInvalidException $e) {
+				// skip unavailable storages
+			} catch (\OCP\Files\StorageNotAvailableException $e) {
+				// skip unavailable storages
+			} catch (\OCP\Lock\LockedException $e) {
+				// skip unavailable storages
 			}
+			// FIXME: this won't proceed with the next item, needs revamping of getIncomplete()
+			// to make this possible
 			$lastPath = $path;
 		}
 	}

@@ -1,5 +1,6 @@
 <?php
 /**
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
  * @author Vincent Petry <pvince81@owncloud.com>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
@@ -24,11 +25,17 @@ use \OCA\Files_external\Controller\GlobalStoragesController;
 use \OCA\Files_external\Service\GlobalStoragesService;
 use \OCP\AppFramework\Http;
 use \OCA\Files_external\NotFoundException;
+use \OCA\Files_External\Service\BackendService;
 
 class GlobalStoragesControllerTest extends StoragesControllerTest {
 	public function setUp() {
 		parent::setUp();
-		$this->service = $this->getMock('\OCA\Files_external\Service\GlobalStoragesService');
+		$this->service = $this->getMockBuilder('\OCA\Files_external\Service\GlobalStoragesService')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->service->method('getVisibilityType')
+			->willReturn(BackendService::VISIBILITY_ADMIN);
 
 		$this->controller = new GlobalStoragesController(
 			'files_external',

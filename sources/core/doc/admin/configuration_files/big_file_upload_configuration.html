@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Uploading big files &gt; 512MB &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>Uploading big files &gt; 512MB &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,10 +27,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
     <link rel="up" title="File Sharing and Management" href="index.html" />
     <link rel="next" title="Configuring the Collaborative Documents App" href="collaborative_documents_configuration.html" />
-    <link rel="prev" title="File Sharing" href="file_sharing_configuration.html" />
+    <link rel="prev" title="Configuring Federated Cloud Sharing" href="federated_cloud_sharing_configuration.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -114,33 +114,35 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_server/index.html">ownCloud Server Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">File Sharing and Management</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="file_sharing_configuration.html">File Sharing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="federated_cloud_sharing_configuration.html">Configuring Federated Cloud Sharing</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Uploading big files &gt; 512MB</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#system-configuration">System Configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#configuring-your-webserver">Configuring Your Webserver</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#configuring-php">Configuring PHP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuring-owncloud">Configuring ownCloud</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="collaborative_documents_configuration.html">Configuring the Collaborative Documents App</a></li>
 <li class="toctree-l2"><a class="reference internal" href="default_files_configuration.html">Providing Default Files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="external_storage_configuration_gui.html">Configuring External Storage (GUI)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="external_storage_configuration.html">Configuring External Storage (Configuration File)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="external_storage/auth_mechanisms.html">External Storage Authentication mechanisms</a></li>
 <li class="toctree-l2"><a class="reference internal" href="encryption_configuration.html">Encryption Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="files_locking_enabling.html">Using the Files Locking App</a></li>
 <li class="toctree-l2"><a class="reference internal" href="files_locking_transactional.html">Transactional File Locking</a></li>
-<li class="toctree-l2"><a class="reference internal" href="federated_cloud_sharing_configuration.html">Configuring Federated Cloud Sharing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="previews_configuration.html">Previews Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="serving_static_files_configuration.html">Serving Static Files for Better Performance</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../configuration_server/index.html">ownCloud Server Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_mimetypes/index.html">Mimetypes Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
@@ -148,6 +150,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_server_branding/index.html">Enterprise Server Branding (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
@@ -201,7 +204,9 @@ to hold at least 10x100 GB</li>
 <div class="line">PECL extension is installed. If PHP-FPM is used without this PECL extension installed,</div>
 <div class="line">settings and permissions must be set in the <tt class="docutils literal"><span class="pre">owncloud/.user.ini</span></tt> file.</div>
 </div>
-<p>Set the following two parameters inside the corresponding .ini file:</p>
+<p>Set the following two parameters inside the corresponding php.ini file (see the
+<strong>Loaded Configuration File</strong> section of <a class="reference internal" href="../issues/index.html#label-phpinfo"><em>PHP Version and Information</em></a> to find your
+relevant php.ini files)</p>
 <div class="highlight-python"><pre>php_value upload_max_filesize = 16G
 php_value post_max_size = 16G</pre>
 </div>
@@ -236,26 +241,12 @@ for how to configure those values correctly:</p>
 <li><a class="reference external" href="http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size">client_max_body_size</a></li>
 </ul>
 </div>
-<div class="section" id="iis">
-<h3>IIS<a class="headerlink" href="#iis" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><a class="reference external" href="http://www.iis.net/configreference/system.webserver/security/requestfiltering/requestlimits#005">maxAllowedContentLength</a></li>
-</ul>
-</div>
 </div>
 <div class="section" id="configuring-php">
 <h2>Configuring PHP<a class="headerlink" href="#configuring-php" title="Permalink to this headline">¶</a></h2>
 <p>If you don&#8217;t want to use the ownCloud <tt class="docutils literal"><span class="pre">.htaccess</span></tt> or <tt class="docutils literal"><span class="pre">.user.ini</span></tt> file, you may
 configure PHP instead. Make sure to comment out any lines <tt class="docutils literal"><span class="pre">.htaccess</span></tt>
 pertaining to upload size, if you entered any.</p>
-<p>To view your current PHP configuration and to see the location of your
-<tt class="docutils literal"><span class="pre">php.ini</span></tt> file, create a plain text file named <tt class="docutils literal"><span class="pre">phpinfo.php</span></tt> with just this
-single line of code in it: <tt class="docutils literal"><span class="pre">&lt;?php</span> <span class="pre">phpinfo();</span> <span class="pre">?&gt;</span></tt>. Place this file in your Web
-root, for example <tt class="docutils literal"><span class="pre">/var/www/html</span></tt>, and open it in your Web browser, for
-example <tt class="docutils literal"><span class="pre">http://localhost/phpinfo.php</span></tt>. This will display your complete
-current PHP configuration. Look for the <strong>Loaded Configuration File</strong> section
-to see which <tt class="docutils literal"><span class="pre">php.ini</span></tt> file your server is using. This is the one you want to
-edit.</p>
 <p>If you are running ownCloud on a 32-bit system, any <tt class="docutils literal"><span class="pre">open_basedir</span></tt> directive
 in your <tt class="docutils literal"><span class="pre">php.ini</span></tt> file needs to be commented out.</p>
 <p>Set the following two parameters inside <tt class="docutils literal"><span class="pre">php.ini</span></tt>, using your own desired
@@ -271,6 +262,15 @@ will return memory-related errors:</p>
 <ul class="simple">
 <li><tt class="docutils literal"><span class="pre">output_buffering</span> <span class="pre">=</span> <span class="pre">0</span></tt></li>
 </ul>
+</div>
+<div class="section" id="configuring-owncloud">
+<h2>Configuring ownCloud<a class="headerlink" href="#configuring-owncloud" title="Permalink to this headline">¶</a></h2>
+<p>If you have configured the <tt class="docutils literal"><span class="pre">session_lifetime</span></tt> setting in your <tt class="docutils literal"><span class="pre">config.php</span></tt>
+(See <a class="reference internal" href="../configuration_server/config_sample_php_parameters.html"><em>Config.php Parameters</em></a>) file then
+make sure it is not too
+low. This setting needs to be configured to at least the time (in seconds) that
+the longest upload will take. If unsure remove this completely from your
+configuration to reset it to the default shown in the <tt class="docutils literal"><span class="pre">config.sample.php</span></tt>.</p>
 </div>
 </div>
 

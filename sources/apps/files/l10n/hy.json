@@ -1,6 +1,16 @@
 { "translations": {
-    "Delete" : "Ջնջել",
+    "Files" : "Ֆայլեր",
+    "Close" : "Փակել",
     "Download" : "Բեռնել",
-    "Save" : "Պահպանել"
+    "Rename" : "Վերանվանել",
+    "Delete" : "Ջնջել",
+    "Select" : "Նշել",
+    "Name" : "Անուն",
+    "Size" : "Չափս",
+    "New" : "Նոր",
+    "Folder" : "Պանակ",
+    "New folder" : "Նոր պանակ",
+    "Save" : "Պահպանել",
+    "Select all" : "Նշել բոլորը"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }

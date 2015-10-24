@@ -4,6 +4,7 @@
  * @author Joas Schilling <nickvergessen@owncloud.com>
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Robin Appelman <icewind@owncloud.com>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
  * @author Thomas Müller <thomas.mueller@tmit.eu>
  * @author Vincent Petry <pvince81@owncloud.com>
  *
@@ -62,11 +63,11 @@ class Test_Files_Sharing_Mount extends OCA\Files_sharing\Tests\TestCase {
 			self::TEST_FILES_SHARING_API_USER2, 31);
 
 		$statement = "UPDATE `*PREFIX*share` SET `file_target` = ? where `share_with` = ?";
-		$query = \OC_DB::prepare($statement);
+		$query = \OCP\DB::prepare($statement);
 		$arguments = array('/foo/bar' . $this->folder, self::TEST_FILES_SHARING_API_USER2);
 		$query->execute($arguments);
 
-		$query = \OC_DB::prepare('SELECT * FROM `*PREFIX*share`');
+		$query = \OCP\DB::prepare('SELECT * FROM `*PREFIX*share`');
 		$result = $query->execute();
 
 		$shares = $result->fetchAll();
@@ -80,7 +81,7 @@ class Test_Files_Sharing_Mount extends OCA\Files_sharing\Tests\TestCase {
 
 		// share should have moved up
 
-		$query = \OC_DB::prepare('SELECT * FROM `*PREFIX*share`');
+		$query = \OCP\DB::prepare('SELECT * FROM `*PREFIX*share`');
 		$result = $query->execute();
 
 		$shares = $result->fetchAll();

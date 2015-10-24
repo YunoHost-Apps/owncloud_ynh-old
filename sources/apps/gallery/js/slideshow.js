@@ -1,358 +1,436 @@
-/**
- *
- * @param {jQuery} container
- * @param {{name:string, url: string, path: string, fallBack: string}[]} images
- * @param {int} interval
- * @param {int} maxScale
- * @constructor
- */
-var SlideShow = function (container, images, interval, maxScale) {
-	this.container = container;
-	this.images = images;
-	this.interval = interval | 5000;
-	this.maxScale = maxScale | 2;
-	this.playTimeout = 0;
-	this.current = 0;
-	this.imageCache = {};
-	this.playing = false;
-	this.progressBar = container.find('.progress');
-	this.currentImage = null;
-	this.onStop = null;
-	this.active = false;
-};
+/* global DOMPurify */
+(function ($, OC, OCA, t) {
+	"use strict";
+	/**
+	 * Slideshow featuring zooming
+	 *
+	 * @constructor
+	 */
+	var SlideShow = function () {
+	};
 
-SlideShow.prototype.init = function (play) {
-	this.active = true;
-	this.container.children('img').remove();
+	SlideShow.prototype = {
+		slideshowTemplate: null,
+		container: null,
+		zoomablePreviewContainer: null,
+		controls: null,
+		imageCache: {},
+		/** {Image} */
+		currentImage: null,
+		errorLoadingImage: false,
+		onStop: null,
+		zoomablePreview: null,
+		active: false,
+		backgroundToggle: false,
 
-	// hide arrows and play/pause when only one pic
-	this.container.find('.next, .previous').toggle(this.images.length > 1);
-	if (this.images.length === 1) {
-		this.container.find('.play, .pause').hide();
-	}
-
-	var makeCallBack = function (handler) {
-		return function (evt) {
-			if (!this.active) {
-				return;
+		/**
+		 * Initialises the slideshow
+		 *
+		 * @param {bool} autoPlay
+		 * @param {number} interval
+		 * @param {Array} features
+		 */
+		init: function (autoPlay, interval, features) {
+			if (features.indexOf('background_colour_toggle') > -1) {
+				this.backgroundToggle = true;
 			}
-			evt.stopPropagation();
-			handler.call(this);
-		}.bind(this);
-	}.bind(this);
 
-	this.container.children('.next').click(makeCallBack(this.next));
-	this.container.children('.previous').click(makeCallBack(this.previous));
-	this.container.children('.exit').click(makeCallBack(this.stop));
-	this.container.children('.pause').click(makeCallBack(this.pause));
-	this.container.children('.play').click(makeCallBack(this.play));
-	this.container.click(makeCallBack(this.next));
+			return $.when(this._getSlideshowTemplate()).then(function ($tmpl) {
+				// Move the slideshow outside the content so we can hide the content
+				$('body').append($tmpl);
+				this.container = $('#slideshow');
+				this.zoomablePreviewContainer = this.container.find('.bigshotContainer');
+				this.zoomablePreview = new SlideShow.ZoomablePreview(this.container);
+				this.controls =
+					new SlideShow.Controls(
+						this,
+						this.container,
+						this.zoomablePreview,
+						interval,
+						features);
+				this.controls.init();
 
+				this._initControlsAutoFader();
 
-	$(document).keyup(function (evt) {
-		if (evt.keyCode === 27) { // esc
-			makeCallBack(this.stop)(evt);
-		} else if (evt.keyCode === 37) { // left
-			makeCallBack(this.previous)(evt);
-		} else if (evt.keyCode === 39) { // right
-			makeCallBack(this.next)(evt);
-		} else if (evt.keyCode === 32) { // space
-			makeCallBack(this.play)(evt);
-		}
-	}.bind(this));
-
-	if ($.fn.mousewheel) {
-		this.container.bind('mousewheel.fb', function (e, delta) {
-			e.preventDefault();
-			if ($(e.target).get(0).clientHeight === 0 ||
-				$(e.target).get(0).scrollHeight === $(e.target).get(0).clientHeight) {
-				if (delta > 0) {
-					this.previous();
-				} else {
-					this.next();
+				// Replace all Owncloud svg images with png images for ancient browsers
+				if (!OC.Util.hasSVGSupport()) {
+					OC.Util.replaceSVG(this.$el);
 				}
-			}
-		}.bind(this));
-	}
 
-	jQuery(window).resize(function () {
-		this.fitImage(this.currentImage.bind(this));
-	}.bind(this));
-
-	if (play) {
-		this.play();
-	} else {
-		this.pause();
-	}
-};
-
-SlideShow.prototype.onKeyUp = function () {
-
-};
-
-SlideShow.prototype.show = function (index) {
-	this.container.show();
-	this.current = index;
-	this.container.css('background-position', 'center');
-	return this.loadImage(this.images[index].url, this.images[index].fallBack).then(function (image) {
-		this.container.css('background-position', '-10000px 0');
-
-		// check if we moved along while we were loading
-		if (this.current === index) {
-			this.currentImage = image;
-			this.container.children('img').remove();
-			this.container.append(image);
-			image.setAttribute('alt', this.images[index].name);
-			this.fitImage(image);
-			this.setUrl(this.images[index].path);
-			if (this.playing) {
-				this.setTimeout();
-			}
-		}
-	}.bind(this));
-};
-
-SlideShow.prototype.setUrl = function (path) {
-	if (history && history.replaceState) {
-		history.replaceState('', '', '#' + encodeURI(path));
-	}
-};
-
-SlideShow.prototype.loadImage = function (url, fallBack) {
-	if (!this.imageCache[url]) {
-		this.imageCache[url] = new jQuery.Deferred();
-		var image = new Image();
-
-		image.onload = function () {
-			if (image) {
-				image.natWidth = image.width;
-				image.natHeight = image.height;
-			}
-			if (this.imageCache[url]) {
-				this.imageCache[url].resolve(image);
-			}
-		}.bind(this);
-		image.onerror = function () {
-			if (fallBack) {
-				this.loadImage(fallBack).then(function (image) {
-					this.imageCache[url].resolve(image);
-				}.bind(this), function (url) {
-					this.imageCache[url].reject(url);
-				}.bind(this));
-			} else if (this.imageCache[url]) {
-				this.imageCache[url].reject(url);
-			}
-		}.bind(this);
-		image.src = url;
-	}
-	return this.imageCache[url];
-};
-
-SlideShow.prototype.fitImage = function (image) {
-	if (!image) {
-		return;
-	}
-	var ratio = image.natWidth / image.natHeight,
-		screenRatio = this.container.width() / this.container.height(),
-		width = null, height = null, top = null;
-	if (ratio > screenRatio) {
-		if (this.container.width() > image.natWidth * this.maxScale) {
-			top = ((this.container.height() - image.natHeight) / 2) + 'px';
-			height = image.natHeight + 'px';
-			width = image.natWidth + 'px';
-		} else {
-			width = this.container.width() + 'px';
-			height = (this.container.width() / ratio) + 'px';
-			top = ((this.container.height() - (this.container.width() / ratio)) / 2) + 'px';
-		}
-	} else {
-		if (this.container.height() > image.natHeight * this.maxScale) {
-			top = ((this.container.height() - image.natHeight) / 2) + 'px';
-			height = image.natHeight + 'px';
-			width = image.natWidth + 'px';
-		} else {
-			top = 0;
-			height = this.container.height() + 'px';
-			width = (this.container.height() * ratio) + "px";
-		}
-	}
-	jQuery(image).css({
-		top: top,
-		width: width,
-		height: height
-	});
-};
-
-SlideShow.prototype.setTimeout = function () {
-	this.clearTimeout();
-	this.playTimeout = setTimeout(this.next.bind(this), this.interval);
-	this.progressBar.stop();
-	this.progressBar.css('height', '6px');
-	this.progressBar.animate({'height': '26px'}, this.interval, 'linear');
-};
-
-SlideShow.prototype.clearTimeout = function () {
-	if (this.playTimeout) {
-		clearTimeout(this.playTimeout);
-	}
-	this.progressBar.stop();
-	this.progressBar.css('height', '6px');
-	this.playTimeout = 0;
-};
-
-SlideShow.prototype.play = function () {
-	this.playing = true;
-	this.container.find('.pause').show();
-	this.container.find('.play').hide();
-	this.setTimeout();
-};
-
-SlideShow.prototype.pause = function () {
-	this.playing = false;
-	this.container.find('.pause').hide();
-	this.container.find('.play').show();
-	this.clearTimeout();
-};
-
-SlideShow.prototype.next = function () {
-	this.current = (this.current + 1) % this.images.length;
-	var next = (this.current + 1) % this.images.length;
-	this.show(this.current).then(function () {
-		// preload the next image
-		this.loadImage(this.images[next].url, this.images[next].fallBack);
-	}.bind(this));
-};
-
-SlideShow.prototype.previous = function () {
-	this.current = (this.current - 1 + this.images.length) % this.images.length;
-	var previous = (this.current - 1 + this.images.length) % this.images.length;
-	this.show(this.current).then(function () {
-		// preload the next image
-		this.loadImage(this.images[previous].url, this.images[previous].fallBack);
-	}.bind(this));
-};
-
-SlideShow.prototype.stop = function () {
-	this.clearTimeout();
-	this.container.hide();
-	this.active = false;
-	if (this.onStop) {
-		this.onStop();
-	}
-};
-
-SlideShow.prototype.hideImage = function () {
-	this.container.children('img').remove();
-};
-
-SlideShow.prototype.togglePlay = function () {
-	if (this.playing) {
-		this.pause();
-	} else {
-		this.play();
-	}
-};
-
-SlideShow._getSlideshowTemplate = function () {
-	var defer = $.Deferred();
-	if (!this.$slideshowTemplate) {
-		var self = this;
-		$.get(OC.filePath('gallery', 'templates', 'slideshow.html'), function (tmpl) {
-			var template = $(tmpl);
-			template.find('.next').val(t('gallery', 'Next'));
-			template.find('.play').val(t('gallery', 'Play'));
-			template.find('.pause').val(t('gallery', 'Pause'));
-			template.find('.previous').val(t('gallery', 'Previous'));
-			template.find('.exit').val(t('gallery', 'Close'));
-			self.$slideshowTemplate = template;
-			defer.resolve(self.$slideshowTemplate);
-		})
-			.fail(function () {
-				defer.reject();
-			});
-	} else {
-		defer.resolve(this.$slideshowTemplate);
-	}
-	return defer.promise();
-};
-
-$(document).ready(function () {
-	if ($('#body-login').length > 0) {
-		return true; //deactivate slideshow on login page
-	}
-
-	$.when(SlideShow._getSlideshowTemplate()).then(function ($tmpl) {
-		$('body').append($tmpl); //move the slideshow outside the content so we can hide the content
-
-		var inactiveCallback = function () {
-			$('#slideshow').addClass('inactive');
-		};
-		var inactiveTimeout = setTimeout(inactiveCallback, 3000);
-
-		$('#slideshow').mousemove(function () {
-			$('#slideshow').removeClass('inactive');
-			clearTimeout(inactiveTimeout);
-			inactiveTimeout = setTimeout(inactiveCallback, 3000);
-		});
-
-		//replace all svg images with png images for browser that dont support svg
-		if (!OC.Util.hasSVGSupport()) {
-			OC.Util.replaceSVG(this.$el);
-		}
-	})
-		.fail(function () {
-			OC.Notification.show(t('core', 'Error loading slideshow template'));
-		});
-
-
-	if (OCA.Files && OCA.Files.fileActions) {
-		OCA.Files.fileActions.register('image', 'View', OC.PERMISSION_READ, '', function (filename, context) {
-			var imageUrl, files = context.fileList.files;
-			var start = 0;
-			var images = [];
-			var dir = context.dir + '/';
-			var user = OC.currentUser;
-			var width = $(document).width() * window.devicePixelRatio;
-			var height = $(document).height() * window.devicePixelRatio;
-			for (var i = 0; i < files.length; i++) {
-				var file = files[i];
-				if (file.mimetype && file.mimetype.indexOf('image') >= 0) {
-					if (file.mimetype === 'image/svg+xml' || file.mimetype === 'image/gif') {
-						imageUrl = OCA.Files.Files.getDownloadUrl(file.name, dir);
-					} else {
-						imageUrl = OC.generateUrl('/core/preview.png?file={file}&x={x}&y={y}&a=true&scalingup=0&forceIcon=0', {
-							x: width,
-							y: height,
-							file: dir + file.name
-						});
-						if (!user) {
-							imageUrl = OC.generateUrl(
-								'/apps/files_sharing/publicpreview?file={file}&x={x}&y={y}&a=true&t={t}&scalingup=0&forceIcon=0', {
-									file: dir + file.name,
-									x: width,
-									y: height,
-									t: $('#sharingToken').val()
-								});
+				// Only modern browsers can manipulate history
+				if (history && history.pushState) {
+					// Stop the slideshow when backing out.
+					$(window).bind('popstate.slideshow', function () {
+						if (this.active === true) {
+							this.active = false;
+							this.controls.stop();
 						}
+					}.bind(this));
+				}
+			}.bind(this)).fail(function () {
+				OC.Notification.show(t('core', 'Error loading slideshow template'));
+			});
+		},
+
+		/**
+		 * Refreshes the slideshow's data
+		 *
+		 * @param {{name:string, url: string, path: string, fallBack: string}[]} images
+		 * @param {bool} autoPlay
+		 */
+		setImages: function (images, autoPlay) {
+			this._hideImage();
+			this.images = images;
+			this.controls.update(images, autoPlay);
+		},
+
+		/**
+		 * Launches the slideshow
+		 *
+		 * @param {number} index
+		 *
+		 * @returns {*}
+		 */
+		show: function (index) {
+			this.hideErrorNotification();
+			this.active = true;
+			this.container.show();
+			this.container.css('background-position', 'center');
+			this._hideImage();
+			var currentImageId = index;
+			return this.loadImage(this.images[index]).then(function (img) {
+				this.container.css('background-position', '-10000px 0');
+
+				// check if we moved along while we were loading
+				if (currentImageId === index) {
+					var image = this.images[index];
+					var transparent = this._isTransparent(image.mimeType);
+					this.controls.showActionButtons(transparent);
+					this.errorLoadingImage = false;
+					this.currentImage = img;
+
+					var backgroundColour = '#000';
+					if (transparent) {
+						backgroundColour = '#fff';
+					}
+					img.setAttribute('alt', image.name);
+					$(img).css('position', 'absolute');
+					$(img).css('background-color', backgroundColour);
+					if (transparent && this.backgroundToggle === true) {
+						var $border = 30 / window.devicePixelRatio;
+						$(img).css('outline', $border + 'px solid ' + backgroundColour);
 					}
 
-					images.push({
-						name: file.name,
-						path: dir + file.name,
-						url: imageUrl,
-						fallBack: OCA.Files.Files.getDownloadUrl(file.name, dir)
+					// We cannot use nice things on IE8
+					if ($('html').is('.ie8')) {
+						$(img).addClass('scale')
+							.attr('data-scale', 'best-fit-down')
+							.attr('data-align', 'center');
+						this.zoomablePreviewContainer.append(img);
+						$(img).imageScale();
+					} else {
+						this.zoomablePreview.startBigshot(img, this.currentImage, image.mimeType);
+					}
+
+					this._setUrl(image.path);
+					this.controls.show(currentImageId);
+				}
+			}.bind(this), function () {
+				// Don't do anything if the user has moved along while we were loading as it would
+				// mess up the index
+				if (currentImageId === index) {
+					this.errorLoadingImage = true;
+					this.showErrorNotification(null);
+					this._setUrl(this.images[index].path);
+					this.images.splice(index, 1);
+					this.controls.updateControls(this.images, this.errorLoadingImage);
+				}
+			}.bind(this));
+		},
+
+		/**
+		 * Loads the image to show in the slideshow and preloads the next one
+		 *
+		 * @param {Object} preview
+		 *
+		 * @returns {*}
+		 */
+		loadImage: function (preview) {
+			var url = preview.url;
+			var mimeType = preview.mimeType;
+
+			if (!this.imageCache[url]) {
+				this.imageCache[url] = new $.Deferred();
+				var image = new Image();
+
+				image.onload = function () {
+					if (this.imageCache[url]) {
+						this.imageCache[url].resolve(image);
+					}
+				}.bind(this);
+				image.onerror = function () {
+					if (this.imageCache[url]) {
+						this.imageCache[url].reject(url);
+					}
+				}.bind(this);
+				if (mimeType === 'image/svg+xml') {
+					image.src = this._getSVG(url);
+				} else {
+					image.src = url;
+				}
+			}
+			return this.imageCache[url];
+		},
+
+		/**
+		 * Shows a new image in the slideshow and preloads the next in the list
+		 *
+		 * @param {number} current
+		 * @param {Object} next
+		 */
+		next: function (current, next) {
+			this.show(current).then(function () {
+				// Preloads the next image in the list
+				this.loadImage(next);
+			}.bind(this));
+		},
+
+		/**
+		 * Stops the slideshow
+		 */
+		stop: function () {
+			this.active = false;
+			this.images = null;
+			this._hideImage();
+			if (this.onStop) {
+				this.onStop();
+			}
+		},
+
+		/**
+		 * Sends the current image as a download
+		 *
+		 * @param {string} downloadUrl
+		 *
+		 * @returns {boolean}
+		 */
+		getImageDownload: function (downloadUrl) {
+			OC.redirect(downloadUrl);
+			return false;
+		},
+
+		/**
+		 * Changes the colour of the background of the image
+		 */
+		toggleBackground: function () {
+			var toHex = function (x) {
+				return ("0" + parseInt(x).toString(16)).slice(-2);
+			};
+			var container = this.zoomablePreviewContainer.children('img');
+			var rgb = container.css('background-color').match(/\d+/g);
+			var hex = "#" + toHex(rgb[0]) + toHex(rgb[1]) + toHex(rgb[2]);
+			var $border = 30 / window.devicePixelRatio;
+
+			// Grey #363636
+			if (hex === "#000000") {
+				container.css('background-color', '#FFF');
+				if (this.backgroundToggle === true) {
+					container.css('outline', $border + 'px solid #FFF');
+				}
+			} else {
+				container.css('background-color', '#000');
+				if (this.backgroundToggle === true) {
+					container.css('outline', $border + 'px solid #000');
+				}
+			}
+		},
+
+		/**
+		 * Shows an error notification
+		 *
+		 * @param {string} message
+		 */
+		showErrorNotification: function (message) {
+			if ($.isEmptyObject(message)) {
+				message = t('gallery',
+					'<strong>Error!</strong> Could not generate a preview of this file.<br>' +
+					'Please go to the next slide while we remove this image from the slideshow');
+			}
+			this.container.find('.notification').html(message);
+			this.container.find('.notification').show();
+			this.controls.hideButton('.changeBackground');
+		},
+
+		/**
+		 * Hides the error notification
+		 */
+		hideErrorNotification: function () {
+			this.container.find('.notification').hide();
+			this.container.find('.notification').html('');
+		},
+
+		/**
+		 * Removes a specific button from the interface
+		 *
+		 * @param button
+		 */
+		removeButton: function (button) {
+			this.controls.removeButton(button);
+		},
+
+		/**
+		 * Automatically fades the controls after 3 seconds
+		 *
+		 * @private
+		 */
+		_initControlsAutoFader: function () {
+			var inactiveCallback = function () {
+				this.container.addClass('inactive');
+			}.bind(this);
+			var inactiveTimeout = setTimeout(inactiveCallback, 3000);
+
+			this.container.on('mousemove touchstart', function () {
+				this.container.removeClass('inactive');
+				clearTimeout(inactiveTimeout);
+				inactiveTimeout = setTimeout(inactiveCallback, 3000);
+			}.bind(this));
+		},
+
+		/**
+		 * Simplest way to detect if image is transparent.
+		 *
+		 * That's very inaccurate since it doesn't include images which support transparency
+		 *
+		 * @param mimeType
+		 * @returns {boolean}
+		 * @private
+		 */
+		_isTransparent: function (mimeType) {
+			// TODO: Include fonts
+			return !(mimeType === 'image/jpeg'
+				|| mimeType === 'image/x-dcraw'
+				|| mimeType === 'application/font-sfnt'
+				|| mimeType === 'application/x-font'
+			);
+		},
+
+		/**
+		 * Changes the browser Url, based on the current image
+		 *
+		 * @param {string} path
+		 * @private
+		 */
+		_setUrl: function (path) {
+			if (history && history.replaceState) {
+				history.replaceState('', '', '#' + encodeURI(path));
+			}
+		},
+
+		/**
+		 * Hides the current image (before loading the next)
+		 *
+		 * @private
+		 */
+		_hideImage: function () {
+			this.zoomablePreviewContainer.empty();
+			this.controls.hideActionButtons();
+		},
+
+		/**
+		 * Retrieves an SVG
+		 *
+		 * An SVG can't be simply attached to a src attribute like a bitmap image
+		 *
+		 * @param {string} source
+		 *
+		 * @returns {*}
+		 * @private
+		 */
+		_getSVG: function (source) {
+			var svgPreview = null;
+			// DOMPurify only works with IE10+ and we load SVGs in the IMG tag
+			if (window.btoa &&
+				document.implementation.hasFeature("http://www.w3.org/TR/SVG11/feature#Image",
+					"1.1")) {
+				var xmlHttp = new XMLHttpRequest();
+				xmlHttp.open("GET", source, false);
+				xmlHttp.send(null);
+				if (xmlHttp.status === 200) {
+					var pureSvg = DOMPurify.sanitize(xmlHttp.responseText);
+					svgPreview = "data:image/svg+xml;base64," + window.btoa(pureSvg);
+				}
+			}
+
+			return svgPreview;
+		},
+
+		/**
+		 * Retrieves the slideshow's template
+		 *
+		 * @returns {*}
+		 * @private
+		 */
+		_getSlideshowTemplate: function () {
+			var defer = $.Deferred();
+			if (!this.$slideshowTemplate) {
+				var self = this;
+				var url = OC.generateUrl('apps/gallery/slideshow', null);
+				$.get(url, function (tmpl) {
+						var template = $(tmpl);
+						var tmplButton;
+						var buttonsArray = [
+							{
+								el: '.next',
+								trans: t('gallery', 'Next')
+							},
+							{
+								el: '.play',
+								trans: t('gallery', 'Play')
+							},
+							{
+								el: '.pause',
+								trans: t('gallery', 'Pause')
+							},
+							{
+								el: '.previous',
+								trans: t('gallery', 'Previous')
+							},
+							{
+								el: '.exit',
+								trans: t('gallery', 'Close')
+							},
+							{
+								el: '.downloadImage',
+								trans: t('gallery', 'Download'),
+								toolTip: true
+							},
+							{
+								el: '.changeBackground',
+								trans: t('gallery', 'Toggle background'),
+								toolTip: true
+							}
+						];
+						for (var i = 0; i < buttonsArray.length; i++) {
+							var button = buttonsArray[i];
+
+							tmplButton = template.find(button.el);
+							tmplButton.val(button.trans);
+							if (button.toolTip) {
+								tmplButton.attr("title", button.trans);
+							}
+						}
+						self.$slideshowTemplate = template;
+						defer.resolve(self.$slideshowTemplate);
+					})
+					.fail(function () {
+						defer.reject();
 					});
-				}
+			} else {
+				defer.resolve(this.$slideshowTemplate);
 			}
-			for (i = 0; i < images.length; i++) {
-				if (images[i].name === filename) {
-					start = i;
-				}
-			}
-			var slideShow = new SlideShow($('#slideshow'), images);
-			slideShow.init();
-			slideShow.show(start);
-		});
-		OCA.Files.fileActions.setDefault('image', 'View');
-	}
-});
+			return defer.promise();
+		}
+	};
+
+	window.SlideShow = SlideShow;
+})(jQuery, OC, OCA, t);

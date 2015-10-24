@@ -53,7 +53,7 @@ class ApiTest extends TestCase {
 			),
 		);
 
-		$queryActivity = \OCP\DB::prepare('INSERT INTO `*PREFIX*activity`(`app`, `subject`, `subjectparams`, `message`, `messageparams`, `file`, `link`, `user`, `affecteduser`, `timestamp`, `priority`, `type`)' . ' VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )');
+		$queryActivity = \OC::$server->getDatabaseConnection()->prepare('INSERT INTO `*PREFIX*activity`(`app`, `subject`, `subjectparams`, `message`, `messageparams`, `file`, `link`, `user`, `affecteduser`, `timestamp`, `priority`, `type`)' . ' VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )');
 		$loop = 0;
 		foreach ($activities as $activity) {
 			$queryActivity->execute(array(
@@ -76,7 +76,9 @@ class ApiTest extends TestCase {
 
 	protected function tearDown() {
 		$data = new Data(
-			$this->getMock('\OCP\Activity\IManager')
+			$this->getMock('\OCP\Activity\IManager'),
+			\OC::$server->getDatabaseConnection(),
+			$this->getMock('\OCP\IUserSession')
 		);
 
 		$this->deleteUser($data, 'activity-api-user1');
@@ -163,9 +165,9 @@ class ApiTest extends TestCase {
 		$activityManager->registerExtension(function() {
 			return new Extension(\OCP\Util::getL10N('activity', 'en'), $this->getMock('\OCP\IURLGenerator'));
 		});
-		$this->registerActivityManager($activityManager);
+		$this->overwriteService('ActivityManager', $activityManager);
 		$result = \OCA\Activity\Api::get(array('_route' => 'get_cloud_activity'));
-		$this->registerActivityManager($this->oldManager);
+		$this->restoreService('ActivityManager');
 
 		$this->assertEquals(100, $result->getStatusCode());
 		$data = $result->getData();
@@ -181,19 +183,5 @@ class ApiTest extends TestCase {
 				}
 			}
 		}
-	}
-
-	/** @var \OCP\Activity\IManager */
-	protected $oldManager;
-
-	/**
-	 * Register an mock for testing purposes.
-	 * @param \OCP\Activity\IManager $manager
-	 */
-	protected function registerActivityManager(\OCP\Activity\IManager $manager) {
-		$this->oldManager = \OC::$server->query('ActivityManager');
-		\OC::$server->registerService('ActivityManager', function () use ($manager) {
-			return $manager;
-		});
 	}
 }

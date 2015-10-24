@@ -1,6 +1,7 @@
 <?php
 /**
  * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Robin Appelman <icewind@owncloud.com>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
  * @license AGPL-3.0
@@ -62,7 +63,7 @@ class Client implements IClient {
 			$dataDir = $this->config->getSystemValue('datadirectory');
 			$this->client->setDefaultOption('verify', $dataDir.'/'.$this->certificateManager->getCertificateBundle());
 		} else {
-			$this->client->setDefaultOption('verify', \OC::$SERVERROOT . '/config/ca-bundle.crt');
+			$this->client->setDefaultOption('verify', \OC::$SERVERROOT . '/resources/config/ca-bundle.crt');
 		}
 
 		$this->client->setDefaultOption('headers/User-Agent', 'ownCloud Server Crawler');
@@ -120,7 +121,8 @@ class Client implements IClient {
 	 */
 	public function get($uri, array $options = []) {
 		$response = $this->client->get($uri, $options);
-		return new Response($response);
+		$isStream = isset($options['stream']) && $options['stream'];
+		return new Response($response, $isStream);
 	}
 
 	/**
@@ -144,6 +146,7 @@ class Client implements IClient {
 	 *              'debug' => true,
 	 *              'timeout' => 5,
 	 * @return Response
+	 * @throws \Exception If the request could not get completed
 	 */
 	public function head($uri, $options = []) {
 		$response = $this->client->head($uri, $options);
@@ -176,6 +179,7 @@ class Client implements IClient {
 	 *              'debug' => true,
 	 *              'timeout' => 5,
 	 * @return Response
+	 * @throws \Exception If the request could not get completed
 	 */
 	public function post($uri, array $options = []) {
 		$response = $this->client->post($uri, $options);
@@ -208,6 +212,7 @@ class Client implements IClient {
 	 *              'debug' => true,
 	 *              'timeout' => 5,
 	 * @return Response
+	 * @throws \Exception If the request could not get completed
 	 */
 	public function put($uri, array $options = []) {
 		$response = $this->client->put($uri, $options);
@@ -240,6 +245,7 @@ class Client implements IClient {
 	 *              'debug' => true,
 	 *              'timeout' => 5,
 	 * @return Response
+	 * @throws \Exception If the request could not get completed
 	 */
 	public function delete($uri, array $options = []) {
 		$response = $this->client->delete($uri, $options);
@@ -273,6 +279,7 @@ class Client implements IClient {
 	 *              'debug' => true,
 	 *              'timeout' => 5,
 	 * @return Response
+	 * @throws \Exception If the request could not get completed
 	 */
 	public function options($uri, array $options = []) {
 		$response = $this->client->options($uri, $options);

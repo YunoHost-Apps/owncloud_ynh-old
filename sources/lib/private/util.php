@@ -16,17 +16,20 @@
  * @author Frank Karlitschek <frank@owncloud.org>
  * @author Georg Ehrke <georg@owncloud.com>
  * @author helix84 <helix84@centrum.sk>
+ * @author Individual IT Services <info@individual-it.net>
  * @author Jakob Sack <mail@jakobsack.de>
  * @author Joas Schilling <nickvergessen@owncloud.com>
  * @author Jörn Friedrich Dreyer <jfd@butonic.de>
  * @author Lukas Reschke <lukas@owncloud.com>
  * @author Markus Goetz <markus@woboq.com>
+ * @author Martin Mattel <martin.mattel@diemattels.at>
  * @author Marvin Thomas Rabe <mrabe@marvinrabe.de>
  * @author Michael Gapczynski <GapczynskiM@gmail.com>
  * @author Michael Göhler <somebody.here@gmx.de>
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Robin Appelman <icewind@owncloud.com>
  * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
  * @author Scrutinizer Auto-Fixer <auto-fixer@scrutinizer-ci.com>
  * @author Stefan Rado <owncloud@sradonia.net>
  * @author Thomas Müller <thomas.mueller@tmit.eu>
@@ -143,6 +146,14 @@ class OC_Util {
 			return $storage;
 		});
 
+		// install storage availability wrapper, before most other wrappers
+		\OC\Files\Filesystem::addStorageWrapper('oc_availability', function ($mountPoint, $storage) {
+			if (!$storage->isLocal()) {
+				return new \OC\Files\Storage\Wrapper\Availability(['storage' => $storage]);
+			}
+			return $storage;
+		});
+
 		\OC\Files\Filesystem::addStorageWrapper('oc_quota', function ($mountPoint, $storage) {
 			// set up quota for home storages, even for other users
 			// which can happen when using sharing
@@ -212,10 +223,15 @@ class OC_Util {
 	 * @return boolean
 	 */
 	public static function isSharingDisabledForUser() {
-		if (\OC_Appconfig::getValue('core', 'shareapi_exclude_groups', 'no') === 'yes') {
+		if (\OC::$server->getAppConfig()->getValue('core', 'shareapi_exclude_groups', 'no') === 'yes') {
 			$user = \OCP\User::getUser();
-			$groupsList = \OC_Appconfig::getValue('core', 'shareapi_exclude_groups_list', '');
-			$excludedGroups = explode(',', $groupsList);
+			$groupsList = \OC::$server->getAppConfig()->getValue('core', 'shareapi_exclude_groups_list', '');
+			$excludedGroups = json_decode($groupsList);
+			if (is_null($excludedGroups)) {
+				$excludedGroups = explode(',', $groupsList);
+				$newValue = json_encode($excludedGroups);
+				\OC::$server->getAppConfig()->setValue('core', 'shareapi_exclude_groups_list', $newValue);
+			}
 			$usersGroups = \OC_Group::getUserGroups($user);
 			if (!empty($usersGroups)) {
 				$remainingGroups = array_diff($usersGroups, $excludedGroups);
@@ -267,17 +283,17 @@ class OC_Util {
 	/**
 	 * copies the skeleton to the users /files
 	 *
-	 * @param \OC\User\User $user
+	 * @param String $userId
 	 * @param \OCP\Files\Folder $userDirectory
 	 */
-	public static function copySkeleton(\OC\User\User $user, \OCP\Files\Folder $userDirectory) {
+	public static function copySkeleton($userId, \OCP\Files\Folder $userDirectory) {
 
 		$skeletonDirectory = \OCP\Config::getSystemValue('skeletondirectory', \OC::$SERVERROOT . '/core/skeleton');
 
 		if (!empty($skeletonDirectory)) {
 			\OCP\Util::writeLog(
 				'files_skeleton',
-				'copying skeleton for '.$user->getUID().' from '.$skeletonDirectory.' to '.$userDirectory->getFullPath('/'),
+				'copying skeleton for '.$userId.' from '.$skeletonDirectory.' to '.$userDirectory->getFullPath('/'),
 				\OCP\Util::DEBUG
 			);
 			self::copyr($skeletonDirectory, $userDirectory);
@@ -431,16 +447,23 @@ class OC_Util {
 	 *
 	 * @param string $application application id
 	 * @param string|null $file filename
+	 * @param bool $prepend prepend the Script to the beginning of the list
 	 * @return void
 	 */
-	public static function addScript($application, $file = null) {
+	public static function addScript($application, $file = null, $prepend = false) {
 		$path = OC_Util::generatePath($application, 'js', $file);
+		//TODO eliminate double code		
 		if (!in_array($path, self::$scripts)) {
 			// core js files need separate handling
 			if ($application !== 'core' && $file !== null) {
 				self::addTranslations($application);
 			}
-			self::$scripts[] = $path;
+			if ($prepend===true) {
+				array_unshift(self::$scripts, $path);
+			}
+			else {
+				self::$scripts[] = $path;
+			}
 		}
 	}
 
@@ -449,12 +472,18 @@ class OC_Util {
 	 *
 	 * @param string $application application id
 	 * @param string|null $file filename
+	 * @param bool $prepend prepend the Script to the beginning of the list
 	 * @return void
 	 */
-	public static function addVendorScript($application, $file = null) {
+	public static function addVendorScript($application, $file = null, $prepend = false) {
 		$path = OC_Util::generatePath($application, 'vendor', $file);
-		if (!in_array($path, self::$scripts)) {
-			self::$scripts[] = $path;
+		//TODO eliminate double code		
+		if (! in_array ( $path, self::$scripts )) {
+			if ($prepend === true) {
+				array_unshift ( self::$scripts, $path );
+			} else {
+				self::$scripts [] = $path;
+			}
 		}
 	}
 
@@ -463,8 +492,9 @@ class OC_Util {
 	 *
 	 * @param string $application application id
 	 * @param string $languageCode language code, defaults to the current language
+	 * @param bool $prepend prepend the Script to the beginning of the list 
 	 */
-	public static function addTranslations($application, $languageCode = null) {
+	public static function addTranslations($application, $languageCode = null, $prepend = false) {
 		if (is_null($languageCode)) {
 			$languageCode = \OC_L10N::findLanguage($application);
 		}
@@ -473,8 +503,13 @@ class OC_Util {
 		} else {
 			$path = "l10n/$languageCode";
 		}
+		//TODO eliminate double code		
 		if (!in_array($path, self::$scripts)) {
-			self::$scripts[] = $path;
+			if ($prepend === true) {
+				array_unshift ( self::$scripts, $path );
+			} else {
+				self::$scripts [] = $path;
+			}
 		}
 	}
 
@@ -483,12 +518,18 @@ class OC_Util {
 	 *
 	 * @param string $application application id
 	 * @param string|null $file filename
+	 * @param bool $prepend prepend the Style to the beginning of the list
 	 * @return void
 	 */
-	public static function addStyle($application, $file = null) {
+	public static function addStyle($application, $file = null, $prepend = false) {
 		$path = OC_Util::generatePath($application, 'css', $file);
+		//TODO eliminate double code		
 		if (!in_array($path, self::$styles)) {
-			self::$styles[] = $path;
+			if ($prepend === true) {
+				array_unshift ( self::$styles, $path );
+			} else {
+				self::$styles[] = $path;
+			}	
 		}
 	}
 
@@ -497,12 +538,18 @@ class OC_Util {
 	 *
 	 * @param string $application application id
 	 * @param string|null $file filename
+	 * @param bool $prepend prepend the Style to the beginning of the list
 	 * @return void
 	 */
-	public static function addVendorStyle($application, $file = null) {
+	public static function addVendorStyle($application, $file = null, $prepend = false) {
 		$path = OC_Util::generatePath($application, 'vendor', $file);
+		//TODO eliminate double code
 		if (!in_array($path, self::$styles)) {
-			self::$styles[] = $path;
+			if ($prepend === true) {
+				array_unshift ( self::$styles, $path );
+			} else {
+				self::$styles[] = $path;
+			}	
 		}
 	}
 
@@ -567,7 +614,8 @@ class OC_Util {
 		}
 
 		$webServerRestart = false;
-		$setup = new \OC\Setup($config, \OC::$server->getIniWrapper(), \OC::$server->getL10N('lib'), new \OC_Defaults());
+		$setup = new \OC\Setup($config, \OC::$server->getIniWrapper(), \OC::$server->getL10N('lib'),
+			new \OC_Defaults(), \OC::$server->getLogger(), \OC::$server->getSecureRandom());
 		$availableDatabases = $setup->getSupportedDatabases();
 		if (empty($availableDatabases)) {
 			$errors[] = array(
@@ -999,7 +1047,7 @@ class OC_Util {
 		if (isset($_REQUEST['redirect_url']) && strpos($_REQUEST['redirect_url'], '@') === false) {
 			$location = $urlGenerator->getAbsoluteURL(urldecode($_REQUEST['redirect_url']));
 		} else {
-			$defaultPage = OC_Appconfig::getValue('core', 'defaultpage');
+			$defaultPage = \OC::$server->getAppConfig()->getValue('core', 'defaultpage');
 			if ($defaultPage) {
 				$location = $urlGenerator->getAbsoluteURL($defaultPage);
 			} else {
@@ -1045,10 +1093,12 @@ class OC_Util {
 		return $id;
 	}
 
+	protected static $encryptedToken;
 	/**
 	 * Register an get/post call. Important to prevent CSRF attacks.
 	 *
-	 * @return string Generated token.
+	 * @return string The encrypted CSRF token, the shared secret is appended after the `:`.
+	 *
 	 * @description
 	 * Creates a 'request token' (random) and stores it inside the session.
 	 * Ever subsequent (ajax) request must use such a valid token to succeed,
@@ -1056,6 +1106,11 @@ class OC_Util {
 	 * @see OC_Util::isCallRegistered()
 	 */
 	public static function callRegister() {
+		// Use existing token if function has already been called
+		if(isset(self::$encryptedToken)) {
+			return self::$encryptedToken;
+		}
+
 		// Check if a token exists
 		if (!\OC::$server->getSession()->exists('requesttoken')) {
 			// No valid token found, generate a new one.
@@ -1065,7 +1120,11 @@ class OC_Util {
 			// Valid token already exists, send it
 			$requestToken = \OC::$server->getSession()->get('requesttoken');
 		}
-		return ($requestToken);
+
+		// Encrypt the token to mitigate breach-like attacks
+		$sharedSecret = \OC::$server->getSecureRandom()->getMediumStrengthGenerator()->generate(10);
+		self::$encryptedToken = \OC::$server->getCrypto()->encrypt($requestToken, $sharedSecret) . ':' . $sharedSecret;
+		return self::$encryptedToken;
 	}
 
 	/**
@@ -1132,6 +1191,7 @@ class OC_Util {
 	 * @throws \OC\HintException If the test file can't get written.
 	 */
 	public function isHtaccessWorking(\OCP\IConfig $config) {
+
 		if (\OC::$CLI || !$config->getSystemValue('check_for_working_htaccess', true)) {
 			return true;
 		}
@@ -1245,6 +1305,7 @@ class OC_Util {
 	 * @return string of the response or false on error
 	 * This function get the content of a page via curl, if curl is enabled.
 	 * If not, file_get_contents is used.
+	 * @deprecated Use \OCP\Http\Client\IClientService
 	 */
 	public static function getUrlContent($url) {
 		try {
@@ -1344,7 +1405,7 @@ class OC_Util {
 		// XCache
 		if (function_exists('xcache_clear_cache')) {
 			if (ini_get('xcache.admin.enable_auth')) {
-				OC_Log::write('core', 'XCache opcode cache will not be cleared because "xcache.admin.enable_auth" is enabled.', \OC_Log::WARN);
+				\OCP\Util::writeLog('core', 'XCache opcode cache will not be cleared because "xcache.admin.enable_auth" is enabled.', \OCP\Util::WARN);
 			} else {
 				@xcache_clear_cache(XC_TYPE_PHP, 0);
 			}
@@ -1411,7 +1472,7 @@ class OC_Util {
 		if ($trimmed === '') {
 			return false;
 		}
-		if ($trimmed === '.' || $trimmed === '..') {
+		if (\OC\Files\Filesystem::isIgnoredDir($trimmed)) {
 			return false;
 		}
 		foreach (str_split($trimmed) as $char) {
@@ -1434,8 +1495,12 @@ class OC_Util {
 		if ($config->getSystemValue('installed', false)) {
 			$installedVersion = $config->getSystemValue('version', '0.0.0');
 			$currentVersion = implode('.', OC_Util::getVersion());
-			if (version_compare($currentVersion, $installedVersion, '>')) {
+			$versionDiff = version_compare($currentVersion, $installedVersion);
+			if ($versionDiff > 0) {
 				return true;
+			} else if ($versionDiff < 0) {
+				// downgrade attempt, throw exception
+				throw new \OC\HintException('Downgrading is not supported and is likely to cause unpredictable issues (from ' . $installedVersion . ' to ' . $currentVersion . ')');
 			}
 
 			// also check for upgrades for apps (independently from the user)

@@ -4,10 +4,10 @@
  * @author Brice Maron <brice@bmaron.net>
  * @author Felix Moeller <mail@felixmoeller.de>
  * @author Frank Karlitschek <frank@owncloud.org>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
  * @author Jörn Friedrich Dreyer <jfd@butonic.de>
  * @author Kamil Domanski <kdomanski@kdemail.net>
  * @author Lukas Reschke <lukas@owncloud.com>
- * @author Martin Mattel <martin.mattel@diemattels.at>
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
  * @author Sam Tuke <mail@samtuke.com>
@@ -68,7 +68,13 @@ class OCSClient {
 	 * @return bool
 	 */
 	public function isAppStoreEnabled() {
-		return $this->config->getSystemValue('appstoreenabled', true) === true;
+		// For a regular edition default to true, all others default to false
+		$default = false;
+		if (\OC_Util::getEditionString() === '') {
+			$default = true;
+		}
+
+		return $this->config->getSystemValue('appstoreenabled', $default) === true;
 	}
 
 	/**
@@ -272,7 +278,7 @@ class OCSClient {
 
 		$tmp = $data->data->content;
 		if (is_null($tmp)) {
-			\OC_Log::write('core', 'No update found at the ownCloud appstore for app ' . $id, \OC_Log::INFO);
+			\OCP\Util::writeLog('core', 'No update found at the ownCloud appstore for app ' . $id, \OCP\Util::DEBUG);
 			return null;
 		}
 

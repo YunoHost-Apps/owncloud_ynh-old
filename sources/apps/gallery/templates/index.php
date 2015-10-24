@@ -1,13 +1,21 @@
-<div id="controls">
-	<div id='breadcrumbs'></div>
-	<span class="right">
-		<button class="share"><?php p($l->t("Share")); ?></button>
-		<a class="share" data-item-type="folder" data-item="" title="<?php p($l->t("Share")); ?>"
-		   data-possible-permissions="31"></a>
-	</span>
+<?php
+/**
+ * @var $_ array
+ */
+?>
+
+<div id="app">
+	<?php
+	if (isset($_['code'])) {
+		if ($_['code'] === 404) {
+			print_unescaped($this->inc('part.filenotfounderror'));
+		} elseif ($_['code'] === 500) {
+			print_unescaped($this->inc('part.internalservererror'));
+		} else {
+			print_unescaped($this->inc('part.linkerror'));
+		}
+	} else {
+		print_unescaped($this->inc('part.content'));
+	}
+	?>
 </div>
-<div id="gallery" class="hascontrols"></div>
-
-<div id="emptycontent" class="hidden"><?php p($l->t("No pictures found! If you upload pictures in the files app, they will be displayed here.")); ?></div>
-
-<input type="hidden" name="allowShareWithLink" id="allowShareWithLink" value="yes" />

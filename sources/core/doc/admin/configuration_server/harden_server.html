@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Hardening and Security Guidance &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>Hardening and Security Guidance &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
     <link rel="up" title="ownCloud Server Configuration" href="index.html" />
     <link rel="next" title="Reverse Proxy Configuration" href="reverse_proxy_configuration.html" />
     <link rel="prev" title="Logging Configuration" href="logging_configuration.html" />
@@ -114,23 +114,20 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">ownCloud Server Configuration</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="security_setup_warnings.html">Warnings on Admin Page</a></li>
 <li class="toctree-l2"><a class="reference internal" href="occ_command.html">Using the occ Command</a></li>
 <li class="toctree-l2"><a class="reference internal" href="activity_configuration.html">Configuring the Activity App</a></li>
 <li class="toctree-l2"><a class="reference internal" href="antivirus_configuration.html">Configuring the ClamAV Antivirus Scanner</a></li>
-<li class="toctree-l2"><a class="reference internal" href="automatic_configuration.html">Automatic Configuration Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="caching_configuration.html">Configuring Memory Caching</a></li>
 <li class="toctree-l2"><a class="reference internal" href="background_jobs_configuration.html">Defining Background Jobs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="config_sample_php_parameters.html">Config.php Parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="email_configuration.html">Email Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="external_sites.html">Linking External Sites</a></li>
-<li class="toctree-l2"><a class="reference internal" href="js_css_asset_management_configuration.html">JavaScript and CSS Asset Management</a></li>
 <li class="toctree-l2"><a class="reference internal" href="knowledgebase_configuration.html">Knowledge Base Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="language_configuration.html">Language Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="logging_configuration.html">Logging Configuration</a></li>
@@ -140,16 +137,22 @@
 <li class="toctree-l3"><a class="reference internal" href="#deployment">Deployment</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#use-https">Use HTTPS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#use-a-dedicated-domain-for-owncloud">Use a dedicated domain for ownCloud</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ensure-that-your-owncloud-instance-is-installed-in-a-dmz">Ensure that your ownCloud instance is installed in a DMZ</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#serve-security-related-headers-by-the-web-server">Serve security related Headers by the web server</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="reverse_proxy_configuration.html">Reverse Proxy Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="search_configuration.html">Enabling Full-Text Search</a></li>
 <li class="toctree-l2"><a class="reference internal" href="thirdparty_php_configuration.html">Using Third Party PHP Components</a></li>
-<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html">Server Tuning &amp; Performance Tips</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning/index.html">Server Tuning &amp; Performance Tips</a></li>
+<li class="toctree-l2"><a class="reference internal" href="js_css_asset_management_configuration.html">JavaScript and CSS Asset Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="automatic_configuration.html">Automatic Configuration Setup</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_mimetypes/index.html">Mimetypes Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
@@ -157,6 +160,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_server_branding/index.html">Enterprise Server Branding (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
@@ -207,7 +211,7 @@ a way that PHP is able to read random data from it.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">When having an <tt class="docutils literal"><span class="pre">open_basedir</span></tt> configured within your <tt class="docutils literal"><span class="pre">php.ini</span></tt> file,
-make sure to include the folder <tt class="docutils literal"><span class="pre">/dev</span></tt>.</p>
+make sure to include <tt class="docutils literal"><span class="pre">/dev/urandom</span></tt>.</p>
 </div>
 </div>
 <div class="section" id="enable-hardening-modules-such-as-selinux">
@@ -267,12 +271,14 @@ connection to the ownCloud instance using HTTP, and it attempts to prevent site
 visitors from bypassing invalid certificate warnings.</p>
 <p>This can be achieved by setting the following settings within the Apache
 VirtualHost file:</p>
-<div class="highlight-none"><div class="highlight"><pre>&lt;VirtualHost *:443&gt;
-   ServerName cloud.owncloud.com
-   Header always add Strict-Transport-Security &quot;max-age=15768000&quot;
-&lt;/VirtualHost&gt;
-</pre></div>
+<div class="highlight-python"><pre>&lt;VirtualHost *:443&gt;
+  ServerName cloud.owncloud.com
+    &lt;IfModule mod_headers.c&gt;
+      Header always set Strict-Transport-Security "max-age=15768000; includeSubDomains; preload"
+    &lt;/IfModule&gt;
+ &lt;/VirtualHost&gt;</pre>
 </div>
+<p>This example configuration will make all subdomains only accessible via HTTPS. If you have subdomains not accessible via HTTPS, remove <tt class="docutils literal"><span class="pre">includeSubdomains;</span></tt>.</p>
 <p>This requires the <tt class="docutils literal"><span class="pre">mod_headers</span></tt> extension in Apache.</p>
 </div>
 <div class="section" id="proper-ssl-configuration">
@@ -293,6 +299,16 @@ configured.</p>
 <p>Administrators are encouraged to install ownCloud on a dedicated domain such as
 cloud.domain.tld instead of domain.tld to gain all the benefits offered by the
 Same-Origin-Policy.</p>
+</div>
+<div class="section" id="ensure-that-your-owncloud-instance-is-installed-in-a-dmz">
+<h2>Ensure that your ownCloud instance is installed in a DMZ<a class="headerlink" href="#ensure-that-your-owncloud-instance-is-installed-in-a-dmz" title="Permalink to this headline">¶</a></h2>
+<p>As ownCloud supports features such as Federated File Sharing we do not consider
+Server Side Request Forgery (SSRF) part of our threat model. In fact, given all our
+external storage adapters this can be considered a feature and not a vulnerability.</p>
+<p>This means that a user on your ownCloud instance could probe whether other hosts
+are accessible from the ownCloud network. If you do not want this you need to
+ensure that your ownCloud is properly installed in a segregated network and proper
+firewall rules are in place.</p>
 </div>
 <div class="section" id="serve-security-related-headers-by-the-web-server">
 <h2>Serve security related Headers by the web server<a class="headerlink" href="#serve-security-related-headers-by-the-web-server" title="Permalink to this headline">¶</a></h2>
