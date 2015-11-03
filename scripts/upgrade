@@ -2,6 +2,10 @@
 
 set -e
 
+APP='owncloud'
+APPNAME=`echo -n own;echo 'cloud'`
+SOURCES=`echo -n $APPNAME;echo '-8.2.0'`
+
 # Retrieve arguments
 domain=$(sudo yunohost app setting owncloud domain)
 path=$(sudo yunohost app setting owncloud path)
@@ -10,13 +14,20 @@ db_pwd=$(sudo yunohost app setting owncloud mysqlpwd)
 
 # Install dependencies
 sudo apt-get update -qq
-sudo apt-get install acl smbclient php5-cli php-apc -y -qq
+sudo apt-get install acl smbclient php5-cli php-apc coreutils gnupg tar -y -qq
 
 # Remove trailing "/" for next commands
 path=${path%/}
 
 # Use 'owncloud' as database name and user \
 db_user=owncloud
+
+# Verify sources and extract it
+sha256sum --strict --quiet -c ../sources/$SOURCES.tar.bz2.sha256sum < ../sources/$SOURCES.tar.bz2
+gpg --import ../sources/$APPNAME.asc
+gpg --verify ../sources/$SOURCES.tar.bz2.asc ../sources/$SOURCES.tar.bz2
+sudo mkdir -p ../tmp/
+sudo tar -jxvf ../sources/$SOURCES.tar.bz2 -C ../tmp/
 
 # Copy files to the right place
 final_path=/var/www/owncloud
@@ -35,7 +46,7 @@ shopt -s extglob
 sudo rm -Rf !(old_apps|data|config|themes)
 shopt -u extglob
 cd $old_pwd
-sudo cp -a ../sources/. $final_path/
+sudo cp -a ../tmp/$APPNAME/. $final_path/
 cd $final_path/old_apps
 sudo rm -Rf $(ls $final_path/apps)
 cd $old_pwd
