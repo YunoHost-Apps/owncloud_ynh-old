@@ -3,6 +3,8 @@
  * @author Joas Schilling <nickvergessen@owncloud.com>
  * @author Jörn Friedrich Dreyer <jfd@butonic.de>
  * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
  * @author Ross Nicoll <jrn@jrn.me.uk>
  * @author Vincent Petry <pvince81@owncloud.com>
  *
@@ -23,13 +25,12 @@
  *
  */
 
-namespace OCA\Files_External\Appinfo;
+namespace OCA\Files_External\AppInfo;
 
 /**
- * @var $this \OC\Route\Router
+ * @var $this \OCP\Route\IRouter
  **/
-$application = new Application();
-$application->registerRoutes(
+\OC_Mount_Config::$app->registerRoutes(
 	$this,
 	array(
 		'resources' => array(
@@ -39,7 +40,7 @@ $application->registerRoutes(
 		'routes' => array(
 			array(
 				'name' => 'Ajax#getSshKeys',
-				'url' => '/ajax/sftp_key.php',
+				'url' => '/ajax/public_key.php',
 				'verb' => 'POST',
 				'requirements' => array()
 			)
@@ -47,10 +48,10 @@ $application->registerRoutes(
 	)
 );
 
-$this->create('files_external_dropbox', 'ajax/dropbox.php')
-	->actionInclude('files_external/ajax/dropbox.php');
-$this->create('files_external_google', 'ajax/google.php')
-	->actionInclude('files_external/ajax/google.php');
+$this->create('files_external_oauth1', 'ajax/oauth1.php')
+	->actionInclude('files_external/ajax/oauth1.php');
+$this->create('files_external_oauth2', 'ajax/oauth2.php')
+	->actionInclude('files_external/ajax/oauth2.php');
 
 
 $this->create('files_external_list_applicable', '/applicable')

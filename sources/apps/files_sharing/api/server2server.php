@@ -1,6 +1,8 @@
 <?php
 /**
+ * @author Arthur Schiwon <blizzz@owncloud.com>
  * @author Björn Schießle <schiessle@owncloud.com>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
  * @author Morris Jobke <hey@morrisjobke.de>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
@@ -21,6 +23,8 @@
  */
 
 namespace OCA\Files_Sharing\API;
+
+use OCA\Files_Sharing\Activity;
 
 class Server2Server {
 
@@ -49,6 +53,14 @@ class Server2Server {
 				return new \OC_OCS_Result(null, 400, 'The mountpoint name contains invalid characters.');
 			}
 
+			\OCP\Util::writeLog('files_sharing', 'shareWith before, ' . $shareWith, \OCP\Util::DEBUG);
+			\OCP\Util::emitHook(
+				'\OCA\Files_Sharing\API\Server2Server',
+				'preLoginNameUsedAsUserName',
+				array('uid' => &$shareWith)
+			);
+			\OCP\Util::writeLog('files_sharing', 'shareWith after, ' . $shareWith, \OCP\Util::DEBUG);
+
 			if (!\OCP\User::userExists($shareWith)) {
 				return new \OC_OCS_Result(null, 400, 'User does not exists');
 			}
@@ -60,6 +72,7 @@ class Server2Server {
 					\OC\Files\Filesystem::getMountManager(),
 					\OC\Files\Filesystem::getLoader(),
 					\OC::$server->getHTTPHelper(),
+					\OC::$server->getNotificationManager(),
 					$shareWith
 				);
 
@@ -69,8 +82,33 @@ class Server2Server {
 				$user = $owner . '@' . $this->cleanupRemote($remote);
 
 				\OC::$server->getActivityManager()->publishActivity(
-					'files_sharing', \OCA\Files_Sharing\Activity::SUBJECT_REMOTE_SHARE_RECEIVED, array($user), '', array(),
-					'', '', $shareWith, \OCA\Files_Sharing\Activity::TYPE_REMOTE_SHARE, \OCA\Files_Sharing\Activity::PRIORITY_LOW);
+					Activity::FILES_SHARING_APP, Activity::SUBJECT_REMOTE_SHARE_RECEIVED, array($user, trim($name, '/')), '', array(),
+					'', '', $shareWith, Activity::TYPE_REMOTE_SHARE, Activity::PRIORITY_LOW);
+
+				/**
+				 * FIXME
+				$urlGenerator = \OC::$server->getURLGenerator();
+
+				$notificationManager = \OC::$server->getNotificationManager();
+				$notification = $notificationManager->createNotification();
+				$notification->setApp('files_sharing')
+					->setUser($shareWith)
+					->setTimestamp(time())
+					->setObject('remote_share', $remoteId)
+					->setSubject('remote_share', [$user, trim($name, '/')]);
+
+				$declineAction = $notification->createAction();
+				$declineAction->setLabel('decline')
+					->setLink($urlGenerator->getAbsoluteURL('/ocs/v1.php/apps/files_sharing/api/v1/remote_shares/' . $remoteId), 'DELETE');
+				$notification->addAction($declineAction);
+
+				$acceptAction = $notification->createAction();
+				$acceptAction->setLabel('accept')
+					->setLink($urlGenerator->getAbsoluteURL('/ocs/v1.php/apps/files_sharing/api/v1/remote_shares/' . $remoteId), 'POST');
+				$notification->addAction($acceptAction);
+
+				$notificationManager->notify($notification);
+				 */
 
 				return new \OC_OCS_Result();
 			} catch (\Exception $e) {
@@ -101,9 +139,14 @@ class Server2Server {
 		if ($share) {
 			list($file, $link) = self::getFile($share['uid_owner'], $share['file_source']);
 
-			\OC::$server->getActivityManager()->publishActivity(
-				'files_sharing', \OCA\Files_Sharing\Activity::SUBJECT_REMOTE_SHARE_ACCEPTED, array($share['share_with'], basename($file)), '', array(),
-				$file, $link, $share['uid_owner'], \OCA\Files_Sharing\Activity::TYPE_REMOTE_SHARE, \OCA\Files_Sharing\Activity::PRIORITY_LOW);
+			$event = \OC::$server->getActivityManager()->generateEvent();
+			$event->setApp(Activity::FILES_SHARING_APP)
+				->setType(Activity::TYPE_REMOTE_SHARE)
+				->setAffectedUser($share['uid_owner'])
+				->setSubject(Activity::SUBJECT_REMOTE_SHARE_ACCEPTED, [$share['share_with'], basename($file)])
+				->setObject('files', $share['file_source'], $file)
+				->setLink($link);
+			\OC::$server->getActivityManager()->publish($event);
 		}
 
 		return new \OC_OCS_Result();
@@ -132,9 +175,14 @@ class Server2Server {
 
 			list($file, $link) = $this->getFile($share['uid_owner'], $share['file_source']);
 
-			\OC::$server->getActivityManager()->publishActivity(
-				'files_sharing', \OCA\Files_Sharing\Activity::SUBJECT_REMOTE_SHARE_DECLINED, array($share['share_with'], basename($file)), '', array(),
-				$file, $link, $share['uid_owner'], \OCA\Files_Sharing\Activity::TYPE_REMOTE_SHARE, \OCA\Files_Sharing\Activity::PRIORITY_LOW);
+			$event = \OC::$server->getActivityManager()->generateEvent();
+			$event->setApp(Activity::FILES_SHARING_APP)
+				->setType(Activity::TYPE_REMOTE_SHARE)
+				->setAffectedUser($share['uid_owner'])
+				->setSubject(Activity::SUBJECT_REMOTE_SHARE_DECLINED, [$share['share_with'], basename($file)])
+				->setObject('files', $share['file_source'], $file)
+				->setLink($link);
+			\OC::$server->getActivityManager()->publish($event);
 		}
 
 		return new \OC_OCS_Result();
@@ -177,8 +225,8 @@ class Server2Server {
 			}
 
 			\OC::$server->getActivityManager()->publishActivity(
-				'files_sharing', \OCA\Files_Sharing\Activity::SUBJECT_REMOTE_SHARE_UNSHARED, array($owner, $path), '', array(),
-				'', '', $user, \OCA\Files_Sharing\Activity::TYPE_REMOTE_SHARE, \OCA\Files_Sharing\Activity::PRIORITY_MEDIUM);
+				Activity::FILES_SHARING_APP, Activity::SUBJECT_REMOTE_SHARE_UNSHARED, array($owner, $path), '', array(),
+				'', '', $user, Activity::TYPE_REMOTE_SHARE, Activity::PRIORITY_MEDIUM);
 		}
 
 		return new \OC_OCS_Result();

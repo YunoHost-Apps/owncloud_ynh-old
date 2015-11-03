@@ -5,36 +5,19 @@
 	"config": {
 		"vendor-dir": "."
 	},
-	"repositories": [
-		{
-			"type":"package",
-			"package": {
-				"name": "mcnetic/phpzipstreamer",
-				"version":"master",
-				"source": {
-					"url": "https://github.com/McNetic/PHPZipStreamer.git",
-					"type": "git",
-					"reference":"master"
-				}
-			}
-		}
-	],
 	"require": {
-		"sabre/dav" : "2.1.6",
+		"sabre/dav" : "2.1.7",
 		"doctrine/dbal": "2.5.1",
-		"mcnetic/phpzipstreamer": "dev-master",
-		"kriswallsmith/assetic": "1.2.*@dev",
-		"phpseclib/phpseclib": "~0.3",
+		"mcnetic/zipstreamer": "v0.7",
+		"phpseclib/phpseclib": "~2.0@dev",
 		"rackspace/php-opencloud": "v1.9.2",
 		"james-heinrich/getid3": "dev-master",
 		"jeremeamia/superclosure": "2.0.0",
 		"ircmaxell/random-lib": "~1.1",
 		"bantu/ini-get-wrapper": "v1.0.1",
 		"natxet/CssMin": "dev-master",
-		"mrclay/minify": "dev-master",
 		"punic/punic": "1.1.0",
-		"pear/archive_tar": "1.3.13",
-		"pear/pear_exception": "1.0.*@dev",
+		"pear/archive_tar": "~1.4",
 		"patchwork/utf8": "~1.1",
 		"symfony/console": "2.6.4",
 		"symfony/event-dispatcher": "2.6.4",
@@ -45,6 +28,12 @@
 		"nikic/php-parser": "~1.1",
 		"icewind/Streams": "0.2.0",
 		"swiftmailer/swiftmailer": "@stable",
-		"guzzlehttp/guzzle": "~5.0"
+		"guzzlehttp/guzzle": "~5.0",
+		"league/flysystem": "1.0.4",
+		"pear/pear-core-minimal": "v1.10.0alpha2",
+		"interfasys/lognormalizer": "dev-master@dev",
+		"deepdiver1975/TarStreamer": "v0.1-beta3",
+		"patchwork/jsqueeze": "^2.0",
+		"kriswallsmith/assetic": "^1.3"
 	}
 }

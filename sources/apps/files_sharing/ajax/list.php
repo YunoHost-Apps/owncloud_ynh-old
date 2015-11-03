@@ -3,6 +3,7 @@
  * @author Joas Schilling <nickvergessen@owncloud.com>
  * @author Lukas Reschke <lukas@owncloud.com>
  * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
  * @author Thomas Müller <thomas.mueller@tmit.eu>
  * @author Vincent Petry <pvince81@owncloud.com>
  *
@@ -27,7 +28,7 @@ OCP\JSON::checkAppEnabled('files_sharing');
 
 if(!isset($_GET['t'])){
 	\OC_Response::setStatus(\OC_Response::STATUS_BAD_REQUEST);
-	\OC_Log::write('core-preview', 'No token parameter was passed', \OC_Log::DEBUG);
+	\OCP\Util::writeLog('core-preview', 'No token parameter was passed', \OCP\Util::DEBUG);
 	exit;
 }
 
@@ -71,6 +72,9 @@ foreach ($files as $file) {
 	unset($entry['directory']);
 	// do not disclose share owner
 	unset($entry['shareOwner']);
+	// do not disclose if something is a remote shares
+	unset($entry['mountType']);
+	unset($entry['icon']);
 	$entry['permissions'] = \OCP\Constants::PERMISSION_READ;
 	$formattedFiles[] = $entry;
 }

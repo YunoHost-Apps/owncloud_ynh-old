@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Lukas Reschke <lukas@owncloud.com>
- * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
  * @author Vincent Petry <pvince81@owncloud.com>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
@@ -28,11 +28,24 @@ use \OC\Files\Filesystem;
 
 use \OCA\Files_external\Lib\StorageConfig;
 use \OCA\Files_external\NotFoundException;
+use \OCA\Files_External\Service\BackendService;
+use \OCA\Files_External\Lib\Backend\Backend;
+use \OCA\Files_External\Lib\Auth\AuthMechanism;
 
 /**
  * Service class to manage external storages
  */
 abstract class StoragesService {
+
+	/** @var BackendService */
+	protected $backendService;
+
+	/**
+	 * @param BackendService $backendService
+	 */
+	public function __construct(BackendService $backendService) {
+		$this->backendService = $backendService;
+	}
 
 	/**
 	 * Read legacy config data
@@ -42,6 +55,16 @@ abstract class StoragesService {
 	protected function readLegacyConfig() {
 		// read global config
 		return \OC_Mount_Config::readData();
+	}
+
+	/**
+	 * Write legacy config data
+	 *
+	 * @param array $mountPoints
+	 */
+	protected function writeLegacyConfig(array $mountPoints) {
+		// write global config
+		\OC_Mount_Config::writeData(null, $mountPoints);
 	}
 
 	/**
@@ -60,14 +83,31 @@ abstract class StoragesService {
 		$applicable,
 		$storageOptions
 	) {
-		$storageConfig->setBackendClass($storageOptions['class']);
+		$backend = $this->backendService->getBackend($storageOptions['backend']);
+		if (!$backend) {
+			throw new \UnexpectedValueException('Invalid backend '.$storageOptions['backend']);
+		}
+		$storageConfig->setBackend($backend);
+
+		if (isset($storageOptions['authMechanism']) && $storageOptions['authMechanism'] !== 'builtin::builtin') {
+			$authMechanism = $this->backendService->getAuthMechanism($storageOptions['authMechanism']);
+		} else {
+			$authMechanism = $backend->getLegacyAuthMechanism($storageOptions);
+			$storageOptions['authMechanism'] = 'null'; // to make error handling easier
+		}
+		if (!$authMechanism) {
+			throw new \UnexpectedValueException('Invalid authentication mechanism '.$storageOptions['authMechanism']);
+		}
+		$storageConfig->setAuthMechanism($authMechanism);
+
 		$storageConfig->setBackendOptions($storageOptions['options']);
 		if (isset($storageOptions['mountOptions'])) {
 			$storageConfig->setMountOptions($storageOptions['mountOptions']);
 		}
-		if (isset($storageOptions['priority'])) {
-			$storageConfig->setPriority($storageOptions['priority']);
+		if (!isset($storageOptions['priority'])) {
+			$storageOptions['priority'] = $backend->getPriority();
 		}
+		$storageConfig->setPriority($storageOptions['priority']);
 
 		if ($mountType === \OC_Mount_Config::MOUNT_TYPE_USER) {
 			$applicableUsers = $storageConfig->getApplicableUsers();
@@ -80,6 +120,8 @@ abstract class StoragesService {
 			$applicableGroups[] = $applicable;
 			$storageConfig->setApplicableGroups($applicableGroups);
 		}
+
+
 		return $storageConfig;
 	}
 
@@ -102,8 +144,10 @@ abstract class StoragesService {
 		 * - $mountPath is the mount point path (where the storage must be mounted)
 		 * - $storageOptions is a map of storage options:
 		 *     - "priority": storage priority
-		 *     - "backend": backend class name
+		 *     - "backend": backend identifier
+		 *     - "class": LEGACY backend class name
 		 *     - "options": backend-specific options
+		 *     - "authMechanism": authentication mechanism identifier
 		 *     - "mountOptions": mount-specific options (ex: disable previews, scanner, etc)
 		 */
 
@@ -130,7 +174,7 @@ abstract class StoragesService {
 
 					// the root mount point is in the format "/$user/files/the/mount/point"
 					// we remove the "/$user/files" prefix
-					$parts = explode('/', trim($rootMountPath, '/'), 3);
+					$parts = explode('/', ltrim($rootMountPath, '/'), 3);
 					if (count($parts) < 3) {
 						// something went wrong, skip
 						\OCP\Util::writeLog(
@@ -141,11 +185,18 @@ abstract class StoragesService {
 						continue;
 					}
 
-					$relativeMountPath = $parts[2];
+					$relativeMountPath = rtrim($parts[2], '/');
 
 					// note: we cannot do this after the loop because the decrypted config
 					// options might be needed for the config hash
 					$storageOptions['options'] = \OC_Mount_Config::decryptPasswords($storageOptions['options']);
+
+					if (!isset($storageOptions['backend'])) {
+						$storageOptions['backend'] = $storageOptions['class']; // legacy compat
+					}
+					if (!isset($storageOptions['authMechanism'])) {
+						$storageOptions['authMechanism'] = null; // ensure config hash works
+					}
 
 					if (isset($storageOptions['id'])) {
 						$configId = (int)$storageOptions['id'];
@@ -188,18 +239,34 @@ abstract class StoragesService {
 
 		// process storages with config hash, they must get a real id
 		if (!empty($storagesWithConfigHash)) {
-			$nextId = $this->generateNextId($storages);
-			foreach ($storagesWithConfigHash as $storage) {
-				$storage->setId($nextId);
-				$storages[$nextId] = $storage;
-				$nextId++;
-			}
+			$this->setRealStorageIds($storages, $storagesWithConfigHash);
+		}
 
-			// re-save the config with the generated ids
-			$this->writeConfig($storages);
+		// convert parameter values
+		foreach ($storages as $storage) {
+			$storage->getBackend()->validateStorageDefinition($storage);
+			$storage->getAuthMechanism()->validateStorageDefinition($storage);
 		}
 
 		return $storages;
+	}
+
+	/**
+	 * Replace config hash ID with real IDs, for migrating legacy storages
+	 *
+	 * @param StorageConfig[] $storages Storages with real IDs
+	 * @param StorageConfig[] $storagesWithConfigHash Storages with config hash IDs
+	 */
+	protected function setRealStorageIds(array &$storages, array $storagesWithConfigHash) {
+		$nextId = $this->generateNextId($storages);
+		foreach ($storagesWithConfigHash as $storage) {
+			$storage->setId($nextId);
+			$storages[$nextId] = $storage;
+			$nextId++;
+		}
+
+		// re-save the config with the generated ids
+		$this->writeConfig($storages);
 	}
 
 	/**
@@ -222,7 +289,9 @@ abstract class StoragesService {
 
 		$options = [
 			'id' => $storageConfig->getId(),
-			'class' => $storageConfig->getBackendClass(),
+			'backend' => $storageConfig->getBackend()->getIdentifier(),
+			//'class' => $storageConfig->getBackend()->getClass(),
+			'authMechanism' => $storageConfig->getAuthMechanism()->getIdentifier(),
 			'options' => $storageConfig->getBackendOptions(),
 		];
 
@@ -264,13 +333,54 @@ abstract class StoragesService {
 	}
 
 	/**
-	 * Gets all storages
+	 * Gets all storages, valid or not
 	 *
 	 * @return array array of storage configs
 	 */
 	public function getAllStorages() {
 		return $this->readConfig();
 	}
+
+	/**
+	 * Gets all valid storages
+	 *
+	 * @return array
+	 */
+	public function getStorages() {
+		return array_filter($this->getAllStorages(), [$this, 'validateStorage']);
+	}
+
+	/**
+	 * Validate storage
+	 * FIXME: De-duplicate with StoragesController::validate()
+	 *
+	 * @param StorageConfig $storage
+	 * @return bool
+	 */
+	protected function validateStorage(StorageConfig $storage) {
+		/** @var Backend */
+		$backend = $storage->getBackend();
+		/** @var AuthMechanism */
+		$authMechanism = $storage->getAuthMechanism();
+
+		if (!$backend->isVisibleFor($this->getVisibilityType())) {
+			// not permitted to use backend
+			return false;
+		}
+		if (!$authMechanism->isVisibleFor($this->getVisibilityType())) {
+			// not permitted to use auth mechanism
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Get the visibility type for this controller, used in validation
+	 *
+	 * @return string BackendService::VISIBILITY_* constants
+	 */
+	abstract public function getVisibilityType();
 
 	/**
 	 * Add new storage to the configuration
@@ -297,6 +407,59 @@ abstract class StoragesService {
 	}
 
 	/**
+	 * Create a storage from its parameters
+	 *
+	 * @param string $mountPoint storage mount point
+	 * @param string $backendIdentifier backend identifier
+	 * @param string $authMechanismIdentifier authentication mechanism identifier
+	 * @param array $backendOptions backend-specific options
+	 * @param array|null $mountOptions mount-specific options
+	 * @param array|null $applicableUsers users for which to mount the storage
+	 * @param array|null $applicableGroups groups for which to mount the storage
+	 * @param int|null $priority priority
+	 *
+	 * @return StorageConfig
+	 */
+	public function createStorage(
+		$mountPoint,
+		$backendIdentifier,
+		$authMechanismIdentifier,
+		$backendOptions,
+		$mountOptions = null,
+		$applicableUsers = null,
+		$applicableGroups = null,
+		$priority = null
+	) {
+		$backend = $this->backendService->getBackend($backendIdentifier);
+		if (!$backend) {
+			throw new \InvalidArgumentException('Unable to get backend for '.$backendIdentifier);
+		}
+		$authMechanism = $this->backendService->getAuthMechanism($authMechanismIdentifier);
+		if (!$authMechanism) {
+			throw new \InvalidArgumentException('Unable to get authentication mechanism for '.$authMechanismIdentifier);
+		}
+		$newStorage = new StorageConfig();
+		$newStorage->setMountPoint($mountPoint);
+		$newStorage->setBackend($backend);
+		$newStorage->setAuthMechanism($authMechanism);
+		$newStorage->setBackendOptions($backendOptions);
+		if (isset($mountOptions)) {
+			$newStorage->setMountOptions($mountOptions);
+		}
+		if (isset($applicableUsers)) {
+			$newStorage->setApplicableUsers($applicableUsers);
+		}
+		if (isset($applicableGroups)) {
+			$newStorage->setApplicableGroups($applicableGroups);
+		}
+		if (isset($priority)) {
+			$newStorage->setPriority($priority);
+		}
+
+		return $newStorage;
+	}
+
+	/**
 	 * Triggers the given hook signal for all the applicables given
 	 *
 	 * @param string $signal signal
@@ -306,7 +469,7 @@ abstract class StoragesService {
 	 */
 	protected function triggerApplicableHooks($signal, $mountPoint, $mountType, $applicableArray) {
 		foreach ($applicableArray as $applicable) {
-			\OC_Hook::emit(
+			\OCP\Util::emitHook(
 				Filesystem::CLASSNAME,
 				$signal,
 				[
@@ -387,6 +550,21 @@ abstract class StoragesService {
 		$this->writeConfig($allStorages);
 
 		$this->triggerHooks($deletedStorage, Filesystem::signal_delete_mount);
+
+		// delete oc_storages entries and oc_filecache
+		try {
+			$rustyStorageId = $this->getRustyStorageIdFromConfig($deletedStorage);
+			\OC\Files\Cache\Storage::remove($rustyStorageId);
+		} catch (\Exception $e) {
+			// can happen either for invalid configs where the storage could not
+			// be instantiated or whenever $user vars where used, in which case
+			// the storage id could not be computed
+			\OCP\Util::writeLog(
+				'files_external',
+				'Exception: "' . $e->getMessage() . '"',
+				\OCP\Util::ERROR
+			);
+		}
 	}
 
 	/**
@@ -405,6 +583,32 @@ abstract class StoragesService {
 		// will disappear once we move to DB tables to
 		// store the config
 		return (max(array_keys($allStorages)) + 1);
+	}
+
+	/**
+	 * Returns the rusty storage id from oc_storages from the given storage config.
+	 *
+	 * @param StorageConfig $storageConfig
+	 * @return string rusty storage id
+	 */
+	private function getRustyStorageIdFromConfig(StorageConfig $storageConfig) {
+		// if any of the storage options contains $user, it is not possible
+		// to compute the possible storage id as we don't know which users
+		// mounted it already (and we certainly don't want to iterate over ALL users)
+		foreach ($storageConfig->getBackendOptions() as $value) {
+			if (strpos($value, '$user') !== false) {
+				throw new \Exception('Cannot compute storage id for deletion due to $user vars in the configuration');
+			}
+		}
+
+		// note: similar to ConfigAdapter->prepateStorageConfig()
+		$storageConfig->getAuthMechanism()->manipulateStorageConfig($storageConfig);
+		$storageConfig->getBackend()->manipulateStorageConfig($storageConfig);
+
+		$class = $storageConfig->getBackend()->getStorageClass();
+		$storageImpl = new $class($storageConfig->getBackendOptions());
+
+		return $storageImpl->getId();
 	}
 
 }

@@ -1,16 +1,90 @@
-button.share {
+/** Only available in OC8 */
+.hidden-visually {
+	position: absolute;
+	left: -10000px;
+	top: auto;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+}
+
+/** Preloading icons */
+body:after {
 	display: none;
+	content: url("../img/nameasc.svg") url("../img/namedes.svg") url("../img/dateasc.svg") url("../img/datedes.svg");
+}
+
+#breadcrumbs {
+	float: left;
+}
+
+div.crumb.last a {
+	cursor: default;
+}
+
+#controls .button {
+	margin-top: 5px;
+	width: 40px;
+}
+
+#controls > .right {
+	float: right;
+}
+
+#album-info-button {
+	position: relative;
+}
+
+#album-info-button img {
+	vertical-align: -3px;
+}
+
+.album-info-container {
+	background-color: #eee;
+	border-bottom-left-radius: 5px;
+	box-shadow: 0 1px 1px #777;
+	display: none;
+	z-index: 600;
+	width: 420px;
+	position: absolute;
+	top: 43px;
+	right: 0;
+	padding: 16px;
+	overflow-y: auto;
+}
+
+.album-info-loader {
+	top: 50%;
+	left: 50%;
+	z-index: -100;
+	position: absolute !important;
+	width: 32px;
+	height: 32px;
+	background-size: 32px 32px;
+}
+
+.album-info-content ul {
+	list-style: initial;
 }
 
 #content-wrapper {
+	background-color: #fff;
 	overflow-x: auto;
+	-webkit-transition: background-color 1s linear;
+	-moz-transition: background-color 1s linear;
+	-o-transition: background-color 1s linear;
+	-ms-transition: background-color 1s linear;
+	transition: background-color 1s linear;
 }
 
 #gallery.hascontrols {
+	position: relative;
 	overflow: hidden;
 	text-align: justify;
-	top: 44px;
+	top: 45px;
 	padding-bottom: 100px;
+	margin-bottom: 45px;
+	margin-top: 0;
 }
 
 #gallery .row {
@@ -38,15 +112,12 @@ button.share {
 	margin: 2px;
 }
 
-#gallery a.album .album-label,
-#gallery a.image .album-label {
+#gallery a.album .album-label {
 	color: #fff;
-	text-shadow: none;
 	position: absolute;
 	left: 0;
 	bottom: 0;
 	width: 100%;
-	background-color: rgba(0, 0, 0, .25);
 	text-align: center;
 	font-size: 18px;
 	line-height: normal;
@@ -55,6 +126,41 @@ button.share {
 	overflow-x: hidden;
 	text-overflow: ellipsis;
 	z-index: 11;
+}
+
+#gallery a.image .image-label {
+	display: none;
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 5px;
+	overflow-x: hidden;
+	z-index: 11;
+	word-break: break-all;
+}
+
+#gallery a.album .album-label,
+#gallery a.image .image-label {
+	background: rgba(0, 0, 0, 0.4);
+}
+
+#gallery a.image .image-label .title {
+	display: inline-block;
+	color: #fff;
+	text-align: center;
+	font-size: 13px;
+	line-height: normal;
+	width: 100%;
+	overflow-x: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+#gallery a.image .image-label .title:hover {
+	overflow: visible;
+	white-space: normal;
 }
 
 #gallery a.album > img {
@@ -92,18 +198,23 @@ button.share {
 	-webkit-transition: opacity 500ms;
 }
 
-#gallery a.album img{
+#gallery a.album img {
 	position: relative;
-	float:left;
+	float: left;
+	margin: 1px;
+}
+
+#gallery a.album .cropped {
+	position: relative;
+	float: left;
+	margin: 1px;
+	background-position: center;
+	background-size: cover;
 }
 
 #gallery a.album.loading,
 #gallery .row.loading {
 	opacity: 0;
-}
-
-#controls > .right {
-	float: right;
 }
 
 #gallery > h2 {
@@ -117,18 +228,63 @@ button.share {
 	padding-left: 2em;
 }
 
-#dropdown {
-	top: 43px;
-	right: 0;
-	margin-right: 0;
-	border-bottom-right-radius: 0;
+/*Original ribbon design by Comatosed
+http://www.bypeople.com/author/comatosed/*/
+.ribbon {
+	top: 0;
+	right: 3px;
+	display: none;
+	width: 7px;
+	position: absolute;
+	color: #fff;
+	padding: 10px 0 0;
 }
 
-#loading {
-	font-size: 16px;
-	color: #888;
+.ribbon:before {
+	display: block;
+	width: 7px;
+	height: 0;
 	position: absolute;
-	text-align: center;
-	top: 30%;
+	top: 5px;
+	content: "";
+	border-top: 1px dotted rgba(0, 0, 0, 0.2);
+	border-bottom: 1px dotted rgba(255, 255, 255, 0.3);
+}
+
+.ribbon:after {
+	display: block;
+	width: 0;
+	height: 0;
+	content: "";
+	position: relative;
+	bottom: -2px;
+	z-index: 100;
+	border-width: 0 3px 2px 4px;
+	border-style: solid;
+}
+
+.ribbon.black {
+	background-color: #bbb;
+	background-repeat: repeat-x;
+	background-image: -moz-linear-gradient(top, #aaa, #bbb);
+	background-image: -ms-linear-gradient(top, #aaa, #bbb);
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #aaa), color-stop(100%, #bbb));
+	background-image: -webkit-linear-gradient(top, #aaa, #bbb);
+	background-image: -o-linear-gradient(top, #aaa, #bbb);
+	background-image: linear-gradient(top, #aaa, #bbb);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#aaa', endColorstr='#bbb', GradientType=0);
+}
+
+.ribbon.black:after {
+	border-color: #bbb #bbb transparent #bbb;
+}
+
+#loading-indicator {
+	height: 32px;
 	width: 100%;
+	margin-bottom: 50px;
+}
+
+.icon-gallery {
+	background-image: url('../img/gallery-dark.svg');
 }

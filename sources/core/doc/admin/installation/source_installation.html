@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Manual Installation on Linux &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>Manual Installation on Linux &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,10 +27,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
     <link rel="up" title="Installation" href="index.html" />
-    <link rel="next" title="Univention Corporate Server" href="ucs_installation.html" />
-    <link rel="prev" title="Nginx Configuration" href="nginx_configuration.html" />
+    <link rel="next" title="ownCloud Community Appliance" href="appliance_installation.html" />
+    <link rel="prev" title="Installing and Managing Apps" href="apps_management_installation.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -114,17 +114,15 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.2</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Installation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="system_requirements.html">System Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="linux_installation.html">Preferred Linux Installation Method</a></li>
-<li class="toctree-l2"><a class="reference internal" href="command_line_installation.html">Installing ownCloud From the Command Line</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation_wizard.html">Installation Wizard</a></li>
-<li class="toctree-l2"><a class="reference internal" href="appliance_installation.html">ownCloud Appliances</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_installation.html">Installing ownCloud From the Command Line</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apps_management_installation.html">Installing and Managing Apps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hiawatha_configuration.html">Hiawatha Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nginx_configuration.html">Nginx Configuration</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Manual Installation on Linux</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#example-installation-on-ubuntu-14-04-lts-server">Example installation on Ubuntu 14.04 LTS Server</a></li>
@@ -139,16 +137,21 @@
 <li class="toctree-l3"><a class="reference internal" href="#other-web-servers">Other Web Servers</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="ucs_installation.html">Univention Corporate Server</a></li>
-<li class="toctree-l2"><a class="reference internal" href="yaws_configuration.html">Yaws Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appliance_installation.html">ownCloud Community Appliance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="php_54_installation.html">Installing PHP 5.4 on RHEL 6 and CentOS 6</a></li>
 <li class="toctree-l2"><a class="reference internal" href="selinux_configuration.html">SELinux Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nginx_configuration.html">Nginx Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ucs_installation.html">Univention Corporate Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hiawatha_configuration.html">Hiawatha Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="yaws_configuration.html">Yaws Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="macos_installation.html">Mac OS X</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_server/index.html">ownCloud Server Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../configuration_server/index.html">ownCloud Server Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_mimetypes/index.html">Mimetypes Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
@@ -156,6 +159,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_server_branding/index.html">Enterprise Server Branding (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
@@ -198,7 +202,7 @@ hoster (e.g. for installing required modules). Consult the
 <a class="reference external" href="http://php.net/manual/en/extensions.php">PHP manual</a> for information on modules.
 Your Linux distribution should have packages for all required modules.</p>
 </div>
-<p>To run ownCloud, your web server must have the following installed:</p>
+<p>To run ownCloud, your Web server must have the following installed:</p>
 <ul class="simple">
 <li>php5 (&gt;= 5.4)</li>
 <li>PHP module ctype</li>
@@ -214,7 +218,7 @@ Your Linux distribution should have packages for all required modules.</p>
 <li>PHP module zip</li>
 <li>PHP module zlib</li>
 </ul>
-<p>Database connectors (pick at least one):</p>
+<p>Database connectors (pick the one for your database:)</p>
 <ul class="simple">
 <li>PHP module sqlite (&gt;= 3, usually not recommended for performance reasons)</li>
 <li>PHP module mysql (MySQL/MariaDB)</li>
@@ -243,18 +247,21 @@ of non-ASCII characters)</li>
 <li>PHP module exif (for image rotation in pictures app)</li>
 <li>PHP module gmp (for SFTP storage)</li>
 </ul>
-<p>For enhanced server performance (<em>optional</em> / select only one of the following):</p>
+<p>For enhanced server performance (<em>optional</em>) select one of the following
+memcaches:</p>
 <ul class="simple">
 <li>PHP module apc</li>
 <li>PHP module apcu</li>
-<li>PHP module xcache</li>
+<li>PHP module memcached</li>
+<li>PHP module redis (required for Transactional File Locking)</li>
 </ul>
+<p>See <a class="reference internal" href="../configuration_server/caching_configuration.html"><em>Configuring Memory Caching</em></a>.</p>
 <p>For preview generation (<em>optional</em>):</p>
 <ul class="simple">
 <li>PHP module imagick</li>
 <li>avconv or ffmpeg</li>
 <li>OpenOffice or LibreOffice</li>
-<li>You don’t need the WebDAV module for your web server (i.e. Apache’s
+<li>You don’t need the WebDAV module for your Web server (i.e. Apache’s
 <tt class="docutils literal"><span class="pre">mod_webdav</span></tt>) to access your ownCloud data via WebDAV. ownCloud has a built-in
 WebDAV server of its own, SabreDAV.</li>
 </ul>
@@ -287,11 +294,15 @@ for later use as you will need it during ownCloud database setup.</li>
 <li><p class="first">This downloads a file named owncloud-x.y.z.tar.bz2 (where
 x.y.z is the version number of the current latest version).</p>
 </li>
-<li><p class="first">Save this file on the machine you want to install ownCloud on.</p>
+<li><p class="first">Download its corresponding checksum file, e.g. owncloud-x.y.z.tar.bz2.md5,
+or owncloud-x.y.z.tar.bz2.sha256.</p>
+</li>
+<li><p class="first">Save these files in the same directory on the machine you want to install
+ownCloud on.</p>
 </li>
 <li><p class="first">Verify the MD5 or SHA256 sum:</p>
-<div class="highlight-python"><pre>md5sum  owncloud-x.y.z.tar.bz2
-sha256sum owncloud-x.y.z.tar.bz2</pre>
+<div class="highlight-python"><pre>md5sum -c owncloud-x.y.z.tar.bz2.md5 &lt; owncloud-x.y.z.tar.bz2
+sha256sum -c owncloud-x.y.z.tar.bz2.sha256 &lt; owncloud-x.y.z.tar.bz2</pre>
 </div>
 </li>
 <li><p class="first">You may also verify the PGP signature:</p>
@@ -322,14 +333,14 @@ document root of your Web server. On Ubuntu systems this
 <h2>Apache Web Server Configuration<a class="headerlink" href="#apache-web-server-configuration" title="Permalink to this headline">¶</a></h2>
 <p>On Debian, Ubuntu, and their derivatives, Apache installs with a useful
 configuration so all you have to do is create a
-<tt class="file docutils literal"><span class="pre">/etc/apache2/conf-available/owncloud.conf</span></tt> file with these lines in it:</p>
+<tt class="file docutils literal"><span class="pre">/etc/apache2/sites-available/owncloud.conf</span></tt> file with these lines in it:</p>
 <div class="highlight-xml"><pre>Alias /owncloud /var/www/owncloud
 &lt;Directory /var/www/owncloud/&gt;
  AllowOverride All
 &lt;/Directory&gt;</pre>
 </div>
-<p>Then create a symlink to  <tt class="file docutils literal"><span class="pre">/etc/apache2/conf-enabled</span></tt>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">ln</span> <span class="o">-</span><span class="n">s</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">apache2</span><span class="o">/</span><span class="n">conf</span><span class="o">-</span><span class="n">available</span><span class="o">/</span><span class="n">owncloud</span><span class="o">.</span><span class="n">conf</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">apache2</span><span class="o">/</span><span class="n">conf</span><span class="o">-</span><span class="n">enabled</span><span class="o">/</span><span class="n">owncloud</span><span class="o">.</span><span class="n">conf</span>
+<p>Then create a symlink to  <tt class="file docutils literal"><span class="pre">/etc/apache2/sites-enabled</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ln</span> <span class="o">-</span><span class="n">s</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">apache2</span><span class="o">/</span><span class="n">sites</span><span class="o">-</span><span class="n">available</span><span class="o">/</span><span class="n">owncloud</span><span class="o">.</span><span class="n">conf</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">apache2</span><span class="o">/</span><span class="n">sites</span><span class="o">-</span><span class="n">enabled</span><span class="o">/</span><span class="n">owncloud</span><span class="o">.</span><span class="n">conf</span>
 </pre></div>
 </div>
 </div>
@@ -486,7 +497,7 @@ else, for security and flexibility reasons, so check your documentation for the
 correct locations.</p>
 <p>Please keep in mind that it is possible to create different settings for
 <tt class="docutils literal"><span class="pre">php-cli</span></tt> and <tt class="docutils literal"><span class="pre">php-fpm</span></tt>, and for different domains and Web sites.
-The best way to check your settings is with <tt class="docutils literal"><span class="pre">phpinfo()</span></tt>.</p>
+The best way to check your settings is with <a class="reference internal" href="../issues/index.html#label-phpinfo"><em>PHP Version and Information</em></a>.</p>
 <p><strong>Maximum upload size</strong></p>
 <p>If you want to increase the maximum upload size, you will also have to modify
 your <tt class="docutils literal"><span class="pre">php-fpm</span></tt> configuration and increase the <tt class="docutils literal"><span class="pre">upload_max_filesize</span></tt> and

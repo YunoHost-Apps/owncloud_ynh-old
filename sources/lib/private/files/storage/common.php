@@ -7,6 +7,7 @@
  * @author Joas Schilling <nickvergessen@owncloud.com>
  * @author Jörn Friedrich Dreyer <jfd@butonic.de>
  * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Martin Mattel <martin.mattel@diemattels.at>
  * @author Michael Gapczynski <GapczynskiM@gmail.com>
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Robin Appelman <icewind@owncloud.com>
@@ -260,7 +261,7 @@ abstract class Common implements Storage {
 		$dh = $this->opendir($path);
 		if (is_resource($dh)) {
 			while (($file = readdir($dh)) !== false) {
-				if ($file !== '.' and $file !== '..') {
+				if (!\OC\Files\Filesystem::isIgnoredDir($file)) {
 					if ($this->is_dir($path . '/' . $file)) {
 						mkdir($target . '/' . $file);
 						$this->addLocalFolder($path . '/' . $file, $target . '/' . $file);
@@ -283,7 +284,7 @@ abstract class Common implements Storage {
 		$dh = $this->opendir($dir);
 		if (is_resource($dh)) {
 			while (($item = readdir($dh)) !== false) {
-				if ($item == '.' || $item == '..') continue;
+				if (\OC\Files\Filesystem::isIgnoredDir($item)) continue;
 				if (strstr(strtolower($item), strtolower($query)) !== false) {
 					$files[] = $dir . '/' . $item;
 				}
@@ -338,7 +339,7 @@ abstract class Common implements Storage {
 		}
 		if (!isset($this->watcher)) {
 			$this->watcher = new Watcher($storage);
-			$globalPolicy = \OC::$server->getConfig()->getSystemValue('filesystem_check_changes', Watcher::CHECK_ONCE);
+			$globalPolicy = \OC::$server->getConfig()->getSystemValue('filesystem_check_changes', Watcher::CHECK_NEVER);
 			$this->watcher->setPolicy((int)$this->getMountOption('filesystem_check_changes', $globalPolicy));
 		}
 		return $this->watcher;
@@ -404,6 +405,11 @@ abstract class Common implements Storage {
 		return implode('/', $output);
 	}
 
+	/**
+	 * Test a storage for availability
+	 *
+	 * @return bool
+	 */
 	public function test() {
 		if ($this->stat('')) {
 			return true;
@@ -649,5 +655,19 @@ abstract class Common implements Storage {
 	 */
 	public function changeLock($path, $type, ILockingProvider $provider) {
 		$provider->changeLock('files/' . md5($this->getId() . '::' . trim($path, '/')), $type);
+	}
+
+	/**
+	 * @return array [ available, last_checked ]
+	 */
+	public function getAvailability() {
+		return $this->getStorageCache()->getAvailability();
+	}
+
+	/**
+	 * @param bool $isAvailable
+	 */
+	public function setAvailability($isAvailable) {
+		$this->getStorageCache()->setAvailability($isAvailable);
 	}
 }

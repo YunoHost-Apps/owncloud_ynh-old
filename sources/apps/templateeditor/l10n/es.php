@@ -2,7 +2,7 @@
 $TRANSLATIONS = array(
 "Could not load template" => "No se cargó la plantilla",
 "Saved" => "Guardado",
-"Reset" => "Reiniciar",
+"Reset" => "Restablecer",
 "Sharing email (HTML)" => "Compartir correo electrónico (HTML)",
 "Sharing email (plain text fallback)" => "Compartir correo electrónico (texto plano)",
 "Lost password mail" => "Correo electrónico - contraseña perdida",

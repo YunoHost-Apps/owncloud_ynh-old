@@ -18,19 +18,26 @@ class Helper {
 	const CORE_DIRNAME = 'core';
 
 	public static function checkVersion($newVersionArray, $newVersionString){
-		$currentVersionArray = \OC_Util::getVersion();
+		$l10n = \OC::$server->getL10N('updater');
+		$currentVersionArray = \OCP\Util::getVersion();
 		$currentVersion = \OC_Util::getVersionString();
+		
+		// https://github.com/owncloud/core/issues/18880
+		// Always positive for versions >= 100.0.0.0
+		if (version_compare($newVersionString, '100.0.0.0', '>=')) {
+			return;
+		}
 
 		$difference = intval($newVersionArray[0]) - intval($currentVersionArray[0]);
 		if ($difference>1 || $difference<0 || version_compare($currentVersion, $newVersionString) > 0) {
-			$message = (string) App::$l10n->t(
+			$message = (string) $l10n->t(
 				'Not possible to update %s to %s. Downgrading or skipping major releases is not supported.', 
-				array(
+				[
 					$currentVersion,
 					implode('.', $newVersionArray)
-				)
+				]
 			); 
-			App::log($message);
+			\OC::$server->getLogger()->error($message, ['app' => 'updater']);
 			throw new \Exception($message);
 		}
 	}
@@ -50,7 +57,7 @@ class Helper {
 	/**
 	 * Check permissions recursive
 	 * @param string $src  - path to check
-	 * @param string $src  - path to check
+	 * @param OCA\Updater\Collection $collection - object to store incorrect permissions
 	 */
 	public static function checkr($src, $collection) {
 		if (!is_writable($src)){
@@ -62,7 +69,7 @@ class Helper {
 		if(is_dir($src)) {
 			$files = scandir($src);
 			foreach ($files as $file) {
-				if ($file != "." && $file != "..") {
+				if (!in_array($file, [".", ".."])) {
 					self::checkr("$src/$file", $collection);
 				}
 			}
@@ -88,13 +95,13 @@ class Helper {
 			}
 			$files = scandir($src);
 			foreach ($files as $file) {
-				if ($file != "." && $file != "..") {
+				if (!in_array($file, [".", ".."])) {
 					self::copyr("$src/$file", "$dest/$file", $stopOnError);
 				}
 			}
 		}elseif(file_exists($src)) {
 			if (!copy($src, $dest) && $stopOnError) {
-				throw new \Exception("Unable copy $src to $dest");
+				throw new \Exception("Unable to copy $src to $dest");
 			}
 		}
 	}
@@ -146,7 +153,7 @@ class Helper {
 		if(is_dir($dir)) {
 			$files = scandir($dir);
 			foreach($files as $file) {
-				if ($file != "." && $file != "..") {
+				if (!in_array($file, [".", ".."])) {
 					self::rmdirr("$dir/$file");
 				}
 			}
@@ -166,7 +173,7 @@ class Helper {
 	 * @return array
 	 */
 	public static function getDirectories() {
-		$dirs = array();
+		$dirs = [];
 		$dirs[self::THIRDPARTY_DIRNAME] = \OC::$THIRDPARTYROOT . '/' . self::THIRDPARTY_DIRNAME;
 		
 		if (isset(\OC::$APPSROOTS)) {
@@ -182,11 +189,11 @@ class Helper {
 	
 	public static function getSources($version) {
 		$base = Downloader::getPackageDir($version);
-		return array (
+		return [
 			self::APP_DIRNAME => $base . '/' . self::APP_DIRNAME,
 			self::THIRDPARTY_DIRNAME => $base . '/' . self::THIRDPARTY_DIRNAME,
 			self::CORE_DIRNAME => $base . '/' . self::CORE_DIRNAME,	
-		);
+		];
 	}
 	
 	public static function addDirectoryToZip($zip, $dir) {

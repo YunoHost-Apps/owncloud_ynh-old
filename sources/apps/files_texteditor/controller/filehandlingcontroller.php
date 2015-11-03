@@ -24,6 +24,7 @@ namespace OCA\Files_Texteditor\Controller;
 
 
 use OC\Files\View;
+use OC\HintException;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
@@ -75,36 +76,44 @@ class FileHandlingController extends Controller{
 		try {
 			if (!empty($filename)) {
 				$path = $dir . '/' . $filename;
-				$filecontents = $this->view->file_get_contents($path);
-				if ($filecontents !== false) {
+				// default of 4MB
+				$maxSize = 4194304;
+				if ($this->view->filesize($path) > $maxSize) {
+					return new DataResponse(['message' => (string)$this->l->t('This file is too big to be opened. Please download the file instead.')], Http::STATUS_BAD_REQUEST);
+				}
+				$fileContents = $this->view->file_get_contents($path);
+				if ($fileContents !== false) {
 					$writable = $this->view->isUpdatable($path);
 					$mime = $this->view->getMimeType($path);
-					$mtime = $this->view->filemtime($path);
-					$encoding = mb_detect_encoding($filecontents . "a", "UTF-8, WINDOWS-1252, ISO-8859-15, ISO-8859-1, ASCII", true);
+					$mTime = $this->view->filemtime($path);
+					$encoding = mb_detect_encoding($fileContents . "a", "UTF-8, WINDOWS-1252, ISO-8859-15, ISO-8859-1, ASCII", true);
 					if ($encoding == "") {
 						// set default encoding if it couldn't be detected
 						$encoding = 'ISO-8859-15';
 					}
-					$filecontents = iconv($encoding, "UTF-8", $filecontents);
+					$fileContents = iconv($encoding, "UTF-8", $fileContents);
 					return new DataResponse(
 						[
-							'filecontents' => $filecontents,
+							'filecontents' => $fileContents,
 							'writeable' => $writable,
 							'mime' => $mime,
-							'mtime' => $mtime
+							'mtime' => $mTime
 						],
 						Http::STATUS_OK
 					);
 				} else {
-					return new DataResponse(['message' => (string)$this->l->t('Can not read the file.')], Http::STATUS_BAD_REQUEST);
+					return new DataResponse(['message' => (string)$this->l->t('Cannot read the file.')], Http::STATUS_BAD_REQUEST);
 				}
 			} else {
 				return new DataResponse(['message' => (string)$this->l->t('Invalid file path supplied.')], Http::STATUS_BAD_REQUEST);
 			}
 
+		} catch (HintException $e) {
+			$message = (string)$e->getHint();
+			return new DataResponse(['message' => $message], Http::STATUS_BAD_REQUEST);
 		} catch (\Exception $e) {
-			$hint = method_exists($e, 'getHint') ? $e->getHint() : $e->getMessage();
-			return new DataResponse(['message' => (string)$hint], Http::STATUS_BAD_REQUEST);
+			$message = (string)$this->l->t('An internal server error occurred.');
+			return new DataResponse(['message' => $message], Http::STATUS_BAD_REQUEST);
 		}
 	}
 

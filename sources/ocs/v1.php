@@ -1,7 +1,6 @@
 <?php
 /**
  * @author Bart Visscher <bartv@thisnet.nl>
- * @author Frank Karlitschek <frank@owncloud.org>
  * @author Lukas Reschke <lukas@owncloud.com>
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Robin Appelman <icewind@owncloud.com>
@@ -56,5 +55,7 @@ try {
 } catch (MethodNotAllowedException $e) {
 	OC_API::setContentType();
 	OC_Response::setStatus(405);
+} catch (\OC\OCS\Exception $ex) {
+	OC_API::respond($ex->getResult(), OC_API::requestedFormat());
 }
 

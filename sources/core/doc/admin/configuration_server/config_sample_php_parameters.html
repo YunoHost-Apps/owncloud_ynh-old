@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Config.php Parameters &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>Config.php Parameters &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
     <link rel="up" title="ownCloud Server Configuration" href="index.html" />
     <link rel="next" title="Email Configuration" href="email_configuration.html" />
     <link rel="prev" title="Defining Background Jobs" href="background_jobs_configuration.html" />
@@ -114,18 +114,16 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">ownCloud Server Configuration</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="security_setup_warnings.html">Warnings on Admin Page</a></li>
 <li class="toctree-l2"><a class="reference internal" href="occ_command.html">Using the occ Command</a></li>
 <li class="toctree-l2"><a class="reference internal" href="activity_configuration.html">Configuring the Activity App</a></li>
 <li class="toctree-l2"><a class="reference internal" href="antivirus_configuration.html">Configuring the ClamAV Antivirus Scanner</a></li>
-<li class="toctree-l2"><a class="reference internal" href="automatic_configuration.html">Automatic Configuration Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="caching_configuration.html">Configuring Memory Caching</a></li>
 <li class="toctree-l2"><a class="reference internal" href="background_jobs_configuration.html">Defining Background Jobs</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Config.php Parameters</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#default-parameters">Default Parameters</a></li>
@@ -150,7 +148,6 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="email_configuration.html">Email Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="external_sites.html">Linking External Sites</a></li>
-<li class="toctree-l2"><a class="reference internal" href="js_css_asset_management_configuration.html">JavaScript and CSS Asset Management</a></li>
 <li class="toctree-l2"><a class="reference internal" href="knowledgebase_configuration.html">Knowledge Base Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="language_configuration.html">Language Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="logging_configuration.html">Logging Configuration</a></li>
@@ -158,10 +155,15 @@
 <li class="toctree-l2"><a class="reference internal" href="reverse_proxy_configuration.html">Reverse Proxy Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="search_configuration.html">Enabling Full-Text Search</a></li>
 <li class="toctree-l2"><a class="reference internal" href="thirdparty_php_configuration.html">Using Third Party PHP Components</a></li>
-<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html">Server Tuning &amp; Performance Tips</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning/index.html">Server Tuning &amp; Performance Tips</a></li>
+<li class="toctree-l2"><a class="reference internal" href="js_css_asset_management_configuration.html">JavaScript and CSS Asset Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="automatic_configuration.html">Automatic Configuration Setup</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_files/index.html">File Sharing and Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_mimetypes/index.html">Mimetypes Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
@@ -169,6 +171,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_server_branding/index.html">Enterprise Server Branding (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
@@ -188,9 +191,16 @@
 <h1>Config.php Parameters<a class="headerlink" href="#config-php-parameters" title="Permalink to this headline">¶</a></h1>
 <p>ownCloud uses the <tt class="docutils literal"><span class="pre">config/config.php</span></tt> file to control server operations.
 <tt class="docutils literal"><span class="pre">config/config.sample.php</span></tt> lists all the configurable parameters within
-ownCloud. This document provides a more detailed reference. Many options are
-configurable on your Admin page, so it is usually not necessary to edit
-<tt class="docutils literal"><span class="pre">config/config.php</span></tt>.</p>
+ownCloud, along with example or default values. This document provides a more
+detailed reference. Most options are configurable on your Admin page, so it
+is usually not necessary to edit <tt class="docutils literal"><span class="pre">config/config.php</span></tt>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The installer creates a configuration containing the essential parameters.
+Only manually add configuration parameters to <tt class="docutils literal"><span class="pre">config/config.php</span></tt> if you need to
+use a special value for a parameter. <strong>Do not copy everything from</strong>
+<tt class="docutils literal"><span class="pre">config/config.sample.php</span></tt> <strong>. Only enter the parameters you wish to modify!</strong></p>
+</div>
 <p>ownCloud supports loading configuration parameters from multiple files.
 You can add arbitrary files ending with <tt class="file docutils literal"><span class="pre">.config.php</span></tt> in the <tt class="file docutils literal"><span class="pre">config/</span></tt>
 directory, for example you could place your email server configuration
@@ -215,10 +225,6 @@ is created when you install ownCloud.</p>
 installer. (There are also per-user salts.) If you lose this salt you lose
 all your passwords. This example is for documentation only, and you should
 never use it.</p>
-<div class="highlight-python"><pre>'hashingCost' =&gt; 10,</pre>
-</div>
-<p>The hashing cost used by hashes generated by ownCloud
-Using a higher value requires more time and CPU power to calculate the hashes</p>
 <div class="highlight-python"><pre>'trusted_domains' =&gt;
   array (
     'demo.example.org',
@@ -273,23 +279,11 @@ you shouldn&#8217;t need to change it.</p>
 <div class="highlight-python"><pre>'dbtableprefix' =&gt; '',</pre>
 </div>
 <p>Prefix for the ownCloud tables in the database.</p>
-<div class="highlight-python"><pre>'dbdriveroptions' =&gt; array(
-        PDO::MYSQL_ATTR_SSL_CA =&gt; '/file/path/to/ca_cert.pem',
-),</pre>
-</div>
-<p>Additional driver options for the database connection, eg. to enable SSL
-encryption in MySQL.</p>
-<div class="highlight-python"><pre>'sqlite.journal_mode' =&gt; 'DELETE',</pre>
-</div>
-<p>sqlite3 journal mode can be specified using this config parameter - can be
-&#8216;WAL&#8217; or &#8216;DELETE&#8217; see for more details <a class="reference external" href="https://www.sqlite.org/wal.html">https://www.sqlite.org/wal.html</a></p>
 <div class="highlight-python"><pre>'installed' =&gt; false,</pre>
 </div>
 <p>Indicates whether the ownCloud instance was installed successfully; <tt class="docutils literal"><span class="pre">true</span></tt>
 indicates a successful installation, and <tt class="docutils literal"><span class="pre">false</span></tt> indicates an unsuccessful
-installation.
-.. DEFAULT_SECTION_END
-.. Generated content above. Don&#8217;t change this.</p>
+installation.</p>
 </div>
 <div class="section" id="default-config-php-examples">
 <h2>Default config.php Examples<a class="headerlink" href="#default-config-php-examples" title="Permalink to this headline">¶</a></h2>
@@ -504,14 +498,107 @@ occ). The value should contain the full base URL:
 <div class="section" id="deleted-items-trash-bin">
 <h2>Deleted Items (trash bin)<a class="headerlink" href="#deleted-items-trash-bin" title="Permalink to this headline">¶</a></h2>
 <p>These parameters control the Deleted files app.</p>
-<div class="highlight-python"><pre>'trashbin_retention_obligation' =&gt; 30,</pre>
+<div class="highlight-python"><pre>'trashbin_retention_obligation' =&gt; 'auto',</pre>
 </div>
-<p>When the trash bin app is enabled (default), this is the number of days a
-file will be kept in the trash bin. Default is 30 days.</p>
-<div class="highlight-python"><pre>'trashbin_auto_expire' =&gt; true,</pre>
+<p>If the trash bin app is enabled (default), this setting defines the policy
+for when files and folders in the trash bin will be permanently deleted.</p>
+<p>The app allows for two settings, a minimum time for trash bin retention,
+and a maximum time for trash bin retention.
+Minimum time is the number of days a file will be kept, after which it
+may be deleted. Maximum time is the number of days at which it is guaranteed
+to be deleted.
+Both minimum and maximum times can be set together to explicitly define
+file and folder deletion. For migration purposes, this setting is installed
+initially set to &#8220;auto&#8221;, which is equivalent to the default setting in
+ownCloud 8.1 and before.</p>
+<p>Available values:</p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">auto</span></tt></dt>
+<dd><p class="first last">default setting. keeps files and folders in the trash bin for 30 days
+and automatically deletes anytime after that if space is needed (note:
+files may not be deleted if space is not needed).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">D,</span> <span class="pre">auto</span></tt></dt>
+<dd><p class="first last">keeps files and folders in the trash bin for D+ days, delete anytime if
+space needed (note: files may not be deleted if space is not needed)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">auto,</span> <span class="pre">D</span></tt></dt>
+<dd><p class="first last">delete all files in the trash bin that are older than D days
+automatically, delete other files anytime if space needed</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">D1,</span> <span class="pre">D2</span></tt></dt>
+<dd><p class="first last">keep files and folders the in trash bin for at least D1 days and
+delete when exceeds D2 days</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">disabled</span></tt></dt>
+<dd><p class="first last">trash bin auto clean disabled, files and folders will be kept forever</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="highlight-python"><pre>'versions_retention_obligation' =&gt; 'auto',</pre>
 </div>
-<p>Disable or enable auto-expiration for the trash bin. By default
-auto-expiration is enabled.</p>
+<p>If the versions app is enabled (default), this setting defines the policy
+for when versions will be permanently deleted.</p>
+<p>The app allows for two settings, a minimum time for version retention,
+and a maximum time for version retention.
+Minimum time is the number of days a version will be kept, after which it
+may be deleted. Maximum time is the number of days at which it is guaranteed
+to be deleted.
+Both minimum and maximum times can be set together to explicitly define
+version deletion. For migration purposes, this setting is installed
+initially set to &#8220;auto&#8221;, which is equivalent to the default setting in
+ownCloud 8.1 and before.</p>
+<p>Available values:</p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">auto</span></tt></dt>
+<dd><p class="first last">default setting. Automatically expire versions according to expire
+rules. Please refer to Files_versions online documentation for more
+info.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">D,</span> <span class="pre">auto</span></tt></dt>
+<dd><p class="first last">keep versions at least for D days, apply expire rules to all versions
+that are older than D days</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">auto,</span> <span class="pre">D</span></tt></dt>
+<dd><p class="first last">delete all versions that are older than D days automatically, delete
+other versions according to expire rules</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">D1,</span> <span class="pre">D2</span></tt></dt>
+<dd><p class="first last">keep versions for at least D1 days and delete when exceeds D2 days</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">disabled</span></tt></dt>
+<dd><p class="first last">versions auto clean disabled, versions will be kept forever</p>
+</dd>
+</dl>
+</li>
+</ul>
 </div>
 <div class="section" id="owncloud-verifications">
 <h2>ownCloud Verifications<a class="headerlink" href="#owncloud-verifications" title="Permalink to this headline">¶</a></h2>
@@ -558,13 +645,14 @@ default ownCloud data directory.</p>
 <p>If syslogging is desired, set this parameter to <tt class="docutils literal"><span class="pre">syslog</span></tt>.
 Setting this parameter to <tt class="docutils literal"><span class="pre">errorlog</span></tt> will use the PHP error_log function
 for logging.</p>
-<div class="highlight-python"><pre>'logfile' =&gt; 'owncloud.log',</pre>
+<div class="highlight-python"><pre>'logfile' =&gt; '/var/log/owncloud.log',</pre>
 </div>
-<p>Change the ownCloud logfile name from <tt class="docutils literal"><span class="pre">owncloud.log</span></tt> to something else.</p>
+<p>Log file path for the ownCloud logging type.</p>
+<p>Defaults to <tt class="docutils literal"><span class="pre">[datadirectory]/owncloud.log</span></tt></p>
 <div class="highlight-python"><pre>'loglevel' =&gt; 2,</pre>
 </div>
 <p>Loglevel to start logging at. Valid values are: 0 = Debug, 1 = Info, 2 =
-Warning, 3 = Error. The default value is Warning.</p>
+Warning, 3 = Error, and 4 = Fatal. The default value is Warning.</p>
 <div class="highlight-python"><pre>'log.condition' =&gt; [
         'shared_secret' =&gt; '57b58edb6637fe3059b3595cf9c41b9',
         'users' =&gt; ['sample-user'],
@@ -618,7 +706,7 @@ debugging, as your logfile will become huge.</p>
 <p>Location of the lock file for cron executions can be specified here.</p>
 <p>Default is within the tmp directory. The file is named in the following way:
 owncloud-server-$INSTANCEID-cron.lock
-where $INSTANCEID is the string specified in the instanceid field.
+where $INSTANCEID is the string specified in the <tt class="docutils literal"><span class="pre">instanceid</span></tt> field.
 Because the cron lock file is accessed at regular intervals, it may prevent
 enabled disk drives from spinning down. A different location for this file
 can solve such issues.</p>
@@ -627,8 +715,8 @@ can solve such issues.</p>
 <p>Enables log rotation and limits the total size of logfiles. The default is 0,
 or no rotation. Specify a size in bytes, for example 104857600 (100 megabytes
 = 100 * 1024 * 1024 bytes). A new logfile is created with a new name when the
-old logfile reaches your limit. The total size of all logfiles is double the
-<tt class="docutils literal"><span class="pre">log_rotate_sizerotation</span></tt> value.</p>
+old logfile reaches your limit. If a rotated log file is already present, it
+will be overwritten.</p>
 </div>
 <div class="section" id="alternate-code-locations">
 <h2>Alternate Code Locations<a class="headerlink" href="#alternate-code-locations" title="Permalink to this headline">¶</a></h2>
@@ -637,7 +725,9 @@ old logfile reaches your limit. The total size of all logfiles is double the
 </div>
 <p>ownCloud uses some 3rd party PHP components to provide certain functionality.</p>
 <p>These components are shipped as part of the software package and reside in
-<tt class="docutils literal"><span class="pre">owncloud/3rdparty</span></tt>. Use this option to configure a different location.</p>
+<tt class="docutils literal"><span class="pre">owncloud/3rdparty</span></tt>. Use this option to configure a different location.
+For example, if your location is /var/www/owncloud/foo/3rdparty, then the
+correct configuration is &#8216;3rdpartyroot&#8217; =&gt; &#8216;/var/www/owncloud/foo/&#8217;,</p>
 <div class="highlight-python"><pre>'3rdpartyurl' =&gt; '',</pre>
 </div>
 <p>If you have an alternate <tt class="docutils literal"><span class="pre">3rdpartyroot</span></tt>, you must also configure the URL as
@@ -803,6 +893,21 @@ section of the Administrators Manual.</p>
 existence and marks them as ready to be cleaned up. The number is always
 minutes. Setting it to 0 disables the feature.</p>
 <p>See command line (occ) methods <a class="reference external" href="ldap:show-remnants">ldap:show-remnants</a> and user:delete</p>
+<div class="highlight-python"><pre>'enforce_home_folder_naming_rule' =&gt; true,</pre>
+</div>
+<p>Enforce the existence of the home folder naming rule for all users</p>
+<dl class="docutils">
+<dt>Following scenario:</dt>
+<dd><ul class="first last simple">
+<li>a home folder naming rule is set in LDAP advanced settings</li>
+<li>a user doesn&#8217;t have the home folder naming rule attribute set</li>
+</ul>
+</dd>
+</dl>
+<p>If this is set to <strong>true</strong> (default) it will NOT fallback to the core&#8217;s
+default naming rule of using the internal user ID as home folder name.</p>
+<p>If this is set to <strong>false</strong> it will fallback for the users without the
+attribute set to naming the home folder like the internal user ID.</p>
 </div>
 <div class="section" id="maintenance">
 <h2>Maintenance<a class="headerlink" href="#maintenance" title="Permalink to this headline">¶</a></h2>
@@ -811,7 +916,7 @@ maintenance.</p>
 <div class="highlight-python"><pre>'maintenance' =&gt; false,</pre>
 </div>
 <p>Enable maintenance mode to disable ownCloud</p>
-<p>If you want to prevent users from loggin in to ownCloud before you start
+<p>If you want to prevent users from logging in to ownCloud before you start
 doing some maintenance work, you need to set the value of the maintenance
 parameter to true. Please keep in mind that users who are already logged-in
 are kicked out of ownCloud instantly.</p>
@@ -921,6 +1026,19 @@ Encryption and Gallery. Gallery will store thumbnails directly in the
 filesystem and encryption will cause severe overhead because key files need
 to be fetched in addition to any requested file.</p>
 <p>One way to test is applying for a trystack account at <a class="reference external" href="http://trystack.org/">http://trystack.org/</a></p>
+</div>
+<div class="section" id="all-other-config-options">
+<h2>All other config options<a class="headerlink" href="#all-other-config-options" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>'dbdriveroptions' =&gt; array(
+        PDO::MYSQL_ATTR_SSL_CA =&gt; '/file/path/to/ca_cert.pem',
+),</pre>
+</div>
+<p>Additional driver options for the database connection, eg. to enable SSL
+encryption in MySQL.</p>
+<div class="highlight-python"><pre>'sqlite.journal_mode' =&gt; 'DELETE',</pre>
+</div>
+<p>sqlite3 journal mode can be specified using this config parameter - can be
+&#8216;WAL&#8217; or &#8216;DELETE&#8217; see for more details <a class="reference external" href="https://www.sqlite.org/wal.html">https://www.sqlite.org/wal.html</a></p>
 <div class="highlight-python"><pre>'supportedDatabases' =&gt; array(
         'sqlite',
         'mysql',
@@ -939,9 +1057,17 @@ to be fetched in addition to any requested file.</p>
 </ul>
 </dd>
 </dl>
+<div class="highlight-python"><pre>'tempdirectory' =&gt; '/tmp/owncloudtemp',</pre>
 </div>
-<div class="section" id="all-other-config-options">
-<h2>All other config options<a class="headerlink" href="#all-other-config-options" title="Permalink to this headline">¶</a></h2>
+<p>Override where ownCloud stores temporary files. Useful in situations where
+the system temporary directory is on a limited space ramdisk or is otherwise
+restricted, or if external storages which do not support streaming are in
+use.</p>
+<p>The web server user must have write access to this directory.</p>
+<div class="highlight-python"><pre>'hashingCost' =&gt; 10,</pre>
+</div>
+<p>The hashing cost used by hashes generated by ownCloud
+Using a higher value requires more time and CPU power to calculate the hashes</p>
 <div class="highlight-python"><pre>'blacklisted_files' =&gt; array('.htaccess'),</pre>
 </div>
 <p>Blacklist a specific file or files and disallow the upload of files
@@ -971,7 +1097,7 @@ clients or other unexpected results.</p>
 </div>
 <p>EXPERIMENTAL: option whether to include external storage in quota
 calculation, defaults to false.</p>
-<div class="highlight-python"><pre>'filesystem_check_changes' =&gt; 1,</pre>
+<div class="highlight-python"><pre>'filesystem_check_changes' =&gt; 0,</pre>
 </div>
 <p>Specifies how often the filesystem is checked for changes made outside
 ownCloud.</p>
@@ -989,14 +1115,15 @@ file and one css file if this is set to <tt class="docutils literal"><span class
 <div class="highlight-python"><pre>'assetdirectory' =&gt; '/var/www/owncloud',</pre>
 </div>
 <p>The parent of the directory where css and js assets will be stored if
-piplelining is enabled; this defaults to the ownCloud directory. The assets
+pipelining is enabled; this defaults to the ownCloud directory. The assets
 will be stored in a subdirectory of this directory named &#8216;assets&#8217;. The
 server <em>must</em> be configured to serve that directory as $WEBROOT/assets.</p>
 <p>You will only likely need to change this if the main ownCloud directory
 is not writeable by the web server in your configuration.</p>
-<div class="highlight-python"><pre>'mount_file' =&gt; 'data/mount.json',</pre>
+<div class="highlight-python"><pre>'mount_file' =&gt; '/var/www/owncloud/data/mount.json',</pre>
 </div>
-<p>Where <tt class="docutils literal"><span class="pre">mount.json</span></tt> file should be stored, defaults to <tt class="docutils literal"><span class="pre">data/mount.json</span></tt></p>
+<p>Where <tt class="docutils literal"><span class="pre">mount.json</span></tt> file should be stored, defaults to <tt class="docutils literal"><span class="pre">data/mount.json</span></tt>
+in the ownCloud directory.</p>
 <div class="highlight-python"><pre>'filesystem_cache_readonly' =&gt; false,</pre>
 </div>
 <p>When <tt class="docutils literal"><span class="pre">true</span></tt>, prevent ownCloud from changing the cache due to changes in the
@@ -1008,31 +1135,47 @@ lose this string there will be data corruption.</p>
 <div class="highlight-python"><pre>'trusted_proxies' =&gt; array('203.0.113.45', '198.51.100.128'),</pre>
 </div>
 <p>List of trusted proxy servers</p>
+<p>If you configure these also consider setting <cite>forwarded_for_headers</cite> which
+otherwise defaults to <cite>HTTP_X_FORWARDED_FOR</cite> (the <cite>X-Forwarded-For</cite> header).</p>
 <div class="highlight-python"><pre>'forwarded_for_headers' =&gt; array('HTTP_X_FORWARDED', 'HTTP_FORWARDED_FOR'),</pre>
 </div>
 <p>Headers that should be trusted as client IP address in combination with
-<cite>trusted_proxies</cite></p>
+<cite>trusted_proxies</cite>. If the HTTP header looks like &#8216;X-Forwarded-For&#8217;, then use
+&#8216;HTTP_X_FORWARDED_FOR&#8217; here.</p>
+<p>If set incorrectly, a client can spoof their IP address as visible to
+ownCloud, bypassing access controls and making logs useless!</p>
+<p>Defaults to &#8216;HTTP_X_FORWARED_FOR&#8217; if unset</p>
 <div class="highlight-python"><pre>'max_filesize_animated_gifs_public_sharing' =&gt; 10,</pre>
 </div>
 <p>max file size for animating gifs on public-sharing-site.</p>
 <p>If the gif is bigger, it&#8217;ll show a static preview</p>
 <p>Value represents the maximum filesize in megabytes. Default is <tt class="docutils literal"><span class="pre">10</span></tt>. Set to
 <tt class="docutils literal"><span class="pre">-1</span></tt> for no limit.</p>
-<div class="highlight-python"><pre>'filelocking.enabled' =&gt; false,</pre>
+<div class="highlight-python"><pre>'filelocking.enabled' =&gt; true,</pre>
 </div>
 <p>Enables transactional file locking.</p>
-<p>This is disabled by default as it is still beta.</p>
+<p>This is enabled by default.</p>
 <p>Prevents concurrent processes from accessing the same files
 at the same time. Can help prevent side effects that would
 be caused by concurrent operations. Mainly relevant for
 very large installations with many users working with
 shared files.</p>
-<p>WARNING: BETA quality</p>
 <div class="highlight-python"><pre>'memcache.locking' =&gt; '\\OC\\Memcache\\Redis',</pre>
 </div>
 <p>Memory caching backend for file locking</p>
 <p>Because most memcache backends can clean values without warning using redis
 is highly recommended to <em>avoid data loss</em>.</p>
+<div class="highlight-python"><pre>'debug' =&gt; false,</pre>
+</div>
+<p>Set this ownCloud instance to debugging mode</p>
+<p>Only enable this for local development and not in production environments
+This will disable the minifier and outputs some additional debug information</p>
+<div class="highlight-python"><pre>'update.skip-migration-test' =&gt; false,</pre>
+</div>
+<p>Skips the migration test during upgrades</p>
+<p>If this is set to true the migration test are deactivated during upgrade.
+This is only recommended in installations where upgrade tests are run in
+advance with the same data on a test system.</p>
 <div class="highlight-python"><pre>'copied_sample_config' =&gt; true,</pre>
 </div>
 <p>This entry is just here to show a warning in case somebody copied the sample

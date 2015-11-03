@@ -44,7 +44,7 @@ the configuration is correct. Hover your cursor over the fields to see some
 pop-up tooltips. 
 
 Server Tab
-~~~~~~~~~~
+^^^^^^^^^^
 
 Start with the Server tab. You may configure multiple servers if you have them. 
 At a minimum you must supply the LDAP server's hostname. If your server requires 
@@ -103,12 +103,15 @@ Base DN:
   * *dc=my-company,dc=com*
 
 User Filter
-~~~~~~~~~~~
+^^^^^^^^^^^
 
 Use this to control which LDAP users are listed as ownCloud users on your 
-ownCloud server. In order to control which LDAP users can login to your ownCloud 
-server use the Login filter. Those LDAP users who have access but are not listed 
-as users (if there are any) will be hidden users. You may bypass the form fields 
+ownCloud server. In order to control which LDAP users can login to your 
+ownCloud 
+server use the Login filter. Those LDAP users who have access but are not 
+listed 
+as users (if there are any) will be hidden users. You may bypass the form 
+fields 
 and enter a raw LDAP filter if you prefer.
 
 .. figure:: ../images/ldap-wizard-2-user.png
@@ -122,7 +125,8 @@ only those object classes:
 only from those groups:
   If your LDAP server supports the ``member-of-overlay`` in LDAP filters, you 
   can define that only users from one or more certain groups are allowed to
-  appear in user listings in ownCloud. By default, no value will be selected. You
+  appear in user listings in ownCloud. By default, no value will be selected. 
+You
   may select multiple groups.
 
   If your LDAP server does not support the member-of-overlay in LDAP filters,
@@ -130,25 +134,28 @@ only from those groups:
 
 Edit raw filter instead:
   Clicking on this text toggles the filter mode and you can enter the raw LDAP 
-  filter directly.
-  
-  Example:
+  filter directly. Example::
 
-  * *(&(objectClass=inetOrgPerson)(memberOf=cn=owncloudusers,ou=groups,dc=example,dc=com))*
+   (&(objectClass=inetOrgPerson)(memberOf=cn=owncloudusers,ou=groups,
+   dc=example,dc=com))
 
 x users found:
   This is an indicator that tells you approximately how many users will be
   listed in ownCloud. The number updates automatically after any changes.
 
 Login Filter
-~~~~~~~~~~~~
+^^^^^^^^^^^^
 
-The settings in the Login Filter tab determine which LDAP users can log in to your
-ownCloud system and which attribute or attributes the provided login name is matched
-against (e.g. LDAP/AD username, email address). You may select multiple user details.
+The settings in the Login Filter tab determine which LDAP users can log in to 
+your
+ownCloud system and which attribute or attributes the provided login name is 
+matched
+against (e.g. LDAP/AD username, email address). You may select multiple user 
+details.
 (You may bypass the form fields and enter a raw LDAP filter if you prefer.)
 
-You may override your User Filter settings on the User Filter tab by using a raw 
+You may override your User Filter settings on the User Filter tab by using a 
+raw 
 LDAP filter.
 
 .. figure:: ../images/ldap-wizard-3-login.png
@@ -177,11 +184,18 @@ Edit raw filter instead:
 
   Examples:
 
-  * only username: (&(objectClass=inetOrgPerson)(memberOf=cn=owncloudusers,ou=groups,dc=example,dc=com)(uid=%uid)*
-  * username or email address: *((&(objectClass=inetOrgPerson)(memberOf=cn=owncloudusers,ou=groups,dc=example,dc=com)(|(uid=%uid)(mail=%uid)))*
+  * only username:: 
+
+     (&(objectClass=inetOrgPerson)(memberOf=cn=owncloudusers,ou=groups,
+     dc=example,dc=com)(uid=%uid)
+  
+  * username or email address::
+  
+     ((&(objectClass=inetOrgPerson)(memberOf=cn=owncloudusers,ou=groups,
+     dc=example,dc=com)(|(uid=%uid)(mail=%uid)))
 
 Group Filter
-~~~~~~~~~~~~
+^^^^^^^^^^^^
 
 By default, no LDAP groups will be available in ownCloud. The settings in the 
 group filter tab determine which groups will be available in ownCloud. You may 
@@ -218,7 +232,8 @@ Advanced Settings
 -----------------
 
 The LDAP Advanced Setting section contains options that are not needed for a 
-working connection. This provides controls to disable the current configuration, 
+working connection. This provides controls to disable the current 
+configuration, 
 configure replica hosts, and various performance-enhancing options.
 
 The Advanced Settings are structured into three parts:
@@ -228,7 +243,7 @@ The Advanced Settings are structured into three parts:
 * Special Attributes
 
 Connection Settings
-~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^
 
 .. figure:: ../images/ldap-advanced-1-connection.png
 
@@ -261,9 +276,6 @@ Disable Main Server:
   You can manually override the main server and make ownCloud only connect to
   the backup server. This is useful for planned downtimes.
 
-Case insensitive LDAP server (Windows):
-  When the LDAP server is running on a Windows Host.
-
 Turn off SSL certificate validation:
   Turns off SSL certificate checking. Use it for testing only!
 
@@ -286,7 +298,7 @@ See the Caching section below for detailed information on how the cache
 operates.
 
 Directory Settings
-~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^
 
 .. figure:: ../images/ldap-advanced-2-directory.png
 
@@ -362,7 +374,7 @@ Group Member association:
   * Example: *uniquemember*
 
 Special Attributes
-~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^
 
 .. figure:: ../images/ldap-advanced-3-attributes.png
 
@@ -525,6 +537,14 @@ Compared to earlier ownCloud versions, no further tweaks need to be done to
 make ownCloud work with Active Directory. ownCloud will automatically find the
 correct configuration in the set-up process.
 
+memberOf / Read MemberOf permissions
+------------------------------------
+
+If you want to use ``memberOf`` within your filter you might need to give your
+querying user the permissions to use it. For Microsoft Active Directory this
+is described `here <https://serverfault.com/questions/167371/what-permissions-are
+-required-for-enumerating-users-groups-in-active-directory/167401#167401>`_.
+
 Duplicating Server Configurations
 ---------------------------------
 
@@ -547,7 +567,7 @@ ownCloud LDAP Internals
 Some parts of how the LDAP backend works are described here.
 
 User and Group Mapping
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 In ownCloud the user or group name is used to have all relevant information in
 the database assigned. To work reliably a permanent internal user name and
@@ -567,45 +587,15 @@ it into production. The mapping tables are filled early, but as long as you are
 testing, you can empty the tables any time. Do not do this in production.
 
 Caching
--------
+^^^^^^^
 
 The LDAP cache has changed in ownCloud 8.1. There is no more file cache, but 
-only a memory cache, and you must install and configure the memory cache. The 
-simplest memory cache to use is APCu. This is supplied by the ``php5-apcu`` 
-package on Debian/Ubuntu/Mint, and by ``php-pecl-apcu`` on Red 
-Hat/CentOS/Fedora.
-
-After installing APCu you must modify ``config.php`` to select APCu as the 
-ownCloud cache::
-
- 'memcache.local' => '\OC\Memcache\APCu',
- 
-The ownCloud  **Cache** helps to speed up user interactions and sharing. It is 
-populated on demand, and remains populated until the **Cache Time-To-Live** for 
-each unique request expires. User logins are not cached, so if you need to
-improve login times set up a slave LDAP server to share the load.
-
-The Redis key-value cache and store is an excellent fast and robust cache, and 
-if you are using the new experimental file locking (see 
-:doc:`../configuration_files/files_locking_transactional`) then you must use 
-Redis. Redis configuration looks like this::
-
- 'filelocking.enabled' => 'true',
- 'memcache.local' => '\OC\Memcache\Redis',
- 'redis' => array(
-       'host' => 'localhost',
-       // can also be a unix domain socket:
-       '/tmp/redis.sock'
-       'port' => 6379,
-       'timeout' => 0.0,
-       // Optional, if undefined SELECT will not run and will use Redis
-       // Server's default DB Index.
-       'dbindex' => 0,
- ),
-
-Redis is supplied by the ``redis-server`` and ``php5-redis`` packages on 
-Debian/Ubuntu/Mint, and on Red Hat/CentOS/Fedora by ``redis`` and 
-``php-pecl-redis`` from the EPEL repository.
+only a memory cache, and you must install and configure the memory cache (see 
+:doc:`../configuration_server/caching_configuration`). The ownCloud  **Cache**
+helps to speed up user interactions and sharing. It is populated on demand,
+and remains populated until the **Cache Time-To-Live** for each unique request
+expires. User logins are not cached, so if you need to improve login times set
+up a slave LDAP server to share the load.
 
 You can adjust the **Cache Time-To-Live** value to balance performance and 
 freshness of LDAP data. All LDAP requests will be cached for 10 minutes by 
@@ -633,7 +623,7 @@ defunct, for example due to a server migration or unreachable server. In this
 case the other servers will also receive the request.
 
 Handling with Backup Server
----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When ownCloud is not able to contact the main LDAP server, ownCloud assumes it 
 is offline and will not try to connect again for the time specified in **Cache 

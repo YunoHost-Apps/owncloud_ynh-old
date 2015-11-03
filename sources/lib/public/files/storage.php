@@ -1,5 +1,6 @@
 <?php
 /**
+ * @author Michael Roth <michael.roth@rz.uni-augsburg.de>
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Robin Appelman <icewind@owncloud.com>
  * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
@@ -61,6 +62,7 @@ interface Storage {
 
 	/**
 	 * see http://php.net/manual/en/function.mkdir.php
+	 * implementations need to implement a recursive mkdir
 	 *
 	 * @param string $path
 	 * @return bool
@@ -87,7 +89,7 @@ interface Storage {
 	public function opendir($path);
 
 	/**
-	 * see http://php.net/manual/en/function.is_dir.php
+	 * see http://php.net/manual/en/function.is-dir.php
 	 *
 	 * @param string $path
 	 * @return bool
@@ -96,7 +98,7 @@ interface Storage {
 	public function is_dir($path);
 
 	/**
-	 * see http://php.net/manual/en/function.is_file.php
+	 * see http://php.net/manual/en/function.is-file.php
 	 *
 	 * @param string $path
 	 * @return bool
@@ -439,4 +441,24 @@ interface Storage {
 	 * @since 8.1.0
 	 */
 	public function changeLock($path, $type, ILockingProvider $provider);
+
+	/**
+	 * Test a storage for availability
+	 *
+	 * @since 8.2.0
+	 * @return bool
+	 */
+	public function test();
+
+	/**
+	 * @since 8.2.0
+	 * @return array [ available, last_checked ]
+	 */
+	public function getAvailability();
+
+	/**
+	 * @since 8.2.0
+	 * @param bool $isAvailable
+	 */
+	public function setAvailability($isAvailable);
 }

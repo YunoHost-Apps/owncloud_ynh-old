@@ -2,7 +2,6 @@
 /**
  * @author Bernhard Posselt <dev@bernhard-posselt.com>
  * @author Christian Kampka <christian@kampka.net>
- * @author Morris Jobke <hey@morrisjobke.de>
  * @author Thomas Müller <thomas.mueller@tmit.eu>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
@@ -61,7 +60,10 @@ class Install extends Command {
 	protected function execute(InputInterface $input, OutputInterface $output) {
 
 		// validate the environment
-		$setupHelper = new Setup($this->config, \OC::$server->getIniWrapper(), \OC::$server->getL10N('lib'), new \OC_Defaults());
+		$server = \OC::$server;
+		$setupHelper = new Setup($this->config, $server->getIniWrapper(),
+			$server->getL10N('lib'), new \OC_Defaults(), $server->getLogger(),
+			$server->getSecureRandom());
 		$sysInfo = $setupHelper->getSystemInfo(true);
 		$errors = $sysInfo['errors'];
 		if (count($errors) > 0) {

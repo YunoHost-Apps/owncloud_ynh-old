@@ -6,7 +6,10 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = $vendorDir;
 
 return array(
+    'phpseclib\\' => array($vendorDir . '/phpseclib/phpseclib/phpseclib'),
+    'ownCloud\\TarStreamer\\' => array($vendorDir . '/deepdiver1975/tarstreamer/src'),
     'bantu\\IniGetWrapper\\' => array($vendorDir . '/bantu/ini-get-wrapper/src'),
+    'ZipStreamer\\' => array($vendorDir . '/mcnetic/zipstreamer/src'),
     'SuperClosure\\' => array($vendorDir . '/jeremeamia/SuperClosure/src'),
     'Sabre\\VObject\\' => array($vendorDir . '/sabre/vobject/lib'),
     'Sabre\\HTTP\\' => array($vendorDir . '/sabre/http/lib'),
@@ -17,6 +20,9 @@ return array(
     'Sabre\\CalDAV\\' => array($vendorDir . '/sabre/dav/lib/CalDAV'),
     'React\\Promise\\' => array($vendorDir . '/react/promise/src'),
     'Punic\\' => array($vendorDir . '/punic/punic/code'),
+    'Patchwork\\' => array($vendorDir . '/patchwork/jsqueeze/src'),
+    'League\\Flysystem\\' => array($vendorDir . '/league/flysystem/src'),
+    'InterfaSys\\LogNormalizer\\' => array($vendorDir . '/interfasys/lognormalizer/src'),
     'Icewind\\Streams\\Tests\\' => array($vendorDir . '/icewind/streams/tests'),
     'Icewind\\Streams\\' => array($vendorDir . '/icewind/streams/src'),
     'GuzzleHttp\\Stream\\' => array($vendorDir . '/guzzlehttp/streams/src'),

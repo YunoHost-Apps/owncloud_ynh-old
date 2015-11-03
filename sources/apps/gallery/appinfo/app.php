@@ -1,41 +1,87 @@
 <?php
-
 /**
  * ownCloud - gallery application
  *
- * @author Bartek Przybylski
- * @copyright 2012 Bartek Przybylski bart.p.pl@gmail.com
+ * This file is licensed under the Affero General Public License version 3 or
+ * later. See the COPYING file.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
+ * @author Olivier Paroz <owncloud@interfasys.ch>
+ * @author Robin Appelman <icewind@owncloud.com>
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU AFFERO GENERAL PUBLIC LICENSE for more details.
- *
- * You should have received a copy of the GNU Affero General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * @copyright Olivier Paroz 2014-2015
+ * @copyright Robin Appelman 2014-2015
  */
 
-\OC::$server->getNavigationManager()->add(function () {
-	$urlGenerator = \OC::$server->getURLGenerator();
-	$l = \OC::$server->getL10N('gallery');
-	return [
-		'id' => 'gallery_index',
-		'order' => 3,
-		'href' => $urlGenerator->linkToRoute('gallery_index'),
-		'icon' => $urlGenerator->imagePath('gallery', 'gallery.svg'),
-		'name' => $l->t('Pictures'),
-	];
-});
+namespace OCA\Gallery\AppInfo;
 
-// make slideshow available in files and public shares
-OCP\Util::addScript('gallery', 'jquery.mousewheel-3.1.1');
-OCP\Util::addScript('gallery', 'slideshow');
-OCP\Util::addScript('gallery', 'public');
-OCP\Util::addStyle('gallery', 'slideshow');
+use OCP\Util;
 
+$app = new Application();
+$c = $app->getContainer();
+$appName = $c->query('AppName');
+
+/**
+ * Menu entry in ownCloud
+ */
+$c->query('OCP\INavigationManager')
+  ->add(
+	  function () use ($c, $appName) {
+		  $urlGenerator = $c->query('OCP\IURLGenerator');
+		  $l10n = $c->query('OCP\IL10N');
+
+		  return [
+			  'id'    => $appName,
+
+			  // Sorting weight for the navigation. The higher the number, the higher
+			  // will it be listed in the navigation
+			  'order' => 3,
+
+			  // The route that will be shown on startup when called from within ownCloud
+			  // Public links are using another route, see appinfo/routes.php
+			  'href'  => $urlGenerator->linkToRoute($appName . '.page.index'),
+
+			  // The icon that will be shown in the navigation
+			  // This file needs to exist in img/
+			  'icon'  => $urlGenerator->imagePath($appName, 'app.svg'),
+
+			  // The title of the application. This will be used in the
+			  // navigation or on the settings page
+			  'name'  => $l10n->t('Gallery')
+		  ];
+	  }
+  );
+
+/**
+ * Loading translations
+ *
+ * The string has to match the app's folder name
+ */
+Util::addTranslations('gallery');
+
+// Hack which only loads the scripts in the Files app
+$request = $c->query('Request');
+if (isset($request->server['REQUEST_URI'])) {
+	$url = $request->server['REQUEST_URI'];
+	if (preg_match('%index\.php/apps/files(/.*)?%', $url)
+		|| preg_match('%index\.php/s/\b(.*)\b(?<!/authenticate)$%', $url)
+	) {
+		// @codeCoverageIgnoreStart
+		/**
+		 * Scripts for the Files app
+		 */
+		Util::addScript($appName, 'vendor/bigshot/bigshot-compressed');
+		Util::addScript($appName, 'vendor/image-scale/image-scale.min');
+		Util::addScript($appName, 'vendor/dompurify/src/purify');
+		Util::addScript($appName, 'galleryfileaction');
+		Util::addScript($appName, 'slideshow');
+		Util::addScript($appName, 'slideshowcontrols');
+		Util::addScript($appName, 'slideshowzoomablepreview');
+		Util::addScript($appName, 'gallerybutton');
+
+		/**
+		 * Styles for the Files app
+		 */
+		Util::addStyle($appName, 'slideshow');
+		Util::addStyle($appName, 'gallerybutton');
+	}
+}// @codeCoverageIgnoreEnd

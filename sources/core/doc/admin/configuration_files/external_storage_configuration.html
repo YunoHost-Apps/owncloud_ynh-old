@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Configuring External Storage (Configuration File) &mdash; ownCloud Server Administration Manual 8.1 documentation</title>
+    <title>Configuring External Storage (Configuration File) &mdash; ownCloud Server Administration Manual 8.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '8.1',
+        VERSION:     '8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,10 +27,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/bootstrap.js"></script>
-    <link rel="top" title="ownCloud Server Administration Manual 8.1 documentation" href="../index.html" />
+    <link rel="top" title="ownCloud Server Administration Manual 8.2 documentation" href="../index.html" />
     <link rel="up" title="File Sharing and Management" href="index.html" />
-    <link rel="next" title="Encryption Configuration" href="encryption_configuration.html" />
-    <link rel="prev" title="Configuring External Storage (GUI)" href="external_storage_configuration_gui.html" />
+    <link rel="next" title="External Storage Authentication mechanisms" href="external_storage/auth_mechanisms.html" />
+    <link rel="prev" title="WebDAV" href="external_storage/webdav.html" />
 <script type="text/javascript">
 (function () {
   /**
@@ -114,13 +114,15 @@
 <li><a href="../contents.html">Table of Contents</a></li>
 									</ul>
                   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.1 Server Administration Manual Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.1 Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">ownCloud 8.2 Server Administration Manual Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">ownCloud 8.2 Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whats_new_admin.html">What&#8217;s New for Admins in ownCloud 8.2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_server/index.html">ownCloud Server Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_user/index.html">User Management</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">File Sharing and Management</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="file_sharing_configuration.html">File Sharing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="federated_cloud_sharing_configuration.html">Configuring Federated Cloud Sharing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="big_file_upload_configuration.html">Uploading big files &gt; 512MB</a></li>
 <li class="toctree-l2"><a class="reference internal" href="collaborative_documents_configuration.html">Configuring the Collaborative Documents App</a></li>
 <li class="toctree-l2"><a class="reference internal" href="default_files_configuration.html">Providing Default Files</a></li>
@@ -130,20 +132,20 @@
 <li class="toctree-l3"><a class="reference internal" href="#adding-files-to-external-storages">Adding files to external storages</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#priorities">Priorities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuring-temporary-disk-space-needs">Configuring Temporary Disk Space Needs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#backends">Backends</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#external-storage-password-management">External Storage Password Management</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="external_storage/auth_mechanisms.html">External Storage Authentication mechanisms</a></li>
 <li class="toctree-l2"><a class="reference internal" href="encryption_configuration.html">Encryption Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="files_locking_enabling.html">Using the Files Locking App</a></li>
 <li class="toctree-l2"><a class="reference internal" href="files_locking_transactional.html">Transactional File Locking</a></li>
-<li class="toctree-l2"><a class="reference internal" href="federated_cloud_sharing_configuration.html">Configuring Federated Cloud Sharing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="previews_configuration.html">Previews Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="serving_static_files_configuration.html">Serving Static Files for Better Performance</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../configuration_server/index.html">ownCloud Server Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_database/index.html">Database Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_mimetypes/index.html">Mimetypes Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintenance/index.html">Maintenance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../operations/index.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues/index.html">Issues and Troubleshooting</a></li>
@@ -151,6 +153,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_installation/index.html">Enterprise Subscription Installation (ES Only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_clients/index.html">Creating Branded ownCloud Clients (ES only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enterprise_server_branding/index.html">Enterprise Server Branding (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_external_storage/index.html">External Storage (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_user_management/index.html">User Management (ES only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../enterprise_files_drop/index.html">Enabling Anonymous Uploads with Files Drop (ES Only)</a></li>
@@ -213,9 +216,6 @@ Disabled:
 <p class="last">A non-blocking or correctly configured SELinux setup is needed
 for these backends to work. Please refer to the <a class="reference internal" href="../installation/selinux_configuration.html#selinux-config-label"><em>SELinux Configuration</em></a>.</p>
 </div>
-<p>Please keep in mind that some formatting has been applied and carriage returns
-have been added for better readability. In the <tt class="file docutils literal"><span class="pre">data/mount.json</span></tt> all
-values need to be concatenated and written in a row without these modifications!</p>
 <p>It is recommended to use the <a class="reference internal" href="external_storage_configuration_gui.html"><em>Web-GUI</em></a> in the
 administrator panel to add, remove or modify mount options to prevent any problems!</p>
 <div class="section" id="using-self-signed-certificates">
@@ -241,31 +241,32 @@ external storage.</p>
 </div>
 <div class="section" id="example">
 <h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-json"><pre>{"group":{
+<div class="highlight-json"><pre>{
+  "group":{
     "admin":{
         "\/$user\/files\/Admin_Stuff":{
             "class":"\\OC\\Files\\Storage\\Local",
             "options":{ ... },
             "priority":150
-            }
         }
-    }
- "user":{
+     }
+  },
+  "user":{
     "all":{
         "\/$user\/files\/Pictures":{
             "class":"\\OC\\Files\\Storage\\DAV",
             "options":{ ... },
             "priority":100
-            }
         }
+     },
     "someuser":{
         "\/someuser\/files\/Music":{
             "class":"\\OC\\Files\\Storage\\FTP",
             "options":{ ... },
             "priority":100
-            }
         }
-    }
+     }
+  }
 }</pre>
 </div>
 </div>
@@ -288,6 +289,35 @@ following order, with later mount types always overriding a previous mount type:
 <li>group : group mount configurations</li>
 <li>user (not all) : per-user mount configurations</li>
 <li><tt class="file docutils literal"><span class="pre">data/$user/mount.json</span></tt> : personal mount configurations</li>
+</ul>
+</div>
+<div class="section" id="configuring-temporary-disk-space-needs">
+<h2>Configuring Temporary Disk Space Needs<a class="headerlink" href="#configuring-temporary-disk-space-needs" title="Permalink to this headline">¶</a></h2>
+<p>Not all external storage types are currently enabled for, or support
+streaming. Therefore ownCloud needs temporary space to buffer data for
+transfers. This can occur when there are many concurrent users transferring data
+with a higher volume over small bandwidth. ownCloud may need, in these
+cases, additional temporary space.</p>
+<p>Example: 100 concurrent users uploading each a 300MB file with a
+total transfer time of 6000s (1h 40min). The temporary space needed by ownCloud
+for this period of time is 30GB. Even though it is not mandatory, the location
+of the temp directory used by ownCloud can be configured manually. To do so,
+you need to maintain the <tt class="docutils literal"><span class="pre">tempdirectory</span></tt> parameter described in
+<tt class="docutils literal"><span class="pre">config.sample.php</span></tt></p>
+<p>As of writing, following external storage list uses temp files for up/download:</p>
+<ul class="simple">
+<li>FTP</li>
+<li>SMB / SMB_OC</li>
+<li>WebDAV</li>
+<li>Amazon S3</li>
+<li>Dropbox</li>
+<li>Google Drive</li>
+<li>OpenStack SWIFT</li>
+</ul>
+<p>External storage list that uses direct file streaming:</p>
+<ul class="simple">
+<li>Local</li>
+<li>SFTP</li>
 </ul>
 </div>
 <div class="section" id="backends">

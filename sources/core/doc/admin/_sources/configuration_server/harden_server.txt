@@ -39,7 +39,7 @@ The random number generation also tries to request random numbers from
 a way that PHP is able to read random data from it.
 
 .. note:: When having an ``open_basedir`` configured within your ``php.ini`` file,
-   make sure to include the folder ``/dev``.
+   make sure to include ``/dev/urandom``.
 
 Enable hardening modules such as SELinux
 ****************************************
@@ -115,14 +115,16 @@ connection to the ownCloud instance using HTTP, and it attempts to prevent site
 visitors from bypassing invalid certificate warnings.
 
 This can be achieved by setting the following settings within the Apache 
-VirtualHost file:
+VirtualHost file::
 
-.. code-block:: none
-
-  <VirtualHost *:443>
-     ServerName cloud.owncloud.com
-     Header always add Strict-Transport-Security "max-age=15768000"
+ <VirtualHost *:443>
+   ServerName cloud.owncloud.com
+     <IfModule mod_headers.c>
+       Header always set Strict-Transport-Security "max-age=15768000; includeSubDomains; preload"
+     </IfModule>
   </VirtualHost>
+  
+This example configuration will make all subdomains only accessible via HTTPS. If you have subdomains not accessible via HTTPS, remove ``includeSubdomains;``. 
 
 This requires the ``mod_headers`` extension in Apache.
 
@@ -147,6 +149,18 @@ Use a dedicated domain for ownCloud
 Administrators are encouraged to install ownCloud on a dedicated domain such as 
 cloud.domain.tld instead of domain.tld to gain all the benefits offered by the 
 Same-Origin-Policy.
+
+Ensure that your ownCloud instance is installed in a DMZ
+--------------------------------------------------------
+
+As ownCloud supports features such as Federated File Sharing we do not consider
+Server Side Request Forgery (SSRF) part of our threat model. In fact, given all our
+external storage adapters this can be considered a feature and not a vulnerability.
+
+This means that a user on your ownCloud instance could probe whether other hosts
+are accessible from the ownCloud network. If you do not want this you need to 
+ensure that your ownCloud is properly installed in a segregated network and proper 
+firewall rules are in place.
 
 Serve security related Headers by the web server
 ------------------------------------------------

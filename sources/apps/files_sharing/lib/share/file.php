@@ -5,6 +5,8 @@
  * @author Björn Schießle <schiessle@owncloud.com>
  * @author Michael Gapczynski <GapczynskiM@gmail.com>
  * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
  * @author Thomas Müller <thomas.mueller@tmit.eu>
  * @author Vincent Petry <pvince81@owncloud.com>
  *
@@ -183,7 +185,7 @@ class OC_Share_Backend_File implements OCP\Share_Backend_File_Dependent {
 		if (isset($source['parent'])) {
 			$parent = $source['parent'];
 			while (isset($parent)) {
-				$query = \OC_DB::prepare('SELECT `parent`, `uid_owner` FROM `*PREFIX*share` WHERE `id` = ?', 1);
+				$query = \OCP\DB::prepare('SELECT `parent`, `uid_owner` FROM `*PREFIX*share` WHERE `id` = ?', 1);
 				$item = $query->execute(array($parent))->fetchRow();
 				if (isset($item['parent'])) {
 					$parent = $item['parent'];

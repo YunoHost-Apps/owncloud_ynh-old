@@ -1,9 +1,8 @@
 <?php
 /**
- * @author Lukas Reschke <lukas@owncloud.com>
+ * @author Joas Schilling <nickvergessen@owncloud.com>
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Robin Appelman <icewind@owncloud.com>
- * @author Thomas Müller <thomas.mueller@tmit.eu>
  * @author Vincent Petry <pvince81@owncloud.com>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
@@ -33,25 +32,21 @@ OC_Util::obEnd();
 // Backends
 $authBackend = new OCA\Files_Sharing\Connector\PublicAuth(\OC::$server->getConfig());
 
-// Fire up server
-$objectTree = new \OC\Connector\Sabre\ObjectTree();
-$server = new \OC\Connector\Sabre\Server($objectTree);
-// Set URL explicitly due to reverse-proxy situations
-$server->httpRequest->setUrl(\OC::$server->getRequest()->getRequestUri());
-$server->setBaseUri($baseuri);
+$serverFactory = new \OC\Connector\Sabre\ServerFactory(
+	\OC::$server->getConfig(),
+	\OC::$server->getLogger(),
+	\OC::$server->getDatabaseConnection(),
+	\OC::$server->getUserSession(),
+	\OC::$server->getMountManager(),
+	\OC::$server->getTagManager(),
+	\OC::$server->getEventDispatcher()
+);
 
-// Load plugins
-$defaults = new OC_Defaults();
-$server->addPlugin(new \Sabre\DAV\Auth\Plugin($authBackend, $defaults->getName()));
-// FIXME: The following line is a workaround for legacy components relying on being able to send a GET to /
-$server->addPlugin(new \OC\Connector\Sabre\DummyGetResponsePlugin());
-$server->addPlugin(new \OC\Connector\Sabre\FilesPlugin($objectTree));
-$server->addPlugin(new \OC\Connector\Sabre\MaintenancePlugin(\OC::$server->getConfig()));
-$server->addPlugin(new \OC\Connector\Sabre\ExceptionLoggerPlugin('webdav', \OC::$server->getLogger()));
+$requestUri = \OC::$server->getRequest()->getRequestUri();
 
-// wait with registering these until auth is handled and the filesystem is setup
-$server->on('beforeMethod', function () use ($server, $objectTree, $authBackend) {
-	if (OCA\Files_Sharing\Helper::isOutgoingServer2serverShareEnabled() === false) {
+$server = $serverFactory->createServer($baseuri, $requestUri, $authBackend, function () use ($authBackend) {
+	$isAjax = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest');
+	if (OCA\Files_Sharing\Helper::isOutgoingServer2serverShareEnabled() === false && !$isAjax) {
 		// this is what is thrown when trying to access a non-existing share
 		throw new \Sabre\DAV\Exception\NotAuthenticated();
 	}
@@ -64,7 +59,7 @@ $server->on('beforeMethod', function () use ($server, $objectTree, $authBackend)
 
 	if (!$isWritable) {
 		\OC\Files\Filesystem::addStorageWrapper('readonly', function ($mountPoint, $storage) {
-			return new \OCA\Files_Sharing\ReadOnlyWrapper(array('storage' => $storage));
+			return new \OC\Files\Storage\Wrapper\PermissionsMask(array('storage' => $storage, 'mask' => \OCP\Constants::PERMISSION_READ + \OCP\Constants::PERMISSION_SHARE));
 		});
 	}
 
@@ -72,20 +67,8 @@ $server->on('beforeMethod', function () use ($server, $objectTree, $authBackend)
 	$ownerView = \OC\Files\Filesystem::getView();
 	$path = $ownerView->getPath($fileId);
 
-	$view = new \OC\Files\View($ownerView->getAbsolutePath($path));
-	$rootInfo = $view->getFileInfo('');
-
-	// Create ownCloud Dir
-	if ($rootInfo->getType() === 'dir') {
-		$root = new \OC\Connector\Sabre\Directory($view, $rootInfo);
-	} else {
-		$root = new \OC\Connector\Sabre\File($view, $rootInfo);
-	}
-	$mountManager = \OC\Files\Filesystem::getMountManager();
-	$objectTree->init($root, $view, $mountManager);
-
-	$server->addPlugin(new \OC\Connector\Sabre\QuotaPlugin($view));
-}, 30); // priority 30: after auth (10) and acl(20), before lock(50) and handling the request
+	return new \OC\Files\View($ownerView->getAbsolutePath($path));
+});
 
 // And off we go!
 $server->exec();

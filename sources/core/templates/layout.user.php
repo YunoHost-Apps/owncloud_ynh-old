@@ -15,12 +15,14 @@
 			?>
 		</title>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="referrer" content="never">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
 		<meta name="apple-itunes-app" content="app-id=<?php p($theme->getiTunesAppId()); ?>">
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-status-bar-style" content="black">
 		<meta name="apple-mobile-web-app-title" content="<?php p((!empty($_['application']) && $_['appid']!='files')? $_['application']:'ownCloud'); ?>">
 		<meta name="mobile-web-app-capable" content="yes">
+		<meta name="theme-color" content="<?php p($theme->getMailHeaderColor()); ?>">
 		<link rel="shortcut icon" type="image/png" href="<?php print_unescaped(image_path($_['appid'], 'favicon.png')); ?>">
 		<link rel="apple-touch-icon-precomposed" href="<?php print_unescaped(image_path($_['appid'], 'favicon-touch.png')); ?>">
 		<?php foreach($_['cssfiles'] as $cssfile): ?>
@@ -65,8 +67,10 @@
 					<?php if ($_['enableAvatars']): ?>
 					<div class="avatardiv<?php if ($_['userAvatarSet']) { print_unescaped(' avatardiv-shown'); } else { print_unescaped('" style="display: none'); } ?>">
 						<?php if ($_['userAvatarSet']): ?>
-							<img src="<?php p(\OC::$server->getURLGenerator()->linkToRoute('core.avatar.getAvatar', ['userId' => $_['user_uid'], 'size' => 32]));?>?requesttoken=<?php p(urlencode($_['requesttoken'])); ?>"
-								alt="">
+							<img alt="" width="32" height="32"
+							src="<?php p(\OC::$server->getURLGenerator()->linkToRoute('core.avatar.getAvatar', ['userId' => $_['user_uid'], 'size' => 32]));?>"
+							srcset="<?php p(\OC::$server->getURLGenerator()->linkToRoute('core.avatar.getAvatar', ['userId' => $_['user_uid'], 'size' => 64]));?> 2x, <?php p(\OC::$server->getURLGenerator()->linkToRoute('core.avatar.getAvatar', ['userId' => $_['user_uid'], 'size' => 128]));?> 4x"
+							>
 						<?php endif; ?>
 					</div>
 					<?php endif; ?>
@@ -99,7 +103,7 @@
 					<?php p($l->t('Search'));?>
 				</label>
 				<input id="searchbox" class="svg" type="search" name="query"
-					value="<?php if(isset($_POST['query'])) {p($_POST['query']);};?>"
+					value=""
 					autocomplete="off" tabindex="5">
 			</form>
 		</div></header>

@@ -7,6 +7,7 @@
  * @author Michael Göhler <somebody.here@gmx.de>
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Robin Appelman <icewind@owncloud.com>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
  * @author Thomas Müller <thomas.mueller@tmit.eu>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
@@ -42,9 +43,10 @@ if($_POST && OC_Util::isCallRegistered()) {
 }
 
 $htaccessWritable=is_writable(OC::$SERVERROOT.'/.htaccess');
+$userIniWritable=is_writable(OC::$SERVERROOT.'/.user.ini');
 
 $tmpl = new OCP\Template( 'files', 'admin' );
-$tmpl->assign( 'uploadChangable', $htaccessWorking and $htaccessWritable );
+$tmpl->assign( 'uploadChangable', ($htaccessWorking and $htaccessWritable) or $userIniWritable );
 $tmpl->assign( 'uploadMaxFilesize', $maxUploadFilesize);
 // max possible makes only sense on a 32 bit system
 $tmpl->assign( 'displayMaxPossibleUploadSize', PHP_INT_SIZE===4);

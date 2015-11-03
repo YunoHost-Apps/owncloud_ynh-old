@@ -3,6 +3,8 @@
  * @author Joas Schilling <nickvergessen@owncloud.com>
  * @author Lukas Reschke <lukas@owncloud.com>
  * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
  * @license AGPL-3.0
@@ -121,20 +123,38 @@ class CheckSetupController extends Controller {
 	 *
 	 * @return array
 	 */
-	public function getCurlVersion() {
+	protected function getCurlVersion() {
 		return curl_version();
 	}
 
 	/**
 	 * Check if the used  SSL lib is outdated. Older OpenSSL and NSS versions do
 	 * have multiple bugs which likely lead to problems in combination with
-	 * functionalities required by ownCloud such as SNI.
+	 * functionality required by ownCloud such as SNI.
 	 *
 	 * @link https://github.com/owncloud/core/issues/17446#issuecomment-122877546
 	 * @link https://bugzilla.redhat.com/show_bug.cgi?id=1241172
 	 * @return string
 	 */
 	private function isUsedTlsLibOutdated() {
+		// Appstore is disabled by default in EE
+		$appStoreDefault = false;
+		if (\OC_Util::getEditionString() === '') {
+			$appStoreDefault = true;
+		}
+
+		// Don't run check when:
+		// 1. Server has `has_internet_connection` set to false
+		// 2. AppStore AND S2S is disabled
+		if(!$this->config->getSystemValue('has_internet_connection', true)) {
+			return '';
+		}
+		if(!$this->config->getSystemValue('appstoreenabled', $appStoreDefault)
+			&& $this->config->getAppValue('files_sharing', 'outgoing_server2server_share_enabled', 'yes') === 'no'
+			&& $this->config->getAppValue('files_sharing', 'incoming_server2server_share_enabled', 'yes') === 'no') {
+			return '';
+		}
+
 		$versionString = $this->getCurlVersion();
 		if(isset($versionString['ssl_version'])) {
 			$versionString = $versionString['ssl_version'];
@@ -143,7 +163,7 @@ class CheckSetupController extends Controller {
 		}
 
 		$features = (string)$this->l10n->t('installing and updating apps via the app store or Federated Cloud Sharing');
-		if(OC_Util::getEditionString() !== '') {
+		if(!$this->config->getSystemValue('appstoreenabled', $appStoreDefault)) {
 			$features = (string)$this->l10n->t('Federated Cloud Sharing');
 		}
 
@@ -175,6 +195,57 @@ class CheckSetupController extends Controller {
 
 		return '';
 	}
+	
+	/**
+	 * Whether the php version is still supported (at time of release)
+	 * according to: https://secure.php.net/supported-versions.php
+	 *
+	 * @return array
+	 */
+	private function isPhpSupported() {
+		$eol = false;
+
+		//PHP 5.4 is EOL on 14 Sep 2015
+		if (version_compare(PHP_VERSION, '5.5.0') === -1) {
+			$eol = true;
+		}
+
+		return ['eol' => $eol, 'version' => PHP_VERSION];
+	}
+
+	/**
+	 * Check if the reverse proxy configuration is working as expected
+	 *
+	 * @return bool
+	 */
+	private function forwardedForHeadersWorking() {
+		$trustedProxies = $this->config->getSystemValue('trusted_proxies', []);
+		$remoteAddress = $this->request->getRemoteAddress();
+
+		if (is_array($trustedProxies) && in_array($remoteAddress, $trustedProxies)) {
+			return false;
+		}
+
+		// either not enabled or working correctly
+		return true;
+	}
+
+	/**
+	 * Checks if the correct memcache module for PHP is installed. Only
+	 * fails if memcached is configured and the working module is not installed.
+	 *
+	 * @return bool
+	 */
+	private function isCorrectMemcachedPHPModuleInstalled() {
+		if ($this->config->getSystemValue('memcache.distributed', null) !== '\OC\Memcache\Memcached') {
+			return true;
+		}
+
+		// there are two different memcached modules for PHP
+		// we only support memcached and not memcache
+		// https://code.google.com/p/memcached/wiki/PHPClientComparison
+		return !extension_loaded('memcached') && extension_loaded('memcache');
+	}
 
 	/**
 	 * @return DataResponse
@@ -189,6 +260,10 @@ class CheckSetupController extends Controller {
 				'isUrandomAvailable' => $this->isUrandomAvailable(),
 				'securityDocs' => $this->urlGenerator->linkToDocs('admin-security'),
 				'isUsedTlsLibOutdated' => $this->isUsedTlsLibOutdated(),
+				'phpSupported' => $this->isPhpSupported(),
+				'forwardedForHeadersWorking' => $this->forwardedForHeadersWorking(),
+				'reverseProxyDocs' => $this->urlGenerator->linkToDocs('admin-reverse-proxy'),
+				'isCorrectMemcachedPHPModuleInstalled' => $this->isCorrectMemcachedPHPModuleInstalled()
 			]
 		);
 	}

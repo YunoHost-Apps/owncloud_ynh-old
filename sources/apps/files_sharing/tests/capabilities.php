@@ -1,5 +1,6 @@
 <?php
 /**
+ * @author Joas Schilling <nickvergessen@owncloud.com>
  * @author Roeland Jago Douma <roeland@famdouma.nl>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
@@ -36,9 +37,8 @@ class FilesSharingCapabilitiesTest extends \Test\TestCase {
 	 * @return string[]
 	 */
 	private function getFilesSharingPart(array $data) {
-		$this->assertArrayHasKey('capabilities', $data);
-		$this->assertArrayHasKey('files_sharing', $data['capabilities']);
-		return $data['capabilities']['files_sharing'];
+		$this->assertArrayHasKey('files_sharing', $data);
+		return $data['files_sharing'];
 	}
 
 	/**
@@ -53,12 +53,35 @@ class FilesSharingCapabilitiesTest extends \Test\TestCase {
 		$stub = $this->getMockBuilder('\OCP\IConfig')->disableOriginalConstructor()->getMock();
 		$stub->method('getAppValue')->will($this->returnValueMap($map));
 		$cap = new Capabilities($stub);
-		$result = $this->getFilesSharingPart($cap->getCaps()->getData());
+		$result = $this->getFilesSharingPart($cap->getCapabilities());
 		return $result;
+	}
+
+	public function testEnabledSharingAPI() {
+		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
+		];
+		$result = $this->getResults($map);
+		$this->assertTrue($result['api_enabled']);
+		$this->assertContains('public', $result);
+		$this->assertContains('user', $result);
+		$this->assertContains('resharing', $result);
+	}
+
+	public function testDisabledSharingAPI() {
+		$map = [
+			['core', 'shareapi_enabled', 'yes', 'no'],
+		];
+		$result = $this->getResults($map);
+		$this->assertFalse($result['api_enabled']);
+		$this->assertNotContains('public', $result);
+		$this->assertNotContains('user', $result);
+		$this->assertNotContains('resharing', $result);
 	}
 
 	public function testNoLinkSharing() {
 		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
 			['core', 'shareapi_allow_links', 'yes', 'no'],
 		];
 		$result = $this->getResults($map);
@@ -68,6 +91,7 @@ class FilesSharingCapabilitiesTest extends \Test\TestCase {
 
 	public function testOnlyLinkSharing() {
 		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
 			['core', 'shareapi_allow_links', 'yes', 'yes'],
 		];
 		$result = $this->getResults($map);
@@ -77,6 +101,7 @@ class FilesSharingCapabilitiesTest extends \Test\TestCase {
 
 	public function testLinkPassword() {
 		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
 			['core', 'shareapi_allow_links', 'yes', 'yes'],
 			['core', 'shareapi_enforce_links_password', 'no', 'yes'],
 		];
@@ -88,6 +113,7 @@ class FilesSharingCapabilitiesTest extends \Test\TestCase {
 
 	public function testLinkNoPassword() {
 		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
 			['core', 'shareapi_allow_links', 'yes', 'yes'],
 			['core', 'shareapi_enforce_links_password', 'no', 'no'],
 		];
@@ -99,6 +125,7 @@ class FilesSharingCapabilitiesTest extends \Test\TestCase {
 
 	public function testLinkNoExpireDate() {
 		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
 			['core', 'shareapi_allow_links', 'yes', 'yes'],
 			['core', 'shareapi_default_expire_date', 'no', 'no'],
 		];
@@ -110,6 +137,7 @@ class FilesSharingCapabilitiesTest extends \Test\TestCase {
 
 	public function testLinkExpireDate() {
 		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
 			['core', 'shareapi_allow_links', 'yes', 'yes'],
 			['core', 'shareapi_default_expire_date', 'no', 'yes'],
 			['core', 'shareapi_expire_after_n_days', '7', '7'],
@@ -125,6 +153,7 @@ class FilesSharingCapabilitiesTest extends \Test\TestCase {
 
 	public function testLinkExpireDateEnforced() {
 		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
 			['core', 'shareapi_allow_links', 'yes', 'yes'],
 			['core', 'shareapi_default_expire_date', 'no', 'yes'],
 			['core', 'shareapi_enforce_expire_date', 'no', 'yes'],
@@ -137,6 +166,7 @@ class FilesSharingCapabilitiesTest extends \Test\TestCase {
 
 	public function testLinkSendMail() {
 		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
 			['core', 'shareapi_allow_links', 'yes', 'yes'],
 			['core', 'shareapi_allow_public_notification', 'no', 'yes'],
 		];
@@ -146,6 +176,7 @@ class FilesSharingCapabilitiesTest extends \Test\TestCase {
 
 	public function testLinkNoSendMail() {
 		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
 			['core', 'shareapi_allow_links', 'yes', 'yes'],
 			['core', 'shareapi_allow_public_notification', 'no', 'no'],
 		];
@@ -155,6 +186,7 @@ class FilesSharingCapabilitiesTest extends \Test\TestCase {
 
 	public function testUserSendMail() {
 		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
 			['core', 'shareapi_allow_mail_notification', 'no', 'yes'],
 		];
 		$result = $this->getResults($map);
@@ -163,6 +195,7 @@ class FilesSharingCapabilitiesTest extends \Test\TestCase {
 
 	public function testUserNoSendMail() {
 		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
 			['core', 'shareapi_allow_mail_notification', 'no', 'no'],
 		];
 		$result = $this->getResults($map);
@@ -171,6 +204,7 @@ class FilesSharingCapabilitiesTest extends \Test\TestCase {
 
 	public function testResharing() {
 		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
 			['core', 'shareapi_allow_resharing', 'yes', 'yes'],
 		];
 		$result = $this->getResults($map);
@@ -179,9 +213,67 @@ class FilesSharingCapabilitiesTest extends \Test\TestCase {
 
 	public function testNoResharing() {
 		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
 			['core', 'shareapi_allow_resharing', 'yes', 'no'],
 		];
 		$result = $this->getResults($map);
 		$this->assertFalse($result['resharing']);
 	}
+
+	public function testLinkPublicUpload() {
+		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
+			['core', 'shareapi_allow_links', 'yes', 'yes'],
+			['core', 'shareapi_allow_public_upload', 'yes', 'yes'],
+		];
+		$result = $this->getResults($map);
+		$this->assertTrue($result['public']['upload']);
+	}
+
+	public function testLinkNoPublicUpload() {
+		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
+			['core', 'shareapi_allow_links', 'yes', 'yes'],
+			['core', 'shareapi_allow_public_upload', 'yes', 'no'],
+		];
+		$result = $this->getResults($map);
+		$this->assertFalse($result['public']['upload']);
+	}
+
+	public function testFederatedSharingIncomming() {
+		$map = [
+			['files_sharing', 'incoming_server2server_share_enabled', 'yes', 'yes'],
+		];
+		$result = $this->getResults($map);
+		$this->assertArrayHasKey('federation', $result);
+		$this->assertTrue($result['federation']['incoming']);
+	}
+
+	public function testFederatedSharingNoIncomming() {
+		$map = [
+			['files_sharing', 'incoming_server2server_share_enabled', 'yes', 'no'],
+		];
+		$result = $this->getResults($map);
+		$this->assertArrayHasKey('federation', $result);
+		$this->assertFalse($result['federation']['incoming']);
+	}
+
+	public function testFederatedSharingOutgoing() {
+		$map = [
+			['files_sharing', 'outgoing_server2server_share_enabled', 'yes', 'yes'],
+		];
+		$result = $this->getResults($map);
+		$this->assertArrayHasKey('federation', $result);
+		$this->assertTrue($result['federation']['outgoing']);
+	}
+
+	public function testFederatedSharingNoOutgoing() {
+		$map = [
+			['files_sharing', 'outgoing_server2server_share_enabled', 'yes', 'no'],
+		];
+		$result = $this->getResults($map);
+		$this->assertArrayHasKey('federation', $result);
+		$this->assertFalse($result['federation']['outgoing']);
+	}
+
 }

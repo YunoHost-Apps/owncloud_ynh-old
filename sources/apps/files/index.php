@@ -38,9 +38,11 @@ OCP\Util::addStyle('files', 'upload');
 OCP\Util::addStyle('files', 'mobile');
 OCP\Util::addscript('files', 'app');
 OCP\Util::addscript('files', 'file-upload');
+OCP\Util::addscript('files', 'newfilemenu');
 OCP\Util::addscript('files', 'jquery.iframe-transport');
 OCP\Util::addscript('files', 'jquery.fileupload');
 OCP\Util::addscript('files', 'jquery-visibility');
+OCP\Util::addscript('files', 'fileinfomodel');
 OCP\Util::addscript('files', 'filesummary');
 OCP\Util::addscript('files', 'breadcrumb');
 OCP\Util::addscript('files', 'filelist');
@@ -49,6 +51,12 @@ OCP\Util::addscript('files', 'search');
 \OCP\Util::addScript('files', 'favoritesfilelist');
 \OCP\Util::addScript('files', 'tagsplugin');
 \OCP\Util::addScript('files', 'favoritesplugin');
+
+\OCP\Util::addScript('files', 'detailfileinfoview');
+\OCP\Util::addScript('files', 'detailtabview');
+\OCP\Util::addScript('files', 'mainfileinfodetailview');
+\OCP\Util::addScript('files', 'detailsview');
+\OCP\Util::addStyle('files', 'detailsView');
 
 \OC_Util::addVendorScript('core', 'handlebars/handlebars');
 
@@ -132,9 +140,13 @@ foreach ($navItems as $item) {
 }
 
 OCP\Util::addscript('files', 'fileactions');
+OCP\Util::addscript('files', 'fileactionsmenu');
 OCP\Util::addscript('files', 'files');
 OCP\Util::addscript('files', 'navigation');
 OCP\Util::addscript('files', 'keyboardshortcuts');
+
+\OC::$server->getEventDispatcher()->dispatch('OCA\Files::loadAdditionalScripts');
+
 $tmpl = new OCP\Template('files', 'index', 'user');
 $tmpl->assign('usedSpacePercent', (int)$storageInfo['relative']);
 $tmpl->assign('owner', $storageInfo['owner']);

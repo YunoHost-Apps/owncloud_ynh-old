@@ -4,6 +4,7 @@
  * @author Björn Schießle <schiessle@owncloud.com>
  * @author Lukas Reschke <lukas@owncloud.com>
  * @author Robin Appelman <icewind@owncloud.com>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
  * @author Vincent Petry <pvince81@owncloud.com>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
@@ -64,7 +65,7 @@ foreach ($list as $file) {
 	OCA\Files_Trashbin\Trashbin::delete($filename, \OCP\User::getUser(), $timestamp);
 	if (OCA\Files_Trashbin\Trashbin::file_exists($filename, $timestamp)) {
 		$error[] = $filename;
-		OC_Log::write('trashbin','can\'t delete ' . $filename . ' permanently.', OC_Log::ERROR);
+		\OCP\Util::writeLog('trashbin','can\'t delete ' . $filename . ' permanently.', \OCP\Util::ERROR);
 	}
 	// only list deleted files if not deleting everything
 	else if (!$deleteAll) {

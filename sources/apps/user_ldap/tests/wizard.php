@@ -3,6 +3,7 @@
  * @author Arthur Schiwon <blizzz@owncloud.com>
  * @author Joas Schilling <nickvergessen@owncloud.com>
  * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Viktor Szépe <viktor@szepe.net>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
  * @license AGPL-3.0
@@ -140,7 +141,7 @@ class Test_Wizard extends \Test\TestCase {
 				return $uidnumber++;
 			}));
 
-		# The following expectations are the real test #
+		// The following expectations are the real test
 		$filters = array('f1', 'f2', '*');
 		$wizard->cumulativeSearchOnAttribute($filters, 'cn', 5);
 		unset($uidnumber);
@@ -216,7 +217,7 @@ class Test_Wizard extends \Test\TestCase {
 				return $uidnumber++;
 			}));
 
-		# The following expectations are the real test #
+		// The following expectations are the real test
 		$filters = array('f1', 'f2', '*');
 		$wizard->cumulativeSearchOnAttribute($filters, 'cn', 0);
 		unset($uidnumber);
@@ -431,7 +432,7 @@ class Test_Wizard extends \Test\TestCase {
 				return $b;
 			}));
 
-		# The following expectations are the real test #
+		// The following expectations are the real test
 		$filters = array('f1', 'f2', '*');
 		$resultArray = $wizard->cumulativeSearchOnAttribute($filters, 'cn', 0);
 		$this->assertSame(6, count($resultArray));

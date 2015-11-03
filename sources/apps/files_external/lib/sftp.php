@@ -7,6 +7,7 @@
  * @author Lennart Rosam <lennart.rosam@medien-systempartner.de>
  * @author Lukas Reschke <lukas@owncloud.com>
  * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin Appelman <icewind@owncloud.com>
  * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
  * @author Ross Nicoll <jrn@jrn.me.uk>
  * @author SA <stephen@mthosting.net>
@@ -29,20 +30,24 @@
  *
  */
 namespace OC\Files\Storage;
+use Icewind\Streams\IteratorDirectory;
+
+use phpseclib\Net\SFTP\Stream;
 
 /**
-* Uses phpseclib's Net_SFTP class and the Net_SFTP_Stream stream wrapper to
+* Uses phpseclib's Net\SFTP class and the Net\SFTP\Stream stream wrapper to
 * provide access to SFTP servers.
 */
 class SFTP extends \OC\Files\Storage\Common {
 	private $host;
 	private $user;
-	private $password;
 	private $root;
 	private $port = 22;
 
+	private $auth;
+
 	/**
-	* @var \Net_SFTP
+	* @var SFTP
 	*/
 	protected $client;
 
@@ -51,10 +56,10 @@ class SFTP extends \OC\Files\Storage\Common {
 	 */
 	public function __construct($params) {
 		// Register sftp://
-		\Net_SFTP_Stream::register();
+		Stream::register();
 
 		$this->host = $params['host'];
-		
+
 		//deals with sftp://server example
 		$proto = strpos($this->host, '://');
 		if ($proto != false) {
@@ -70,8 +75,15 @@ class SFTP extends \OC\Files\Storage\Common {
 		}
 
 		$this->user = $params['user'];
-		$this->password
-			= isset($params['password']) ? $params['password'] : '';
+
+		if (isset($params['public_key_auth'])) {
+			$this->auth = $params['public_key_auth'];
+		} elseif (isset($params['password'])) {
+			$this->auth = $params['password'];
+		} else {
+			throw new \UnexpectedValueException('no authentication parameters specified');
+		}
+
 		$this->root
 			= isset($params['root']) ? $this->cleanPath($params['root']) : '/';
 
@@ -87,7 +99,7 @@ class SFTP extends \OC\Files\Storage\Common {
 	/**
 	 * Returns the connection.
 	 *
-	 * @return \Net_SFTP connected client instance
+	 * @return \phpseclib\Net\SFTP connected client instance
 	 * @throws \Exception when the connection failed
 	 */
 	public function getConnection() {
@@ -96,7 +108,7 @@ class SFTP extends \OC\Files\Storage\Common {
 		}
 
 		$hostKeys = $this->readHostKeys();
-		$this->client = new \Net_SFTP($this->host, $this->port);
+		$this->client = new \phpseclib\Net\SFTP($this->host, $this->port);
 
 		// The SSH Host Key MUST be verified before login().
 		$currentHostKey = $this->client->getServerPublicHostKey();
@@ -109,7 +121,7 @@ class SFTP extends \OC\Files\Storage\Common {
 			$this->writeHostKeys($hostKeys);
 		}
 
-		if (!$this->client->login($this->user, $this->password)) {
+		if (!$this->client->login($this->user, $this->auth)) {
 			throw new \Exception('Login failed');
 		}
 		return $this->client;
@@ -122,7 +134,6 @@ class SFTP extends \OC\Files\Storage\Common {
 		if (
 			!isset($this->host)
 			|| !isset($this->user)
-			|| !isset($this->password)
 		) {
 			return false;
 		}
@@ -278,8 +289,7 @@ class SFTP extends \OC\Files\Storage\Common {
 					$dirStream[] = $file;
 				}
 			}
-			\OC\Files\Stream\Dir::register($id, $dirStream);
-			return opendir('fakedir://' . $id);
+			return IteratorDirectory::wrap($dirStream);
 		} catch(\Exception $e) {
 			return false;
 		}

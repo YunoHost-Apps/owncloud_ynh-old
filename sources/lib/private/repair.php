@@ -34,6 +34,7 @@ use OC\Repair\AssetCache;
 use OC\Repair\CleanTags;
 use OC\Repair\Collation;
 use OC\Repair\DropOldJobs;
+use OC\Repair\RemoveGetETagEntries;
 use OC\Repair\SqliteAutoincrement;
 use OC\Repair\DropOldTables;
 use OC\Repair\FillETags;
@@ -43,6 +44,7 @@ use OC\Repair\RepairLegacyStorages;
 use OC\Repair\RepairMimeTypes;
 use OC\Repair\SearchLuceneTables;
 use OC\Repair\UpdateOutdatedOcsIds;
+use OC\Repair\RepairInvalidShares;
 
 class Repair extends BasicEmitter {
 	/**
@@ -102,15 +104,17 @@ class Repair extends BasicEmitter {
 	 */
 	public static function getRepairSteps() {
 		return [
-			new RepairMimeTypes(),
-			new RepairLegacyStorages(\OC::$server->getConfig(), \OC_DB::getConnection()),
+			new RepairMimeTypes(\OC::$server->getConfig()),
+			new RepairLegacyStorages(\OC::$server->getConfig(), \OC::$server->getDatabaseConnection()),
 			new RepairConfig(),
 			new AssetCache(),
-			new FillETags(\OC_DB::getConnection()),
-			new CleanTags(\OC_DB::getConnection()),
-			new DropOldTables(\OC_DB::getConnection()),
+			new FillETags(\OC::$server->getDatabaseConnection()),
+			new CleanTags(\OC::$server->getDatabaseConnection()),
+			new DropOldTables(\OC::$server->getDatabaseConnection()),
 			new DropOldJobs(\OC::$server->getJobList()),
+			new RemoveGetETagEntries(\OC::$server->getDatabaseConnection()),
 			new UpdateOutdatedOcsIds(\OC::$server->getConfig()),
+			new RepairInvalidShares(\OC::$server->getConfig(), \OC::$server->getDatabaseConnection()),
 		];
 	}
 

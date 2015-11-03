@@ -3,6 +3,7 @@
  * @author Andreas Fischer <bantu@owncloud.com>
  * @author Bart Visscher <bartv@thisnet.nl>
  * @author Frank Karlitschek <frank@owncloud.org>
+ * @author Lukas Reschke <lukas@owncloud.com>
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Thomas Müller <thomas.mueller@tmit.eu>
  * @author Tom Needham <tom@owncloud.com>
@@ -69,7 +70,7 @@ class OC_OCS_Privatedata {
 		$user = OC_User::getUser();
 		$app = addslashes(strip_tags($parameters['app']));
 		$key = addslashes(strip_tags($parameters['key']));
-		$value = OC_OCS::readData('post', 'value', 'text');
+		$value = (string)$_POST['value'];
 
 		// update in DB
 		$query = \OCP\DB::prepare('UPDATE `*PREFIX*privatedata` SET `value` = ?  WHERE `user` = ? AND `app` = ? AND `key` = ?');

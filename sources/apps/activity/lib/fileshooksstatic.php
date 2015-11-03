@@ -38,6 +38,9 @@ class FilesHooksStatic {
 		Util::connectHook('OC_Filesystem', 'delete', 'OCA\Activity\FilesHooksStatic', 'fileDelete');
 		Util::connectHook('\OCA\Files_Trashbin\Trashbin', 'post_restore', 'OCA\Activity\FilesHooksStatic', 'fileRestore');
 		Util::connectHook('OCP\Share', 'post_shared', 'OCA\Activity\FilesHooksStatic', 'share');
+
+		$eventDispatcher = \OC::$server->getEventDispatcher();
+		$eventDispatcher->addListener('OCA\Files::loadAdditionalScripts', ['OCA\Activity\FilesHooksStatic', 'onLoadFilesAppScripts']);
 	}
 
 	/**
@@ -53,7 +56,7 @@ class FilesHooksStatic {
 	 * @param array $params The hook params
 	 */
 	public static function fileCreate($params) {
-		self::getHooks()->fileCreate($params);
+		self::getHooks()->fileCreate($params['path']);
 	}
 
 	/**
@@ -61,7 +64,7 @@ class FilesHooksStatic {
 	 * @param array $params The hook params
 	 */
 	public static function fileUpdate($params) {
-		self::getHooks()->fileUpdate($params);
+		self::getHooks()->fileUpdate($params['path']);
 	}
 
 	/**
@@ -69,7 +72,7 @@ class FilesHooksStatic {
 	 * @param array $params The hook params
 	 */
 	public static function fileDelete($params) {
-		self::getHooks()->fileDelete($params);
+		self::getHooks()->fileDelete($params['path']);
 	}
 
 	/**
@@ -77,7 +80,7 @@ class FilesHooksStatic {
 	 * @param array $params The hook params
 	 */
 	public static function fileRestore($params) {
-		self::getHooks()->fileRestore($params);
+		self::getHooks()->fileRestore($params['filePath']);
 	}
 
 	/**
@@ -86,5 +89,16 @@ class FilesHooksStatic {
 	 */
 	public static function share($params) {
 		self::getHooks()->share($params);
+	}
+
+	/**
+	 * Load additional scripts when the files app is visible
+	 */
+	public static function onLoadFilesAppScripts() {
+		Util::addStyle('activity', 'style');
+		Util::addScript('activity', 'activitymodel');
+		Util::addScript('activity', 'activitycollection');
+		Util::addScript('activity', 'activitytabview');
+		Util::addScript('activity', 'filesplugin');
 	}
 }

@@ -1,7 +1,6 @@
 <?php
 /**
  * @author Bart Visscher <bartv@thisnet.nl>
- * @author cmeh <cmeh@users.noreply.github.com>
  * @author ideaship <ideaship@users.noreply.github.com>
  * @author Lukas Reschke <lukas@owncloud.com>
  * @author Morris Jobke <hey@morrisjobke.de>
@@ -105,7 +104,7 @@ class Controller {
 
 	public function loadAutoConfig($post) {
 		if( file_exists($this->autoConfigFile)) {
-			\OC_Log::write('core', 'Autoconfig file found, setting up ownCloud…', \OC_Log::INFO);
+			\OCP\Util::writeLog('core', 'Autoconfig file found, setting up ownCloud…', \OCP\Util::INFO);
 			$AUTOCONFIG = array();
 			include $this->autoConfigFile;
 			$post = array_merge ($post, $AUTOCONFIG);

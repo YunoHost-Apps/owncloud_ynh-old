@@ -15,30 +15,27 @@ style('activity', 'settings');
 	<table class="grid activitysettings">
 		<thead>
 			<tr>
-				<th class="small activity_select_group" data-select-group="email">
-					<?php p($l->t('Mail')); ?>
+				<?php foreach ($_['methods'] as $method => $methodName): ?>
+				<th class="small activity_select_group" data-select-group="<?php p($method) ?>">
+					<?php p($methodName); ?>
 				</th>
-				<th class="small activity_select_group" data-select-group="stream">
-					<?php p($l->t('Stream')); ?>
-				</th>
+				<?php endforeach; ?>
 				<th><span id="activity_notifications_msg" class="msg"></span></th>
 			</tr>
 		</thead>
 		<tbody>
 		<?php foreach ($_['activities'] as $activity => $data): ?>
 			<tr>
+				<?php foreach ($_['methods'] as $method => $methodName): ?>
 				<td class="small">
-					<label for="<?php p($activity) ?>_email">
-						<input type="checkbox" id="<?php p($activity) ?>_email" name="<?php p($activity) ?>_email"
-							value="1" class="<?php p($activity) ?> email" <?php if ($data['email']): ?> checked="checked"<?php endif; ?> />
+					<input type="checkbox" id="<?php p($activity) ?>_<?php p($method) ?>" name="<?php p($activity) ?>_<?php p($method) ?>"
+						value="1" class="<?php p($activity) ?> <?php p($method) ?> checkbox"
+						<?php if (!in_array($method, $data['methods'])): ?> disabled="disabled"<?php endif; ?>
+						<?php if ($data[$method]): ?> checked="checked"<?php endif; ?> />
+					<label for="<?php p($activity) ?>_<?php p($method) ?>">
 					</label>
 				</td>
-				<td class="small">
-					<label for="<?php p($activity) ?>_stream">
-						<input type="checkbox" id="<?php p($activity) ?>_stream" name="<?php p($activity) ?>_stream"
-							value="1" class="<?php p($activity) ?> stream" <?php if ($data['stream']): ?> checked="checked"<?php endif; ?> />
-					</label>
-				</td>
+				<?php endforeach; ?>
 				<td class="activity_select_group" data-select-group="<?php p($activity) ?>">
 					<?php echo $data['desc']; ?>
 				</td>
@@ -48,11 +45,11 @@ style('activity', 'settings');
 	</table>
 
 	<br />
-	<input id="notify_setting_self" name="notify_setting_self" type="checkbox"
+	<input id="notify_setting_self" name="notify_setting_self" type="checkbox" class="checkbox"
 		value="1" <?php if ($_['notify_self']): ?> checked="checked"<?php endif; ?> />
 	<label for="notify_setting_self"><?php p($l->t('List your own actions in the stream')); ?></label>
 	<br />
-	<input id="notify_setting_selfemail" name="notify_setting_selfemail" type="checkbox"
+	<input id="notify_setting_selfemail" name="notify_setting_selfemail" type="checkbox" class="checkbox"
 		value="1" <?php if ($_['notify_selfemail']): ?> checked="checked"<?php endif; ?> />
 	<label for="notify_setting_selfemail"><?php p($l->t('Notify about your own actions via email')); ?></label>
 	<br />
@@ -63,7 +60,7 @@ style('activity', 'settings');
 	<?php endif; ?>
 
 	<br />
-	<?php p($l->t('Send emails:')); ?>
+	<label for="notify_setting_batchtime"><?php p($l->t('Send emails:')); ?></label>
 	<select id="notify_setting_batchtime" name="notify_setting_batchtime">
 		<option value="0"<?php if ($_['setting_batchtime'] === \OCA\Activity\UserSettings::EMAIL_SEND_HOURLY): ?> selected="selected"<?php endif; ?>><?php p($l->t('Hourly')); ?></option>
 		<option value="1"<?php if ($_['setting_batchtime'] === \OCA\Activity\UserSettings::EMAIL_SEND_DAILY): ?> selected="selected"<?php endif; ?>><?php p($l->t('Daily')); ?></option>

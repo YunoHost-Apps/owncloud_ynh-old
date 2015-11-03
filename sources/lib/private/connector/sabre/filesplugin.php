@@ -56,10 +56,29 @@ class FilesPlugin extends \Sabre\DAV\ServerPlugin {
 	private $tree;
 
 	/**
-	 * @param \Sabre\DAV\Tree $tree
+	 * Whether this is public webdav.
+	 * If true, some returned information will be stripped off.
+	 *
+	 * @var bool
 	 */
-	public function __construct(\Sabre\DAV\Tree $tree) {
+	private $isPublic;
+
+	/**
+	 * @var \OC\Files\View
+	 */
+	private $fileView;
+
+	/**
+	 * @param \Sabre\DAV\Tree $tree
+	 * @param \OC\Files\View $view
+	 * @param bool $isPublic
+	 */
+	public function __construct(\Sabre\DAV\Tree $tree,
+	                            \OC\Files\View $view,
+	                            $isPublic = false) {
 		$this->tree = $tree;
+		$this->fileView = $view;
+		$this->isPublic = $isPublic;
 	}
 
 	/**
@@ -97,6 +116,26 @@ class FilesPlugin extends \Sabre\DAV\ServerPlugin {
 				fclose($body);
 			}
 		});
+		$this->server->on('beforeMove', [$this, 'checkMove']);
+	}
+
+	/**
+	 * Plugin that checks if a move can actually be performed.
+	 * @param string $source source path
+	 * @param string $destination destination path
+	 * @throws \Sabre\DAV\Exception\Forbidden
+	 */
+	function checkMove($source, $destination) {
+		list($sourceDir,) = \Sabre\HTTP\URLUtil::splitPath($source);
+		list($destinationDir,) = \Sabre\HTTP\URLUtil::splitPath($destination);
+
+		if ($sourceDir !== $destinationDir) {
+			$sourceFileInfo = $this->fileView->getFileInfo($source);
+
+			if (!$sourceFileInfo->isDeletable()) {
+				throw new \Sabre\DAV\Exception\Forbidden($source . " cannot be deleted");
+			}
+		}
 	}
 
 	/**
@@ -129,7 +168,12 @@ class FilesPlugin extends \Sabre\DAV\ServerPlugin {
 			});
 
 			$propFind->handle(self::PERMISSIONS_PROPERTYNAME, function() use ($node) {
-				return $node->getDavPermissions();
+				$perms = $node->getDavPermissions();
+				if ($this->isPublic) {
+					// remove mount information
+					$perms = str_replace(['S', 'M'], '', $perms);
+				}
+				return $perms;
 			});
 
 			$propFind->handle(self::GETETAG_PROPERTYNAME, function() use ($node) {

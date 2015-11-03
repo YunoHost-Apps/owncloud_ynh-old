@@ -91,13 +91,13 @@
 }
 
 .box .preview{
-	display: block;
 	width: 50px;
 	height: 50px;
 	margin-left: 24px;
 }
 
-.box .preview-dir-icon{
+.box .preview-dir-icon,
+.box .preview-mimetype-icon {
 	width: 32px;
 	height: 32px;
 }
@@ -139,7 +139,7 @@
 }
 
 /* Style for in event parameters */
-.activity-section a.filename {
+.activity-section a.filename, .activity-section strong {
 	font-weight: bold;
 }
 
@@ -147,6 +147,26 @@
 	vertical-align: middle;
 	display: inline-block;
 	margin-right: 5px;
+}
+
+.activityTabView .activity.box {
+	position: relative;
+}
+.activityTabView .activity-icon {
+	position: absolute;
+	margin-top: 3px;
+}
+.activityTabView .activitysubject {
+	width: 90%;
+	margin-left: 24px;
+	display: block;
+	min-height: 28px;
+}
+.activityTabView .box .activitytime {
+	padding: 0;
+	margin: 0;
+	margin-right: 0;
+	margin-top: -15px;
 }
 
 .icon-activity {

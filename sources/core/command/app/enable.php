@@ -2,6 +2,7 @@
 /**
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Robin Appelman <icewind@owncloud.com>
+ * @author Vincent Petry <pvince81@owncloud.com>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
  * @license AGPL-3.0
@@ -45,6 +46,7 @@ class Enable extends Command {
 			$output->writeln($appId . ' is already enabled');
 		} else if (!\OC_App::getAppPath($appId)) {
 			$output->writeln($appId . ' not found');
+			return 1;
 		} else {
 			\OC_App::enable($appId);
 			$output->writeln($appId . ' enabled');

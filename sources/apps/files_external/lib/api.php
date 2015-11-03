@@ -2,6 +2,7 @@
 /**
  * @author Joas Schilling <nickvergessen@owncloud.com>
  * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Robin McCorkell <rmccorkell@karoshi.org.uk>
  * @author Vincent Petry <pvince81@owncloud.com>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
@@ -71,7 +72,7 @@ class Api {
 	 */
 	public static function getUserMounts($params) {
 		$entries = array();
-		$user = \OC_User::getUser();
+		$user = \OC::$server->getUserSession()->getUser()->getUID();
 
 		$mounts = \OC_Mount_Config::getAbsoluteMountPoints($user);
 		foreach($mounts as $mountPoint => $mount) {

@@ -7,6 +7,7 @@
  * @author Christopher T. Johnson <ctjctj@gmail.com>
  * @author Johan Björk <johanimon@gmail.com>
  * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Martin Mattel <martin.mattel@diemattels.at>
  * @author Michael Gapczynski <GapczynskiM@gmail.com>
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Philipp Kapfer <philipp.kapfer@gmx.at>
@@ -40,6 +41,7 @@ require 'aws-autoloader.php';
 
 use Aws\S3\S3Client;
 use Aws\S3\Exception\S3Exception;
+use Icewind\Streams\IteratorDirectory;
 
 class AmazonS3 extends \OC\Files\Storage\Common {
 
@@ -121,7 +123,7 @@ class AmazonS3 extends \OC\Files\Storage\Common {
 		$params['region'] = empty($params['region']) ? 'eu-west-1' : $params['region'];
 		$params['hostname'] = empty($params['hostname']) ? 's3.amazonaws.com' : $params['hostname'];
 		if (!isset($params['port']) || $params['port'] === '') {
-			$params['port'] = ($params['use_ssl'] === false || $params['use_ssl'] === 'false') ? 80 : 443;
+			$params['port'] = ($params['use_ssl'] === false) ? 80 : 443;
 		}
 		$this->params = $params;
 	}
@@ -284,9 +286,7 @@ class AmazonS3 extends \OC\Files\Storage\Common {
 				$files[] = $file;
 			}
 
-			\OC\Files\Stream\Dir::register('amazons3' . $path, $files);
-
-			return opendir('fakedir://amazons3' . $path);
+			return IteratorDirectory::wrap($files);
 		} catch (S3Exception $e) {
 			\OCP\Util::logException('files_external', $e);
 			return false;
@@ -373,7 +373,7 @@ class AmazonS3 extends \OC\Files\Storage\Common {
 		switch ($mode) {
 			case 'r':
 			case 'rb':
-				$tmpFile = \OC_Helper::tmpFile();
+				$tmpFile = \OCP\Files::tmpFile();
 				self::$tmpFiles[$tmpFile] = $path;
 
 				try {
@@ -405,7 +405,7 @@ class AmazonS3 extends \OC\Files\Storage\Common {
 				} else {
 					$ext = '';
 				}
-				$tmpFile = \OC_Helper::tmpFile($ext);
+				$tmpFile = \OCP\Files::tmpFile($ext);
 				\OC\Files\Stream\Close::registerCallback($tmpFile, array($this, 'writeBack'));
 				if ($this->file_exists($path)) {
 					$source = $this->fopen($path, 'r');
@@ -465,7 +465,7 @@ class AmazonS3 extends \OC\Files\Storage\Common {
 				]);
 				$this->testTimeout();
 			} else {
-				$mimeType = \OC_Helper::getMimetypeDetector()->detectPath($path);
+				$mimeType = \OC::$server->getMimeTypeDetector()->detectPath($path);
 				$this->getConnection()->putObject([
 					'Bucket' => $this->bucket,
 					'Key' => $this->cleanKey($path),
@@ -518,7 +518,7 @@ class AmazonS3 extends \OC\Files\Storage\Common {
 			$dh = $this->opendir($path1);
 			if (is_resource($dh)) {
 				while (($file = readdir($dh)) !== false) {
-					if ($file === '.' || $file === '..') {
+					if (\OC\Files\Filesystem::isIgnoredDir($file)) {
 						continue;
 					}
 
@@ -586,14 +586,17 @@ class AmazonS3 extends \OC\Files\Storage\Common {
 			return $this->connection;
 		}
 
-		$scheme = ($this->params['use_ssl'] === false || $this->params['use_ssl'] === 'false') ? 'http' : 'https';
+		$scheme = ($this->params['use_ssl'] === false) ? 'http' : 'https';
 		$base_url = $scheme . '://' . $this->params['hostname'] . ':' . $this->params['port'] . '/';
 
 		$this->connection = S3Client::factory(array(
 			'key' => $this->params['key'],
 			'secret' => $this->params['secret'],
 			'base_url' => $base_url,
-			'region' => $this->params['region']
+			'region' => $this->params['region'],
+			S3Client::COMMAND_PARAMS => [
+				'PathStyle' => $this->params['use_path_style'],
+			],
 		));
 
 		if (!$this->connection->isValidBucketName($this->bucket)) {
@@ -630,7 +633,7 @@ class AmazonS3 extends \OC\Files\Storage\Common {
 				'Bucket' => $this->bucket,
 				'Key' => $this->cleanKey(self::$tmpFiles[$tmpFile]),
 				'SourceFile' => $tmpFile,
-				'ContentType' => \OC_Helper::getMimeType($tmpFile),
+				'ContentType' => \OC::$server->getMimeTypeDetector()->detect($tmpFile),
 				'ContentLength' => filesize($tmpFile)
 			));
 			$this->testTimeout();

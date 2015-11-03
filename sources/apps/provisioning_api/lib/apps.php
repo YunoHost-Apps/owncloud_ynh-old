@@ -1,7 +1,9 @@
 <?php
 /**
  * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Lukas Reschke <lukas@owncloud.com>
  * @author Morris Jobke <hey@morrisjobke.de>
+ * @author Roeland Jago Douma <roeland@famdouma.nl>
  * @author Tom Needham <tom@owncloud.com>
  *
  * @copyright Copyright (c) 2015, ownCloud, Inc.
@@ -28,9 +30,23 @@ use \OC_App;
 
 class Apps {
 
-	public static function getApps($parameters){
+	/** @var \OCP\App\IAppManager */
+	private $appManager;
+
+	/**
+	 * @param \OCP\App\IAppManager $appManager
+	 */
+	public function __construct(\OCP\App\IAppManager $appManager) {
+		$this->appManager = $appManager;
+	}
+
+	/**
+	 * @param array $parameters
+	 * @return OC_OCS_Result
+	 */
+	public function getApps($parameters) {
 		$apps = OC_App::listAllApps();
-		$list = array();
+		$list = [];
 		foreach($apps as $app) {
 			$list[] = $app['id'];
 		}
@@ -55,9 +71,13 @@ class Apps {
 		}
 	}
 
-	public static function getAppInfo($parameters){
+	/**
+	 * @param array $parameters
+	 * @return OC_OCS_Result
+	 */
+	public function getAppInfo($parameters) {
 		$app = $parameters['appid'];
-		$info = OC_App::getAppInfo($app);
+		$info = \OCP\App::getAppInfo($app);
 		if(!is_null($info)) {
 			return new OC_OCS_Result(OC_App::getAppInfo($app));
 		} else {
@@ -65,15 +85,23 @@ class Apps {
 		}
 	}
 
-	public static function enable($parameters){
+	/**
+	 * @param array $parameters
+	 * @return OC_OCS_Result
+	 */
+	public function enable($parameters) {
 		$app = $parameters['appid'];
-		OC_App::enable($app);
+		$this->appManager->enableApp($app);
 		return new OC_OCS_Result(null, 100);
 	}
 
-	public static function disable($parameters){
+	/**
+	 * @param array $parameters
+	 * @return OC_OCS_Result
+	 */
+	public function disable($parameters) {
 		$app = $parameters['appid'];
-		OC_App::disable($app);
+		$this->appManager->disableApp($app);
 		return new OC_OCS_Result(null, 100);
 	}
 

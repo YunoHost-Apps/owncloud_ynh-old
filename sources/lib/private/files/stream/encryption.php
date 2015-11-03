@@ -2,7 +2,6 @@
 /**
  * @author Björn Schießle <schiessle@owncloud.com>
  * @author jknockaert <jasper@knockaert.nl>
- * @author Morris Jobke <hey@morrisjobke.de>
  * @author Thomas Müller <thomas.mueller@tmit.eu>
  * @author Vincent Petry <pvince81@owncloud.com>
  *
@@ -303,7 +302,7 @@ class Encryption extends Wrapper {
 
 		$length = 0;
 		// loop over $data to fit it in 6126 sized unencrypted blocks
-		while (strlen($data) > 0) {
+		while (isset($data[0])) {
 			$remainingLength = strlen($data);
 
 			// set the cache to the current 6126 block
