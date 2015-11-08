@@ -27,7 +27,7 @@ sha256sum --strict --quiet -c ../sources/$SOURCES.tar.bz2.sha256sum < ../sources
 gpg --import ../sources/$APPNAME.asc
 gpg --verify ../sources/$SOURCES.tar.bz2.asc ../sources/$SOURCES.tar.bz2
 sudo mkdir -p ../tmp/
-sudo tar -jxvf ../sources/$SOURCES.tar.bz2 -C ../tmp/
+sudo tar -jxf ../sources/$SOURCES.tar.bz2 -C ../tmp/
 
 # Copy files to the right place
 final_path=/var/www/owncloud
@@ -79,9 +79,13 @@ sudo sed -i "s@PATHTOCHANGE@$path@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo sed -i "s@ALIASTOCHANGE@$final_path/@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/nginx/conf.d/$domain.d/owncloud.conf
 sudo sed -i "s@NAMETOCHANGE@owncloud@g" /etc/php5/fpm/pool.d/owncloud.conf
-if ! grep -Fq "memcache" $final_path/config/config.php  
+if ! grep -Fq "memcache" $final_path/config/config.php
 then
     sudo bash -c "echo \"\\\$CONFIG['memcache.local']= '\OC\Memcache\APC';\" >> $final_path/config/config.php"
+fi
+if ! grep -Fq "memcache.locking" $final_path/config/config.php
+then
+    sudo bash -c "echo \"\\\$CONFIG['memcache.locking']= '\OC\Memcache\APC';\" >> $final_path/config/config.php"
 fi
 # Set permissions to owncloud directories and /home directories + add Home external storage
 for i in $(ls /home)
@@ -141,4 +145,3 @@ sudo su -c "php occ ldap:set-config '' ldapUserFilter objectClass=mailAccount -n
 sudo su -c "php occ ldap:set-config '' ldapUserFilterMode 0 -n -q --no-ansi" owncloud
 sudo su -c "php occ ldap:set-config '' ldapUuidGroupAttribute auto -n -q --no-ansi" owncloud
 sudo su -c "php occ ldap:set-config '' ldapUuidUserAttribute auto -n -q --no-ansi" owncloud
-

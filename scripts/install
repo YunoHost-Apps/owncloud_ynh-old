@@ -62,7 +62,7 @@ sha256sum --strict --quiet -c ../sources/$SOURCES.tar.bz2.sha256sum < ../sources
 gpg --import ../sources/$APPNAME.asc
 gpg --verify ../sources/$SOURCES.tar.bz2.asc ../sources/$SOURCES.tar.bz2
 sudo mkdir -p ../tmp/
-sudo tar -jxvf ../sources/$SOURCES.tar.bz2 -C ../tmp/
+sudo tar -jxf ../sources/$SOURCES.tar.bz2 -C ../tmp/
 
 # Copy files to the right place
 final_path=/var/www/$APP
@@ -179,7 +179,11 @@ sudo chmod -R 770 $data_path
 mysql -u $db_user -p$db_pwd $db_user -e "INSERT INTO oc_group_user VALUES ('admin','$user');"
 
 #Configure cache
-if ! grep -Fq "memcache" $final_path/config/config.php  
+if ! grep -Fq "memcache" $final_path/config/config.php
 then
     sudo bash -c "echo \"\\\$CONFIG['memcache.local']= '\OC\Memcache\APC';\" >> $final_path/config/config.php"
+fi
+if ! grep -Fq "memcache.locking" $final_path/config/config.php
+then
+    sudo bash -c "echo \"\\\$CONFIG['memcache.locking']= '\OC\Memcache\APC';\" >> $final_path/config/config.php"
 fi
