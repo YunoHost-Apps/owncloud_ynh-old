@@ -4,7 +4,7 @@ set -e
 
 APP='owncloud'
 APPNAME=`echo -n own;echo 'cloud'`
-SOURCES=`echo -n $APPNAME;echo '-8.2.0'`
+SOURCES=`echo -n $APPNAME;echo '-8.2.2'`
 
 # Retrieve arguments
 domain=$(sudo yunohost app setting owncloud domain)
