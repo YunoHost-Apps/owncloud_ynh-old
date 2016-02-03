@@ -1,23 +1,24 @@
 #!/bin/bash
+APP=${!#}
 
-db_user=owncloud
-db_name=owncloud
+db_user=$APP
+db_name=$APP
 root_pwd=$(sudo cat /etc/yunohost/mysql)
-domain=$(sudo yunohost app setting owncloud domain)
+domain=$(sudo yunohost app setting $APP domain)
 
 mysql -u root -p$root_pwd -e "DROP DATABASE $db_name ; DROP USER $db_user@localhost ;"
-sudo rm -rf /var/www/owncloud
-sudo rm -rf /home/yunohost.app/owncloud
-sudo rm -f /etc/nginx/conf.d/$domain.d/owncloud.conf
-sudo rm -f /etc/php5/fpm/pool.d/owncloud.conf
+sudo rm -rf /var/www/$APP
+sudo rm -rf /home/yunohost.app/$APP
+sudo rm -f /etc/nginx/conf.d/$domain.d/$APP.conf
+sudo rm -f /etc/php5/fpm/pool.d/$APP.conf
 for i in $(ls /home)
 do
     if [[ ! $i == yunohost.* ]];
     then
-        sudo setfacl -x g:owncloud:rwx > /dev/null 2>&1
+        sudo setfacl -x g:$APP:rwx > /dev/null 2>&1
     fi
 done
 sudo killall php5-fpm
 sudo service php5-fpm start
-sudo userdel owncloud > /dev/null 2>&1
+sudo userdel $APP > /dev/null 2>&1
 sudo service nginx reload

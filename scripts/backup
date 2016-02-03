@@ -1,4 +1,5 @@
 #!/bin/bash
+APP=${!#}
 
 
 CAN_BIND=1
@@ -6,27 +7,25 @@ CAN_BIND=1
 # The parameter $1 is the backup directory location dedicated to the app
 backup_dir=$1
 
-# The parameter $2 is theid of the app instance
-app=$2
 
 
 
-domain=$(sudo yunohost app setting $app domain)
-path=$(sudo yunohost app setting $app path)
-user=$(sudo yunohost app setting $app admin_user)
+domain=$(sudo yunohost app setting $APP domain)
+path=$(sudo yunohost app setting $APP path)
+user=$(sudo yunohost app setting $APP admin_user)
 
 # Backup sources & data
-sudo cp -a /var/www/$app $backup_dir/www
+sudo cp -a /var/www/$APP $backup_dir/www
 # TODO Shallow copy because data could be very big
-sudo cp -a /home/yunohost.app/$app/data $backup_dir/data
+sudo cp -a /home/yunohost.app/$APP/data $backup_dir/data
 
 # Copy Conf
 sudo mkdir -p "${backup_dir}/conf"
-sudo cp -a /etc/nginx/conf.d/$domain.d/$app.conf $backup_dir/conf/nginx.conf
-sudo cp -a /etc/php5/fpm/pool.d/$app.conf "${backup_dir}/conf/php-fpm.conf"
+sudo cp -a /etc/nginx/conf.d/$domain.d/$APP.conf $backup_dir/conf/nginx.conf
+sudo cp -a /etc/php5/fpm/pool.d/$APP.conf "${backup_dir}/conf/php-fpm.conf"
 sudo cp -a /etc/php5/cli/conf.d/20-apc.ini $backup_dir/conf/ \
     || sudo cp -a /etc/php5/cli/conf.d/20-apcu.ini $backup_dir/conf/
 
 # Backup db
-db_pwd=$(sudo yunohost app setting $app mysqlpwd)
-sudo su -c "mysqldump -u $app -p"$db_pwd" --no-create-db $app > ${backup_dir}/db.sql"
+db_pwd=$(sudo yunohost app setting $APP mysqlpwd)
+sudo su -c "mysqldump -u $APP -p"$db_pwd" --no-create-db $APP > ${backup_dir}/db.sql"
