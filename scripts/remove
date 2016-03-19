@@ -9,7 +9,7 @@ mysql -u root -p$root_pwd -e "DROP DATABASE $db_name ; DROP USER $db_user@localh
 sudo rm -rf /var/www/owncloud
 sudo rm -rf /home/yunohost.app/owncloud
 sudo rm -f /etc/nginx/conf.d/$domain.d/owncloud.conf
-sudo rm -f /etc/php5/fpm/pool.d/owncloud.conf
+sudo rm -f /etc/php/7.0/fpm/pool.d/owncloud.conf
 for i in $(ls /home)
 do
     if [[ ! $i == yunohost.* ]];
@@ -17,7 +17,7 @@ do
         sudo setfacl -x g:owncloud:rwx > /dev/null 2>&1
     fi
 done
-sudo killall php5-fpm
-sudo service php5-fpm start
+sudo killall php7.0-fpm
+sudo service php7.0-fpm start
 sudo userdel owncloud > /dev/null 2>&1
 sudo service nginx reload

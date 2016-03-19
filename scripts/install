@@ -4,7 +4,7 @@ set -e
 
 APP='owncloud'
 APPNAME=`echo -n own;echo 'cloud'`
-SOURCES=`echo -n $APPNAME;echo '-8.2.2'`
+SOURCES=`echo -n $APPNAME;echo '-9.0.0'`
 
 # Retrieve arguments
 domain=$1
@@ -25,7 +25,7 @@ path=${path%/}
 
 # Install dependencies
 sudo apt-get update -qq
-sudo apt-get install acl smbclient php5-cli php-apc coreutils gnupg tar -y -qq
+sudo apt-get install acl smbclient php7.0-fpm php7.0-cli php7.0-apcu coreutils gnupg tar -y -qq
 
 # Generate random password
 db_pwd=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d 'A-Za-z0-9' | sed -n 's/\(.\{24\}\).*/\1/p')
@@ -43,10 +43,10 @@ function exit_properly
     set +e
     root_pwd=$(sudo cat /etc/yunohost/mysql)
     mysql -u root -p$root_pwd -e "DROP DATABASE $APP ; DROP USER $APP@localhost ;"
-    sudo rm -f /etc/php5/fpm/pool.d/$APP.conf
+    sudo rm -f /etc/php/7.0/fpm/pool.d/$APP.conf
 
-    sudo killall php5-fpm
-    sudo service php5-fpm start
+    sudo killall php7.0-fpm
+    sudo service php7.0-fpm start
     sudo userdel $APP
     sudo rm -Rf /var/www/$APP
     exit 1
@@ -72,10 +72,10 @@ sudo mkdir -p $data_path
 sudo cp -a ../tmp/$APPNAME/. $final_path/
 sudo cp -a ../conf/ow-setup $final_path/ow-setup
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$APP.conf
-sudo cp ../conf/php-fpm.conf /etc/php5/fpm/pool.d/$APP.conf
-sudo ls /usr/lib/php5/2*/ | grep apc.so \
-  && sudo cp ../conf/20-apc.ini /etc/php5/cli/conf.d/20-apc.ini \
-  || sudo cp ../conf/20-apcu.ini /etc/php5/cli/conf.d/20-apcu.ini
+sudo cp ../conf/php-fpm.conf /etc/php/7.0/fpm/pool.d/$APP.conf
+sudo ls /usr/lib/php/2*/ | grep apc.so \
+  && sudo cp ../conf/20-apc.ini /etc/php/7.0/cli/conf.d/20-apc.ini \
+  || sudo cp ../conf/20-apcu.ini /etc/php/7.0/cli/conf.d/20-apcu.ini
 sudo cp ../conf/mount.json $data_path
 sudo chown -hR $APP:www-data $final_path
 sudo chown -hR $APP:www-data $data_path
@@ -85,7 +85,7 @@ sudo chmod -R u=rwX,g=rwX,o=rX $final_path
 sudo chmod -R u=rwX,g=rwX,o= $data_path
 
 # Needed for Jessie/PHP5.6 compatibility
-sudo sed -i "s/;always_populate_raw/always_populate_raw/" /etc/php5/cli/php.ini
+sudo sed -i "s/;always_populate_raw/always_populate_raw/" /etc/php/7.0/cli/php.ini
 
 # Change variables in Owncloud configuration
 if [[ "$path" == "" ]]; then
@@ -96,7 +96,7 @@ fi
 sudo sed -i "s@PATHTOCHANGE@$path@g" /etc/nginx/conf.d/$domain.d/$APP.conf
 sudo sed -i "s@ALIASTOCHANGE@$final_path/@g" /etc/nginx/conf.d/$domain.d/$APP.conf
 sudo sed -i "s@NAMETOCHANGE@$APP@g" /etc/nginx/conf.d/$domain.d/$APP.conf
-sudo sed -i "s@NAMETOCHANGE@$APP@g" /etc/php5/fpm/pool.d/$APP.conf
+sudo sed -i "s@NAMETOCHANGE@$APP@g" /etc/php/7.0/fpm/pool.d/$APP.conf
 
 # Set permissions to owncloud directories and /home directories + add Home external storage
 for i in $(ls /home)
@@ -108,8 +108,8 @@ do
 done
 
 # Reload Nginx and regenerate SSOwat conf
-sudo killall php5-fpm
-sudo service php5-fpm start
+sudo killall php7.0-fpm
+sudo service php7.0-fpm start
 sudo service nginx reload
 sudo yunohost app setting $APP unprotected_uris -v "/"
 sudo yunohost app ssowatconf
