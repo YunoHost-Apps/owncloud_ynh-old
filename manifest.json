@@ -1,6 +1,7 @@
 {
     "name": "OwnCloud",
     "id": "owncloud",
+    "packaging_format": 1,
     "description": {
         "en": "Sync & share your files, pictures, music, contacts, calendars, and much more !",
         "fr": "Synchronisez et partagez vos fichiers, images, musiques, contacts, calendriers, et bien plus !"
