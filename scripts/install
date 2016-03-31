@@ -24,7 +24,7 @@ sudo yunohost app checkurl $domain$path -a $APP \
 path=${path%/}
 
 # Install dependencies
-sudo apt-get update -qq
+sudo apt-get update
 sudo apt-get install acl smbclient php5-cli php-apc coreutils gnupg tar -y -qq
 
 # Generate random password
