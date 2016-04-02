@@ -1,24 +1,36 @@
 #!/bin/bash
-APP=${!#}
 
-db_user=$APP
-db_name=$APP
-root_pwd=$(sudo cat /etc/yunohost/mysql)
-domain=$(sudo yunohost app setting $APP domain)
+# Set app specific variables
+app=${!#}
+dbname=$app
+dbuser=$app
 
-mysql -u root -p$root_pwd -e "DROP DATABASE $db_name ; DROP USER $db_user@localhost ;"
-sudo rm -rf /var/www/$APP
-sudo rm -rf /home/yunohost.app/$APP
-sudo rm -f /etc/nginx/conf.d/$domain.d/$APP.conf
-sudo rm -f /etc/php5/fpm/pool.d/$APP.conf
-for i in $(ls /home)
-do
-    if [[ ! $i == yunohost.* ]];
-    then
-        sudo setfacl -x g:$APP:rwx > /dev/null 2>&1
-    fi
+# Load common variables and helpers
+. ./_common.sh
+
+# Source app helpers
+. /usr/share/yunohost/helpers
+
+# Drop MySQL database and user
+ynh_mysql_drop_db $dbname || true
+ynh_mysql_drop_user $dbuser || true
+
+# Retrieve domain from app settings
+domain=$(ynh_app_setting_get $app domain)
+
+# Delete app directory and configurations
+sudo rm -rf "/var/www/${app}"
+sudo rm -f "/etc/php5/fpm/pool.d/${app}.conf"
+[[ -n $domain ]] && sudo rm -f "/etc/nginx/conf.d/${domain}.d/${app}.conf"
+
+# Reload services
+sudo service php5-fpm restart || true
+sudo service nginx reload || true
+
+# Remove app dependencies and system user
+ynh_package_autoremove "$DEPS_PKG_NAME" || true
+for i in $(ls /home); do
+  [[ ! $i == yunohost.* ]] \
+    && sudo setfacl -x g:$app:rwx > /dev/null 2>&1
 done
-sudo killall php5-fpm
-sudo service php5-fpm start
-sudo userdel $APP > /dev/null 2>&1
-sudo service nginx reload
+sudo deluser --quiet --remove-home --system $app > /dev/null

@@ -4,8 +4,8 @@ Homepage: https://mediagoblin.org/
 Standards-Version: 3.9.2
 
 Package: owncloud-deps
-Version: 8.2.3-1
-Depends: acl, smbclient, php5-cli, php-apc, coreutils, gnupg, tar
+Version: 9.0.0-1
+Depends: acl, php5-cli, php5-apcu, tar, smbclient
 Architecture: all
 Description: meta package for owncloud dependencies
  ownCloud gives you universal access to your files through a web
