@@ -57,6 +57,13 @@ trap exit_properly ERR
 sudo useradd -d /var/www/$APP $APP \
 	|| exit_properly
 
+# Add yunohost.multimedia directory
+wget https://github.com/maniackcrudelis/yunohost.multimedia/archive/master.zip
+unzip master.zip
+sudo ./yunohost.multimedia-master/script/ynh_media_build.sh
+# Add access to yunohost.multimedia dir
+sudo usermod -a -G multimedia $APP
+
 # Verify sources and extract it
 sha256sum --strict --quiet -c ../sources/$SOURCES.tar.bz2.sha256sum < ../sources/$SOURCES.tar.bz2
 gpg --import ../sources/$APPNAME.asc
