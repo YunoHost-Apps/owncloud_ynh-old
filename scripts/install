@@ -25,7 +25,7 @@ path=${path%/}
 
 # Install dependencies
 sudo apt-get update -qq
-sudo apt-get install acl smbclient php5-cli php-apc coreutils gnupg tar -y -qq
+sudo DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" -y --force-yes -qq install acl smbclient php5-cli php-apc coreutils gnupg tar
 
 # Generate random password
 db_pwd=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d 'A-Za-z0-9' | sed -n 's/\(.\{24\}\).*/\1/p')
@@ -114,7 +114,7 @@ sudo service nginx reload
 sudo yunohost app setting $APP unprotected_uris -v "/"
 sudo yunohost app ssowatconf
 
-# Owncloud installation via curl
+# Owncloud installation via cli
 old_pwd=$(pwd)
 cd $final_path
 sudo sed -i "s@public static function checkInstalled() {@public static function checkInstalled() { return;@g" $final_path/lib/base.php
